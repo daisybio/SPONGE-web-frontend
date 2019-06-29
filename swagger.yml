@@ -12,6 +12,24 @@ basePath: /api
 
 # Paths supported by the server application
 paths:
+  /test:
+    get:
+      operationId: test.random_int
+      tags:
+        - Number
+      summary: Returns a random int
+      description: Returns a random integer
+      responses:
+        200:
+          description: Successfully received random integer
+          schema:
+            type: integer
+            items:
+              properties:
+                value:
+                  type: integer
+                  description: A random integer
+
   /people:
     get:
       operationId: people.read_all
