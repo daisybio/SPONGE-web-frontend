@@ -5,3 +5,4 @@ flask-sqlalchemy==2.3.0
 marshmallow==2.13.6
 sqlalchemy==1.1.14
 marshmallow-sqlalchemy
+connexion[swagger-ui]
