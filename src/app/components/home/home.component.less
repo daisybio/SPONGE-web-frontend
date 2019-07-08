@@ -6,16 +6,29 @@
     &-content-container {
         height: 500px;
         position: relative;
-        
+        display: table;
     }
 }
+
+.table-cell{  
+    display: table-cell;
+    vertical-align: middle;
+    .overlay{
+        background-color: rgba(5, 20, 34, 0.6);
+        text-align: center;
+        position: relative;
+        height: 100px;
+        z-index: 10;
+        padding: 0;
+    }
+}  
 
 .background-image{
     background-image: url("../../../assets/img/BG2.jpg");
 
     /* Add the blur effect */
-    filter: blur(8px);
-    -webkit-filter: blur(8px);
+    filter: blur(2px);
+    //-webkit-filter: blur(8px);
     /* Full height */
     height: 100%; 
 
@@ -23,28 +36,12 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    height: auto;
-    margin: 0;
-    padding: 300px 0px 240px;
     position: absolute;
     left: 0;
     right: 0;
     z-index: 1;
 }
 
-.jumbotron{
-    &.overlay{
-        margin-bottom: 2rem;
-        background-color: rgba(5, 20, 34, 0.6);
-        border-radius: .3rem;
-        align-content: center;
-        position: relative;
-        left: 0;
-        right: 0;
-        z-index: 10;
-        
-    }
-}
 
 
 
