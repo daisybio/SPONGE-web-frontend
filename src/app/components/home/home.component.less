@@ -1,60 +1,50 @@
 .home{
     &-box{
         padding-top: 20px;
-        padding-bottom: 20px;
-        
+        padding-bottom: 20px;     
+    }     
+    &-content-container {
+        height: 500px;
+        position: relative;
         
     }
-
-    
-   
-    
-
-     
 }
 
-.background{
+.background-image{
     background-image: url("../../../assets/img/BG2.jpg");
-    
-    
-    
-    
+
     /* Add the blur effect */
-  /*  filter: blur(8px);
-    -webkit-filter: blur(8px); */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+    /* Full height */
+    height: 100%; 
 
-  /* Full height */
-  height: 100%; 
-  
-  /* Center and scale the image nicely */
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: auto;
-  margin: 0;
-  padding: 300px 0px 240px
-  
-
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: auto;
+    margin: 0;
+    padding: 300px 0px 240px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
 }
-
 
 .jumbotron{
-    margin-bottom: 2rem;
-    background-color: #051422;
-    border-radius: .3rem;
-    opacity: 0.9;
-
-    align-content: center;
-
+    &.overlay{
+        margin-bottom: 2rem;
+        background-color: rgba(5, 20, 34, 0.6);
+        border-radius: .3rem;
+        align-content: center;
+        position: relative;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        
+    }
 }
-.color-overlay{
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    opacity: .9;
-    position: absolute;
-    filter: blur(3px);
-    -webkit-filter: blur(3px);
-}
+
 
 
