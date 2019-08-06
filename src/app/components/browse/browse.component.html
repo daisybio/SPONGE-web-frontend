@@ -10,11 +10,17 @@
             </div>
         </div>
         <div class="col-9">
+            <div id='selected_disease'>Currently Selected Run: <span></span></div>
             <div class="tab-content" id="v-pills-tabContent">
 
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-
+                    <div>
+                        <select class="selectpicker diseases"></select>
+                        <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-primary">Link to Download</button></a>
+                    </div>
+                    <pre id="selector_disease_result">
+                    </pre>
                 </div>
 
                 <!-- Interactions -->
@@ -27,8 +33,10 @@
                         </div>
                     </nav>
                     <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">...</div>
-                        <div class="tab-pane fade" id="nav-data" role="tabpanel" aria-labelledby="nav-data-tab">...</div>
+                        <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">..test.</div>
+                        <div class="tab-pane fade" id="nav-data" role="tabpanel" aria-labelledby="nav-data-tab">
+                            <div id='interactions-data-table-container'></div>
+                        </div>
                         <div class="tab-pane fade" id="nav-downloads" role="tabpanel" aria-labelledby="nav-downloads-tab">...</div>
                     </div>
                 </div>
