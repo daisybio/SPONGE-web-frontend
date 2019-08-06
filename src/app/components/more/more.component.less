@@ -16,3 +16,25 @@
 #headline{
     text-align:center;
 }
+
+.watermark {
+    height:100%;
+  width:100%;
+    display: block;
+    position: relative;
+    
+  }
+  
+  .watermark::after {
+    content: "";
+   background: url(/assets/img/logoWatermark.png) no-repeat;
+    opacity: 0.2;
+   top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    height:100%;
+    width:100%;    
+    z-index: -1;   
+  }
