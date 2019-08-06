@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import * as $ from "jquery";
 import 'datatables.net';
+declare const sigma: any;
 
 @Component({
   selector: 'app-browse',
@@ -79,15 +80,18 @@ export class BrowseComponent implements OnInit {
         data => {
           selected_disease_result.html(JSON.stringify(data, undefined, 2));
         })
-        console.log(" /ceRNANetwork/ceRNAInteraction/findAll/interactionAnalysis?disease_name="+disease_trimmed+"&descending=true&top=30&information=true");
+        // load interaction data
         $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/interactionAnalysis?disease_name="+disease_trimmed+"&descending=true&top=30&information=false",
         data => {
           console.log(data);
           let column_names = Object.keys(data[0]);
           // delete run information and run id
+          $("#interactions-data-table-container").html(''); //clear possible other tables
           $("#interactions-data-table-container").append(buildTable(data,'interactions-data-table', column_names))
-          $('.interactions-data-table').DataTable();
+          let table = $('.interactions-data-table').DataTable();
+          table.column(6).visible( false ); // hide 'run'
         })
+        
       })
       
     }
