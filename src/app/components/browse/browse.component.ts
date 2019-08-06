@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import * as $ from "jquery";
+import * as sigma from "sigma";
 import 'datatables.net';
-declare const sigma: any;
+//declare const sigma: any;
 
 @Component({
   selector: 'app-browse',
@@ -80,18 +81,65 @@ export class BrowseComponent implements OnInit {
         data => {
           selected_disease_result.html(JSON.stringify(data, undefined, 2));
         })
-        // load interaction data
-        $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/interactionAnalysis?disease_name="+disease_trimmed+"&descending=true&top=30&information=false",
+        // load interaction data (edges)
+        let edges = [];
+        $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/interactionAnalysis?disease_name="+disease_trimmed+"&descending=true&information=false&top=30",
         data => {
-          console.log(data);
           let column_names = Object.keys(data[0]);
           // delete run information and run id
           $("#interactions-data-table-container").html(''); //clear possible other tables
           $("#interactions-data-table-container").append(buildTable(data,'interactions-data-table', column_names))
           let table = $('.interactions-data-table').DataTable();
           table.column(6).visible( false ); // hide 'run'
+          
+          for (let interaction in data) {
+            let id = data[interaction]['interactions_genegene_ID'];
+            let source = data[interaction]['gene1'];
+            let target = data[interaction]['gene2'];
+            //let size = 3;
+            //let color = '#12345';
+            //let type = line, curve
+            edges.push({id, source, target})
+          }
         })
-        
+        let nodes = [];
+        // load network data (nodes)
+        $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/networkAnalysis?disease_name="+disease_trimmed+"&descending=true",//&top=30",
+        data => {
+          for (let gene in data) {
+            let id = data[gene]['gene']['ensg_number'];
+            let label =  data[gene]['gene']['gene_symbol'];
+            let x = 0;
+            let y = 0;
+            //let size = 3;
+            //let color = '#12345';
+            nodes.push({id, label, x, y })
+          }
+          console.log(nodes);
+        })
+        //code before the pause
+        setTimeout(function(){
+          // Initialise sigma:
+          var network = new sigma(
+            {
+              renderer: {
+                container: document.getElementById('network-plot-container'),
+                type: 'canvas'
+              },
+              settings: {
+              minEdgeSize: 0.1,
+              maxEdgeSize: 2,
+              minNodeSize: 1,
+              maxNodeSize: 8,
+              }
+            }
+          );
+          var graph = {nodes: nodes, edges: edges}
+          // Load the graph in sigma
+          network.graph.read(graph);
+          // Ask sigma to draw it
+          network.refresh();
+        }, 120000);
       })
       
     }
