@@ -49,10 +49,49 @@ export class BrowseComponent implements OnInit {
       });
       table.appendChild(tbody);             
       return table;
-  }
+    }
 
+    function load_edges(disease_trimmed) {
+      $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/?disease_name="+disease_trimmed+"&descending=true&information=false&limit=30&ensg_number=ENSG00000259090",
+        data => {
+          let column_names = Object.keys(data[0]);
+          // delete run information and run id
+          $("#interactions-data-table-container").html(''); //clear possible other tables
+          $("#interactions-data-table-container").append(buildTable(data,'interactions-data-table', column_names))
+          let table = $('.interactions-data-table').DataTable();
+          table.column(6).visible( false ); // hide 'run'
+          let edges = [];
+          for (let interaction in data) {
+            let id = data[interaction]['interactions_genegene_ID'];
+            let source = data[interaction]['gene1'];
+            let target = data[interaction]['gene2'];
+            //let size = 3;
+            //let color = '#12345';
+            //let type = line, curve
+            edges.push({id, source, target})
+          }
+          return edges
+        }
+      )
+    }
 
-
+    function load_nodes(disease_trimmed) {
+      $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/networkAnalysis?disease_name="+disease_trimmed+"&descending=true",//&top=30",
+        data => {
+          let nodes = [];
+          for (let gene in data) {
+            let id = data[gene]['gene']['ensg_number'];
+            let label =  data[gene]['gene']['gene_symbol'];
+            let x = 0;
+            let y = 0;
+            //let size = 3;
+            //let color = '#12345';
+            nodes.push({id, label, x, y })
+          }
+          return nodes
+        }
+      )
+    }
 
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
@@ -73,53 +112,20 @@ export class BrowseComponent implements OnInit {
       disease_selector.change(function() {
         let selected_disease = $(this).val().toString();
         let disease_trimmed = selected_disease.split(' ').join('%20');
+
+        // load all runs for selector
         $('#selected_disease').find('span').html(selected_disease);
         let download_url = $(this).find(":contains("+selected_disease+")").attr('data-value')
         $('#selector_diseases_link').attr('href', download_url);
+
         // get specific run information
         $.getJSON(BrowseComponent.API_ENDPOINT+"dataset/runInformation?disease_name="+disease_trimmed,
         data => {
           selected_disease_result.html(JSON.stringify(data, undefined, 2));
         })
-        // load interaction data (edges)
-        let edges = [];
-        $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/interactionAnalysis?disease_name="+disease_trimmed+"&descending=true&information=false&top=30",
-        data => {
-          let column_names = Object.keys(data[0]);
-          // delete run information and run id
-          $("#interactions-data-table-container").html(''); //clear possible other tables
-          $("#interactions-data-table-container").append(buildTable(data,'interactions-data-table', column_names))
-          let table = $('.interactions-data-table').DataTable();
-          table.column(6).visible( false ); // hide 'run'
-          
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            //let size = 3;
-            //let color = '#12345';
-            //let type = line, curve
-            edges.push({id, source, target})
-          }
-        })
-        let nodes = [];
-        // load network data (nodes)
-        $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/networkAnalysis?disease_name="+disease_trimmed+"&descending=true",//&top=30",
-        data => {
-          for (let gene in data) {
-            let id = data[gene]['gene']['ensg_number'];
-            let label =  data[gene]['gene']['gene_symbol'];
-            let x = 0;
-            let y = 0;
-            //let size = 3;
-            //let color = '#12345';
-            nodes.push({id, label, x, y })
-          }
-          console.log(nodes);
-        })
-        //code before the pause
-        setTimeout(function(){
-          // Initialise sigma:
+
+        // load interaction data (edges), load network data (nodes)
+        $.when([load_edges(disease_trimmed), load_nodes(disease_trimmed)]).done(function(edges, nodes) {
           var network = new sigma(
             {
               renderer: {
@@ -139,9 +145,9 @@ export class BrowseComponent implements OnInit {
           network.graph.read(graph);
           // Ask sigma to draw it
           network.refresh();
-        }, 120000);
-      })
-      
+        })
+       
+      });
     }
   }
 
