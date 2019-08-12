@@ -28,16 +28,22 @@
                     <nav>
                         <div class="nav nav-tabs" id="nav-tab" role="tablist">
                             <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true">Overview</a>
-                            <a class="nav-item nav-link" id="nav-data-tab" data-toggle="tab" href="#nav-data" role="tab" aria-controls="nav-data" aria-selected="false">Data</a>
+                            <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false">Nodes</a>
+                            <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false">Edges</a>
                             <a class="nav-item nav-link" id="nav-downloads-tab" data-toggle="tab" href="#nav-downloads" role="tab" aria-controls="nav-downloads" aria-selected="false">Downloads</a>
                         </div>
                     </nav>
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
-                            <div id='network-plot-container'></div>
+                            <div id='network-plot-container-parent'>
+                                <div id='network-plot-container'></div>
+                            </div>
                         </div>
-                        <div class="tab-pane fade" id="nav-data" role="tabpanel" aria-labelledby="nav-data-tab">
-                            <div id='interactions-data-table-container'></div>
+                        <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
+                            <div id='interactions-nodes-table-container'></div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
+                            <div id='interactions-edges-table-container'></div>
                         </div>
                         <div class="tab-pane fade" id="nav-downloads" role="tabpanel" aria-labelledby="nav-downloads-tab">...</div>
                     </div>

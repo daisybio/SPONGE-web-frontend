@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Controller } from "../../control";
 import * as $ from "jquery";
 import * as sigma from "sigma";
 import 'datatables.net';
@@ -14,9 +15,9 @@ export class BrowseComponent implements OnInit {
   constructor() {
    }
 
-  static API_ENDPOINT = "http://10.162.163.20:5000/sponge/";
-
   ngOnInit() {
+
+    const controller = new Controller()
 
     run_information();
 
@@ -24,6 +25,10 @@ export class BrowseComponent implements OnInit {
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
     });
+
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
 
     function buildTable(data, table_name, column_names) {
       var table = document.createElement("table");
@@ -51,46 +56,55 @@ export class BrowseComponent implements OnInit {
       return table;
     }
 
-    function load_edges(disease_trimmed) {
-      $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/?disease_name="+disease_trimmed+"&descending=true&information=false&limit=30&ensg_number=ENSG00000259090",
-        data => {
+    function load_edges(disease_trimmed, nodes, callback?) {
+      controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
+        'callback':data => {
           let column_names = Object.keys(data[0]);
-          // delete run information and run id
-          $("#interactions-data-table-container").html(''); //clear possible other tables
-          $("#interactions-data-table-container").append(buildTable(data,'interactions-data-table', column_names))
-          let table = $('.interactions-data-table').DataTable();
+          $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
+          let table = $('.interactions-edges-table').DataTable();
           table.column(6).visible( false ); // hide 'run'
           let edges = [];
           for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            //let size = 3;
+            //let size = 1;
             //let color = '#12345';
             //let type = line, curve
             edges.push({id, source, target})
           }
-          return edges
+          console.log(edges)
+          return callback(edges)
         }
-      )
+      })
     }
 
-    function load_nodes(disease_trimmed) {
-      $.getJSON(BrowseComponent.API_ENDPOINT+"ceRNANetwork/ceRNAInteraction/findAll/networkAnalysis?disease_name="+disease_trimmed+"&descending=true",//&top=30",
-        data => {
+    function load_nodes(disease_trimmed, callback?) {
+      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':'degree', 'limit':3,
+      'callback': data => {
           let nodes = [];
           for (let gene in data) {
-            let id = data[gene]['gene']['ensg_number'];
-            let label =  data[gene]['gene']['gene_symbol'];
-            let x = 0;
-            let y = 0;
-            //let size = 3;
+            // flatten data object
+            for (let x in data[gene]['gene']) {
+              data[gene][x] = data[gene]['gene'][x]
+            }
+            delete data[gene]['gene']
+            delete data[gene]['run']// hide 'run'
+            let id = data[gene]['ensg_number'];
+            let label =  data[gene]['gene_symbol'];
+            let x = getRandomInt(10);
+            let y = getRandomInt(10);
+            let size = 1;
             //let color = '#12345';
             nodes.push({id, label, x, y })
           }
-          return nodes
+        // build datatable
+        let column_names = Object.keys(data[0]);
+        $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
+        let table = $('.interactions-nodes-table').DataTable();
+        return callback(nodes)
         }
-      )
+      })
     }
 
     function run_information() {
@@ -98,20 +112,27 @@ export class BrowseComponent implements OnInit {
       // load all disease names from database and insert them into selector 
       let disease_selector = $('.selectpicker.diseases');
       let selected_disease_result = $('#selector_disease_result');
+      controller.get_datasets(
+        data => {
+          for (let disease in data) {
+            disease_selector.append(
+              "<option data-value="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
+            )
+          }
+      })
 
-      $.getJSON(BrowseComponent.API_ENDPOINT+"dataset",
-      data => { 
-        for (let disease in data) {
-          disease_selector.append(
-            "<option data-value="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
-          )
-        }
-      });
+
+
+
+
       // takes care of button with link to download page
       // loads specific run information
       disease_selector.change(function() {
+        $("#interactions-nodes-table-container").html(''); //clear possible other tables
+        $("#interactions-edges-table-container").html(''); //clear possible other tables
+
         let selected_disease = $(this).val().toString();
-        let disease_trimmed = selected_disease.split(' ').join('%20');
+        let disease_trimmed:string = selected_disease.split(' ').join('%20');
 
         // load all runs for selector
         $('#selected_disease').find('span').html(selected_disease);
@@ -119,36 +140,39 @@ export class BrowseComponent implements OnInit {
         $('#selector_diseases_link').attr('href', download_url);
 
         // get specific run information
-        $.getJSON(BrowseComponent.API_ENDPOINT+"dataset/runInformation?disease_name="+disease_trimmed,
-        data => {
-          selected_disease_result.html(JSON.stringify(data, undefined, 2));
-        })
+        controller.get_dataset_information(disease_trimmed, 
+          data => {
+            selected_disease_result.html(JSON.stringify(data, undefined, 2));
+          }
+        )
 
         // load interaction data (edges), load network data (nodes)
-        $.when([load_edges(disease_trimmed), load_nodes(disease_trimmed)]).done(function(edges, nodes) {
-          var network = new sigma(
-            {
-              renderer: {
-                container: document.getElementById('network-plot-container'),
-                type: 'canvas'
-              },
-              settings: {
-              minEdgeSize: 0.1,
-              maxEdgeSize: 2,
-              minNodeSize: 1,
-              maxNodeSize: 8,
+        load_nodes(disease_trimmed, nodes => {
+          let ensg_numbers = nodes.map(function(node) {return node.id})
+          load_edges(disease_trimmed, ensg_numbers, edges => {
+            var network = new sigma(
+              {
+                renderer: {
+                  container: document.getElementById('network-plot-container'),
+                  type: 'svg'
+                },
+                settings: {
+                minEdgeSize: 0.1,
+                maxEdgeSize: 2,
+                minNodeSize: 1,
+                maxNodeSize: 8,
+                }
               }
-            }
-          );
-          var graph = {nodes: nodes, edges: edges}
-          // Load the graph in sigma
-          network.graph.read(graph);
-          // Ask sigma to draw it
-          network.refresh();
-        })
-       
+            );
+            var graph = {nodes: nodes, edges: edges}
+            console.log(graph)
+            // Load the graph in sigma
+            network.graph.read(graph);
+            // Ask sigma to draw it
+            network.refresh();
+          })
+        }) 
       });
     }
   }
-
 }

@@ -18,7 +18,7 @@ import { MoreComponent } from './components/more/more.component';
     HomeComponent,
     SearchComponent,
     BrowseComponent,
-    MoreComponent
+    MoreComponent,
   ],
   imports: [
     BrowserModule,
