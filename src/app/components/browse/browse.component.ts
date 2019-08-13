@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import * as $ from "jquery";
-import * as sigma from "sigma";
+//import Sigma from 'sigma';
+import { sigma } from 'sigma';
 import 'datatables.net';
 //declare const sigma: any;
 
@@ -16,6 +17,10 @@ export class BrowseComponent implements OnInit {
    }
 
   ngOnInit() {
+
+    console.log(Sigma)
+    var sigmaJS = new Sigma()
+    console.log(sigmaJS)
 
     const controller = new Controller()
 
@@ -73,7 +78,6 @@ export class BrowseComponent implements OnInit {
             //let type = line, curve
             edges.push({id, source, target})
           }
-          console.log(edges)
           return callback(edges)
         }
       })
@@ -94,9 +98,9 @@ export class BrowseComponent implements OnInit {
             let label =  data[gene]['gene_symbol'];
             let x = getRandomInt(10);
             let y = getRandomInt(10);
-            let size = 1;
+            let size = 3;
             //let color = '#12345';
-            nodes.push({id, label, x, y })
+            nodes.push({id, label, x, y , size})
           }
         // build datatable
         let column_names = Object.keys(data[0]);
@@ -130,6 +134,7 @@ export class BrowseComponent implements OnInit {
       disease_selector.change(function() {
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
+        $('#network-plot-container').html(''); // clear possible other network
 
         let selected_disease = $(this).val().toString();
         let disease_trimmed:string = selected_disease.split(' ').join('%20');
@@ -150,26 +155,33 @@ export class BrowseComponent implements OnInit {
         load_nodes(disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(disease_trimmed, ensg_numbers, edges => {
-            var network = new sigma(
-              {
+            let network = new Sigma({
+              graph: {
+                nodes: nodes,
+                edges: edges
+              },
                 renderer: {
                   container: document.getElementById('network-plot-container'),
-                  type: 'svg'
+                  type: 'canvas'
                 },
                 settings: {
-                minEdgeSize: 0.1,
-                maxEdgeSize: 2,
-                minNodeSize: 1,
-                maxNodeSize: 8,
+                  minEdgeSize: 0.1,
+                  maxEdgeSize: 2,
+                  minNodeSize: 1,
+                  maxNodeSize: 8,
+                  defaultNodeColor: 'rgb(107, 146, 5)'
                 }
               }
             );
-            var graph = {nodes: nodes, edges: edges}
-            console.log(graph)
-            // Load the graph in sigma
-            network.graph.read(graph);
             // Ask sigma to draw it
-            network.refresh();
+            
+            setTimeout(function(){ 
+              //network.relativeSize();
+              network.startForceAtlas2();
+              network.refresh();
+            }, 3000);
+
+            setTimeout(function() {network.killForceAtlas2()}, 10000);
           })
         }) 
       });
