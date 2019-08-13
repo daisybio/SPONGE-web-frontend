@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import * as $ from "jquery";
 //import Sigma from 'sigma';
-import { sigma } from 'sigma';
+import * as sigma from 'sigma';
 import 'datatables.net';
 //declare const sigma: any;
 
@@ -18,18 +18,17 @@ export class BrowseComponent implements OnInit {
 
   ngOnInit() {
 
-    console.log(Sigma)
-    var sigmaJS = new Sigma()
-    console.log(sigmaJS)
-
     const controller = new Controller()
-
-    run_information();
-
-
+    
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
     });
+
+    run_information();
+
+    console.log(sigma)
+    var sigmaJS = new sigma()
+    console.log(sigmaJS)
 
     function getRandomInt(max) {
       return Math.floor(Math.random() * Math.floor(max));
@@ -155,7 +154,7 @@ export class BrowseComponent implements OnInit {
         load_nodes(disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(disease_trimmed, ensg_numbers, edges => {
-            let network = new Sigma({
+            let network = new sigma({
               graph: {
                 nodes: nodes,
                 edges: edges
