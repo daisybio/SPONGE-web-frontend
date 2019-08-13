@@ -26,7 +26,6 @@
             "assets": [
               "src/favicon.png",
               "src/assets",
-              {"glob": "**/*", "input":"./node_modules/sigma/build", "output": "/assets/lib" }
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
@@ -35,8 +34,9 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "src/assets/lib/sigma/sigma.conf.js",
-              "node_modules/sigma/build/sigma.min.js"
+              "node_modules/sigma-webpack/build/sigma.min.js",
+              "node_modules/sigma-webpack/plugins/sigma.layout.forceAtlas2/supervisor.js",
+              "node_modules/sigma-webpack/plugins/sigma.layout.forceAtlas2/worker.js"
             ]
           },
           "configurations": {

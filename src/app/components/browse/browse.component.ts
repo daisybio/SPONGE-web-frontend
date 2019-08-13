@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import * as $ from "jquery";
-//import Sigma from 'sigma';
-import * as sigma from 'sigma';
+import * as sigma from 'sigma-webpack';
 import 'datatables.net';
-//declare const sigma: any;
+
 
 @Component({
   selector: 'app-browse',
@@ -25,10 +24,6 @@ export class BrowseComponent implements OnInit {
     });
 
     run_information();
-
-    console.log(sigma)
-    var sigmaJS = new sigma()
-    console.log(sigmaJS)
 
     function getRandomInt(max) {
       return Math.floor(Math.random() * Math.floor(max));
@@ -83,7 +78,7 @@ export class BrowseComponent implements OnInit {
     }
 
     function load_nodes(disease_trimmed, callback?) {
-      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':'degree', 'limit':3,
+      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':'degree', 'limit':10,
       'callback': data => {
           let nodes = [];
           for (let gene in data) {
@@ -172,15 +167,11 @@ export class BrowseComponent implements OnInit {
                 }
               }
             );
-            // Ask sigma to draw it
+            // Ask sigma to draw it, it now somehow works without the refresh
+            //sigma.refresh()
+            //sigma.startForceAtlas2()
             
-            setTimeout(function(){ 
-              //network.relativeSize();
-              network.startForceAtlas2();
-              network.refresh();
-            }, 3000);
-
-            setTimeout(function() {network.killForceAtlas2()}, 10000);
+            //setTimeout(function() {network.killForceAtlas2()}, 10000);
           })
         }) 
       });
