@@ -16,8 +16,24 @@
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                     <div>
-                        <select class="selectpicker diseases"></select>
+                        <select class="selectpicker diseases" data-live-search="true"></select>
                         <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-primary">Link to Download</button></a>
+                    </div>
+                    <div>
+                        <p>Select a value to sort by: </p>
+                        <select class="selectpicker sorting-value" title="Select sorting value">
+                            <option data-tokens="degree">Degree</option>
+                            <option data-tokens="betweenness">Betweenness</option>
+                            <option data-tokens="eigenvector">Eigenvector</option>
+                          </select>
+                    </div>
+                    <div>
+                        <p>Set a cutoff for sorting-value (lower bound): </p>
+                        <input type="text" class="form-control" placeholder="Limit" id=input-cutoff> 
+                    </div>
+                    <div>
+                        <p>Set a Limit for displayed data (the more the slower): </p>
+                        <input type="text" class="form-control" placeholder="Limit" id=input-limit> 
                     </div>
                     <pre id="selector_disease_result">
                     </pre>
