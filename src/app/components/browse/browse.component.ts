@@ -55,30 +55,13 @@ export class BrowseComponent implements OnInit {
       return table;
     }
 
-    function load_edges(disease_trimmed, nodes, callback?) {
-      controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
-        'callback':data => {
-          let column_names = Object.keys(data[0]);
-          $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
-          let table = $('.interactions-edges-table').DataTable();
-          table.column(6).visible( false ); // hide 'run'
-          let edges = [];
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            //let size = 1;
-            //let color = '#12345';
-            //let type = line, curve
-            edges.push({id, source, target})
-          }
-          return callback(edges)
-        }
-      })
-    }
-
     function load_nodes(disease_trimmed, callback?) {
-      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':'degree', 'limit':10,
+      let sort_by = $('.selectpicker.sorting-value option:contains('+$('.selectpicker.sorting-value').val()+')').attr('data-value')
+      let cutoff_betweenness = $('#input_cutoff_betweenness').val()
+      let cutoff_degree = $('#input_cutoff_degree').val()
+      let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+      let limit = $('#input_limit').val()
+      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector,
       'callback': data => {
           let nodes = [];
           for (let gene in data) {
@@ -105,6 +88,28 @@ export class BrowseComponent implements OnInit {
       })
     }
 
+    function load_edges(disease_trimmed, nodes, callback?) {
+      controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
+        'callback':data => {
+          let column_names = Object.keys(data[0]);
+          $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
+          let table = $('.interactions-edges-table').DataTable();
+          table.column(6).visible( false ); // hide 'run'
+          let edges = [];
+          for (let interaction in data) {
+            let id = data[interaction]['interactions_genegene_ID'];
+            let source = data[interaction]['gene1'];
+            let target = data[interaction]['gene2'];
+            //let size = 1;
+            //let color = '#12345';
+            //let type = line, curve
+            edges.push({id, source, target})
+          }
+          return callback(edges)
+        }
+      })
+    }
+
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
@@ -119,18 +124,14 @@ export class BrowseComponent implements OnInit {
           }
       })
 
-
-
-
-
       // takes care of button with link to download page
       // loads specific run information
-      disease_selector.change(function() {
+      $('#load_disease').click(function() {
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
         $('#network-plot-container').html(''); // clear possible other network
 
-        let selected_disease = $(this).val().toString();
+        let selected_disease = disease_selector.val().toString();
         let disease_trimmed:string = selected_disease.split(' ').join('%20');
 
         // load all runs for selector
@@ -174,7 +175,8 @@ export class BrowseComponent implements OnInit {
             //setTimeout(function() {network.killForceAtlas2()}, 10000);
           })
         }) 
-      });
+      })
+      ;
     }
   }
 }

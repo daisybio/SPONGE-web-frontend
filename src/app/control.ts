@@ -1,8 +1,4 @@
 import * as $ from "jquery";
-import { Data } from '@angular/router';
-import { NONE_TYPE } from '@angular/compiler/src/output/output_ast';
-import { callbackify } from 'util';
-
 
 export class Controller {
 
@@ -13,8 +9,15 @@ export class Controller {
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static FIND_CERNA = "/findceRNA"
+    // static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
+    // static MIRNA_INTERACTION_FIND_CERNA = "/miRNAInteraction/findceRNA"
+    // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
+
     static DATASETS = "/dataset"
     static DATASET_INFORMATION = "/dataset/runInformation"
+
+    // static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
+    // static EXPRESSION_VALUE_MIRNA = "/exprValue/getmirNA"
  
     public get_ceRNA_interactions_all(
         config: {
@@ -131,6 +134,8 @@ export class Controller {
                 return config.callback(data)                
             })
     }
+
+    public 
     
 
     public get_datasets(callback: (data) => any, disease_name?: string) {

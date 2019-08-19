@@ -16,8 +16,35 @@
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                     <div>
-                        <select class="selectpicker diseases"></select>
+                        <select class="selectpicker diseases" data-live-search="true"></select>
                         <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-primary">Link to Download</button></a>
+                    </div>
+                    <div>
+                        <p>Select a value to sort by: </p>
+                        <select class="selectpicker sorting-value" title="Select sorting value" data-live-search="true">
+                            <option data-value="degree">Degree</option>
+                            <option data-value="betweenness">Betweenness</option>
+                            <option data-value="eigenvector">Eigenvector</option>
+                          </select>
+                    </div>
+                    <div>
+                        <p>Set a cutoff for betweenness (lower bound): </p>
+                        <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                    </div>
+                    <div>
+                        <p>Set a cutoff for degree (lower bound): </p>
+                        <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                    </div>
+                    <div>
+                        <p>Set a cutoff for eigenvector (lower bound): </p>
+                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                    </div>
+                    <div>
+                        <p>Set a Limit for displayed data (the more the slower): </p>
+                        <input type="text" class="form-control" id="input_limit" value=10> 
+                    </div>
+                    <div>
+                        <button id="load_disease" type="button" class="btn btn-primary">Go</button>
                     </div>
                     <pre id="selector_disease_result">
                     </pre>
