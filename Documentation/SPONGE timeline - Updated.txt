@@ -1,0 +1,49 @@
+
+
+Advanced Search: 
+	 - erstmal alle Funktionalitäten (Michi heute nach Kuchen)
+
+
+Browse:
+	- sidebar (VRONI)
+	- Graph functions (MICHI)
+	- Search oben rausnehmen u zu advanced ändern.(VRONI)
+	- Plot feld zu browse adden(VRONI)
+	- CeRNA Interactions u interactions zu einem machen (VRONI)
+	- Datatable mit API verknüpfen, Raw data anzeigen und bearbeitbar machen, + download (MICHI)
+	- INteraktiv mit Datatables arbeiten, Graphen aktualisieren (MICHI)
+	- DAtatables schöner darstellen (VRONI)
+
+VRONI: ab 18.08. bereit
+MICHI: ab 24.08. bereit
+
+Home:
+
+2 geteilt machen suche ist am wichtigsten suchen nach gen oder mirna und dann interaktiver plot der die connections zb zeigt und dann den graphen wenn man drauf klickt
+wäre cool wenn man das gen in allen Runs suchen könnte. wenn das nicht geht dann eben über auswahl in welchem run und in ob es n mirna oder ge ist (mbesten sollte die suche das automatisch erkennen)
+Home Karusel: https://dcc.icgc.org/pcawg wie interactiver plot hier und muss dann kein karusel sein
+
+- Farbe unten besser leslich machen
+
+Advanced Search: - wahrschinlichster use case biologe hat gen oder mirna und will wissen ob das weg gesponged wird und dann von welchem wie das netzwerk ist etc
+		 - Keine extra seite für search: will so wenig steps wie möglich um an seine daten zu kommen
+		 - wenn in allen Datensets gesucht wird: entweder Tab artik nach Datenset aufteile und so darstellen
+		 - ODER  vllt eine größere gerankte Tabelle die farblich die Datasets einteilt re dann farb legende? 
+- 
+
+
+Browse: - man sollte nach pvalue und mscor filtern können 0.999 müssen raus
+	- runden der daten in der Tabelle ist ok
+	- run information als unterreiter falls es jmd genauer wissen will
+	- man sollte die Daten in den Tabellen so runterladen können und beim Graphen auch ein button zum Bild download ermöglichen
+	- neben netzwedrk plot erstellen der die interactions mit noch was darstellt wie im paper Fig 4 ?
+	- in den tabellen mscor ohne e!
+
+More: - bioconductor ganz hoch weil am wichtigsten
+
+Other stuff: - verwenden wir cookies? wenn ja pop up und i wo das wir die user daten nicht verwenden
+	     - generell das mit dem rechtlichen noch
+	
+		
+	
+
