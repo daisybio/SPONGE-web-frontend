@@ -123,7 +123,6 @@ export class BrowseComponent implements OnInit {
           }
         // build datatable
         let column_names = Object.keys(data[0]);
-        console.log(column_names)
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
         let table = $('#interactions-nodes-table').DataTable({
           columnDefs: [
@@ -131,6 +130,10 @@ export class BrowseComponent implements OnInit {
                 return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
               },
               targets: [0, 1] }
+          ],
+          dom: 'B<"clear">lfrtip',
+          buttons: [
+            'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
           ] 
         });
         return callback(nodes)
@@ -149,8 +152,14 @@ export class BrowseComponent implements OnInit {
                       return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
                        },
                   targets: [ 0, 4, 5 ] }
-          ] 
+            ],
+            dom: 'B<"clear">lfrtip',
+            buttons: [
+              'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
+            ],
           });
+          
+          
           $('#filter_edges :input').keyup( function() {
             table.draw();
         } );
