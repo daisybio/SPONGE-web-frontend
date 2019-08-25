@@ -2,53 +2,16 @@
     <div class="row">
         <div class="col-3">
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <a class="nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
                 <a class="nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
                 <a class="nav-link" id="v-pills-cerna_interactions-tab" data-toggle="pill" href="#v-pills-cerna_interactions" role="tab" aria-controls="v-pills-cerna_interactions" aria-selected="false" target="_self">CeRNA Interactions</a>
                 <a class="nav-link" id="v-pills-advanced_search-tab" data-toggle="pill" href="#v-pills-advanced_search" role="tab" aria-controls="v-pills-advanced_search" aria-selected="false">Advanced Search</a>
                 <a class="nav-link" id="v-pills-downloads-tab" data-toggle="pill" href="#v-pills-downloads" role="tab" aria-controls="v-pills-downloads" aria-selected="false">Downloads</a>
+                <a class="nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
             </div>
         </div>
         <div class="col-9">
             <div id='selected_disease'>Currently Selected Run: <span></span></div>
             <div class="tab-content" id="v-pills-tabContent">
-
-                <!-- Run Information -->
-                <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-                    <div>
-                        <select class="selectpicker diseases" data-live-search="true"></select>
-                        <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-primary">Link to Download</button></a>
-                    </div>
-                    <div>
-                        <p>Select a value to sort by: </p>
-                        <select class="selectpicker sorting-value" title="Select sorting value" data-live-search="true">
-                            <option data-value="degree">Degree</option>
-                            <option data-value="betweenness">Betweenness</option>
-                            <option data-value="eigenvector">Eigenvector</option>
-                          </select>
-                    </div>
-                    <div>
-                        <p>Set a cutoff for betweenness (lower bound): </p>
-                        <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
-                    </div>
-                    <div>
-                        <p>Set a cutoff for degree (lower bound): </p>
-                        <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                    </div>
-                    <div>
-                        <p>Set a cutoff for eigenvector (lower bound): </p>
-                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                    </div>
-                    <div>
-                        <p>Set a Limit for displayed data (the more the slower): </p>
-                        <input type="text" class="form-control" id="input_limit" value=10> 
-                    </div>
-                    <div>
-                        <button id="load_disease" type="button" class="btn btn-primary">Go</button>
-                    </div>
-                    <pre id="selector_disease_result">
-                    </pre>
-                </div>
 
                 <!-- Interactions -->
                 <div class="tab-pane fade show active" id="v-pills-interactions" role="tabpanel" aria-labelledby="v-pills-interactions-tab">
@@ -97,6 +60,43 @@
 
                 <!-- Downloads -->
                 <div class="tab-pane fade" id="v-pills-downloads" role="tabpanel" aria-labelledby="v-pills-downloads-tab">...</div>
+            
+                <!-- Run Information -->
+                <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
+                        <div>
+                            <select class="selectpicker diseases" data-live-search="true"></select>
+                            <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-primary">Link to Download</button></a>
+                        </div>
+                        <div>
+                            <p>Select a value to sort by: </p>
+                            <select class="selectpicker sorting-value" title="Select sorting value" data-live-search="true">
+                                <option data-value="degree">Degree</option>
+                                <option data-value="betweenness">Betweenness</option>
+                                <option data-value="eigenvector">Eigenvector</option>
+                              </select>
+                        </div>
+                        <div>
+                            <p>Set a cutoff for betweenness (lower bound): </p>
+                            <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                        </div>
+                        <div>
+                            <p>Set a cutoff for degree (lower bound): </p>
+                            <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                        </div>
+                        <div>
+                            <p>Set a cutoff for eigenvector (lower bound): </p>
+                            <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                        </div>
+                        <div>
+                            <p>Set a Limit for displayed data (the more the slower): </p>
+                            <input type="text" class="form-control" id="input_limit" value=10> 
+                        </div>
+                        <div>
+                            <button id="load_disease" type="button" class="btn btn-primary">Go</button>
+                        </div>
+                        <pre id="selector_disease_result">
+                        </pre>
+                    </div>
             </div>
         </div>
     </div>
