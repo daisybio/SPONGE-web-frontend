@@ -82,7 +82,15 @@ export class BrowseComponent implements OnInit {
         // build datatable
         let column_names = Object.keys(data[0]);
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        let table = $('.interactions-nodes-table').DataTable();
+        let table = $('.interactions-nodes-table').DataTable({
+          columnDefs: [
+            { render: function ( data, type, row ) {
+              console.log(data)
+              return data.toString().match(/\d+(\.\d{1,2})?/g)[0];
+            },
+            targets: [ 0, 1 ] }
+        ] 
+      });
         return callback(nodes)
         }
       })
@@ -93,7 +101,14 @@ export class BrowseComponent implements OnInit {
         'callback':data => {
           let column_names = Object.keys(data[0]);
           $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
-          let table = $('.interactions-edges-table').DataTable();
+          let table = $('.interactions-edges-table').DataTable({
+            columnDefs: [
+              { render: function ( data, type, row ) {
+                      return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+                       },
+                  targets: [ 0, 4, 5 ] }
+          ] 
+          });
           table.column(6).visible( false ); // hide 'run'
           let edges = [];
           for (let interaction in data) {
