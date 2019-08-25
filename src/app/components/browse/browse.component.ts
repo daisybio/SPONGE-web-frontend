@@ -18,6 +18,42 @@ export class BrowseComponent implements OnInit {
   ngOnInit() {
 
     const controller = new Controller()
+
+    /* Datatable configurations */
+    $.fn.dataTable.ext.search.push(
+      // filter for mscor
+      function( settings, data, dataIndex ) {
+        if ( settings.nTable.id == 'interactions-edges-table' ) {
+          var mscore_min = parseFloat( $('#mscore_min').val());
+          var mscore_max = parseFloat( $('#mscore_max').val());
+          var mscore = parseFloat( data[4] ) || 0; // use data for the mscore column
+          if (( isNaN( mscore_min ) && isNaN( mscore_max ) ) ||
+               ( isNaN( mscore_min ) && mscore <= mscore_max ) ||
+               ( mscore_min <= mscore && isNaN( mscore_max ) ) ||
+               ( mscore_min <= mscore && mscore <= mscore_max ))
+          {
+              return true;
+          }
+          return false;
+        }   
+      },
+      //  filter for pvalue
+      function( settings, data, dataIndex ) {
+        if ( settings.nTable.id == 'interactions-edges-table' ) {
+          var pvalue_min = parseFloat( $('#pvalue_min').val());
+          var pvalue_max = parseFloat( $('#pvalue_max').val());
+          var pvalue = parseFloat( data[5] ) || 0; // use data for the pvalue column
+          if (( isNaN( pvalue_min ) && isNaN( pvalue_max ) ) ||
+            ( isNaN( pvalue_min ) && pvalue <= pvalue_max ) ||
+            ( pvalue_min <= pvalue && isNaN( pvalue_max ) ) ||
+            ( pvalue_min <= pvalue && pvalue <= pvalue_max ) )
+            {
+              return true;
+            }
+          return false;
+        }   
+      }
+  );
     
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
@@ -31,7 +67,7 @@ export class BrowseComponent implements OnInit {
 
     function buildTable(data, table_name, column_names) {
       var table = document.createElement("table");
-      table.className=table_name;
+      table.id=table_name;
       var thead = document.createElement("thead");
       var tbody = document.createElement("tbody");
       var headRow = document.createElement("tr");
@@ -82,10 +118,9 @@ export class BrowseComponent implements OnInit {
         // build datatable
         let column_names = Object.keys(data[0]);
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        let table = $('.interactions-nodes-table').DataTable({
+        let table = $('#interactions-nodes-table').DataTable({
           columnDefs: [
             { render: function ( data, type, row ) {
-              console.log(data)
               return data.toString().match(/\d+(\.\d{1,2})?/g)[0];
             },
             targets: [ 0, 1 ] }
@@ -101,7 +136,7 @@ export class BrowseComponent implements OnInit {
         'callback':data => {
           let column_names = Object.keys(data[0]);
           $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
-          let table = $('.interactions-edges-table').DataTable({
+          let table = $('#interactions-edges-table').DataTable({
             columnDefs: [
               { render: function ( data, type, row ) {
                       return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
@@ -109,6 +144,9 @@ export class BrowseComponent implements OnInit {
                   targets: [ 0, 4, 5 ] }
           ] 
           });
+          $('#filter_edges :input').keyup( function() {
+            table.draw();
+        } );
           table.column(6).visible( false ); // hide 'run'
           let edges = [];
           for (let interaction in data) {

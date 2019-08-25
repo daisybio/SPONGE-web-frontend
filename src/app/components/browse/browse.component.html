@@ -33,6 +33,26 @@
                             <div id='interactions-nodes-table-container'></div>
                         </div>
                         <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
+                            <p>  
+                                <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#filter_edges" aria-expanded="false" aria-controls="collapseExample">
+                                    Options
+                                </button>
+                            </p>
+                            <div class="collapse" id='filter_edges'>
+                                <div class="card card-body"> 
+                                    <div>
+                                        <p>Set filter for mscor</p>
+                                        <span>Minimum: </span><input type="text" id="mscore_min" name="mscore_min">&nbsp;
+                                        <span>Maximum: </span><input type="text" id="mscore_max" name="mscore_max">
+                                    </div>
+                                    <hr>
+                                    <div>
+                                        <p>Set filter for P-value</p>
+                                        <span>Minimum: </span><input type="text" id="pvalue_min" name="pvalue_min">&nbsp;
+                                        <span>Maximum: </span><input type="text" id="pvalue_max" name="pvalue_max">
+                                    </div>
+                                </div>
+                            </div>
                             <div id='interactions-edges-table-container'></div>
                         </div>
                         <div class="tab-pane fade" id="nav-downloads" role="tabpanel" aria-labelledby="nav-downloads-tab">...</div>
