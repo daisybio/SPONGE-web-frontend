@@ -25,10 +25,11 @@
             "aot": false,
             "assets": [
               "src/favicon.png",
-              "src/assets",
+              "src/assets"
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/datatables.net-dt/css/jquery.dataTables.css",
               "src/styles.less"
             ],
             "scripts": [
@@ -36,7 +37,17 @@
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/sigma-webpack/build/sigma.min.js",
               "node_modules/sigma-webpack/plugins/sigma.layout.forceAtlas2/supervisor.js",
-              "node_modules/sigma-webpack/plugins/sigma.layout.forceAtlas2/worker.js"
+              "node_modules/sigma-webpack/plugins/sigma.layout.forceAtlas2/worker.js",
+              "node_modules/jquery/dist/jquery.js",
+              "node_modules/datatables.net/js/jquery.dataTables.js",
+              "node_modules/jszip/dist/jszip.js",
+              "node_modules/datatables.net-buttons/js/dataTables.buttons.js",
+              "node_modules/datatables.net-buttons/js/buttons.colVis.js",
+              "node_modules/datatables.net-buttons/js/buttons.flash.js",
+              "node_modules/datatables.net-buttons/js/buttons.html5.js",
+              "node_modules/datatables.net-buttons/js/buttons.print.js",
+              "node_modules/pdfmake/build/pdfmake.min.js",
+              "node_modules/pdfmake/build/vfs_fonts.js"
             ]
           },
           "configurations": {

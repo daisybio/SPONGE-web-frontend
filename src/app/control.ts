@@ -134,10 +134,8 @@ export class Controller {
                 return config.callback(data)                
             })
     }
-
-    public 
     
-
+    
     public get_datasets(callback: (data) => any, disease_name?: string) {
         let request = Controller.API_ENDPOINT+Controller.DATASETS
         if (disease_name != undefined) {

@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
-import * as $ from "jquery";
+//import * as $ from "jquery";
 import * as sigma from 'sigma-webpack';
-import 'datatables.net';
+//import 'datatables.net';
+declare var $;
 
 
 @Component({
@@ -11,7 +12,15 @@ import 'datatables.net';
   styleUrls: ['./browse.component.less']
 })
 export class BrowseComponent implements OnInit {
-
+  dtOption = {
+    "paging":   true,
+    "ordering": true,
+    "info":     true,
+    dom: 'B<"clear">lfrtip',
+          buttons: [
+            'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
+          ],
+  };
   constructor() {
    }
 
@@ -74,6 +83,7 @@ export class BrowseComponent implements OnInit {
     function buildTable(data, table_name, column_names) {
       var table = document.createElement("table");
       table.id=table_name;
+      table.className="table table-striped full-width"
       var thead = document.createElement("thead");
       var tbody = document.createElement("tbody");
       var headRow = document.createElement("tr");
@@ -124,17 +134,17 @@ export class BrowseComponent implements OnInit {
         // build datatable
         let column_names = Object.keys(data[0]);
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        let table = $('#interactions-nodes-table').DataTable({
+        let table = $('#interactions-nodes-table').DataTable( {
           columnDefs: [
             { render: function ( data, type, row ) {
                 return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
               },
               targets: [0, 1] }
           ],
-          dom: 'B<"clear">lfrtip',
+          dom: 'Bfrtip',
           buttons: [
-            'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
-          ] 
+              'copy', 'csv', 'excel', 'pdf', 'print'
+          ]
         });
         return callback(nodes)
         }
@@ -153,10 +163,10 @@ export class BrowseComponent implements OnInit {
                        },
                   targets: [ 0, 4, 5 ] }
             ],
-            dom: 'B<"clear">lfrtip',
+            dom: 'Bfrtip',
             buttons: [
-              'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
-            ],
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
           });
           
           
