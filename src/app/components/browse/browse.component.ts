@@ -2,6 +2,7 @@ import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
 //import * as $ from "jquery";
 import * as sigma from 'sigma-webpack';
+import dragNodes from 'sigma-webpack/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes';
 //import 'datatables.net';
 declare var $;
 
@@ -27,6 +28,23 @@ export class BrowseComponent implements OnInit {
   ngOnInit() {
 
     const controller = new Controller()
+
+    /* Sigma configurations */
+    sigma.classes.graph.addMethod('adjacentEdges', function(id) {
+      if (typeof id !== 'string')
+        throw 'adjacentEdges: the node id must be a string.';
+      var a = this.allNeighborsIndex[id],
+          eid,
+          target,
+          edges = [];
+      for(target in a) {
+        for(eid in a[target]) {
+          edges.push(a[target][eid]);
+        }
+      }
+      return edges;
+    });
+
 
     /* Datatable configurations */
     $.fn.dataTable.ext.search.push(
@@ -131,8 +149,8 @@ export class BrowseComponent implements OnInit {
             let x = getRandomInt(10);
             let y = getRandomInt(10);
             let size = data[gene]['node_degree'];
-            //let color = '#12345';
-            nodes.push({id, label, x, y , size})
+            let color = '#920518';
+            nodes.push({id, label, x, y , size, color})
           }
         // build datatable
         let column_names = Object.keys(data[0]);
@@ -179,7 +197,6 @@ export class BrowseComponent implements OnInit {
           table.column(6).visible( false ); // hide 'run'
           let edges = [];
           for (let interaction in data) {
-            console.log(data[interaction])
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
@@ -249,10 +266,54 @@ export class BrowseComponent implements OnInit {
                   maxEdgeSize: 2,
                   minNodeSize: 1,
                   maxNodeSize: 8,
-                  defaultNodeColor: 'rgb(107, 146, 5)'
+                  defaultNodeColor: '#0000FF',
+                  defaultEdgeColor: '#0000FF',
+                  autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
+                  animationsTime: 1000,
+                  borderSize: 2,
+                  outerBorderSize: 3,
+                  enableEdgeHovering: true,
+                  edgeHoverColor: '#2ecc71',
+                  defaultEdgeHoverColor: '#2ecc71',
+                  edgeHoverSizeRatio: 1,
+                  edgeHoverExtremities: true,
+                  scalingMode: 'outside' 
                 }
               }
             );
+
+            network.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
+              //console.log(e.type, e.data.node.label, e.data.captor, e.data);
+              network.graph.adjacentEdges(e.data.node.id)
+            });
+
+            network.bind('clickNode',
+              function(e)
+              {
+                var nodeId = e.data.node.id;
+                let color_all = false;
+                network.graph.adjacentEdges(nodeId).forEach(
+                  (ee) => {
+                    if (ee.color !== '#FF6347'){
+                      color_all = true;
+                    }
+                  }
+                )
+                if (color_all) {
+                  network.graph.adjacentEdges(nodeId).forEach( (ee) => {
+                    ee.color = '#FF6347'
+                  })
+                } else {
+                  network.graph.adjacentEdges(nodeId).forEach( (ee) => {
+                    //ee.color = network.settings.defaultEdgeColor;
+                    ee.color = '#0000FF'
+                  })
+                }
+                network.refresh();
+              });
+
+            // Initialize the dragNodes plugin:
+            //var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
             // Ask sigma to draw it, it now somehow works without the refresh
             //sigma.refresh()
             //sigma.startForceAtlas2()
