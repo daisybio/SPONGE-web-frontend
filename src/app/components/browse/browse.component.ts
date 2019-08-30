@@ -124,10 +124,13 @@ export class BrowseComponent implements OnInit {
             delete data[gene]['gene']
             delete data[gene]['run']// hide 'run'
             let id = data[gene]['ensg_number'];
-            let label =  data[gene]['gene_symbol'];
+            let label = data[gene]['gene_symbol'];
+            if (label == '') {
+              label = 'unknown'
+            }
             let x = getRandomInt(10);
             let y = getRandomInt(10);
-            let size = 3;
+            let size = data[gene]['node_degree'];
             //let color = '#12345';
             nodes.push({id, label, x, y , size})
           }
@@ -176,13 +179,14 @@ export class BrowseComponent implements OnInit {
           table.column(6).visible( false ); // hide 'run'
           let edges = [];
           for (let interaction in data) {
+            console.log(data[interaction])
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            //let size = 1;
-            //let color = '#12345';
+            let size = 100*data['mscore'];
+            let color = '#0000FF';
             //let type = line, curve
-            edges.push({id, source, target})
+            edges.push({id, source, target, size, color})
           }
           return callback(edges)
         }
@@ -196,11 +200,15 @@ export class BrowseComponent implements OnInit {
       let selected_disease_result = $('#selector_disease_result');
       controller.get_datasets(
         data => {
+          let i = 0
           for (let disease in data) {
             disease_selector.append(
               "<option data-value="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
             )
+            i++
           }
+          // trigger click on first disease in the beginning
+          $('#load_disease').click()
       })
 
       // takes care of button with link to download page
