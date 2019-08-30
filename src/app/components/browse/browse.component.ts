@@ -26,6 +26,10 @@ export class BrowseComponent implements OnInit {
    }
 
   ngOnInit() {
+    
+    const default_node_color = '#920518'
+    const default_edge_color = '#0000FF'
+    const subgraph_edge_color = '#FF6347'
 
     const controller = new Controller()
 
@@ -149,7 +153,7 @@ export class BrowseComponent implements OnInit {
             let x = getRandomInt(10);
             let y = getRandomInt(10);
             let size = data[gene]['node_degree'];
-            let color = '#920518';
+            let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
           }
         // build datatable
@@ -201,7 +205,7 @@ export class BrowseComponent implements OnInit {
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
             let size = 100*data['mscore'];
-            let color = '#0000FF';
+            let color = default_edge_color;
             //let type = line, curve
             edges.push({id, source, target, size, color})
           }
@@ -266,8 +270,7 @@ export class BrowseComponent implements OnInit {
                   maxEdgeSize: 2,
                   minNodeSize: 1,
                   maxNodeSize: 8,
-                  defaultNodeColor: '#0000FF',
-                  defaultEdgeColor: '#0000FF',
+                  defaultNodeColor: default_node_color,
                   autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
                   animationsTime: 1000,
                   borderSize: 2,
@@ -284,7 +287,7 @@ export class BrowseComponent implements OnInit {
 
             network.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
               //console.log(e.type, e.data.node.label, e.data.captor, e.data);
-              network.graph.adjacentEdges(e.data.node.id)
+              console.log(e.data.node.label, e.data.node.id)
             });
 
             network.bind('clickNode',
@@ -294,19 +297,19 @@ export class BrowseComponent implements OnInit {
                 let color_all = false;
                 network.graph.adjacentEdges(nodeId).forEach(
                   (ee) => {
-                    if (ee.color !== '#FF6347'){
+                    if (ee.color !== subgraph_edge_color){
                       color_all = true;
                     }
                   }
                 )
                 if (color_all) {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-                    ee.color = '#FF6347'
+                    ee.color = subgraph_edge_color
                   })
                 } else {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
                     //ee.color = network.settings.defaultEdgeColor;
-                    ee.color = '#0000FF'
+                    ee.color = default_edge_color
                   })
                 }
                 network.refresh();
