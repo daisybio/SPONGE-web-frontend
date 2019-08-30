@@ -4,7 +4,7 @@
         <h3>Inspect different cancer datasets</h3>
     </div>
     <div class="row">
-        <div class="col-3">
+        <div class="col-2">
             <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <a class="nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
                <!-- <a class="nav-link" id="v-pills-cerna_interactions-tab" data-toggle="pill" href="#v-pills-cerna_interactions" role="tab" aria-controls="v-pills-cerna_interactions" aria-selected="false" target="_self">CeRNA Interactions</a>
@@ -13,7 +13,7 @@
                 <a class="nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
             </div>
         </div>
-        <div class="col-9">
+        <div class="col-10">
             <div>Currently Selected Run: <select class="selectpicker diseases" data-live-search="true"></select> &nbsp; <button class="btn btn-primary" id="selected_disease">Options</button></div>
             <div class="tab-content" id="v-pills-tabContent">
 
@@ -28,8 +28,18 @@
                     </nav>
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
-                            <div id='network-plot-container-parent'>
-                                <div id='network-plot-container'></div>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-10">
+                                        <div id='network-plot-container-parent'>
+                                            <div id='network-plot-container'></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div>Node Information:</div>
+                                        <div class="node_information"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
