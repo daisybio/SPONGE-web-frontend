@@ -35,8 +35,7 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
-              "node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "node_modules/jquery/dist/jquery.js",
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
               "node_modules/datatables.net/js/jquery.dataTables.js",
               "node_modules/jszip/dist/jszip.js",
               "node_modules/datatables.net-buttons/js/dataTables.buttons.js",
@@ -47,8 +46,7 @@
               "node_modules/pdfmake/build/pdfmake.min.js",
               "node_modules/pdfmake/build/vfs_fonts.js",
               "src/assets/lib/sigma/sigma.conf.js",
-              "node_modules/sigma/build/sigma.min.js",
-              "node_modules/popper.js/dist/popper.min.js"
+              "node_modules/sigma/build/sigma.min.js"
             ]
           },
           "configurations": {

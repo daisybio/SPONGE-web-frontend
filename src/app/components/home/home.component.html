@@ -11,10 +11,11 @@
                         
                             <div class="col-md-auto">
                                     <div class="sep">
-                                        <p>Search for gene or miRNA:
-                                             <i class="fa fa-info-circle"  data-toggle="popover"  title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?"></i>
-                                             <a href="#" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle popover</a>
-                                        </p>
+                                        <span>Search for gene or miRNA: </span>
+                                        <a data-toggle="popover_search_info" title="Search Information" data-content="Some content inside the popover">
+                                            <i class="fa fa-info-circle" data-toggle="popover_search_info"></i>
+                                        </a>
+                                        
                                          
                                     </div>
                                     <form>
@@ -31,11 +32,6 @@
                  </div>
          </div>
 
-         <script>
-                $(document).ready(function(){
-                  $('[data-toggle="popover"]').popover();   
-                });
-                </script>
       <!--  <div class="banner">
             <div class="row align-items-center">
                 <div class="col-6 header">

@@ -30,13 +30,14 @@ export class HomeComponent implements OnInit {
       let input = $('#home_search').val()
       })
 
+    $(document).ready(function(){
+      $('[data-toggle="popover_search_info"]').popover({
+       trigger: 'hover', sanitize: false, sanitizeFn: content => content
+     });     
+    });
 
-    
-    
   }
 
-  
-  
 }
 
 

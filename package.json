@@ -28,7 +28,6 @@
     "jquery": "^3.4.1",
     "jszip": "^3.2.2",
     "pdfmake": "^0.1.58",
-    "popper.js": "^1.15.0",
     "rxjs": "~6.4.0",
     "sigma": "^1.2.1",
     "sigma-webpack": "^1.2.0-1",
