@@ -1,22 +1,50 @@
 /* Sticky Footer Classes */
 
-.link-color{
+html,body {
+  //height: 100%;
+  padding-top: 20px;
+  color: aliceblue;
+  overflow: auto;
+  position: absolute;
+  width: fit-content;
+  
+}
+
+footer{
+  padding-top: 20px;
+  color: aliceblue;
+  overflow: auto;
+  position: absolute;
+  background: linear-gradient(to right,rgb(5, 40, 70),#004e92);
+  //position: absolute;  //new
+  right: 0;
+  bottom: 0;
+  left: 0;
+  min-height: 80px;
+  padding-top: 20px;
+  overflow: inherit;
+  
+}
+
+
+#page-content {
+  flex: 1 0 auto;
+  min-height: 100%;
+  }
+
+#sticky-footer {
+ // flex-shrink: none;
+  background-color:  #152433;
+
+
+}
+
+#link-color{
     color: #8f9296;
 }
 
-.footer-color{
+#footer-color{
   color: aliceblue;
-  &-dark {
-    background-color: rgb(5, 40, 70)
-  }
 }
-/* Other Classes for Page Styling */
 
-footer {
-  background: linear-gradient(to right, rgb(5, 40, 70), rgb(8, 83, 133));
-  min-height: 80px;
-  padding-top: 20px;
-  overflow: auto;
-  position: relative;
-  margin-top: 1.5rem;
-}
+

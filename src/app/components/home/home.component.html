@@ -1,38 +1,100 @@
 <section>
-    <div class='home-body container'>
-            <div class="header text-center display-2">
-                <h1>SPONGE</h1>
-                <h3>Sparse Partial Correlations On Gene Expression</h3>
-            </div>
-
-         <!--   <div class='row jumbotron overlay'> -->
-             <div class="row" id="main-functions" style="padding-bottom: 20px;">
-
-                <!--    <div class="col-md-4">
-                            <div class="card mb-4 bg-dark text-white">
-                               <img class="card-img" src="/assets/img/search-image.jpg" alt="Card image">
-                               <div class="card-img-overlay">
-                               <a href="/search" class="btn btn-lg btn-info btn-block text-center" style="background-color: #0a3a5a; border-color: #0a3a5a; ">Advanced Search   <i class="fa fa-search"></i></a>
-
-                               </div>
+       
+        <div class="jumbotron jumbotron-fluid banner">
+                <!--<img class ="banner-img" src="/assets/img/6969.jpg">-->
+                <div class="search-container">
+                        <div class="row align-items-center">
+                        <div class="col-md-auto header">
+                            <h1>SPONGE</h1>
+                            <h3>Sparse Partial Correlations On Gene Expression</h3>
+                        </div>
+                        
+                            <div class="col-md-auto">
+                                    <div class="sep">
+                                        <p>Search for gene or miRNA:
+                                             <i class="fa fa-info-circle" id="search-info" data-toggle="popover"  title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?"></i>
+                                             <a href="#" id ="search-info" data-toggle="popover" title="Popover Header" data-content="Some content inside the popover">Toggle popover</a>
+                                        </p>
+                                         
+                                    </div>
+                                    <form>
+                                        <div class="input-group">
+                                        
+                                            <input id="home_search" type="text" class="form-control" name="home_search" placeholder="Gene or miRNA">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" id="home_search_button">Search   <i class="glyphicon fa fa-search"></i></button>
+                                            </div>
+                                        </div>
+                                    </form>
                             </div>
-                         </div>
-                        -->
+                     </div>
+                 </div>
+         </div>
+
+      <!--  <div class="banner">
+            <div class="row align-items-center">
+                <div class="col-6 header">
+                    <h1>SPONGE</h1>
+                    <h3>Sparse Partial Correlations On Gene Expression</h3>
+                </div>
+                
+                <div class="col-6">
+                        <div class="sep">
+                            <p>Search for gene or miRNA:</p>
+                        </div>
+                        <form>
+                            <div class="input-group">
+                            
+                                <input id="home_search" type="text" class="form-control" name="home_search" placeholder="Gene or miRNA">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="home_search_button">Search   <i class="glyphicon fa fa-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+             </div>
+
+            -->
+              <!--  <div class="row">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-3"></div>
+                    <div class="col-md-auto align-right">
+                        <div class="sep">
+                            <p>Search for gene or miRNA:</p>
+                        </div>
+                        <form>
+                            <div class="input-group pull-right">
+                                <span class="input-group-addon"></span>
+                                <input id="home_search" type="text" class="form-control" name="home_search" placeholder="Gene or miRNA">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="home_search_button">Search   <i class="glyphicon fa fa-search"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div> -->
+        <!-- </div> -->
 
 
-<!--https://www.yourgenome.org/facts/how-are-sequenced-genomes-stored-and-shared  für 2 search bild-->
+    <div class='home-body container'>
+       
+        
+            <hr>
+
+             <div class="row" id="main-functions" style="padding-bottom: 20px; padding-top:50px;">
+
                 
                     <div class="col-md-4">
-                            <div class="card">
-                                <!--Image by <a href="https://pixabay.com/users/ar130405-423602/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2082630">ar130405</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2082630">Pixabay</a>-->
+                           <div class="card">
+                             <!--   Image by <a href="https://pixabay.com/users/ar130405-423602/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2082630">ar130405</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2082630">Pixabay</a> -->
                                <img class="card-img-top" src="/assets/img/search-google-style.jpg" alt="Card image cap">
                                <div class="card-body">                                 
                                   <a href="/search" class="btn btn-lg btn-info btn-block text-center" style="background-color: #0a3a5a; border-color: #0a3a5a; ">Advanced Search   <i class="fa fa-search"></i></a>
                                </div>
-                            </div>
+                            </div> 
                          </div>
 
-                         
+                               
                          <div class="col-md-4">
                                 <div class="card">
                                    <img class="card-img-top" src="/assets/img/browse.jpg" alt="Card image cap">
@@ -53,29 +115,7 @@
                                     </div>
                                  </div>
                                 </div>
-                            
-             <!--   <div class='col-md-4 text-center home-box'>
-                    <a href="/search">
-                        <button type="button" class="btn btn-primary btn-block" >
-                            <h2>Advanced Search</h2>
-                        </button>
-                    </a>
-                </div>
-                <div class='col-md-4 text-center home-box'>
-                    <a href="/browse">
-                        <button type="button" class="btn btn-primary btn-block"> 
-                            <h2>Explore the Data Base</h2>
-                        </button>
-                    </a>
-                </div>
-                <div class='col-md-4 text-center home-box'>
-                    <a href="/more">
-                        <button type="button" class="btn btn-primary btn-block">
-                            <h2>More About SPONGE</h2>
-                        </button>
-                    </a>
-                </div> -->
-            
+    
            
             <div class="sample-graphics">
                 <div class="bd-sample-graphics">
