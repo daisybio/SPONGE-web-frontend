@@ -1,11 +1,10 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
-//import * as $ from "jquery";
-import * as sigma from 'sigma-webpack';
-import dragNodes from 'sigma-webpack/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes';
+
 //import 'datatables.net';
 declare var $;
-
+// very dirty solution 
+declare var require: any
 
 @Component({
   selector: 'app-browse',
@@ -14,7 +13,7 @@ declare var $;
 })
 export class BrowseComponent implements OnInit {
   disease_trimmed = ''
-
+  selected_disease = ''
   constructor() {
    }
 
@@ -23,6 +22,18 @@ export class BrowseComponent implements OnInit {
     const default_node_color = '#920518'
     const default_edge_color = '#0000FF'
     const subgraph_edge_color = '#FF6347'
+    const sigma = require('sigma'); 
+      (<any>window).sigma = sigma; 
+      // snapshot
+      require('../../../../node_modules/sigma/build/plugins/sigma.renderers.snapshot.min.js'); 
+      // drag nodes
+      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.dragNodes.min.js'); 
+      // force atlas 2 (not working yet)
+      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js');
+      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js');
+      // neighborhood
+      require('../../../../node_modules/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js') 
+
     var node_table
     
     const controller = new Controller()
@@ -238,10 +249,10 @@ export class BrowseComponent implements OnInit {
         $("#interactions-edges-table-container").html(''); //clear possible other tables
         $('#network-plot-container').html(''); // clear possible other network
 
-        let selected_disease = disease_selector.val().toString();
-        this.disease_trimmed = selected_disease.split(' ').join('%20');
+        this.selected_disease = disease_selector.val().toString();
+        this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 
-        let download_url = disease_selector.find(":contains("+selected_disease+")").attr('data-value')
+        let download_url = disease_selector.find(":contains("+this.selected_disease+")").attr('data-value')
         $('#selector_diseases_link').attr('href', download_url);
 
         // get specific run information
@@ -251,15 +262,17 @@ export class BrowseComponent implements OnInit {
           }
         )
 
+        /* Construct sigma js network plot */
         // load interaction data (edges), load network data (nodes)
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
+            let graph = {
+              nodes: nodes,
+              edges: edges
+            }
             let network = new sigma({
-              graph: {
-                nodes: nodes,
-                edges: edges
-              },
+              graph: graph,
                 renderer: {
                   container: document.getElementById('network-plot-container'),
                   type: 'canvas'
@@ -282,7 +295,7 @@ export class BrowseComponent implements OnInit {
                   scalingMode: 'outside' 
                 }
               }
-            );
+            ), db = new sigma.plugins.neighborhoods();
 
             network.bind('overNode', (e) => {
               // events: overNode outNode clickNode doubleClickNode rightClickNode
@@ -296,8 +309,11 @@ export class BrowseComponent implements OnInit {
               }
             });
 
-            network.bind('clickNode',
-              function(e)
+            network.bind('clickNode', (e) => {
+              node_click_function(e)
+            })
+
+            function node_click_function(e) {
               {
                 var nodeId = e.data.node.id;
                 let color_all = false;
@@ -314,20 +330,61 @@ export class BrowseComponent implements OnInit {
                   })
                 } else {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-                    //ee.color = network.settings.defaultEdgeColor;
                     ee.color = default_edge_color
                   })
                 }
                 network.refresh();
+              };
+            }
+
+              /* Save network button */
+              $('#network_snapshot').on('click', () => {
+                network.renderers[0].snapshot({
+                  format: 'png', 
+                  background: 'white', 
+                  filename: 'SPONGE_'+this.selected_disease+'_graph.png',
+                  labels: true,
+                  download: true,
+                });
+              })
+
+              /* restart camera */
+              document.getElementById('restart_camera').addEventListener('click', function() {
+                network.camera.goTo({
+                  x: 0,
+                  y: 0,
+                  angle: 0,
+                  ratio: 2
+                });
               });
 
+              /* toggle force atlas 2 */
+              document.getElementById('toggle_layout').addEventListener('click', function() {
+                if ((network.supervisor || {}).running) {
+                  network.killForceAtlas2();
+                  document.getElementById('toggle_layout').innerHTML = 'Start layout';
+                } else {
+                  network.startForceAtlas2({worker: true});
+                  document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+                }
+              });            
+
+
             // Initialize the dragNodes plugin:
-            //var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-            // Ask sigma to draw it, it now somehow works without the refresh
-            //sigma.refresh()
-            //sigma.startForceAtlas2()
-            
-            //setTimeout(function() {network.killForceAtlas2()}, 10000);
+            var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
+            // TODO: dragging also colors nodes
+            /*
+            dragListener.bind('drag',function(){
+              setTimeout(function () {
+                  network.unbind('clickNode');
+              }, 100);
+            });
+            dragListener.bind('dragend',function(){
+                setTimeout(function(){
+                  network.bind('clickNode', node_click_function);
+                }, 100)
+            });*/
+
           })
         }) 
       })
