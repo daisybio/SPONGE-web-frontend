@@ -1,5 +1,6 @@
+declare var $;
 import { Component, OnInit } from '@angular/core';
-import * as $ from "jquery";
+//import * as $ from "jquery";
 import * as sigma from 'sigma-webpack';
 import { ActivatedRoute } from "@angular/router";
 
@@ -32,6 +33,8 @@ export class HomeComponent implements OnInit {
 
     })
 
+
+    
     
   }
 
