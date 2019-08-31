@@ -252,7 +252,21 @@ export class BrowseComponent implements OnInit {
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 
         let download_url = disease_selector.find(":contains("+this.selected_disease+")").attr('data-value')
-        $('#selector_diseases_link').attr('href', download_url);
+        let disease_data_link = $('#selector_diseases_link')
+        if (download_url.startsWith('http')) {
+          if (disease_data_link.hasClass('disabled')) {
+            disease_data_link.removeClass('disabled')
+            disease_data_link.find('button').removeClass('disabled')
+          }
+          disease_data_link.attr('href', download_url);
+        } else {
+          if (!disease_data_link.hasClass('disabled')) {
+            disease_data_link.removeAttr('href')
+            disease_data_link.addClass('disabled')
+            disease_data_link.find('button').addClass('disabled')
+          }
+        }
+        
 
         // get specific run information
         controller.get_dataset_information(this.disease_trimmed, 
