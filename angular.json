@@ -47,7 +47,8 @@
               "node_modules/pdfmake/build/pdfmake.min.js",
               "node_modules/pdfmake/build/vfs_fonts.js",
               "src/assets/lib/sigma/sigma.conf.js",
-              "node_modules/sigma/build/sigma.min.js"
+              "node_modules/sigma/build/sigma.min.js",
+              "node_modules/popper.js/dist/popper.min.js"
             ]
           },
           "configurations": {

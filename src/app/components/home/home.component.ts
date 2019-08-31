@@ -27,10 +27,7 @@ export class HomeComponent implements OnInit {
     
     $('#home_search_button').click( () => {
       let input = $('#home_search').val()
-      
-
-
-    })
+      })
 
     
   }
