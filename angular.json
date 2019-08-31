@@ -25,8 +25,7 @@
             "aot": false,
             "assets": [
               "src/favicon.png",
-              "src/assets",
-              {"glob": "**/*", "input":"./node_modules/sigma/build", "output": "/assets/lib" }
+              "src/assets"
             ],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
@@ -36,17 +35,18 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "node_modules/jquery/dist/jquery.js",
               "node_modules/datatables.net/js/jquery.dataTables.js",
+              "node_modules/datatables.net-buttons/js/dataTables.buttons.min.js",
+              "node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js",
+              "node_modules/datatables.net-colreorder-bs/js/colReorder.bootstrap.min.js",
               "node_modules/jszip/dist/jszip.js",
-              "node_modules/datatables.net-buttons/js/dataTables.buttons.js",
+              "node_modules/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js",
               "node_modules/datatables.net-buttons/js/buttons.colVis.js",
               "node_modules/datatables.net-buttons/js/buttons.flash.js",
               "node_modules/datatables.net-buttons/js/buttons.html5.js",
               "node_modules/datatables.net-buttons/js/buttons.print.js",
               "node_modules/pdfmake/build/pdfmake.min.js",
               "node_modules/pdfmake/build/vfs_fonts.js",
-              "src/assets/lib/sigma/sigma.conf.js",
               "node_modules/sigma/build/sigma.min.js"
             ]
           },

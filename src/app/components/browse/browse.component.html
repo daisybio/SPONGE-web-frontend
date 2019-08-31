@@ -54,14 +54,22 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
+                                <div>  
+                                    <button class='float-right btn btn-primary' id='export_selected_nodes'>
+                                        Export to Network
+                                    </button>
+                                </div>
                             <div id='interactions-nodes-table-container'></div>
                         </div>
                         <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
-                            <p>  
+                            <div>  
                                 <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#filter_edges" aria-expanded="false" aria-controls="collapseExample">
                                     Options
                                 </button>
-                            </p>
+                                <button class='float-right btn btn-primary' id='export_selected_edges'>
+                                    Export to Network
+                                </button>
+                            </div>
                             <div class="collapse" id='filter_edges'>
                                 <div class="card card-body"> 
                                     <div>

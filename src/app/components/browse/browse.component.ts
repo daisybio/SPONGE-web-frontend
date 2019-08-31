@@ -14,6 +14,7 @@ declare var require: any
 export class BrowseComponent implements OnInit {
   disease_trimmed = ''
   selected_disease = ''
+
   constructor() {
    }
 
@@ -35,6 +36,8 @@ export class BrowseComponent implements OnInit {
       require('../../../../node_modules/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js') 
 
     var node_table
+    var edge_table
+    var network
     
     const controller = new Controller()
 
@@ -98,6 +101,39 @@ export class BrowseComponent implements OnInit {
 
     $('.selectpicker.diseases').change( () => {
       $('#load_disease').click();
+    })
+
+    $('#export_selected_edges').click(() => {
+      let selected_edges = edge_table.rows('.selected').data()
+      // find selected edges in graph and mark them
+      network.graph.edges().forEach(
+        (ee) => {
+          let edge_nodes = []
+          edge_nodes.push(ee['source'])
+          edge_nodes.push(ee['target'])
+          for(let i = 0; i < selected_edges.length; i++) {
+            let selected_edge = selected_edges[i]
+            // 0 and 1 are gene1 and gene2
+            if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
+              ee.color = subgraph_edge_color
+              break
+            } else {
+              ee.color = default_edge_color
+            }
+          }
+        }
+      )
+      // go to network
+      $('[aria-controls=nav-overview]').click()
+      setTimeout(() => {
+        $('#restart_camera').click()
+      }, 200)
+      
+    })
+
+    $('#export_selected_nodes').click(() => {
+      let data = node_table.rows('.selected').data()
+      console.log(data)
     })
 
     run_information();
@@ -170,6 +206,7 @@ export class BrowseComponent implements OnInit {
               },
               targets: [0, 1] }
           ],
+          lengthChange: false,
           dom: 'Bfrtip',
           buttons: [
               'copy', 'csv', 'excel', 'pdf', 'print'
@@ -190,32 +227,42 @@ export class BrowseComponent implements OnInit {
       controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
         'callback':data => {
           // remove "run"
+          let ordered_data = []
           for (let i=0; i < Object.keys(data).length; i++) {
             let entry = data[i]
-            delete entry['run']
+            // change order of columns alredy in object
+            let ordered_entry = {}
+            ordered_entry['Gene 1'] = entry['gene1']
+            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Correlation'] = entry['correlation']
+            ordered_entry['MScor'] = entry['mscore']
+            ordered_entry['p-value'] = entry['p_value']
+            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
+            ordered_data.push(ordered_entry)
           }
-          let column_names = Object.keys(data[0]);
-          $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
-          let table = $('#interactions-edges-table').DataTable({
+          let column_names = Object.keys(ordered_data[0]);
+          $("#interactions-edges-table-container").append(buildTable(ordered_data,'interactions-edges-table', column_names))
+          edge_table = $('#interactions-edges-table').DataTable({
             columnDefs: [
-              { render: function ( data, type, row ) {
-                      return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+              { render: function ( ordered_data, type, row ) {
+                      return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
                        },
-                  targets: [ 0, 4, 5 ] }
+                  targets: [ 2, 3, 4 ] }
             ],
             dom: 'Bfrtip',
+            lengthChange: false,
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
+            ],
           }); 
           $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
             $(this).toggleClass('selected');
           } ); 
           $('#filter_edges :input').keyup( function() {
-            table.draw();
+            edge_table.draw();
           } );
           let edges = [];
-          for (let interaction in data) {
+          for (let interaction in ordered_data) {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
@@ -290,7 +337,7 @@ export class BrowseComponent implements OnInit {
               nodes: nodes,
               edges: edges
             }
-            let network = new sigma({
+            network = new sigma({
               graph: graph,
                 renderer: {
                   container: document.getElementById('network-plot-container'),
@@ -314,7 +361,7 @@ export class BrowseComponent implements OnInit {
                   scalingMode: 'outside' 
                 }
               }
-            ), db = new sigma.plugins.neighborhoods();
+            )
 
             network.addCamera('cam1')
 
@@ -385,7 +432,6 @@ export class BrowseComponent implements OnInit {
             }
 
             function focusNode(camera, node) {
-              console.log(node)
               sigma.misc.animation.camera(
                 camera,
                 {
