@@ -175,6 +175,9 @@ export class BrowseComponent implements OnInit {
               'copy', 'csv', 'excel', 'pdf', 'print'
           ]
         });
+        $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
+          $(this).toggleClass('selected');
+        } );
         // save data for later search
         $('#node_data').text(JSON.stringify(data))
 
@@ -204,7 +207,10 @@ export class BrowseComponent implements OnInit {
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ]
-          });  
+          }); 
+          $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+          } ); 
           $('#filter_edges :input').keyup( function() {
             table.draw();
           } );
