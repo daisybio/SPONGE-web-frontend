@@ -1,11 +1,10 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
-//import * as $ from "jquery";
-import * as sigma from 'sigma-webpack';
-import dragNodes from 'sigma-webpack/plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes';
+
 //import 'datatables.net';
 declare var $;
-
+// very dirty solution 
+declare var require: any
 
 @Component({
   selector: 'app-browse',
@@ -13,15 +12,8 @@ declare var $;
   styleUrls: ['./browse.component.less']
 })
 export class BrowseComponent implements OnInit {
-  dtOption = {
-    "paging":   true,
-    "ordering": true,
-    "info":     true,
-    dom: 'B<"clear">lfrtip',
-          buttons: [
-            'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
-          ],
-  };
+  disease_trimmed = ''
+  selected_disease = ''
   constructor() {
    }
 
@@ -30,7 +22,20 @@ export class BrowseComponent implements OnInit {
     const default_node_color = '#920518'
     const default_edge_color = '#0000FF'
     const subgraph_edge_color = '#FF6347'
+    const sigma = require('sigma'); 
+      (<any>window).sigma = sigma; 
+      // snapshot
+      require('../../../../node_modules/sigma/build/plugins/sigma.renderers.snapshot.min.js'); 
+      // drag nodes
+      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.dragNodes.min.js'); 
+      // force atlas 2 (not working yet)
+      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js');
+      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js');
+      // neighborhood
+      require('../../../../node_modules/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js') 
 
+    var node_table
+    
     const controller = new Controller()
 
     /* Sigma configurations */
@@ -159,7 +164,7 @@ export class BrowseComponent implements OnInit {
         // build datatable
         let column_names = Object.keys(data[0]);
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        let table = $('#interactions-nodes-table').DataTable( {
+        node_table = $('#interactions-nodes-table').DataTable( {
           columnDefs: [
             { render: function ( data, type, row ) {
                 return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
@@ -171,6 +176,9 @@ export class BrowseComponent implements OnInit {
               'copy', 'csv', 'excel', 'pdf', 'print'
           ]
         });
+        // save data for later search
+        $('#node_data').text(JSON.stringify(data))
+
         return callback(nodes)
         }
       })
@@ -179,6 +187,11 @@ export class BrowseComponent implements OnInit {
     function load_edges(disease_trimmed, nodes, callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
         'callback':data => {
+          // remove "run"
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            delete entry['run']
+          }
           let column_names = Object.keys(data[0]);
           $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
           let table = $('#interactions-edges-table').DataTable({
@@ -192,13 +205,10 @@ export class BrowseComponent implements OnInit {
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ]
-          });
-          
-          
+          });  
           $('#filter_edges :input').keyup( function() {
             table.draw();
-        } );
-          table.column(6).visible( false ); // hide 'run'
+          } );
           let edges = [];
           for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
@@ -239,28 +249,30 @@ export class BrowseComponent implements OnInit {
         $("#interactions-edges-table-container").html(''); //clear possible other tables
         $('#network-plot-container').html(''); // clear possible other network
 
-        let selected_disease = disease_selector.val().toString();
-        let disease_trimmed:string = selected_disease.split(' ').join('%20');
+        this.selected_disease = disease_selector.val().toString();
+        this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 
-        let download_url = disease_selector.find(":contains("+selected_disease+")").attr('data-value')
+        let download_url = disease_selector.find(":contains("+this.selected_disease+")").attr('data-value')
         $('#selector_diseases_link').attr('href', download_url);
 
         // get specific run information
-        controller.get_dataset_information(disease_trimmed, 
+        controller.get_dataset_information(this.disease_trimmed, 
           data => {
             selected_disease_result.html(JSON.stringify(data, undefined, 2));
           }
         )
 
+        /* Construct sigma js network plot */
         // load interaction data (edges), load network data (nodes)
-        load_nodes(disease_trimmed, nodes => {
+        load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
-          load_edges(disease_trimmed, ensg_numbers, edges => {
+          load_edges(this.disease_trimmed, ensg_numbers, edges => {
+            let graph = {
+              nodes: nodes,
+              edges: edges
+            }
             let network = new sigma({
-              graph: {
-                nodes: nodes,
-                edges: edges
-              },
+              graph: graph,
                 renderer: {
                   container: document.getElementById('network-plot-container'),
                   type: 'canvas'
@@ -283,15 +295,25 @@ export class BrowseComponent implements OnInit {
                   scalingMode: 'outside' 
                 }
               }
-            );
+            ), db = new sigma.plugins.neighborhoods();
 
-            network.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
+            network.bind('overNode', (e) => {
+              // events: overNode outNode clickNode doubleClickNode rightClickNode
               //console.log(e.type, e.data.node.label, e.data.captor, e.data);
-              console.log(e.data.node.label, e.data.node.id)
+              // load the node information for window on the side
+              let data = JSON.parse($('#node_data').text())
+              for (let entry in data) {
+                if (data[entry]['ensg_number'] == e.data.node.id && data[entry]['gene_symbol'] == e.data.node.label) {
+                  $('#node_information').html(JSON.stringify(data[entry], undefined, 2))
+                }
+              }
             });
 
-            network.bind('clickNode',
-              function(e)
+            network.bind('clickNode', (e) => {
+              node_click_function(e)
+            })
+
+            function node_click_function(e) {
               {
                 var nodeId = e.data.node.id;
                 let color_all = false;
@@ -308,20 +330,61 @@ export class BrowseComponent implements OnInit {
                   })
                 } else {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-                    //ee.color = network.settings.defaultEdgeColor;
                     ee.color = default_edge_color
                   })
                 }
                 network.refresh();
+              };
+            }
+
+              /* Save network button */
+              $('#network_snapshot').on('click', () => {
+                network.renderers[0].snapshot({
+                  format: 'png', 
+                  background: 'white', 
+                  filename: 'SPONGE_'+this.selected_disease+'_graph.png',
+                  labels: true,
+                  download: true,
+                });
+              })
+
+              /* restart camera */
+              document.getElementById('restart_camera').addEventListener('click', function() {
+                network.camera.goTo({
+                  x: 0,
+                  y: 0,
+                  angle: 0,
+                  ratio: 2
+                });
               });
 
+              /* toggle force atlas 2 */
+              document.getElementById('toggle_layout').addEventListener('click', function() {
+                if ((network.supervisor || {}).running) {
+                  network.killForceAtlas2();
+                  document.getElementById('toggle_layout').innerHTML = 'Start layout';
+                } else {
+                  network.startForceAtlas2({worker: true});
+                  document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+                }
+              });            
+
+
             // Initialize the dragNodes plugin:
-            //var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-            // Ask sigma to draw it, it now somehow works without the refresh
-            //sigma.refresh()
-            //sigma.startForceAtlas2()
-            
-            //setTimeout(function() {network.killForceAtlas2()}, 10000);
+            var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
+            // TODO: dragging also colors nodes
+            /*
+            dragListener.bind('drag',function(){
+              setTimeout(function () {
+                  network.unbind('clickNode');
+              }, 100);
+            });
+            dragListener.bind('dragend',function(){
+                setTimeout(function(){
+                  network.bind('clickNode', node_click_function);
+                }, 100)
+            });*/
+
           })
         }) 
       })
