@@ -54,7 +54,6 @@ export class BrowseComponent implements OnInit {
       return edges;
     });
 
-
     /* Datatable configurations */
     $.fn.dataTable.ext.search.push(
       // filter for mscor
@@ -285,7 +284,7 @@ export class BrowseComponent implements OnInit {
                   defaultNodeColor: default_node_color,
                   autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
                   animationsTime: 1000,
-                  borderSize: 2,
+                  borderSize: 2,  
                   outerBorderSize: 3,
                   enableEdgeHovering: true,
                   edgeHoverColor: '#2ecc71',
@@ -296,6 +295,8 @@ export class BrowseComponent implements OnInit {
                 }
               }
             ), db = new sigma.plugins.neighborhoods();
+
+            network.addCamera('cam1')
 
             network.bind('overNode', (e) => {
               // events: overNode outNode clickNode doubleClickNode rightClickNode
@@ -320,7 +321,7 @@ export class BrowseComponent implements OnInit {
                 network.graph.adjacentEdges(nodeId).forEach(
                   (ee) => {
                     if (ee.color !== subgraph_edge_color){
-                      color_all = true;
+                      color_all = true
                     }
                   }
                 )
@@ -336,6 +337,52 @@ export class BrowseComponent implements OnInit {
                 network.refresh();
               };
             }
+
+            function searchNode(node_to_search) {
+              let error_field = $('#network_search_node_error')
+              var nodes = network.graph.nodes()
+              let found = false
+              for (let node in nodes) {
+                if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
+                  focusNode(network.cameras[0], nodes[node])
+                  found = true
+                  break
+                }
+              }
+              if (!found) {
+                // show error
+                error_field.text('Could not find '+ node_to_search)
+                if (error_field.hasClass('hidden')) {
+                  error_field.removeClass('hidden')
+                }
+              } else {
+                // remove error
+                if (!error_field.hasClass('hidden')) {
+                  error_field.addClass('hidden')
+                }
+              }
+              // Filter or find the first matching node then apply focusNode on it
+            }
+
+            function focusNode(camera, node) {
+              console.log(node)
+              sigma.misc.animation.camera(
+                camera,
+                {
+                  x: node['read_cam0:x'],
+                  y: node['read_cam0:y'],
+                  ratio: 1
+                },
+                {
+                  duration: 300
+                }
+              );
+            }
+
+            $('#network_search_node_button').click(() => {
+              let node_to_search = $('#network_search_node').val()
+              searchNode(node_to_search)
+            })
 
               /* Save network button */
               $('#network_snapshot').on('click', () => {
