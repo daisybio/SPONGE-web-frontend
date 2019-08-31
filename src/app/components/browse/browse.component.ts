@@ -13,15 +13,8 @@ declare var $;
   styleUrls: ['./browse.component.less']
 })
 export class BrowseComponent implements OnInit {
-  dtOption = {
-    "paging":   true,
-    "ordering": true,
-    "info":     true,
-    dom: 'B<"clear">lfrtip',
-          buttons: [
-            'copyHtml5', 'excelHtml5', 'pdfHtml5', 'csvHtml5', 'print'
-          ],
-  };
+  disease_trimmed = ''
+
   constructor() {
    }
 
@@ -30,7 +23,8 @@ export class BrowseComponent implements OnInit {
     const default_node_color = '#920518'
     const default_edge_color = '#0000FF'
     const subgraph_edge_color = '#FF6347'
-
+    var node_table
+    
     const controller = new Controller()
 
     /* Sigma configurations */
@@ -159,7 +153,7 @@ export class BrowseComponent implements OnInit {
         // build datatable
         let column_names = Object.keys(data[0]);
         $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        let table = $('#interactions-nodes-table').DataTable( {
+        node_table = $('#interactions-nodes-table').DataTable( {
           columnDefs: [
             { render: function ( data, type, row ) {
                 return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
@@ -171,6 +165,9 @@ export class BrowseComponent implements OnInit {
               'copy', 'csv', 'excel', 'pdf', 'print'
           ]
         });
+        // save data for later search
+        $('#node_data').text(JSON.stringify(data))
+
         return callback(nodes)
         }
       })
@@ -179,6 +176,11 @@ export class BrowseComponent implements OnInit {
     function load_edges(disease_trimmed, nodes, callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
         'callback':data => {
+          // remove "run"
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            delete entry['run']
+          }
           let column_names = Object.keys(data[0]);
           $("#interactions-edges-table-container").append(buildTable(data,'interactions-edges-table', column_names))
           let table = $('#interactions-edges-table').DataTable({
@@ -192,13 +194,10 @@ export class BrowseComponent implements OnInit {
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ]
-          });
-          
-          
+          });  
           $('#filter_edges :input').keyup( function() {
             table.draw();
-        } );
-          table.column(6).visible( false ); // hide 'run'
+          } );
           let edges = [];
           for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
@@ -240,22 +239,22 @@ export class BrowseComponent implements OnInit {
         $('#network-plot-container').html(''); // clear possible other network
 
         let selected_disease = disease_selector.val().toString();
-        let disease_trimmed:string = selected_disease.split(' ').join('%20');
+        this.disease_trimmed = selected_disease.split(' ').join('%20');
 
         let download_url = disease_selector.find(":contains("+selected_disease+")").attr('data-value')
         $('#selector_diseases_link').attr('href', download_url);
 
         // get specific run information
-        controller.get_dataset_information(disease_trimmed, 
+        controller.get_dataset_information(this.disease_trimmed, 
           data => {
             selected_disease_result.html(JSON.stringify(data, undefined, 2));
           }
         )
 
         // load interaction data (edges), load network data (nodes)
-        load_nodes(disease_trimmed, nodes => {
+        load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
-          load_edges(disease_trimmed, ensg_numbers, edges => {
+          load_edges(this.disease_trimmed, ensg_numbers, edges => {
             let network = new sigma({
               graph: {
                 nodes: nodes,
@@ -285,9 +284,16 @@ export class BrowseComponent implements OnInit {
               }
             );
 
-            network.bind('overNode outNode clickNode doubleClickNode rightClickNode', function(e) {
+            network.bind('overNode', (e) => {
+              // events: overNode outNode clickNode doubleClickNode rightClickNode
               //console.log(e.type, e.data.node.label, e.data.captor, e.data);
-              console.log(e.data.node.label, e.data.node.id)
+              // load the node information for window on the side
+              let data = JSON.parse($('#node_data').text())
+              for (let entry in data) {
+                if (data[entry]['ensg_number'] == e.data.node.id && data[entry]['gene_symbol'] == e.data.node.label) {
+                  $('#node_information').html(JSON.stringify(data[entry], undefined, 2))
+                }
+              }
             });
 
             network.bind('clickNode',
