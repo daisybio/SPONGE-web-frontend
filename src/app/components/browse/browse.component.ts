@@ -277,6 +277,10 @@ export class BrowseComponent implements OnInit {
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
+        // start loading
+        disease_selector.attr('disabled',true)
+        $('#browse_loading_spinner').removeClass('hidden')
+
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
         $('#network-plot-container').html(''); // clear possible other network
@@ -552,8 +556,12 @@ export class BrowseComponent implements OnInit {
                 }, 100)
             });*/
 
+            // stop loading
+            disease_selector.attr('disabled',false)
+            $('#browse_loading_spinner').addClass('hidden') 
+
           })
-        }) 
+        })
       })
       ;
     }
