@@ -68,7 +68,7 @@ export class BrowseComponent implements OnInit {
         }
         var mscore_min = parseFloat( $('#mscore_min').val());
         var mscore_max = parseFloat( $('#mscore_max').val());
-        var mscore = parseFloat( data[4] ) || 0; // use data for the mscore column
+        var mscore = parseFloat( data[3] ) || 0; // use data for the mscore column
         if (( isNaN( mscore_min ) && isNaN( mscore_max ) ) ||
               ( isNaN( mscore_min ) && mscore <= mscore_max ) ||
               ( mscore_min <= mscore && isNaN( mscore_max ) ) ||
@@ -85,7 +85,7 @@ export class BrowseComponent implements OnInit {
         }
         var pvalue_min = parseFloat( $('#pvalue_min').val());
         var pvalue_max = parseFloat( $('#pvalue_max').val());
-        var pvalue = parseFloat( data[5] ) || 0; // use data for the pvalue column
+        var pvalue = parseFloat( data[4] ) || 0; // use data for the pvalue column
         if (( isNaN( pvalue_min ) && isNaN( pvalue_max ) ) ||
           ( isNaN( pvalue_min ) && pvalue <= pvalue_max ) ||
           ( pvalue_min <= pvalue && isNaN( pvalue_max ) ) ||
@@ -491,7 +491,10 @@ export class BrowseComponent implements OnInit {
 
             $('#export_selected_edges').click(() => {
               clear_subgraphs();
-              let selected_edges = edge_table.rows('.selected').data()
+              let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
+              if (selected_edges.length === 0) {
+                selected_edges = edge_table.rows({ filter : 'applied'}).data()
+              }
               // find selected edges in graph and mark them
               network.graph.edges().forEach(
                 (ee) => {
@@ -520,7 +523,10 @@ export class BrowseComponent implements OnInit {
             $('#export_selected_nodes').click(() => {
               clear_subgraphs();
               let selected_nodes = []
-              let selected_nodes_data = node_table.rows('.selected').data()
+              let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
+              if (selected_nodes_data.length === 0) {
+                selected_nodes_data = node_table.rows({ filter : 'applied'}).data()
+              }
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
