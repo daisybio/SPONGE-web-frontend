@@ -34,8 +34,11 @@ export class BrowseComponent implements OnInit {
       // force atlas 2 (not working yet)
       require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js');
       require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js');
-      // neighborhood
-      require('../../../../node_modules/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js') 
+      // noverlap 
+      require('../../../../node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js')
+      // animate
+      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.animate.min.js')
+
 
     var node_table
     var edge_table
@@ -346,6 +349,15 @@ export class BrowseComponent implements OnInit {
                 }
               }
             )
+
+            var noverlap_config = {
+              nodeMargin: 3.0,
+              scaleNodes: 1.3
+            };
+            
+            // Configure the algorithm
+            var noverlap_listener = network.configNoverlap(noverlap_config);
+            network.startNoverlap();
 
             network.addCamera('cam1')
 
