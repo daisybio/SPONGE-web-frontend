@@ -20,9 +20,11 @@ export class BrowseComponent implements OnInit {
 
   ngOnInit() {
     
-    const default_node_color = '#920518'
+    const default_node_color = '#FFFF00'
     const default_edge_color = '#0000FF'
     const subgraph_edge_color = '#FF6347'
+    const subgraph_node_color = '#920518'
+
     const sigma = require('sigma'); 
       (<any>window).sigma = sigma; 
       // snapshot
@@ -103,39 +105,6 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click();
     })
 
-    $('#export_selected_edges').click(() => {
-      let selected_edges = edge_table.rows('.selected').data()
-      // find selected edges in graph and mark them
-      network.graph.edges().forEach(
-        (ee) => {
-          let edge_nodes = []
-          edge_nodes.push(ee['source'])
-          edge_nodes.push(ee['target'])
-          for(let i = 0; i < selected_edges.length; i++) {
-            let selected_edge = selected_edges[i]
-            // 0 and 1 are gene1 and gene2
-            if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
-              ee.color = subgraph_edge_color
-              break
-            } else {
-              ee.color = default_edge_color
-            }
-          }
-        }
-      )
-      // go to network
-      $('[aria-controls=nav-overview]').click()
-      setTimeout(() => {
-        $('#restart_camera').click()
-      }, 200)
-      
-    })
-
-    $('#export_selected_nodes').click(() => {
-      let data = node_table.rows('.selected').data()
-      console.log(data)
-    })
-
     run_information();
 
     function getRandomInt(max) {
@@ -177,49 +146,60 @@ export class BrowseComponent implements OnInit {
       let limit = $('#input_limit').val()
       controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector,
       'callback': data => {
-          let nodes = [];
-          for (let gene in data) {
+          let ordered_data = [];
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            // change order of columns alredy in object
+            let ordered_entry = {}
             // flatten data object
-            for (let x in data[gene]['gene']) {
-              data[gene][x] = data[gene]['gene'][x]
+            for (let x in entry['gene']) {
+              entry[x] = entry['gene'][x]
             }
-            delete data[gene]['gene']
-            delete data[gene]['run']// hide 'run'
-            let id = data[gene]['ensg_number'];
-            let label = data[gene]['gene_symbol'];
+            ordered_entry['ENSG Number'] = entry['ensg_number']
+            ordered_entry['Gene Symbol'] = entry['gene_symbol']
+            ordered_entry['Betweeness'] = entry['betweeness']
+            ordered_entry['Eigenvector'] = entry['eigenvector']
+            ordered_entry['Node Degree'] = entry['node_degree']
+            ordered_entry['Gene ID'] = entry['gene_ID']
+            ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
+            ordered_data.push(ordered_entry)
+          }
+          let nodes = [];
+          for (let gene in ordered_data) {
+            let id = ordered_data[gene]['ENSG Number'];
+            let label = ordered_data[gene]['Gene Symbol'];
             if (label == '') {
               label = 'unknown'
             }
             let x = getRandomInt(10);
             let y = getRandomInt(10);
-            let size = data[gene]['node_degree'];
+            let size = ordered_data[gene]['Node Degree'];
             let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
           }
-        // build datatable
-        let column_names = Object.keys(data[0]);
-        $("#interactions-nodes-table-container").append(buildTable(data,'interactions-nodes-table', column_names))
-        node_table = $('#interactions-nodes-table').DataTable( {
-          columnDefs: [
-            { render: function ( data, type, row ) {
-                return data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-              },
-              targets: [0, 1] }
-          ],
-          lengthChange: false,
-          dom: 'Bfrtip',
-          buttons: [
-              'copy', 'csv', 'excel', 'pdf', 'print'
-          ]
-        });
-        $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
-          $(this).toggleClass('selected');
-        } );
-        // save data for later search
-        $('#node_data').text(JSON.stringify(data))
-
-        return callback(nodes)
-        }
+          // build datatable
+          let column_names = Object.keys(ordered_data[0]);
+          $("#interactions-nodes-table-container").append(buildTable(ordered_data,'interactions-nodes-table', column_names))
+          node_table = $('#interactions-nodes-table').DataTable( {
+            columnDefs: [
+              { render: function ( ordered_data, type, row ) {
+                  return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+                },
+                targets: [2, 3] }
+            ],
+            lengthChange: false,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+          });
+          $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+          } );
+          // save data for later search
+          $('#node_data').text(JSON.stringify(ordered_data))
+          return callback(nodes)
+          }
       })
     }
 
@@ -396,13 +376,30 @@ export class BrowseComponent implements OnInit {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
                     ee.color = subgraph_edge_color
                   })
+                  // set node color to clicked
+                  e.data.node.color = subgraph_node_color
                 } else {
                   network.graph.adjacentEdges(nodeId).forEach( (ee) => {
                     ee.color = default_edge_color
                   })
+                  // set node color to default
+                  e.data.node.color = default_node_color
                 }
                 network.refresh();
               };
+            }
+
+            function clear_subgraphs() {
+              network.graph.edges().forEach(
+                (ee) => {
+                  ee.color = default_edge_color
+                })
+              network.graph.nodes().forEach(
+                (node) => {
+                  node.color = default_node_color
+                }
+              )
+              network.refresh()
             }
 
             function searchNode(node_to_search) {
@@ -412,6 +409,8 @@ export class BrowseComponent implements OnInit {
               for (let node in nodes) {
                 if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
                   focusNode(network.cameras[0], nodes[node])
+                  console.log(nodes[node])
+                  nodes[node].color = subgraph_node_color
                   found = true
                   break
                 }
@@ -450,37 +449,92 @@ export class BrowseComponent implements OnInit {
               searchNode(node_to_search)
             })
 
-              /* Save network button */
-              $('#network_snapshot').on('click', () => {
-                network.renderers[0].snapshot({
-                  format: 'png', 
-                  background: 'white', 
-                  filename: 'SPONGE_'+this.selected_disease+'_graph.png',
-                  labels: true,
-                  download: true,
-                });
-              })
-
-              /* restart camera */
-              document.getElementById('restart_camera').addEventListener('click', function() {
-                network.camera.goTo({
-                  x: 0,
-                  y: 0,
-                  angle: 0,
-                  ratio: 2
-                });
+            /* Save network button */
+            $('#network_snapshot').on('click', () => {
+              network.renderers[0].snapshot({
+                format: 'png', 
+                background: 'white', 
+                filename: 'SPONGE_'+this.selected_disease+'_graph.png',
+                labels: true,
+                download: true,
               });
+            })
 
-              /* toggle force atlas 2 */
-              document.getElementById('toggle_layout').addEventListener('click', function() {
-                if ((network.supervisor || {}).running) {
-                  network.killForceAtlas2();
-                  document.getElementById('toggle_layout').innerHTML = 'Start layout';
-                } else {
-                  network.startForceAtlas2({worker: true});
-                  document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+            /* restart camera */
+            document.getElementById('restart_camera').addEventListener('click', function() {
+              network.camera.goTo({
+                x: 0,
+                y: 0,
+                angle: 0,
+                ratio: 2
+              });
+            });
+
+            /* toggle force atlas 2 */
+            document.getElementById('toggle_layout').addEventListener('click', function() {
+              if ((network.supervisor || {}).running) {
+                network.killForceAtlas2();
+                document.getElementById('toggle_layout').innerHTML = 'Start layout';
+              } else {
+                network.startForceAtlas2({worker: true});
+                document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+              }
+            });      
+            
+            $('#reset_graph').click( () => {
+              clear_subgraphs();
+            })
+
+            $('#export_selected_edges').click(() => {
+              clear_subgraphs();
+              let selected_edges = edge_table.rows('.selected').data()
+              // find selected edges in graph and mark them
+              network.graph.edges().forEach(
+                (ee) => {
+                  let edge_nodes = []
+                  edge_nodes.push(ee['source'])
+                  edge_nodes.push(ee['target'])
+                  for(let i = 0; i < selected_edges.length; i++) {
+                    let selected_edge = selected_edges[i]
+                    // 0 and 1 are gene1 and gene2
+                    if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
+                      ee.color = subgraph_edge_color
+                      break
+                    } else {
+                      ee.color = default_edge_color
+                    }
+                  }
                 }
-              });            
+              )
+              // go to network
+              $('[aria-controls=nav-overview]').click()
+              setTimeout(() => {
+                $('#restart_camera').click()
+              }, 200)
+            })
+
+            $('#export_selected_nodes').click(() => {
+              clear_subgraphs();
+              let selected_nodes = []
+              let selected_nodes_data = node_table.rows('.selected').data()
+              for(let i = 0; i < selected_nodes_data.length; i++) {
+                // first row is ensg number
+                selected_nodes.push(selected_nodes_data[i][0])
+              }
+              console.log(selected_nodes)
+              network.graph.nodes().forEach(
+                (node) => {
+                  if (selected_nodes.includes(node['id'])) {
+                    node.color = subgraph_node_color
+                  }
+                }
+              )
+              // go to network
+              $('[aria-controls=nav-overview]').click()
+              setTimeout(() => {
+                $('#restart_camera').click()
+              }, 500)
+            })
 
 
             // Initialize the dragNodes plugin:
