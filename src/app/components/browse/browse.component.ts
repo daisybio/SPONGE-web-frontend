@@ -413,7 +413,6 @@ export class BrowseComponent implements OnInit {
               for (let node in nodes) {
                 if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
                   focusNode(network.cameras[0], nodes[node])
-                  console.log(nodes[node])
                   nodes[node].color = subgraph_node_color
                   found = true
                   break
@@ -531,7 +530,6 @@ export class BrowseComponent implements OnInit {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
-              console.log(selected_nodes)
               network.graph.nodes().forEach(
                 (node) => {
                   if (selected_nodes.includes(node['id'])) {
@@ -565,6 +563,9 @@ export class BrowseComponent implements OnInit {
             // stop loading
             disease_selector.attr('disabled',false)
             $('#browse_loading_spinner').addClass('hidden') 
+
+            // zoom out 
+            $('#restart_camera').click()
 
           })
         })
