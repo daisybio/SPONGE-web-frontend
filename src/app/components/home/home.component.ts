@@ -1,5 +1,6 @@
+declare var $;
 import { Component, OnInit } from '@angular/core';
-import * as $ from "jquery";
+//import * as $ from "jquery";
 import * as sigma from 'sigma-webpack';
 import { ActivatedRoute } from "@angular/router";
 
@@ -27,16 +28,16 @@ export class HomeComponent implements OnInit {
     
     $('#home_search_button').click( () => {
       let input = $('#home_search').val()
-      
+      })
 
+ //   $(document).ready(function(){
+      $('[data-toggle="popover_search_info"]').popover({
+       trigger: 'hover', sanitize: false, sanitizeFn: content => content
+     });     
+  //  });
 
-    })
-
-    
   }
 
-  
-  
 }
 
 
