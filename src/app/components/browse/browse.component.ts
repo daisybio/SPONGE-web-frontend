@@ -34,8 +34,11 @@ export class BrowseComponent implements OnInit {
       // force atlas 2 (not working yet)
       require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js');
       require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js');
-      // neighborhood
-      require('../../../../node_modules/sigma/plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js') 
+      // noverlap 
+      require('../../../../node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js')
+      // animate
+      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.animate.min.js')
+
 
     var node_table
     var edge_table
@@ -68,7 +71,7 @@ export class BrowseComponent implements OnInit {
         }
         var mscore_min = parseFloat( $('#mscore_min').val());
         var mscore_max = parseFloat( $('#mscore_max').val());
-        var mscore = parseFloat( data[4] ) || 0; // use data for the mscore column
+        var mscore = parseFloat( data[3] ) || 0; // use data for the mscore column
         if (( isNaN( mscore_min ) && isNaN( mscore_max ) ) ||
               ( isNaN( mscore_min ) && mscore <= mscore_max ) ||
               ( mscore_min <= mscore && isNaN( mscore_max ) ) ||
@@ -85,7 +88,7 @@ export class BrowseComponent implements OnInit {
         }
         var pvalue_min = parseFloat( $('#pvalue_min').val());
         var pvalue_max = parseFloat( $('#pvalue_max').val());
-        var pvalue = parseFloat( data[5] ) || 0; // use data for the pvalue column
+        var pvalue = parseFloat( data[4] ) || 0; // use data for the pvalue column
         if (( isNaN( pvalue_min ) && isNaN( pvalue_max ) ) ||
           ( isNaN( pvalue_min ) && pvalue <= pvalue_max ) ||
           ( pvalue_min <= pvalue && isNaN( pvalue_max ) ) ||
@@ -277,6 +280,10 @@ export class BrowseComponent implements OnInit {
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
+        // start loading
+        disease_selector.attr('disabled',true)
+        $('#browse_loading_spinner').removeClass('hidden')
+
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
         $('#network-plot-container').html(''); // clear possible other network
@@ -342,6 +349,15 @@ export class BrowseComponent implements OnInit {
                 }
               }
             )
+
+            var noverlap_config = {
+              nodeMargin: 3.0,
+              scaleNodes: 1.3
+            };
+            
+            // Configure the algorithm
+            var noverlap_listener = network.configNoverlap(noverlap_config);
+            network.startNoverlap();
 
             network.addCamera('cam1')
 
@@ -409,7 +425,6 @@ export class BrowseComponent implements OnInit {
               for (let node in nodes) {
                 if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
                   focusNode(network.cameras[0], nodes[node])
-                  console.log(nodes[node])
                   nodes[node].color = subgraph_node_color
                   found = true
                   break
@@ -487,7 +502,10 @@ export class BrowseComponent implements OnInit {
 
             $('#export_selected_edges').click(() => {
               clear_subgraphs();
-              let selected_edges = edge_table.rows('.selected').data()
+              let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
+              if (selected_edges.length === 0) {
+                selected_edges = edge_table.rows({ filter : 'applied'}).data()
+              }
               // find selected edges in graph and mark them
               network.graph.edges().forEach(
                 (ee) => {
@@ -516,12 +534,14 @@ export class BrowseComponent implements OnInit {
             $('#export_selected_nodes').click(() => {
               clear_subgraphs();
               let selected_nodes = []
-              let selected_nodes_data = node_table.rows('.selected').data()
+              let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
+              if (selected_nodes_data.length === 0) {
+                selected_nodes_data = node_table.rows({ filter : 'applied'}).data()
+              }
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
-              console.log(selected_nodes)
               network.graph.nodes().forEach(
                 (node) => {
                   if (selected_nodes.includes(node['id'])) {
@@ -552,8 +572,15 @@ export class BrowseComponent implements OnInit {
                 }, 100)
             });*/
 
+            // stop loading
+            disease_selector.attr('disabled',false)
+            $('#browse_loading_spinner').addClass('hidden') 
+
+            // zoom out 
+            $('#restart_camera').click()
+
           })
-        }) 
+        })
       })
       ;
     }
