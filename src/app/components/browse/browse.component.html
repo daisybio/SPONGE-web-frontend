@@ -120,36 +120,33 @@
             -->
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-                        <div>
-                            <p>Select a value to sort by: </p>
-                            <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
-                                <option data-value="degree">Degree</option>
-                                <option data-value="betweenness">Betweenness</option>
-                                <option data-value="eigenvector">Eigenvector</option>
-                              </select>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div>
+                        <table>
+                            <td>
+                                <tr>
+                                    <p>Select a value to sort by: </p>
                                     <p>Set a cutoff for betweenness (lower bound): </p>
-                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
-                                </div>
-                                <div>
                                     <p>Set a cutoff for degree (lower bound): </p>
-                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                </div>
-                                <div>
                                     <p>Set a cutoff for eigenvector (lower bound): </p>
-                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                                </div>
-                                <div>
                                     <p>Set a Limit for displayed data (the more the slower): </p>
+                                    
+                                </tr>
+                            </td>
+                            <td>
+                                <tr>
+                                    <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
+                                            <option data-value="degree">Degree</option>
+                                            <option data-value="betweenness">Betweenness</option>
+                                            <option data-value="eigenvector">Eigenvector</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
                                     <input type="text" class="form-control" id="input_limit" value=10> 
-                                </div>
-                                <div>
-                                    <button id="load_disease" type="button" class="btn btn-primary">Go</button>
-                                </div>
-                            </div>
+                                </tr>
+                            </td>
+                        </table>
+                        <div>
+                            <button id="load_disease" type="button" class="btn btn-primary">Go</button>
                         </div>
 
                         <hr/>
