@@ -318,7 +318,19 @@ export class BrowseComponent implements OnInit {
         // get specific run information
         controller.get_dataset_information(this.disease_trimmed, 
           data => {
-            selected_disease_result.html(JSON.stringify(data, undefined, 2));
+            data = data[0]
+            let content = ""
+            // header
+            console.log(data)
+            let header = data['dataset']['disease_name']
+            delete data['dataset']
+            content += "<p><strong>" + header + "</strong></p>"
+            // content
+            for (let key in data) {
+              let value = data[key]
+              content = content + "<p>" + key + ": " + value + "</p>"
+            }
+            selected_disease_result.html(content);
           }
         )
 

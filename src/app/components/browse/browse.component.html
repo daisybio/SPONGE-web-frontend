@@ -121,10 +121,6 @@
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                         <div>
-                            
-                            <a id="selector_diseases_link" href="" target="_blank"><button type="button" class="btn btn-secondary">Download original data</button></a>
-                        </div>
-                        <div>
                             <p>Select a value to sort by: </p>
                             <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
                                 <option data-value="degree">Degree</option>
@@ -132,27 +128,48 @@
                                 <option data-value="eigenvector">Eigenvector</option>
                               </select>
                         </div>
-                        <div>
-                            <p>Set a cutoff for betweenness (lower bound): </p>
-                            <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div>
+                                    <p>Set a cutoff for betweenness (lower bound): </p>
+                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                </div>
+                                <div>
+                                    <p>Set a cutoff for degree (lower bound): </p>
+                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                                </div>
+                                <div>
+                                    <p>Set a cutoff for eigenvector (lower bound): </p>
+                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                </div>
+                                <div>
+                                    <p>Set a Limit for displayed data (the more the slower): </p>
+                                    <input type="text" class="form-control" id="input_limit" value=10> 
+                                </div>
+                                <div>
+                                    <button id="load_disease" type="button" class="btn btn-primary">Go</button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p>Set a cutoff for degree (lower bound): </p>
-                            <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+
+                        <hr/>
+
+                        <div class="buttons">
+                            <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                    Show current run
+                            </button>
+
+                            <div class="collapse" id="collapseExample">
+                                <div class="card card-body">
+                                    <pre id="selector_disease_result"></pre>
+                                </div>
+                            </div>
+                            <a id="selector_diseases_link" href="" target="_blank">
+                                <button type="button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
+                                </button>
+                            </a>
                         </div>
-                        <div>
-                            <p>Set a cutoff for eigenvector (lower bound): </p>
-                            <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                        </div>
-                        <div>
-                            <p>Set a Limit for displayed data (the more the slower): </p>
-                            <input type="text" class="form-control" id="input_limit" value=10> 
-                        </div>
-                        <div>
-                            <button id="load_disease" type="button" class="btn btn-primary">Go</button>
-                        </div>
-                        <pre id="selector_disease_result">
-                        </pre>
+                        
                     </div>
             </div>
         </div>
