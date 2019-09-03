@@ -1,10 +1,15 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
 
+import sigma from 'sigma';
+// wtf you have to declare sigma after importing it
+declare const sigma: any;
+
 //import 'datatables.net';
 declare var $;
-// very dirty solution 
+// dirty solution 
 declare var require: any
+
 
 @Component({
   selector: 'app-browse',
@@ -27,23 +32,6 @@ export class BrowseComponent implements OnInit {
 
     const node_information = $('#node_information')
     const edge_information = $('#edge_information')
-
-    const sigma = require('sigma'); 
-      (<any>window).sigma = sigma; 
-      // snapshot
-      require('../../../../node_modules/sigma/build/plugins/sigma.renderers.snapshot.min.js'); 
-      // drag nodes
-      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.dragNodes.min.js'); 
-      // force atlas 2 (not working yet)
-      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js');
-      require('../../../../node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js');
-      // noverlap 
-      require('../../../../node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js')
-      // animate
-      require('../../../../node_modules/sigma/build/plugins/sigma.plugins.animate.min.js')
-      // svg exporter
-      require('../../../../node_modules/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js')
-
 
     var node_table
     var edge_table
@@ -582,7 +570,7 @@ export class BrowseComponent implements OnInit {
                 network.killForceAtlas2();
                 document.getElementById('toggle_layout').innerHTML = 'Start layout';
               } else {
-                network.startForceAtlas2({worker: true});
+                network.startForceAtlas2({worker: true, slowDown: 100});
                 document.getElementById('toggle_layout').innerHTML = 'Stop layout';
               }
             });      
