@@ -25,6 +25,9 @@ export class BrowseComponent implements OnInit {
     const subgraph_edge_color = '#FF6347'
     const subgraph_node_color = '#920518'
 
+    const node_information = $('#node_information')
+    const edge_information = $('#edge_information')
+
     const sigma = require('sigma'); 
       (<any>window).sigma = sigma; 
       // snapshot
@@ -38,6 +41,8 @@ export class BrowseComponent implements OnInit {
       require('../../../../node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js')
       // animate
       require('../../../../node_modules/sigma/build/plugins/sigma.plugins.animate.min.js')
+      // svg exporter
+      require('../../../../node_modules/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js')
 
 
     var node_table
@@ -176,7 +181,7 @@ export class BrowseComponent implements OnInit {
             }
             let x = getRandomInt(10);
             let y = getRandomInt(10);
-            let size = ordered_data[gene]['Node Degree'];
+            let size = ordered_data[gene]['Eigenvector'];
             let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
           }
@@ -249,11 +254,18 @@ export class BrowseComponent implements OnInit {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            let size = 100*data['mscore'];
+            let size = 100*data[interaction]['mscore'];
             let color = default_edge_color;
-            //let type = line, curve
-            edges.push({id, source, target, size, color})
+            //let type = 'line'//, curve
+            edges.push({
+              id: id, 
+              source: source, 
+              target: target, 
+              size: size, 
+              color: color, 
+            })
           }
+          $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         }
       })
@@ -294,15 +306,15 @@ export class BrowseComponent implements OnInit {
         let download_url = disease_selector.find(":contains("+this.selected_disease+")").attr('data-value')
         let disease_data_link = $('#selector_diseases_link')
         if (download_url.startsWith('http')) {
-          if (disease_data_link.hasClass('disabled')) {
-            disease_data_link.removeClass('disabled')
+          if (disease_data_link.hasClass('hidden')) {
+            disease_data_link.removeClass('hidden')
             disease_data_link.find('button').removeClass('disabled')
           }
           disease_data_link.attr('href', download_url);
         } else {
-          if (!disease_data_link.hasClass('disabled')) {
+          if (!disease_data_link.hasClass('hidden')) {
             disease_data_link.removeAttr('href')
-            disease_data_link.addClass('disabled')
+            disease_data_link.addClass('hidden')
             disease_data_link.find('button').addClass('disabled')
           }
         }
@@ -311,7 +323,18 @@ export class BrowseComponent implements OnInit {
         // get specific run information
         controller.get_dataset_information(this.disease_trimmed, 
           data => {
-            selected_disease_result.html(JSON.stringify(data, undefined, 2));
+            data = data[0]
+            let content = ""
+            // header
+            let header = data['dataset']['disease_name']
+            delete data['dataset']
+            content += "<p><strong>" + header + "</strong></p>"
+            // content
+            for (let key in data) {
+              let value = data[key]
+              content += "<p>" + key + ": " + value + "</p>"
+            }
+            selected_disease_result.html(content);
           }
         )
 
@@ -343,9 +366,11 @@ export class BrowseComponent implements OnInit {
                   enableEdgeHovering: true,
                   edgeHoverColor: '#2ecc71',
                   defaultEdgeHoverColor: '#2ecc71',
-                  edgeHoverSizeRatio: 1,
+                  edgeHoverSizeRatio: 2,
+                  nodeHoverSizeRatio: 2,
                   edgeHoverExtremities: true,
-                  scalingMode: 'outside' 
+                  scalingMode: 'outside',
+                  doubleClickEnabled: false
                 }
               }
             )
@@ -368,12 +393,59 @@ export class BrowseComponent implements OnInit {
               let data = JSON.parse($('#node_data').text())
               for (let entry in data) {
                 if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
-                  $('#node_information').html(JSON.stringify(data[entry], undefined, 2))
+                  // build a table to display json
+                  let table = "<table>"
+                  for (let attribute in data[entry]) {
+                    let row = "<tr>"
+                    row += "<td>"+attribute+": </td>"
+                    row += "<td>"+data[entry][attribute]+"</td>"
+                    row += "</tr>"
+                    table += row
+                  }
+                  table += "</table>"
+                  $('#node_information_content').html(table)
+                  // unhide node information 
+                  if (node_information.hasClass('hidden')) {
+                    node_information.removeClass('hidden')
+                  }
+                  // hide edge information
+                  if (!edge_information.hasClass('hidden')) {
+                    edge_information.addClass('hidden')
+                  }
+                  break
                 }
               }
             });
 
-            network.bind('clickNode', (e) => {
+            network.bind('overEdge', (e) => {
+              let data = JSON.parse($('#edge_data').text())
+              for (let entry in data) {
+                if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
+                  // build a table to display json
+                  let table = "<table>"
+                  for (let attribute in data[entry]) {
+                    let row = "<tr>"
+                    row += "<td>"+attribute+": </td>"
+                    row += "<td>"+data[entry][attribute]+"</td>"
+                    row += "</tr>"
+                    table += row
+                  }
+                  table += "</table>"
+                  $('#edge_information_content').html(table)
+                  // unhide node information 
+                  if (edge_information.hasClass('hidden')) {
+                    edge_information.removeClass('hidden')
+                  }
+                  // hide edge information
+                  if (!node_information.hasClass('hidden')) {
+                    node_information.addClass('hidden')
+                  }
+                  break
+                }
+              }
+            })
+
+            network.bind('doubleClickNode', (e) => {
               node_click_function(e)
             })
 
@@ -465,13 +537,32 @@ export class BrowseComponent implements OnInit {
             })
 
             /* Save network button */
-            $('#network_snapshot').on('click', () => {
+            $('#network_snapshot_png').on('click', () => {
               network.renderers[0].snapshot({
                 format: 'png', 
                 background: 'white', 
                 filename: 'SPONGE_'+this.selected_disease+'_graph.png',
                 labels: true,
                 download: true,
+              });
+            })
+
+            $('#network_snapshot_jpg').on('click', () => {
+              network.renderers[0].snapshot({
+                format: 'jpg', 
+                background: 'white', 
+                filename: 'SPONGE_'+this.selected_disease+'_graph.jpg',
+                labels: true,
+                download: true,
+              });
+            })
+
+            $('#network_snapshot_svg').on('click', () => {
+              network.toSVG({
+                download: true, 
+                filename: 'SPONGE_'+this.selected_disease+'_graph.svg',
+                labels: true,
+                size: 1000
               });
             })
 
@@ -559,18 +650,6 @@ export class BrowseComponent implements OnInit {
 
             // Initialize the dragNodes plugin:
             var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-            // TODO: dragging also colors nodes
-            /*
-            dragListener.bind('drag',function(){
-              setTimeout(function () {
-                  network.unbind('clickNode');
-              }, 100);
-            });
-            dragListener.bind('dragend',function(){
-                setTimeout(function(){
-                  network.bind('clickNode', node_click_function);
-                }, 100)
-            });*/
 
             // stop loading
             disease_selector.attr('disabled',false)
