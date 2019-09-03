@@ -41,6 +41,8 @@ export class BrowseComponent implements OnInit {
       require('../../../../node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js')
       // animate
       require('../../../../node_modules/sigma/build/plugins/sigma.plugins.animate.min.js')
+      // svg exporter
+      require('../../../../node_modules/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js')
 
 
     var node_table
@@ -535,13 +537,32 @@ export class BrowseComponent implements OnInit {
             })
 
             /* Save network button */
-            $('#network_snapshot').on('click', () => {
+            $('#network_snapshot_png').on('click', () => {
               network.renderers[0].snapshot({
                 format: 'png', 
                 background: 'white', 
                 filename: 'SPONGE_'+this.selected_disease+'_graph.png',
                 labels: true,
                 download: true,
+              });
+            })
+
+            $('#network_snapshot_jpg').on('click', () => {
+              network.renderers[0].snapshot({
+                format: 'jpg', 
+                background: 'white', 
+                filename: 'SPONGE_'+this.selected_disease+'_graph.jpg',
+                labels: true,
+                download: true,
+              });
+            })
+
+            $('#network_snapshot_svg').on('click', () => {
+              network.toSVG({
+                download: true, 
+                filename: 'SPONGE_'+this.selected_disease+'_graph.svg',
+                labels: true,
+                size: 1000
               });
             })
 

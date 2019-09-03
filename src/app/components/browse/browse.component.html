@@ -42,7 +42,16 @@
                                             <div id='network_search_node_error' class='error-div hidden'></div>
                                         </div>
                                         <div class="network-control">
-                                            <button type="button" class="btn btn-secondary" id="network_snapshot">Save</button>
+                                            <span class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Save as...
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item" id="network_snapshot_png">.png</a>
+                                                    <a class="dropdown-item" id="network_snapshot_jpg">.jpg</a>
+                                                    <a class="dropdown-item" id="network_snapshot_svg">.svg</a>
+                                                </div>
+                                            </span>
                                             <button type="button" class="btn btn-secondary" id="restart_camera">Reset camera</button>
                                             <button type="button" class="btn btn-secondary" id="toggle_layout">toggle layout</button>
                                             <button type="button" class="btn btn-secondary" id="reset_graph">reset graph</button>
