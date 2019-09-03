@@ -32,7 +32,7 @@
                         <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                             <div class="container">
                                 <div class="row">
-                                    <div class="col-md-10">
+                                    <div class="col-md-8">
                                         <div id='network-plot-container-parent'>
                                             <div id='network-plot-container'></div>
                                         </div>
@@ -48,13 +48,19 @@
                                             <button type="button" class="btn btn-secondary" id="reset_graph">reset graph</button>
                                         </div>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <span class="hidden" id='node_data'></span>
                                         <span class="hidden" id="edge_data"></span>
-                                        <div>Node Information:</div>
-                                        <div id="node_information"></div>
-                                        <div>Edge Information:</div>
-                                        <div id="edge_information"></div>
+                                        
+                                        <div id="node_information" class="hidden">
+                                                <div>Node Information:</div>
+                                                <div id="node_information_content"></div>
+                                        </div>
+                                        
+                                        <div id="edge_information" class="hidden">
+                                                <div>Edge Information:</div>
+                                                <div id="edge_information_content"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -120,54 +126,54 @@
             -->
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-                        <table>
-                            <td>
-                                <tr>
-                                    <p>Select a value to sort by: </p>
-                                    <p>Set a cutoff for betweenness (lower bound): </p>
-                                    <p>Set a cutoff for degree (lower bound): </p>
-                                    <p>Set a cutoff for eigenvector (lower bound): </p>
-                                    <p>Set a Limit for displayed data (the more the slower): </p>
-                                    
-                                </tr>
-                            </td>
-                            <td>
-                                <tr>
-                                    <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
-                                            <option data-value="degree">Degree</option>
-                                            <option data-value="betweenness">Betweenness</option>
-                                            <option data-value="eigenvector">Eigenvector</option>
-                                    </select>
-                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                                    <input type="text" class="form-control" id="input_limit" value=10> 
-                                </tr>
-                            </td>
-                        </table>
-                        <div>
-                            <button id="load_disease" type="button" class="btn btn-primary">Go</button>
-                        </div>
-
-                        <hr/>
-
-                        <div class="buttons">
-                            <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                                    Show current run
-                            </button>
-
-                            <div class="collapse" id="collapseExample">
-                                <div class="card card-body">
-                                    <pre id="selector_disease_result"></pre>
-                                </div>
-                            </div>
-                            <a id="selector_diseases_link" href="" target="_blank">
-                                <button type="button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
-                                </button>
-                            </a>
-                        </div>
-                        
+                    <table>
+                        <td>
+                            <tr>
+                                <p>Select a value to sort by: </p>
+                                <p>Set a cutoff for betweenness (lower bound): </p>
+                                <p>Set a cutoff for degree (lower bound): </p>
+                                <p>Set a cutoff for eigenvector (lower bound): </p>
+                                <p>Set a Limit for displayed data (the more the slower): </p>
+                                
+                            </tr>
+                        </td>
+                        <td>
+                            <tr>
+                                <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
+                                        <option data-value="degree">Degree</option>
+                                        <option data-value="betweenness">Betweenness</option>
+                                        <option data-value="eigenvector">Eigenvector</option>
+                                </select>
+                                <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                                <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                <input type="text" class="form-control" id="input_limit" value=10> 
+                            </tr>
+                        </td>
+                    </table>
+                    <div>
+                        <button id="load_disease" type="button" class="btn btn-primary">Go</button>
                     </div>
+
+                    <hr/>
+
+                    <div class="buttons">
+                        <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                Show current run
+                        </button>
+
+                        <div class="collapse" id="collapseExample">
+                            <div class="card card-body">
+                                <pre id="selector_disease_result"></pre>
+                            </div>
+                        </div>
+                        <a id="selector_diseases_link" href="" target="_blank">
+                            <button type="button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
+                            </button>
+                        </a>
+                    </div>
+                    
+                </div>
             </div>
         </div>
     </div>

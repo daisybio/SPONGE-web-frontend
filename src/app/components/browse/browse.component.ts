@@ -25,6 +25,9 @@ export class BrowseComponent implements OnInit {
     const subgraph_edge_color = '#FF6347'
     const subgraph_node_color = '#920518'
 
+    const node_information = $('#node_information')
+    const edge_information = $('#edge_information')
+
     const sigma = require('sigma'); 
       (<any>window).sigma = sigma; 
       // snapshot
@@ -321,14 +324,13 @@ export class BrowseComponent implements OnInit {
             data = data[0]
             let content = ""
             // header
-            console.log(data)
             let header = data['dataset']['disease_name']
             delete data['dataset']
             content += "<p><strong>" + header + "</strong></p>"
             // content
             for (let key in data) {
               let value = data[key]
-              content = content + "<p>" + key + ": " + value + "</p>"
+              content += "<p>" + key + ": " + value + "</p>"
             }
             selected_disease_result.html(content);
           }
@@ -389,7 +391,25 @@ export class BrowseComponent implements OnInit {
               let data = JSON.parse($('#node_data').text())
               for (let entry in data) {
                 if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
-                  $('#node_information').html(JSON.stringify(data[entry], undefined, 2))
+                  // build a table to display json
+                  let table = "<table>"
+                  for (let attribute in data[entry]) {
+                    let row = "<tr>"
+                    row += "<td>"+attribute+": </td>"
+                    row += "<td>"+data[entry][attribute]+"</td>"
+                    row += "</tr>"
+                    table += row
+                  }
+                  table += "</table>"
+                  $('#node_information_content').html(table)
+                  // unhide node information 
+                  if (node_information.hasClass('hidden')) {
+                    node_information.removeClass('hidden')
+                  }
+                  // hide edge information
+                  if (!edge_information.hasClass('hidden')) {
+                    edge_information.addClass('hidden')
+                  }
                   break
                 }
               }
@@ -399,7 +419,25 @@ export class BrowseComponent implements OnInit {
               let data = JSON.parse($('#edge_data').text())
               for (let entry in data) {
                 if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
-                  $('#edge_information').html(JSON.stringify(data[entry], undefined, 2))
+                  // build a table to display json
+                  let table = "<table>"
+                  for (let attribute in data[entry]) {
+                    let row = "<tr>"
+                    row += "<td>"+attribute+": </td>"
+                    row += "<td>"+data[entry][attribute]+"</td>"
+                    row += "</tr>"
+                    table += row
+                  }
+                  table += "</table>"
+                  $('#edge_information_content').html(table)
+                  // unhide node information 
+                  if (edge_information.hasClass('hidden')) {
+                    edge_information.removeClass('hidden')
+                  }
+                  // hide edge information
+                  if (!node_information.hasClass('hidden')) {
+                    node_information.addClass('hidden')
+                  }
                   break
                 }
               }
