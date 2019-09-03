@@ -4,22 +4,19 @@
         <h3>Inspect different cancer datasets</h3>
     </div>
     <div class="row">
-        <div class="col-2">
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                <a class="nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
-               <!-- <a class="nav-link" id="v-pills-cerna_interactions-tab" data-toggle="pill" href="#v-pills-cerna_interactions" role="tab" aria-controls="v-pills-cerna_interactions" aria-selected="false" target="_self">CeRNA Interactions</a>
-                <a class="nav-link" id="v-pills-advanced_search-tab" data-toggle="pill" href="#v-pills-advanced_search" role="tab" aria-controls="v-pills-advanced_search" aria-selected="false">Advanced Search</a>
-                <a class="nav-link" id="v-pills-downloads-tab" data-toggle="pill" href="#v-pills-downloads" role="tab" aria-controls="v-pills-downloads" aria-selected="false">Downloads</a> -->
-                <a class="nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
+        <div>Currently Selected Run: <select class="selectpicker diseases custom-select auto-width" data-live-search="true"></select> &nbsp; <button class="btn btn-primary" id="selected_disease">Options</button></div>
+        <div class="text-center hidden" id='browse_loading_spinner'>
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
             </div>
         </div>
-        <div class="col-10">
-            <div>Currently Selected Run: <select class="selectpicker diseases" data-live-search="true"></select> &nbsp; <button class="btn btn-primary" id="selected_disease">Options</button></div>
-            <div class="text-center hidden" id='browse_loading_spinner'>
-                <div class="spinner-border" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-            </div>
+        <div class="col-12">
+            <nav class="nav nav-tabs">
+                <a class="nav-item nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
+                <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
+            </nav>
+        </div>
+        <div class="col-12">
             <div class="tab-content" id="v-pills-tabContent">
 
                 <!-- Interactions -->
@@ -53,8 +50,11 @@
                                     </div>
                                     <div class="col-md-2">
                                         <span class="hidden" id='node_data'></span>
+                                        <span class="hidden" id="edge_data"></span>
                                         <div>Node Information:</div>
                                         <div id="node_information"></div>
+                                        <div>Edge Information:</div>
+                                        <div id="edge_information"></div>
                                     </div>
                                 </div>
                             </div>
@@ -126,7 +126,7 @@
                         </div>
                         <div>
                             <p>Select a value to sort by: </p>
-                            <select class="selectpicker sorting-value" title="Select sorting value" data-live-search="true">
+                            <select class="selectpicker sorting-value custom-select auto-width" title="Select sorting value" data-live-search="true">
                                 <option data-value="degree">Degree</option>
                                 <option data-value="betweenness">Betweenness</option>
                                 <option data-value="eigenvector">Eigenvector</option>

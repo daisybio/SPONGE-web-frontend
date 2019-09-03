@@ -176,7 +176,7 @@ export class BrowseComponent implements OnInit {
             }
             let x = getRandomInt(10);
             let y = getRandomInt(10);
-            let size = ordered_data[gene]['Node Degree'];
+            let size = ordered_data[gene]['Eigenvector'];
             let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
           }
@@ -249,11 +249,18 @@ export class BrowseComponent implements OnInit {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            let size = 100*data['mscore'];
+            let size = 100*data[interaction]['mscore'];
             let color = default_edge_color;
-            //let type = line, curve
-            edges.push({id, source, target, size, color})
+            //let type = 'line'//, curve
+            edges.push({
+              id: id, 
+              source: source, 
+              target: target, 
+              size: size, 
+              color: color, 
+            })
           }
+          $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         }
       })
@@ -294,15 +301,15 @@ export class BrowseComponent implements OnInit {
         let download_url = disease_selector.find(":contains("+this.selected_disease+")").attr('data-value')
         let disease_data_link = $('#selector_diseases_link')
         if (download_url.startsWith('http')) {
-          if (disease_data_link.hasClass('disabled')) {
-            disease_data_link.removeClass('disabled')
+          if (disease_data_link.hasClass('hidden')) {
+            disease_data_link.removeClass('hidden')
             disease_data_link.find('button').removeClass('disabled')
           }
           disease_data_link.attr('href', download_url);
         } else {
-          if (!disease_data_link.hasClass('disabled')) {
+          if (!disease_data_link.hasClass('hidden')) {
             disease_data_link.removeAttr('href')
-            disease_data_link.addClass('disabled')
+            disease_data_link.addClass('hidden')
             disease_data_link.find('button').addClass('disabled')
           }
         }
@@ -343,9 +350,11 @@ export class BrowseComponent implements OnInit {
                   enableEdgeHovering: true,
                   edgeHoverColor: '#2ecc71',
                   defaultEdgeHoverColor: '#2ecc71',
-                  edgeHoverSizeRatio: 1,
+                  edgeHoverSizeRatio: 2,
+                  nodeHoverSizeRatio: 2,
                   edgeHoverExtremities: true,
-                  scalingMode: 'outside' 
+                  scalingMode: 'outside',
+                  doubleClickEnabled: false
                 }
               }
             )
@@ -369,11 +378,22 @@ export class BrowseComponent implements OnInit {
               for (let entry in data) {
                 if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
                   $('#node_information').html(JSON.stringify(data[entry], undefined, 2))
+                  break
                 }
               }
             });
 
-            network.bind('clickNode', (e) => {
+            network.bind('overEdge', (e) => {
+              let data = JSON.parse($('#edge_data').text())
+              for (let entry in data) {
+                if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
+                  $('#edge_information').html(JSON.stringify(data[entry], undefined, 2))
+                  break
+                }
+              }
+            })
+
+            network.bind('doubleClickNode', (e) => {
               node_click_function(e)
             })
 
