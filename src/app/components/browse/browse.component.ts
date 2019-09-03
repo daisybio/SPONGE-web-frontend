@@ -629,18 +629,6 @@ export class BrowseComponent implements OnInit {
 
             // Initialize the dragNodes plugin:
             var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-            // TODO: dragging also colors nodes
-            /*
-            dragListener.bind('drag',function(){
-              setTimeout(function () {
-                  network.unbind('clickNode');
-              }, 100);
-            });
-            dragListener.bind('dragend',function(){
-                setTimeout(function(){
-                  network.bind('clickNode', node_click_function);
-                }, 100)
-            });*/
 
             // stop loading
             disease_selector.attr('disabled',false)
