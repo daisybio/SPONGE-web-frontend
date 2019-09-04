@@ -46,7 +46,7 @@ export class Controller {
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
             }
-            if (config.ensg_number != undefined) {
+            if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
             $.getJSON(request,

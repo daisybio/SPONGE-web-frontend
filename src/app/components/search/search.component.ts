@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { ActivatedRoute } from "@angular/router";
+import 'datatables.net';
 
 @Component({
   selector: 'app-search',
@@ -17,7 +18,7 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
 
-    var search_key: String;
+    var search_key: string;
     var parsed_search_result: any;
 
     this.route.queryParams
@@ -25,15 +26,15 @@ export class SearchComponent implements OnInit {
       search_key = params.search_key;
     });
 
-    function push_interaction_filters(table) {
+    function push_interaction_filters(table_id:string) {
       $.fn.dataTable.ext.search.push(
         // filter for mscor
         function( settings, data, dataIndex) {
-          if ( settings.nTable.id !== table ) {
+          if ( settings.nTable.id !== table_id ) {
             return true;
           }
-          var mscore_min = parseFloat( $('#mscore_min_'+table).val());
-          var mscore_max = parseFloat( $('#mscore_max_'+table).val());
+          var mscore_min = parseFloat( $('#mscore_min_'+table_id).val().toString());
+          var mscore_max = parseFloat( $('#mscore_max_'+table_id).val().toString());
           var mscore = parseFloat( data[5] ) || 0; // use data for the mscor column
           if (( isNaN( mscore_min ) && isNaN( mscore_max ) ) ||
                 ( isNaN( mscore_min ) && mscore <= mscore_max ) ||
@@ -46,11 +47,11 @@ export class SearchComponent implements OnInit {
         },
         //  filter for pvalue
         function( settings, data, dataIndex) {
-          if ( settings.nTable.id !== table ) {
+          if ( settings.nTable.id !== table_id ) {
             return true;
           }
-          var pvalue_min = parseFloat( $('#pvalue_min_'+table).val());
-          var pvalue_max = parseFloat( $('#pvalue_max_'+table).val());
+          var pvalue_min = parseFloat( $('#pvalue_min_'+table_id).val().toString());
+          var pvalue_max = parseFloat( $('#pvalue_max_'+table_id).val().toString());
           var pvalue = parseFloat( data[6] ) || 0; // use data for the pvalue column
           if (( isNaN( pvalue_min ) && isNaN( pvalue_max ) ) ||
             ( isNaN( pvalue_min ) && pvalue <= pvalue_max ) ||
@@ -109,7 +110,7 @@ export class SearchComponent implements OnInit {
       let list_diseases = $('#list_diseases')
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('')
-        let table_id = disease_trimmed+"-table"
+        let table_id:string = disease_trimmed+"-table"
         let accordion_card = "<div class='card'>"+
         "<div class='card-header' id='heading_"+disease_trimmed+"'>"+
         "  <h5 class='mb-0'>"+
@@ -153,11 +154,9 @@ export class SearchComponent implements OnInit {
         $('#collapse_'+disease_trimmed).find('.card-body-table').html(html_table)
         
         push_interaction_filters(table_id)
-
         var table = $("#"+table_id).DataTable({
           orderCellsTop: true,
         })
-
         // setup for colsearch
         $('#'+table_id+' thead tr').clone(true).appendTo( '#'+table_id+' thead' )
         $('#'+table_id+' thead tr:eq(1) th').unbind()
@@ -166,10 +165,10 @@ export class SearchComponent implements OnInit {
             $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
     
             $( 'input', this ).on( 'keyup change', function () {
-                if ( table.column(i).search() !== this.value ) {
+                if ( table.column(i).search() !== this['value'] ) {
                     table
                         .column(i)
-                        .search( this.value )
+                        .search( this['value'])
                         .draw();
                 }
             } );
