@@ -156,11 +156,11 @@ export class SearchComponent implements OnInit {
 
         var table = $("#"+table_id).DataTable({
           orderCellsTop: true,
-          fixedHeader: true
         })
 
         // setup for colsearch
         $('#'+table_id+' thead tr').clone(true).appendTo( '#'+table_id+' thead' )
+        $('#'+table_id+' thead tr:eq(1) th').unbind()
         $('#'+table_id+' thead tr:eq(1) th').each( function (i) {
             var title = $(this).text();
             $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
