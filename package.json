@@ -26,6 +26,7 @@
     "datatables.net-buttons-dt": "^1.5.6",
     "datatables.net-colreorder-bs": "^1.5.1",
     "datatables.net-dt": "^1.10.19",
+    "datatables.net-fixedheader": "^3.1.5",
     "jquery": "^3.4.1",
     "jszip": "^3.2.2",
     "pdfmake": "^0.1.58",

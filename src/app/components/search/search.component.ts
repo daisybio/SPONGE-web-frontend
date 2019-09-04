@@ -153,9 +153,34 @@ export class SearchComponent implements OnInit {
         $('#collapse_'+disease_trimmed).find('.card-body-table').html(html_table)
         
         push_interaction_filters(table_id)
-        var table = $("#"+table_id).DataTable()
+
+        var table = $("#"+table_id).DataTable({
+          orderCellsTop: true,
+          fixedHeader: true
+        })
+
+        // setup for colsearch
+        $('#'+table_id+' thead tr').clone(true).appendTo( '#'+table_id+' thead' )
+        $('#'+table_id+' thead tr:eq(1) th').each( function (i) {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    
+            $( 'input', this ).on( 'keyup change', function () {
+                if ( table.column(i).search() !== this.value ) {
+                    table
+                        .column(i)
+                        .search( this.value )
+                        .draw();
+                }
+            } );
+        } );
+        
         $('#mscore_min_'+table_id+', #mscore_max_'+table_id+', #pvalue_min_'+table_id+', #pvalue_max_'+table_id).keyup(()=>{
           table.draw()
+        })
+        // make rows selectable
+        $('#'+table_id+' tbody').on( 'click', 'tr', function () {
+          $(this).toggleClass('selected');
         })
         
       }
@@ -173,7 +198,7 @@ export class SearchComponent implements OnInit {
       if (search_key.startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
           ensg_number: [search_key],
-          limit: 210,
+          limit: 11,
           callback: (response) => {
             parse_cerna_response(response)
             // end loading 
@@ -184,7 +209,7 @@ export class SearchComponent implements OnInit {
         // key is gene symbol
         controller.get_ceRNA_interactions_all({
           gene_symbol: [search_key],
-          limit: 210,
+          limit: 11,
           callback: (response) => {
             parse_cerna_response(response)
             // end loading
