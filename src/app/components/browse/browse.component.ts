@@ -1,5 +1,6 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from "../../control";
+import { Helper } from "../../helper";
 
 import sigma from 'sigma';
 // wtf you have to declare sigma after importing it
@@ -38,6 +39,7 @@ export class BrowseComponent implements OnInit {
     var network
     
     const controller = new Controller()
+    const helper = new Helper()
 
     /* Sigma configurations */
     sigma.classes.graph.addMethod('adjacentEdges', function(id) {
@@ -107,33 +109,6 @@ export class BrowseComponent implements OnInit {
       return Math.floor(Math.random() * Math.floor(max));
     }
 
-    function buildTable(data, table_name, column_names) {
-      var table = document.createElement("table");
-      table.id=table_name;
-      table.className="table table-striped full-width"
-      var thead = document.createElement("thead");
-      var tbody = document.createElement("tbody");
-      var headRow = document.createElement("tr");
-      column_names.forEach(function(el) {
-        var th=document.createElement("th");
-        th.appendChild(document.createTextNode(el));
-        headRow.appendChild(th);
-      });
-      thead.appendChild(headRow);
-      table.appendChild(thead); 
-      data.forEach(function(el) {
-        var tr = document.createElement("tr");
-        for (var o in el) {  
-          var td = document.createElement("td");
-          td.appendChild(document.createTextNode(el[o]))
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);  
-      });
-      table.appendChild(tbody);             
-      return table;
-    }
-
     function load_nodes(disease_trimmed, callback?) {
       let sort_by = $('.selectpicker.sorting-value option:contains('+$('.selectpicker.sorting-value').val()+')').attr('data-value')
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
@@ -175,7 +150,7 @@ export class BrowseComponent implements OnInit {
           }
           // build datatable
           let column_names = Object.keys(ordered_data[0]);
-          $("#interactions-nodes-table-container").append(buildTable(ordered_data,'interactions-nodes-table', column_names))
+          $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
           node_table = $('#interactions-nodes-table').DataTable( {
             columnDefs: [
               { render: function ( ordered_data, type, row ) {
@@ -217,7 +192,7 @@ export class BrowseComponent implements OnInit {
             ordered_data.push(ordered_entry)
           }
           let column_names = Object.keys(ordered_data[0]);
-          $("#interactions-edges-table-container").append(buildTable(ordered_data,'interactions-edges-table', column_names))
+          $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
           edge_table = $('#interactions-edges-table').DataTable({
             columnDefs: [
               { render: function ( ordered_data, type, row ) {

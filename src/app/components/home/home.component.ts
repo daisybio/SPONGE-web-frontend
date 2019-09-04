@@ -1,9 +1,6 @@
-declare var $;
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-//import * as $ from "jquery";
-import * as sigma from 'sigma-webpack';
-import { ActivatedRoute } from "@angular/router";
 declare var Plotly: any;
+declare var $: any;
 
 
 @Component({
@@ -12,25 +9,10 @@ declare var Plotly: any;
   styleUrls: ['./home.component.less']
 })
 export class HomeComponent implements OnInit {
-  home_search: string;
-  constructor(private route: ActivatedRoute) { }
+  
+  constructor() { }
 
   ngOnInit() {
-    this.route.queryParams
-    .subscribe(params => {
-      this.home_search = params.home_search;
-    });
-
-    if (this.home_search != undefined) {
-      // check if gene or mirna
-      if (this.home_search ) {
-        // gene
-      }
-    }
-    
-    $('#home_search_button').click( () => {
-      let input = $('#home_search').val()
-      })
 
  //   $(document).ready(function(){
       $('[data-toggle="popover_search_info"]').popover({
@@ -39,6 +21,8 @@ export class HomeComponent implements OnInit {
   //  });
 
  
+  var search_result_path = "../../../src/assets/response_1567548219781.json"
+
 
  var mRNAcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
  var Coorelationcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
@@ -47,15 +31,11 @@ export class HomeComponent implements OnInit {
 
  function processData(mRNAcsv, Coorelationcsv) {
   var xmRNA=[]; var ymRNA=[]; var xCorr=[]; var yCorr=[];
-	console.log(mRNAcsv);
-
-  
 
 	for (var i=0; i<mRNAcsv.length; i++) {
 		var row = mRNAcsv[i];
 		xmRNA.push( row['Cancer Type'] );
     ymRNA.push( row['Predicted mRNAs'] );
-    console.log( 'T',xmRNA, 'T',ymRNA);
   }
   
   for (var i=0; i<Coorelationcsv.length; i++) {
@@ -207,8 +187,17 @@ Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
 
 }
 
-
   processData(mRNAcsv,Coorelationcsv);
+
+  /* Search function for home component */
+  $('#home_search_button').click(() => {
+    let search_key = $('#home_search').val()
+    // replace possible empty spaces
+    search_key = search_key.replace(' ', '')
+    window.open( '/search?search_key='+search_key, '_top')
+
+  })
+
 
 }
 
