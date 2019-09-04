@@ -163,6 +163,8 @@ export class SearchComponent implements OnInit {
 
     /* search_key is defined */
     if (search_key != undefined) {
+      // start loading data
+      $('#loading_spinner_results').removeClass('hidden')
       parsed_search_result = {}
       parsed_search_result['diseases'] = {}
       parsed_search_result['key'] = undefined
@@ -171,18 +173,22 @@ export class SearchComponent implements OnInit {
       if (search_key.startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
           ensg_number: [search_key],
-          limit: 21,
+          limit: 210,
           callback: (response) => {
             parse_cerna_response(response)
+            // end loading 
+            $('#loading_spinner_results').addClass('hidden')
           }
         })
       } else {
         // key is gene symbol
         controller.get_ceRNA_interactions_all({
           gene_symbol: [search_key],
-          limit: 21,
+          limit: 210,
           callback: (response) => {
             parse_cerna_response(response)
+            // end loading
+            $('#loading_spinner_results').addClass('hidden')
           }
         })
       }
