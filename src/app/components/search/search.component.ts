@@ -89,6 +89,17 @@ export class SearchComponent implements OnInit {
           }
         }
 
+        // Set key-gene information
+        let key_information = {
+          gene: parsed_search_result['key']['ensg_number'],
+          gene_symbol: parsed_search_result['key']['gene_symbol'],
+          chromosome: parsed_search_result['key']['chromosome_name']
+        }
+        let key_information_sentence = "For gene "+key_information['gene']+
+        " ("+key_information['gene_symbol']+") on chromosome "+key_information['chromosome']
+
+        $('#key_information').html(key_information_sentence)
+
         if (!(disease in parsed_search_result['diseases'])) {
           parsed_search_result['diseases'][disease] = []
         }
