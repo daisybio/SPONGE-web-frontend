@@ -19,12 +19,59 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
 
     var search_key: string;
+    var key_is_ensg = false;
+    var key_is_gene_symbol = false;
+    var key_is_mimat = false;
     var parsed_search_result: any;
 
     this.route.queryParams
     .subscribe(params => {
       search_key = params.search_key;
     });
+
+    main()
+
+
+    function main() {
+      /* search_key is defined */
+      if (search_key != undefined) {
+        // start loading data
+        $('#loading_spinner_results').removeClass('hidden')
+        parsed_search_result = {}
+        parsed_search_result['diseases'] = {}
+        parsed_search_result['key'] = undefined
+
+        // check if key is ENSG number
+        if (search_key.startsWith('ENSG')) {
+          key_is_ensg = true;
+          key_is_gene_symbol = false;
+          key_is_mimat = false;
+          controller.get_ceRNA_interactions_all({
+            ensg_number: [search_key],
+            limit: 11,
+            callback: (response) => {
+              parse_cerna_response(response)
+              // end loading 
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        } else {
+          // key is gene symbol
+          key_is_ensg = false;
+          key_is_gene_symbol = true;
+          key_is_mimat = false;
+          controller.get_ceRNA_interactions_all({
+            gene_symbol: [search_key],
+            limit: 11,
+            callback: (response) => {
+              parse_cerna_response(response)
+              // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        }
+      }
+    }
 
     function push_interaction_filters(table_id:string) {
       $.fn.dataTable.ext.search.push(
@@ -73,7 +120,7 @@ export class SearchComponent implements OnInit {
         // parse the information
         let correlation = interaction['correlation']
         // usually get information for other gene, extract information for key gene only once
-        if (interaction['gene1']['ensg_number'] == search_key) {
+        if (interaction['gene1']['ensg_number'] == search_key || interaction['gene1']['gene_symbol'] == search_key) {
           // gene1 is search gene, gene2 is not 
           gene_to_extract = 'gene2'
           // get search gene info if still undefined
@@ -88,17 +135,6 @@ export class SearchComponent implements OnInit {
             parsed_search_result['key'] = interaction['gene2']
           }
         }
-
-        // Set key-gene information
-        let key_information = {
-          gene: parsed_search_result['key']['ensg_number'],
-          gene_symbol: parsed_search_result['key']['gene_symbol'],
-          chromosome: parsed_search_result['key']['chromosome_name']
-        }
-        let key_information_sentence = "For gene "+key_information['gene']+
-        " ("+key_information['gene_symbol']+") on chromosome "+key_information['chromosome']
-
-        $('#key_information').html(key_information_sentence)
 
         if (!(disease in parsed_search_result['diseases'])) {
           parsed_search_result['diseases'][disease] = []
@@ -116,6 +152,20 @@ export class SearchComponent implements OnInit {
         parsed_search_result['diseases'][disease].push(interaction_info)
       
       }); // end for each
+
+      // Set key-gene information
+      let key_information = {
+        gene: parsed_search_result['key']['ensg_number'],
+        gene_symbol: parsed_search_result['key']['gene_symbol'],
+        chromosome: parsed_search_result['key']['chromosome_name']
+      }
+      let key_information_sentence = "For gene "+key_information['gene']
+      if (key_information['gene_symbol'] != '') {
+        key_information_sentence += " ("+key_information['gene_symbol']+")" 
+      }
+      key_information_sentence += " on chromosome "+key_information['chromosome']
+
+      $('#key_information').html(key_information_sentence)
 
       // build table out of parsed result for each disease
       let list_diseases = $('#list_diseases')
