@@ -6,7 +6,6 @@ import sigma from 'sigma';
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
 
-//import 'datatables.net';
 declare var $;
 // dirty solution 
 declare var require: any

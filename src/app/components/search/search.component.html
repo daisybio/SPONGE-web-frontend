@@ -8,7 +8,48 @@
         <div class="row">
             <div class="col-md-12">
                 <h3>Options</h3>
+                <div class="col-md-auto select-field">
+                    <span>Cancer Type:</span>&nbsp;
+                    <select class="selectpicker diseases custom-select auto-width" show-subtext="true" data-live-search="true"></select>
+                </div>
             </div>
+        </div>
+
+        <div id="options_gene" class="hidden">
+            <p>Searching for a gene</p>
+            <table> 
+                <td>
+                    <tr>
+                        <p class='ensg_number'>Enter ENSG-number or Gene-Symbol: </p>
+                        <p>Limit: </p>
+                    </tr>
+                </td>
+                <td>
+                    <tr>
+                        <input type="text" class="form-control ensg_number" id="gene_search_keys">
+                        <input type="text" class="form-control" id="gene_input_limit"> 
+                    </tr>
+                </td>
+            </table>
+            <button class='btn btn-primary' id='options_gene_go'>Go</button>
+        </div>
+        <div id="options_mirna" class="hidden">
+            <p>Searching for miRNA</p>
+            <table>
+                <td>
+                    <tr>
+                        <p class='mimat_number'>Enter Mimat-Number or HS-Number: </p>
+                        <p>Limit: </p>
+                    </tr>
+                </td>
+                <td>
+                    <tr>
+                        <input type="text" class="form-control mimat_number" id="mirn_search_keys">
+                        <input type="text" class="form-control" id='mirna_input_limit'>
+                    </tr>
+                </td>
+            </table>
+            <button class='btn btn-primary' id='options_mirna_go'>Go</button>
         </div>
 
         <hr/>

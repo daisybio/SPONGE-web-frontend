@@ -3,6 +3,7 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { ActivatedRoute } from "@angular/router";
 import 'datatables.net';
+declare var $;
 
 @Component({
   selector: 'app-search',
@@ -19,6 +20,7 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
 
     var search_key: string;
+    var limit: number;
     var parsed_search_result: any;
 
     this.route.queryParams
@@ -26,11 +28,37 @@ export class SearchComponent implements OnInit {
         search_key = params.search_key;
       });
 
+    let disease_selector = $('.selectpicker.diseases')
+    controller.get_datasets(
+      data => {
+        for (let disease in data) {
+          disease_selector.append(
+            "<option data-subtext ="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
+          )
+        }
+    })
 
-    main()
+    $('#options_gene_go').click( () => {
+      search_key = $('#gene_search_keys').val()
+      limit = $('#gene_input_limit').val()
+      search(limit)
+    })
+
+    $('#options_mirna_go').click( () => {
+      search_key = $('#mirna_search_keys').val()
+      limit = $('#mirna_input_limit').val()
+      search(limit)
+    })
 
 
-    function main() {
+    search()
+
+
+    function search(limit = 11) {
+      // clear older search-results
+      $('#key_information').empty()
+      $('#disease_accordion').empty()
+
       /* search_key is defined */
       if (search_key != undefined) {
         // start loading data
@@ -41,9 +69,11 @@ export class SearchComponent implements OnInit {
 
         // check if key is ENSG number
         if (search_key.startsWith('ENSG')) {
+          $('#options_gene').removeClass('hidden')
+          $('#gene_search_keys').val(search_key)
           controller.get_ceRNA_interactions_all({
             ensg_number: [search_key],
-            limit: 11,
+            limit: limit,
             callback: (response) => {
               parse_cerna_response(response)
               // end loading 
@@ -52,8 +82,10 @@ export class SearchComponent implements OnInit {
           })
         } else if (search_key.startsWith('MIMAT')) {
           // key is MIMAT number
+          $('#options_mirna').removeClass('hidden')
+          $('#mirna_input_limit').val(search_key)
           controller.get_miRNA_interactions_all({
-            limit: 11,
+            limit: limit,
             mimat_number: [search_key],
             callback: (response) => {
               parse_mirna_response(response)
@@ -63,8 +95,10 @@ export class SearchComponent implements OnInit {
           })
         } else if (search_key.startsWith('hsa-miR-')) {
           // key is hsa number
+          $('#options_mirna').removeClass('hidden')
+          $('#mirna_input_limit').val(search_key)
           controller.get_miRNA_interactions_all({
-            limit: 11,
+            limit: limit,
             hs_number: [search_key],
             callback: (response) => {
               parse_mirna_response(response)
@@ -74,9 +108,11 @@ export class SearchComponent implements OnInit {
           })
         } else {
           // key is gene symbol
+          $('#options_gene').removeClass('hidden')
+          $('#gene_search_keys').val(search_key)
           controller.get_ceRNA_interactions_all({
             gene_symbol: [search_key],
-            limit: 11,
+            limit: limit,
             callback: (response) => {
               parse_cerna_response(response)
               // end loading
