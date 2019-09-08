@@ -26,6 +26,127 @@ export class SearchComponent implements OnInit {
       search_key = params.search_key;
     });
 
+
+    main()
+
+
+    function main() {
+      /* search_key is defined */
+      if (search_key != undefined) {
+        // start loading data
+        $('#loading_spinner_results').removeClass('hidden')
+        parsed_search_result = {}
+        parsed_search_result['diseases'] = {}
+        parsed_search_result['key'] = undefined
+
+        // check if key is ENSG number
+        if (search_key.startsWith('ENSG')) {
+          controller.get_ceRNA_interactions_all({
+            ensg_number: [search_key],
+            limit: 11,
+            callback: (response) => {
+              parse_cerna_response(response)
+              // end loading 
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        } else if (search_key.startsWith('MIMAT')) {
+          // key is MIMAT number
+          controller.get_miRNA_interactions_all({
+            // limit: 11,
+            mimat_number: [search_key],
+            callback: (response) => {
+              parse_mirna_response(response)
+              // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        } else if (search_key.startsWith('hs')){
+          // key is hsa number
+          controller.get_miRNA_interactions_all({
+            limit: 11,
+            hs_number: [search_key],
+            callback: (response) => {
+              parse_mirna_response(response)
+              // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        } else {
+          // key is gene symbol
+          controller.get_ceRNA_interactions_all({
+            gene_symbol: [search_key],
+            limit: 11,
+            callback: (response) => {
+              parse_cerna_response(response)
+              // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            }
+          })
+        }
+      }
+    }
+
+    function parse_mirna_response(response) {
+      // get information aboout search key
+      let key_information = response[0]['mirna']
+      let key_information_sentence = "Results for "+key_information['mir_ID']+" ("+key_information['hs_nr']+")"
+      $('#key_information').html(key_information_sentence)
+
+      // parse response
+      response.forEach(interaction => {
+        let row = {}
+        let gene_gene = interaction['interactions_genegene']
+        row['Gene1'] = gene_gene['gene1']['ensg_number']
+        row['Gene1 Symbol'] = gene_gene['gene1']['gene_symbol']
+        row['Gene2'] = gene_gene['gene2']['ensg_number']
+        row['Gene2 Symbol'] = gene_gene['gene2']['gene_symbol']
+        let disease = gene_gene['run']['dataset']
+        if (disease in parsed_search_result['diseases']){
+          parsed_search_result['diseases'][disease].push(row)
+        } else {
+          parsed_search_result['diseases'][disease] = [row]
+        }
+      })
+
+      // build html for response_data
+      for (let disease in parsed_search_result['diseases']) {
+        let disease_trimmed = disease.split(' ').join('')
+        let table_id:string = disease_trimmed+"-table"
+        let accordion_card = "<div class='card'>"+
+        "<div class='card-header' id='heading_"+disease_trimmed+"'>"+
+          "<h5 class='mb-0'>"+
+            "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_"+disease_trimmed+"' aria-expanded='false' aria-controls='collapse_"+disease_trimmed+"'>"+
+              disease+
+            "</button>"+
+          "</h5>"+
+        "</div>"+
+        "<div id='collapse_"+disease_trimmed+"' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>"+
+          "<div class='card-body'>"+ 
+              "<div class='card-body-table'></div>"+
+            "</div>"+
+        "</div>"
+        $('#disease_accordion').append(accordion_card)
+        
+        let html_table = helper.buildTable(
+          parsed_search_result['diseases'][disease], 
+          table_id, 
+          Object.keys(parsed_search_result['diseases'][disease][0])
+          )
+        $('#collapse_'+disease_trimmed).find('.card-body-table').html(html_table)
+        
+        var table = $("#"+table_id).DataTable({
+          orderCellsTop: true,
+        })
+        helper.colSearch(table_id, table)
+        
+        // make rows selectable
+        $('#'+table_id+' tbody').on( 'click', 'tr', function () {
+          $(this).toggleClass('selected');
+        })
+      }
+    }
+
     function push_interaction_filters(table_id:string) {
       $.fn.dataTable.ext.search.push(
         // filter for mscor
@@ -73,7 +194,7 @@ export class SearchComponent implements OnInit {
         // parse the information
         let correlation = interaction['correlation']
         // usually get information for other gene, extract information for key gene only once
-        if (interaction['gene1']['ensg_number'] == search_key) {
+        if (interaction['gene1']['ensg_number'] == search_key || interaction['gene1']['gene_symbol'] == search_key) {
           // gene1 is search gene, gene2 is not 
           gene_to_extract = 'gene2'
           // get search gene info if still undefined
@@ -88,17 +209,6 @@ export class SearchComponent implements OnInit {
             parsed_search_result['key'] = interaction['gene2']
           }
         }
-
-        // Set key-gene information
-        let key_information = {
-          gene: parsed_search_result['key']['ensg_number'],
-          gene_symbol: parsed_search_result['key']['gene_symbol'],
-          chromosome: parsed_search_result['key']['chromosome_name']
-        }
-        let key_information_sentence = "For gene "+key_information['gene']+
-        " ("+key_information['gene_symbol']+") on chromosome "+key_information['chromosome']
-
-        $('#key_information').html(key_information_sentence)
 
         if (!(disease in parsed_search_result['diseases'])) {
           parsed_search_result['diseases'][disease] = []
@@ -117,6 +227,20 @@ export class SearchComponent implements OnInit {
       
       }); // end for each
 
+      // Set key-gene information
+      let key_information = {
+        gene: parsed_search_result['key']['ensg_number'],
+        gene_symbol: parsed_search_result['key']['gene_symbol'],
+        chromosome: parsed_search_result['key']['chromosome_name']
+      }
+      let key_information_sentence = "For gene "+key_information['gene']
+      if (key_information['gene_symbol'] != '') {
+        key_information_sentence += " ("+key_information['gene_symbol']+")" 
+      }
+      key_information_sentence += " on chromosome "+key_information['chromosome']
+
+      $('#key_information').html(key_information_sentence)
+
       // build table out of parsed result for each disease
       let list_diseases = $('#list_diseases')
       for (let disease in parsed_search_result['diseases']) {
@@ -125,35 +249,36 @@ export class SearchComponent implements OnInit {
         let accordion_card = "<div class='card'>"+
         "<div class='card-header' id='heading_"+disease_trimmed+"'>"+
         "  <h5 class='mb-0'>"+
-            "<button class='btn btn-link' data-toggle='collapse' data-target='#collapse_"+disease_trimmed+"' aria-expanded='true' aria-controls='collapse_"+disease_trimmed+"'>"+
+            "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_"+disease_trimmed+"' aria-expanded='false' aria-controls='collapse_"+disease_trimmed+"'>"+
               disease+
             "</button>"+
           "</h5>"+
         "</div>"+
-        "<div id='collapse_"+disease_trimmed+"' class='collapse show' aria-labelledby='headingOne' data-parent='#disease_accordion'>"+
-          "<div class='card-body'>"+
+        "<div id='collapse_"+disease_trimmed+"' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>"+
+          "<div class='card-body'>"+ 
             "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_"+table_id+"' aria-expanded='false'>"+
                 "Options"+
             "</button>"+
+            "<button class='btn btn-secondary button-margin' type='button' id='expression_"+disease_trimmed+"'>"+
+              "Raw expression data"+
+            "</button>"+
             "<div class='collapse' id='control_"+table_id+"'>"+
                 "<div class='card card-body'>"+
-                "<div>"+
-                  "<p>Set filter for mscor</p>"+
-                  "<span>Minimum: </span><input type='text' id='mscore_min_"+table_id+"' name='mscore_min'>&nbsp;"+
-                  "<span>Maximum: </span><input type='text' id='mscore_max_"+table_id+"' name='mscore_max'>"+
-                "</div>"+
-                "<hr>"+
-                "<div>"+
-                    "<p>Set filter for P-value</p>"+
-                    "<span>Minimum: </span><input type='text' id='pvalue_min_"+table_id+"' name='pvalue_min'>&nbsp;"+
-                    "<span>Maximum: </span><input type='text' id='pvalue_max_"+table_id+"' name='pvalue_max'>"+
+                  "<div>"+
+                    "<p>Set filter for mscor</p>"+
+                    "<span>Minimum: </span><input type='text' id='mscore_min_"+table_id+"' name='mscore_min'>&nbsp;"+
+                    "<span>Maximum: </span><input type='text' id='mscore_max_"+table_id+"' name='mscore_max'>"+
+                  "</div>"+
+                  "<hr>"+
+                  "<div>"+
+                      "<p>Set filter for P-value</p>"+
+                      "<span>Minimum: </span><input type='text' id='pvalue_min_"+table_id+"' name='pvalue_min'>&nbsp;"+
+                      "<span>Maximum: </span><input type='text' id='pvalue_max_"+table_id+"' name='pvalue_max'>"+
+                  "</div>"+
                 "</div>"+
               "</div>"+
+              "<div class='card-body-table'></div>"+
             "</div>"+
-            "<div class='card-body-table'></div>"+
-           ""+
-          "</div>"+
-        "</div>"+
         "</div>"
         $('#disease_accordion').append(accordion_card)
         
@@ -168,22 +293,7 @@ export class SearchComponent implements OnInit {
         var table = $("#"+table_id).DataTable({
           orderCellsTop: true,
         })
-        // setup for colsearch
-        $('#'+table_id+' thead tr').clone(true).appendTo( '#'+table_id+' thead' )
-        $('#'+table_id+' thead tr:eq(1) th').unbind()
-        $('#'+table_id+' thead tr:eq(1) th').each( function (i) {
-            var title = $(this).text();
-            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-    
-            $( 'input', this ).on( 'keyup change', function () {
-                if ( table.column(i).search() !== this['value'] ) {
-                    table
-                        .column(i)
-                        .search( this['value'])
-                        .draw();
-                }
-            } );
-        } );
+        helper.colSearch(table_id, table)
         
         $('#mscore_min_'+table_id+', #mscore_max_'+table_id+', #pvalue_min_'+table_id+', #pvalue_max_'+table_id).keyup(()=>{
           table.draw()
@@ -192,43 +302,24 @@ export class SearchComponent implements OnInit {
         $('#'+table_id+' tbody').on( 'click', 'tr', function () {
           $(this).toggleClass('selected');
         })
-        
-      }
-    }
 
-    /* search_key is defined */
-    if (search_key != undefined) {
-      // start loading data
-      $('#loading_spinner_results').removeClass('hidden')
-      parsed_search_result = {}
-      parsed_search_result['diseases'] = {}
-      parsed_search_result['key'] = undefined
-
-      // check if key is ENSG number
-      if (search_key.startsWith('ENSG')) {
-        controller.get_ceRNA_interactions_all({
-          ensg_number: [search_key],
-          limit: 11,
+        // BUTTON: load expression information for gene in this disease
+        let config = {
+          disease_name: disease.split(' ').join('%20'),
           callback: (response) => {
-            parse_cerna_response(response)
-            // end loading 
-            $('#loading_spinner_results').addClass('hidden')
+            // open raw expression data in new tab
+            window.open("data:text/json," + encodeURIComponent(JSON.stringify(response)), "_blank");
           }
-        })
-      } else {
-        // key is gene symbol
-        controller.get_ceRNA_interactions_all({
-          gene_symbol: [search_key],
-          limit: 11,
-          callback: (response) => {
-            parse_cerna_response(response)
-            // end loading
-            $('#loading_spinner_results').addClass('hidden')
-          }
+        };
+        if (search_key.startsWith('ENSG')) {
+          config['ensg_number'] = [key_information['gene']]
+        } else {
+          config['gene_symbol'] = [key_information['gene_symbol']]
+        }
+        $('#expression_'+disease_trimmed).click(() => {
+          controller.get_expression_ceRNA(config)
         })
       }
     }
-
   }
-
 }

@@ -9,15 +9,83 @@ export class Controller {
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static FIND_CERNA = "/findceRNA"
-    // static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
+
+    static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
     // static MIRNA_INTERACTION_FIND_CERNA = "/miRNAInteraction/findceRNA"
     // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
     static DATASETS = "/dataset"
     static DATASET_INFORMATION = "/dataset/runInformation"
 
-    // static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
+    static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
     // static EXPRESSION_VALUE_MIRNA = "/exprValue/getmirNA"
+    
+
+    public get_miRNA_interactions_all(
+        config: {
+            disease_name?: string,
+            mimat_number?: string[],
+            hs_number?: string[],
+            limit?: number,
+            offset?: number,
+            information?: number,
+            callback: (data) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_SPECIFIC
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            if (config.disease_name != undefined) {
+                request += "&disease_name="+config.disease_name
+            }
+            if (config.mimat_number != undefined) {
+                request += "&mimat_number="+config.mimat_number
+            }
+            if (config.hs_number != undefined) {
+                request += "&hs_number="+config.hs_number
+            }
+            if (config.limit != undefined) {
+                request += "&limit="+config.limit
+            }
+            if (config.offset != undefined) {
+                request += "&offset="+config.offset
+            }
+            if (config.information != undefined) {
+                request += "&information="+config.information
+            }
+            $.getJSON(request,
+                data => {
+                    return config.callback(data)
+                }
+            )
+        }
+
+    public get_expression_ceRNA(
+        config: {
+            disease_name: string,
+            ensg_number?: string[],
+            gene_symbol?: string[],
+            callback: (data) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.EXPRESSION_VALUE_CERNA
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            request += "&disease_name="+config.disease_name
+            if (config.ensg_number != undefined) {
+                request += "&ensg_number="+config.ensg_number
+            }
+            if (config.gene_symbol != undefined) {
+                request += "&gene_symbol="+config.gene_symbol
+            }
+            $.getJSON(request,
+                data => {
+                    return config.callback(data)
+                }
+            )
+        }
  
     public get_ceRNA_interactions_all(
         config: {

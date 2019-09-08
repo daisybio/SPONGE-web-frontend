@@ -121,6 +121,7 @@ export class BrowseComponent implements OnInit {
       controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector,
       'callback': data => {
           let ordered_data = [];
+          // let ensg_numbers = []
           for (let i=0; i < Object.keys(data).length; i++) {
             let entry = data[i]
             // change order of columns alredy in object
@@ -129,6 +130,7 @@ export class BrowseComponent implements OnInit {
             for (let x in entry['gene']) {
               entry[x] = entry['gene'][x]
             }
+            // ensg_numbers.push(entry['ensg_number'])
             ordered_entry['ENSG Number'] = entry['ensg_number']
             ordered_entry['Gene Symbol'] = entry['gene_symbol']
             ordered_entry['Betweeness'] = entry['betweeness']
@@ -172,6 +174,10 @@ export class BrowseComponent implements OnInit {
           } );
           // save data for later search
           $('#node_data').text(JSON.stringify(ordered_data))
+
+          /* plot expression data for nodes */
+          //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
+
           return callback(nodes)
           }
       })
@@ -365,7 +371,7 @@ export class BrowseComponent implements OnInit {
           }
         )
 
-        /* Construct sigma js network plot */
+        /* Construct sigma js network plot and expression plot*/
         // load interaction data (edges), load network data (nodes)
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})

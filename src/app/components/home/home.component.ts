@@ -20,15 +20,10 @@ export class HomeComponent implements OnInit {
      });     
   //  });
 
- 
-  var search_result_path = "../../../src/assets/response_1567548219781.json"
-
-
  var mRNAcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
  var Coorelationcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
  
-
-
+ 
  function processData(mRNAcsv, Coorelationcsv) {
   var xmRNA=[]; var ymRNA=[]; var xCorr=[]; var yCorr=[];
 
