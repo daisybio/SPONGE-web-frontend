@@ -1,35 +1,94 @@
-<div class="container">
-    <div class="header text-center">
-        <h1>Browse</h1>
-        <h3>Inspect different cancer datasets</h3>
-    </div>
-    <div class="row">
-        <div>Currently Selected Run: <select class="selectpicker diseases custom-select auto-width" data-live-search="true"></select> &nbsp; <button class="btn btn-primary" id="selected_disease">Options</button></div>
+    <div class="nav-side-menu">
+        <div class="brand">Browse the Database
 
-        <div class="text-center button-margin hidden" id='browse_loading_spinner'>
-            <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
         </div>
+       
+            <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+      
+            <div class="menu-list">
+      
+                <ul id="menu-content" class="menu-content collapse out">
+                    
+                   
+                        <li data-toggle="collapse" data-target="#service" class="collapsed" id="v-pills-interactions-collapse" href="#v-pills-interactions">
+                                <a class="nav-item nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">
+                                        <i class="fa fa-rocket fa-lg"> </i>Interactions <span class="arrow"></span> 
+                                </a> 
+                         
+                            
+                        </li>  
+                    
+                    <ul class="sub-menu collapse show" id="service">
+                        <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true"><li>Network</li> </a>
+                        <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false" > <li>Nodes</li> </a>
+                        <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false"> <li>Edges</li></a>
+                    </ul>                         
+        
+                </ul>
+                    
+             </div>
+             <li>
+                    <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">                      
+                            <i class="fa fa-info-circle fa-lg"></i> Run Information
+                    </a>  
+                    
+                           
+                        
+            </li>
+    </div>
 
-        <div class="col-12">
+    <!--Upper section with title, select and the spinner-->
+    <div class="container-titel">
+        <div class="row align-items-center">
+                 <div class="col-md-auto header">
+                    <h1>Browse</h1>
+                    <h3>Inspect different cancer datasets</h3>
+                </div>
+                
+                <div class="col-md-auto select-field"><p>Currently Selected Run:</p><select class="selectpicker diseases custom-select auto-width" data-live-search="true"></select> &nbsp; <button class="btn btn-primary" id="selected_disease">Options</button></div>
+                    <div class="text-center hidden " id='browse_loading_spinner'>
+                            <div class="spinner-center" role="status" id="overlay">
+                    
+                                    <div class="row">
+                                        <div class="cssload-thecube">
+                                        <div class="cssload-cube cssload-c1"></div>
+                                        <div class="cssload-cube cssload-c2"></div>
+                                        <div class="cssload-cube cssload-c4"></div>
+                                        <div class="cssload-cube cssload-c3"></div>
+                                    
+                                    </div>
+                                    <div class="spinner-text">Loading</div> 
+                            </div>
+                    </div>
+                </div>
+         </div>
+    </div>
+
+
+  <div class="container">       
+    
+    <div class="row">
+        
+      <!--  <div class="col-12">
             <nav class="nav nav-tabs">
                 <a class="nav-item nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
                 <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
             </nav>
         </div>
+    -->
         <div class="col-12">
             <div class="tab-content" id="v-pills-tabContent">
 
                 <!-- Interactions -->
                 <div class="tab-pane fade show active" id="v-pills-interactions" role="tabpanel" aria-labelledby="v-pills-interactions-tab">
-                    <nav>
+                 <!--   <nav>
                         <div class="nav nav-tabs" id="nav-tab" role="tablist">
                             <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true">Network</a>
                             <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false">Nodes</a>
                             <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false">Edges</a>
                         </div>
-                    </nav>
+                    </nav> 
+                -->
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                             <div class="container">
@@ -134,7 +193,7 @@
 
                 <!-- Downloads 
                 <div class="tab-pane fade" id="v-pills-downloads" role="tabpanel" aria-labelledby="v-pills-downloads-tab">...</div>
-            -->
+              -->
                 <!-- Run Information -->
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                     <table>
@@ -174,7 +233,7 @@
                         </button>
                         <a id="selector_diseases_link" href="" target="_blank">
                                 <button type="button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
-                            </button>
+                                </button>
                         </a>
                         <div class="collapse" id="collapseExample">
                             <div class="card card-body">
@@ -185,7 +244,8 @@
                     </div>
                     
                 </div>
+
             </div>
         </div>
-    </div>
+     </div>
 </div>
