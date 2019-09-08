@@ -328,6 +328,7 @@ export class BrowseComponent implements OnInit {
         // start loading
         disease_selector.attr('disabled',true)
         $('#browse_loading_spinner').removeClass('hidden')
+       
 
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
