@@ -67,6 +67,9 @@ export class BrowseComponent implements OnInit {
       return edges;
     });
 
+    
+
+
     /* Datatable configurations */
     $.fn.dataTable.ext.search.push(
       // filter for mscor
@@ -271,6 +274,65 @@ export class BrowseComponent implements OnInit {
       })
     }
 
+    $("#v-pills-interactions-tab").on('click',function(){
+      if($('#v-pills-run_information-tab').hasClass('active')){
+        $('#v-pills-run_information-tab').removeClass('active')
+  
+      
+      }
+    })
+
+    $("#v-pills-run_information-tab").on('click',function(){
+      if($('#v-pills-interactions-tab').hasClass('active')){
+        $('#v-pills-interactions-tab').removeClass('active')
+        $('#v-pills-interactions-collapse').attr('aria-expanded', false);
+      
+        
+        $('#service').removeClass('show')
+       $('#v-pills-interactions-collapse').addClass('collapsed')
+      
+      }
+    })
+
+    $("#nav-edges-tab").on('click',function(){
+      if($(this).hasClass('active')){
+        $(this).removeClass('active')}
+      if($('#nav-nodes-tab').hasClass('active')){
+        $('#nav-nodes-tab').removeClass('active')
+      }   
+      if($('#nav-overview-tab').hasClass('active')){
+        $('#nav-overview-tab').removeClass('active')
+      }            
+         
+
+    })
+
+    $("#nav-nodes-tab").on('click',function(){
+      if($(this).hasClass('active')){
+        $(this).removeClass('active')}
+      if($('#nav-edges-tab').hasClass('active')){
+        $('#nav-edges-tab').removeClass('active')
+      }   
+      if($('#nav-overview-tab').hasClass('active')){
+        $('#nav-overview-tab').removeClass('active')
+      }            
+         
+
+    })
+
+    $("#nav-overview-tab").on('click',function(){
+      if($(this).hasClass('active')){
+      $(this).removeClass('active')}
+      if($('#nav-edges-tab').hasClass('active')){
+        $('#nav-edges-tab').removeClass('active')
+      }   
+      if($('#nav-nodes-tab').hasClass('active')){
+        $('#nav-nodes-tab').removeClass('active')
+      }            
+         
+
+    })
+
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
@@ -289,6 +351,8 @@ export class BrowseComponent implements OnInit {
           $('#load_disease').click()
       })
 
+
+     
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
