@@ -53,7 +53,7 @@ export class SearchComponent implements OnInit {
         } else if (search_key.startsWith('MIMAT')) {
           // key is MIMAT number
           controller.get_miRNA_interactions_all({
-            // limit: 11,
+            limit: 11,
             mimat_number: [search_key],
             callback: (response) => {
               parse_mirna_response(response)
