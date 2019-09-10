@@ -5,7 +5,7 @@ export class Controller {
     constructor() {
     }
 
-    static API_ENDPOINT = "http://10.162.163.20:5000/sponge"
+    static API_ENDPOINT = "http://10.162.163.32:5000/sponge"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static FIND_CERNA = "/findceRNA"
