@@ -31,12 +31,12 @@
                     
              </div>
              <li>
-                    <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">                      
+                    <a class="nav-item nav-link" id="v-pills-run_information-tab" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">                      
                             <i class="fa fa-info-circle fa-lg"></i> Run Information
                     </a>  
              </li>
              <li>
-
+                <!--Run information tab in sidenav-->
                     <div class="container-fluid" id="run-info">
                         <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                             <table>
@@ -47,11 +47,10 @@
                                         <p>Set a cutoff for degree (lower bound): </p>
                                         <p>Set a cutoff for eigenvector (lower bound): </p>
                                         <p>Set a Limit for displayed data</p>
-                                        <p id="text">(the more the slower): </p>
-                                        
-                                        
+                                        <p id="text">(the more the slower): </p>                          
                                     </tr>
                                 </td>
+
                                 <td> 
                                     <tr>
                                         <select class="selectpicker sorting-value custom-select auto-width" id="run-info-select" title="Select sorting value" data-live-search="true">
@@ -62,8 +61,7 @@
                                         
                                         <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
                                         <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>    
                                         <input type="text" class="form-control" id="input_limit" value=10>
                                     </tr>
                                 </td>
@@ -77,12 +75,14 @@
                                 <button id="load_disease" type="button" class="btn btn-primary">Go</button>
 
                                 <button class="btn btn-secondary" id="end-button" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                                        Show current run
+                                        Data of visualized run 
                                 </button>
                                 <a id="selector_diseases_link"  href="" target="_blank">
                                         <button type="button" id="end-button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
                                         </button>
                                 </a>
+                                <!--Displays the data of the currently shown run--> 
+                                <!--TO-DO maybe add info what each entrie means-->
                                 <div class="collapse" id="collapseExample">
                                     <div class="card card-body">
                                         <pre id="selector_disease_result"></pre>

@@ -345,17 +345,56 @@ export class BrowseComponent implements OnInit {
         controller.get_dataset_information(this.disease_trimmed, 
           data => {
             data = data[0]
-            let content = ""
+            
             // header
             let header = data['dataset']['disease_name']
             delete data['dataset']
-            content += "<p><strong>" + header + "</strong></p>"
-            // content
+            
+            
+            let run_table = document.createElement("table")  
+            let run_name = document.createElement("th")
+            run_name.innerHTML = uppercaseFirstLetter(header);
+            
+            run_name.setAttribute("style","text-decoration:underline")
+
+            let table= document.createElement("tr")
+            table.appendChild(run_name)
+            
+
+            let table_keys= document.createElement("td")
+            let table_values= document.createElement("td")
+            
+
             for (let key in data) {
               let value = data[key]
-              content += "<p>" + key + ": " + value + "</p>"
+              if(value == null){
+                value = 'Not defined'
+              }
+              
+              var table_entry = document.createElement("tr")
+              table_entry.innerHTML = uppercaseFirstLetter( key)
+              table_entry.setAttribute("style","margin-right:2px")
+              
+              table_keys.appendChild(table_entry)
+              
+              
+
+              var table_entryV = document.createElement("tr")
+              table_entryV.innerHTML = value
+              table_entryV.setAttribute("style","margin-left:-5px")
+              
+              table_values.appendChild(table_entryV)
+              
             }
-            selected_disease_result.html(content);
+           
+            table_keys.setAttribute("style","position:relative; top:38px;padding-right:25px")
+            table_values.setAttribute("style","position:relative;top: 38px")
+            table.setAttribute("style","position:absolute;margin-bottom:20px")
+            run_table.appendChild(table)
+            run_table.appendChild(table_keys)
+            run_table.appendChild(table_values)
+            selected_disease_result.append(run_table)
+           
           }
         )
 
@@ -685,6 +724,9 @@ export class BrowseComponent implements OnInit {
         })
       })
       ;
+      function uppercaseFirstLetter(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+        }
     }
   }
 }
