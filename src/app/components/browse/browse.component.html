@@ -1,8 +1,8 @@
 <div class="container-fluid">
     <div class="nav-side-menu">
    
-        <div class="brand">Browse the Database
-
+        <div class="brand">
+            Browse the Database
         </div>
        
             <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
@@ -58,16 +58,16 @@
                                             <option data-value="degree">Degree</option>
                                             <option data-value="betweenness">Betweenness</option>
                                             <option data-value="eigenvector">Eigenvector</option>
-                                    </select>
+                                         </select>
                                         
-                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
-                                    <input type="text" class="form-control" id="input_limit" value=10>
+                                        <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                        <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                        <input type="text" class="form-control" id="input_limit" value=10>
                                     </tr>
                                 </td>
-                            </table>
+                             </table>
                            
                                 
                             
@@ -91,7 +91,7 @@
         
                             </div>
                             
-                        </div>
+                         </div>
                     </div>
                            
                         
@@ -159,7 +159,7 @@
                             <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false">Edges</a>
                         </div>
                     </nav> 
-                -->
+                 -->
                     <div class="tab-content" id="nav-tabContent">
                         <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                             <div class="container">
@@ -209,14 +209,17 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
                                 <div>  
                                     <button class='float-right btn btn-primary' id='export_selected_nodes'>
                                         Export to Network
                                     </button>
                                 </div>
-                            <div id='interactions-nodes-table-container'></div>
+                                <!--Node Table-->
+                            <div id='interactions-nodes-table-container'></div> 
                         </div>
+
                         <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
                             <div>  
                                 <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#filter_edges" aria-expanded="false" aria-controls="collapseExample">
@@ -239,9 +242,11 @@
                                         <span>Minimum: </span><input type="text" id="pvalue_min" name="pvalue_min">&nbsp;
                                         <span>Maximum: </span><input type="text" id="pvalue_max" name="pvalue_max">
                                     </div>
+                                    
                                 </div>
+                                
                             </div>
-                         <!--   <div id='interactions-edges-table-container'></div> <TO-DO>Musste ich ausklammern weils sonst nen fehler gab</TO-DO>--> 
+                           <div id='interactions-edges-table-container'></div> <!--<TO-DO>Musste ich ausklammern weils sonst nen fehler gab dadurch kann die edge tble nich angeeigt werden</TO-DO>--> 
                         </div>
                     </div>
                 </div>
@@ -271,7 +276,7 @@
 
 
                 <!-- Run Information -->
-                <div class="container-fluid">
+            <div class="container-fluid">
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                     <table>
                         <td>
@@ -323,7 +328,7 @@
                 </div>
             </div>
 
-            </div>
+          </div>
         </div>
      </div>
 </div>

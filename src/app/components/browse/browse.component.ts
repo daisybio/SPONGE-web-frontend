@@ -241,7 +241,7 @@ export class BrowseComponent implements OnInit {
             ordered_entry['Gene 1'] = entry['gene1']
             ordered_entry['Gene 2'] = entry['gene2']
             ordered_entry['Correlation'] = entry['correlation']
-            ordered_entry['MScor'] = entry['mscore']
+            ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
             ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
             ordered_data.push(ordered_entry)
