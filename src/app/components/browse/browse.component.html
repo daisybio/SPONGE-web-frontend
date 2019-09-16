@@ -19,7 +19,8 @@
                          
                             
                         </li>  
-                    
+
+                                
                     <ul class="sub-menu collapse show" id="service">
                         <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true"><li>Network</li> </a>
                         <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false" > <li>Nodes</li> </a>
@@ -33,7 +34,65 @@
                     <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">                      
                             <i class="fa fa-info-circle fa-lg"></i> Run Information
                     </a>  
-                    
+             </li>
+             <li>
+
+                    <div class="container-fluid" id="run-info">
+                        <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
+                            <table>
+                                <td id="table-text">
+                                    <tr>
+                                        <p>Select a value to sort by: </p>
+                                        <p>Set a cutoff for betweenness (lower bound): </p>
+                                        <p>Set a cutoff for degree (lower bound): </p>
+                                        <p>Set a cutoff for eigenvector (lower bound): </p>
+                                        <p>Set a Limit for displayed data</p>
+                                        <p id="text">(the more the slower): </p>
+                                        
+                                        
+                                    </tr>
+                                </td>
+                                <td> 
+                                    <tr>
+                                        <select class="selectpicker sorting-value custom-select auto-width" id="run-info-select" title="Select sorting value" data-live-search="true">
+                                            <option data-value="degree">Degree</option>
+                                            <option data-value="betweenness">Betweenness</option>
+                                            <option data-value="eigenvector">Eigenvector</option>
+                                    </select>
+                                        
+                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                    <input type="text" class="form-control" id="input_cutoff_degree" value=0>
+                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                    <input type="text" class="form-control" id="input_limit" value=10>
+                                    </tr>
+                                </td>
+                            </table>
+                           
+                                
+                            
+        
+                            <div class="buttons">
+
+                                <button id="load_disease" type="button" class="btn btn-primary">Go</button>
+                                
+                                <button class="btn btn-secondary" id="end-button" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                        Show current run
+                                </button>
+                                <a id="selector_diseases_link"  href="" target="_blank">
+                                        <button type="button" id="end-button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
+                                        </button>
+                                </a>
+                                <div class="collapse" id="collapseExample">
+                                    <div class="card card-body">
+                                        <pre id="selector_disease_result"></pre>
+                                    </div>
+                                </div>
+        
+                            </div>
+                            
+                        </div>
+                    </div>
                            
                         
             </li>
@@ -209,7 +268,10 @@
                 <!-- Downloads 
                 <div class="tab-pane fade" id="v-pills-downloads" role="tabpanel" aria-labelledby="v-pills-downloads-tab">...</div>
               -->
+
+
                 <!-- Run Information -->
+                <div class="container-fluid">
                 <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                     <table>
                         <td>
@@ -259,6 +321,7 @@
                     </div>
                     
                 </div>
+            </div>
 
             </div>
         </div>

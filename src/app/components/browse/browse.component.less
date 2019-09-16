@@ -16,14 +16,79 @@ button, .button-margin {
     margin: 10px 10px 10px 0px;
 }
 
+.buttons{
+  display: inline;
+}
 .row{
     margin-bottom: 20px;
     margin-right: 0;
     justify-content: space-between;
 }
 
+
+
 #v-pills-run_information{
   margin-bottom: 1.3%;
+  height: 400px;
+ 
+  #table-text{
+    position: relative;
+      left: 10px;
+  }
+
+ 
+
+  
+  p{
+    color: aliceblue;
+    margin-bottom: 0;
+    padding-top: 0;
+    margin-top: 0;
+   
+  }
+
+  #text{
+    top: -15px;
+    position: relative;
+  }
+
+  input{
+    height: 20px;
+    width: 40px;
+    position: relative;
+    left: 10px;
+    padding: 0;
+  }
+
+  #load_disease{
+  //  position: relative;
+   //   top: 220px;
+    //  left: 220px;
+    top: 70px;
+    width: 280px;
+   position: relative;
+   align-content: center;
+   border: 0;
+   left: 5px;
+   text-align: center;
+  }
+
+  #end-button{
+   // top: 120px;
+   // position: relative;
+   top: 75px;
+   width: 280px;
+   position: relative;
+   align-content: center;
+   border: 0;
+   left: 5px;
+   text-align: center;
+    
+  }
+
+  table{
+    height: 150px;
+  }
 }
 
 .container-sidebar{
@@ -46,6 +111,14 @@ button, .button-margin {
 
 .container-fluid{
   padding: 0;
+
+  #run-info{
+   // background-color: aliceblue;
+    position: relative;
+    z-index: 11 !important;
+    
+  }
+
 }
 .nav-side-menu {
     overflow: auto;
@@ -238,7 +311,56 @@ button, .button-margin {
   }
   }
 
+  #input_cutoff_betweenness{
+    margin-top: 5px;
+    margin-left: 225px;
+    margin-bottom: 5px;
+    text-align: center;
+}
 
+#input_cutoff_degree{
+  margin-top: 5px;
+  margin-left: 225px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+#input_cutoff_eigenvector{
+  margin-top: 5px;
+  margin-left: 225px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+#input_limit{
+  margin-top: 5px;
+  margin-left: 225px;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+
+#run-info-select{
+  margin-top: 5px;
+  margin-left: 155px;
+  text-align: center;
+  height: 25px;
+    font-size: 15px;
+    text-align: center;
+    padding: 0;
+    align-items: center;
+    padding-left: 10px;
+    width: 120px;
+}
+
+
+
+
+tr{
+  width: 250px;
+  height: auto;
+  position: absolute;
+}
   .jumbotron-banner{
     background: url(/assets/img/browse-banner.png);
     position: relative;
@@ -271,6 +393,8 @@ button, .button-margin {
       font-size: smaller;
       padding-top: 20px;
     }
+
+   
 
   h3{
     text-align: left;
