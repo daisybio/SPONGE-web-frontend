@@ -141,7 +141,7 @@ var correlations=  {
     33146790
     ],
   type: 'bar',
-  name: 'Count of predicted correations',
+  name: 'Count of predicted correlations',
   marker: {
     color: 'rgb(7,117,218)',
     opacity: 1
@@ -175,7 +175,10 @@ var layout = {
 	legend: {
     x:0,
     y:1,
-    "orientation": "h"}
+    "orientation": "h"},
+  hoverlabel:{
+    namelength:50
+  }
 };
 
 Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
