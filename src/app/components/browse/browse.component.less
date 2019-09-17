@@ -1,15 +1,21 @@
 #network-plot-container-parent{
-    width: 100%;
+   // width: 100%;
+   min-width: 500px;
     height: 500px;
     position: relative;
+    display: block;
     
     #network-plot-container{
         position: absolute;
-        width: 100%;
+       // width: 100%;
+        min-width: 500px;
         height: 100%;
         //background-color:rgb(255, 255, 255);
         border: solid 1px black;
-    }   
+        
+    }  
+    
+  
 }
 
 button, .button-margin {
@@ -326,6 +332,16 @@ button, .button-margin {
 
 }
 
+#network-container{
+  position: relative;
+    margin: 0;
+    padding: 0;
+   // left: -350px;
+
+   .network-control{
+     min-width: 600px;
+   }
+}
 
 #input_cutoff_betweenness{
     
