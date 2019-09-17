@@ -305,7 +305,7 @@ button, .button-margin {
       text-decoration: none;
       
   }
-  html{
+  html {
     height: 100%;
   }
   .home{
@@ -317,6 +317,9 @@ button, .button-margin {
   }
   }
 
+  .browse-body{
+    min-height: 100%;
+  }
 #selector_disease_result{
   width: 290px;
   height: 460px;
@@ -410,12 +413,31 @@ tr{
   .jumbotron-banner{
     background: url(/assets/img/browse-banner.png);
     position: relative;
-    z-index: 0;
+    z-index: -5;
     margin-left: 300px;
     background-repeat: no-repeat;
     background-size: contain;
     height: 200px;
     width: auto;
+
+    
+  }
+
+  .jumbotron-banner-re{
+    background: url(/assets/img/browse-banner-re.png);
+    position: relative;
+    z-index: -4;
+    top: -200px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 200px;
+    width: auto;
+    margin-left: calc(100% - 400px);
+  }
+  
+
+  #titel-banner{
+    margin-left: 220px;
   }
 
   .container-titel{
@@ -425,6 +447,8 @@ tr{
     margin-right: 0px;
     margin-bottom: 3.7%;
     margin-top: 20px;
+    min-height: 100%;
+    top: -370px;
     
     h1{
       text-align: left;
@@ -450,6 +474,7 @@ tr{
   }
     .select-field{
       margin: auto;
+      margin-top: 0px;
      // margin-right: 0;
       
     }
