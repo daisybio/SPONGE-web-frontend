@@ -28,7 +28,7 @@ button, .button-margin {
 .row{
     margin-bottom: 20px;
     margin-right: 0;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 
@@ -332,6 +332,8 @@ button, .button-margin {
 
   }
 
+  
+
   .error-div{
     border: none;
     visibility: hidden;
@@ -535,7 +537,7 @@ tr{
   
 
   #titel-banner{
-    margin-left: 220px;
+  //  margin-left: 220px;
   }
 
   .container-titel{
@@ -550,37 +552,57 @@ tr{
     
     h1{
       text-align: left;
-      
-      margin-bottom: 4px;
+      margin: 0 auto;
+     // margin-bottom: 4px;
      // padding: auto;
+     margin-right: 0;
       font-size: 2vw;
     }
 
     p{
-      margin: auto;
+      margin: 0 auto;
       font-size: smaller;
       padding-top: 20px;
     }
 
-   
+   .header{
+     margin: 0 auto;
+   }
    
 
   h3{
     text-align: left;
+    margin: 0 auto;
     margin-left:0;
+    margin-right: 0;
     padding: auto;
     font-size: 1vw;
   }
     .select-field{
-      margin: auto;
-      margin-top: 0px;
-      
+     
+      margin: 0 auto;
+    margin-top: 0px;
+    margin-bottom: 4px;
+    margin-left: 0;
+    padding-left: 0;
      // margin-right: 0;
       .selectpicker{
         border-radius: 10px;
         background-color: white;
         color: black;
         text-align-last: center;
+
+        @media (min-width: 767px) {
+          width: 70%;
+          height: 40%;
+          font-size: x-small;
+          
+        }
+        @media (min-width: 1024px) {
+         
+          font-size: small;
+          
+        }
       }
     }
     .spinner-center{    
