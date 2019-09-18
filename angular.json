@@ -33,11 +33,13 @@
               "node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css",
               "node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
               "node_modules/bootstrap/dist/css/bootstrap-reboot.min.css",
+              "node_modules/bootstrap-select/dist/css/bootstrap-select.min.css",
               "src/styles.less"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "node_modules/bootstrap-select/dist/js/bootstrap-select.min.js",
               "node_modules/datatables.net/js/jquery.dataTables.js",
               "node_modules/datatables.net-buttons/js/dataTables.buttons.min.js",
               "node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js",

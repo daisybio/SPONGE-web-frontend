@@ -99,7 +99,8 @@ export class BrowseComponent implements OnInit {
       $('#v-pills-run_information-tab')[0].click();
     });
 
-    $('.selectpicker.diseases').change( () => {
+
+    $('#disease_selectpicker').change( () => {
       $('#load_disease').click();
     })
 
@@ -159,7 +160,7 @@ export class BrowseComponent implements OnInit {
     }
 
     function load_nodes(disease_trimmed, callback?) {
-      let sort_by = $('.selectpicker.sorting-value option:contains('+$('.selectpicker.sorting-value').val()+')').attr('data-value')
+      let sort_by = $('#disease_selectpicker.sorting-value option:contains('+$('#disease_selectpicker.sorting-value').val()+')').attr('data-value')
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
       let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
@@ -292,7 +293,7 @@ export class BrowseComponent implements OnInit {
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
-      let disease_selector = $('.selectpicker.diseases');
+      let disease_selector = $('#disease_selectpicker');    
       let selected_disease_result = $('#selector_disease_result');
       controller.get_datasets(
         data => {
@@ -306,9 +307,9 @@ export class BrowseComponent implements OnInit {
           // trigger click on first disease in the beginning
           $('#load_disease').click()
       })
+      
+      disease_selector.selectpicker()
 
-
-     
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
