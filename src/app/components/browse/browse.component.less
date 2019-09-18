@@ -1,3 +1,5 @@
+@import "../../../variables.less"; 
+
 #network-plot-container-parent{
    // width: 100%;
    min-width: 500px;
@@ -24,11 +26,6 @@ button, .button-margin {
 
 .buttons{
   display: inline;
-}
-.row{
-    margin-bottom: 20px;
-    margin-right: 0;
-    justify-content: space-evenly;
 }
 
 
@@ -136,7 +133,7 @@ button, .button-margin {
     position: absolute;
     z-index: auto;
     top: 0px;
-    width: 300px;
+    width: @browse-sidebar-width;
     height:auto;
     // 78.89%; //348
     bottom: 0;
@@ -422,7 +419,6 @@ button, .button-margin {
   position: relative;
     margin: 0;
     padding: 0;
-   // left: -350px;
 
    .network-control{
      min-width: 600px;
@@ -497,7 +493,6 @@ tr{
     background: url(/assets/img/browse-banner.png);
     position: relative;
     z-index: -5;
-    margin-left: 300px;
     background-repeat: no-repeat;
     background-size: contain;
     height: 200px;
@@ -508,31 +503,23 @@ tr{
   }
 
   #title-BG{
-    height: 90px;
-  margin: 0;
-  padding: 0;
-  top: 150px;
-  //margin-left: calc(100%-800px);
-  margin-left: 520px;
-  width: 60%;
-  z-index: -3;
-  position: absolute;
-  //background-color: #1985e0b5;
-  background: linear-gradient(to bottom, #097bf594, #a3edf796);
-  border-radius: 10px
+    z-index: -3;
+    position: relative;
+    //background-color: #1985e0b5;
+    background: linear-gradient(to bottom, #097bf594, #a3edf796);
+    border-radius: 10px;
+    width: 150%;
+    margin-left: -25%;
   }
 
   .jumbotron-banner-re{
     background: url(/assets/img/browse-banner-re.png);
     position: relative;
     z-index: -4;
-    top: -200px;
     background-repeat: no-repeat;
     background-size: contain;
     height: 200px;
     width: auto;
-    margin-left: calc(100% - 400px);
-
   }
   
 
@@ -543,12 +530,8 @@ tr{
   .container-titel{
     position: relative;
     z-index: 2;
-    margin-left: 350px;
-    margin-right: 0px;
-    margin-bottom: 3.7%;
     margin-top: 20px;
     min-height: 100%;
-    top: -370px;
     
     h1{
       text-align: left;
@@ -951,4 +934,8 @@ tr{
     -ms-transition: all 1s ease;
     transition: all 1s ease;
   }
+}
+
+.banner-middle{
+  width: 50%;
 }

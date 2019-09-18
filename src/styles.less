@@ -1,4 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+@import "variables.less"; 
 
 // GENERAL
 html{
@@ -87,6 +87,11 @@ thead {
             content: none !important;
         }
     }
+}
+
+.main-content {
+    margin-left: @browse-sidebar-width;
+    width: calc(100% - @browse-sidebar-width);
 }
 
 
