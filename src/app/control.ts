@@ -204,7 +204,12 @@ export class Controller {
         $.getJSON(request,
             data => {
                 return config.callback(data)                
-            })
+            }).fail(function() { 
+                 $('#browse_loading_spinner').addClass('hidden') 
+                 
+                 $('#overlay-error').css('visibility','visible')
+                })
+             
     }
     
     
