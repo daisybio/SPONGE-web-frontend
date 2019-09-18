@@ -100,13 +100,17 @@
 </div>
 
 
-<!--<div class="jumbotron-banner">  -->
+<div class="jumbotron-banner"></div>
+
+<div class="jumbotron-banner-re"> 
+</div>
+<div class="jumbotron shadow-lg" id="title-BG"> </div>
     <!--Upper section with title, select and the spinner-->
     
         <div class="container-titel">
           
                 <div class="container-fluid">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center" id="titel-banner">
                             <div class="col-md-auto header">
                                 <h1>Browse</h1>
                                 <h3>Inspect different cancer datasets</h3>
@@ -126,17 +130,18 @@
                                                 
                                                 </div>
                                                 <div class="spinner-text">Loading</div> 
+                                                <p id="demo"></p>
                                         </div>
                                         
                                 </div>
                     </div>
                     </div>
            
-        </div>
- <!--   </div> -->
+        
+   </div> 
 
-
- <div class="container">       
+<!--Container with Network-->
+ <div class="d-flex" id="network-container">       
     
     <div class="row">
         
@@ -168,7 +173,7 @@
                                         <div id='network-plot-container-parent'>
                                             <div id='network-plot-container'></div>
                                         </div>
-                                        <div class="form-inline mr-auto network-control">
+                                        <div class="form-inline mr-auto network-control" id="network-search">
                                             <input id='network_search_node' class="form-control mr-sm-2" type="text" placeholder="Search Node" aria-label="Search Node">
                                             <button id='network_search_node_button' class="btn btn-secondary" >Search</button>
                                             <div id='network_search_node_error' class='error-div hidden'></div>

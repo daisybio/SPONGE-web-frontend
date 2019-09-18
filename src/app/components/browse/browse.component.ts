@@ -3,6 +3,7 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 
 import sigma from 'sigma';
+import { CATCH_ERROR_VAR } from '@angular/compiler/src/output/output_ast';
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
 
@@ -104,8 +105,11 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click();
     })
 
+    try{
     run_information();
-
+    }catch(err){
+      document.getElementById("demo").innerHTML = "MIAU MIAU MIAU MIAU ";
+    }
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
         $('#v-pills-run_information-tab').removeClass('active')
@@ -300,7 +304,8 @@ export class BrowseComponent implements OnInit {
           let i = 0
           for (let disease in data) {
             disease_selector.append(
-              "<option data-value="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
+              "<option data-value="+data[disease]['download_url']+">"+ uppercaseFirstLetter(data[disease]['disease_name'])+"</option>"
+              
             )
             i++
           }
@@ -345,6 +350,7 @@ export class BrowseComponent implements OnInit {
         // get specific run information
         controller.get_dataset_information(this.disease_trimmed, 
           data => {
+            selected_disease_result.html('')
             data = data[0]
             
             // header
@@ -401,6 +407,7 @@ export class BrowseComponent implements OnInit {
 
         /* Construct sigma js network plot and expression plot*/
         // load interaction data (edges), load network data (nodes)
+       
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
