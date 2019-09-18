@@ -193,7 +193,6 @@ Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
     // replace possible empty spaces
     search_key = search_key.replace(' ', '')
     window.open( '/search?search_key='+search_key, '_top')
-
   })
 
 

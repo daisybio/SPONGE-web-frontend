@@ -1,9 +1,10 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, ErrorHandler} from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 
 import sigma from 'sigma';
 import { CATCH_ERROR_VAR } from '@angular/compiler/src/output/output_ast';
+
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
 
@@ -105,11 +106,9 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click();
     })
 
-    try{
+
     run_information();
-    }catch(err){
-      document.getElementById("demo").innerHTML = "MIAU MIAU MIAU MIAU ";
-    }
+    
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
         $('#v-pills-run_information-tab').removeClass('active')
@@ -234,6 +233,7 @@ export class BrowseComponent implements OnInit {
       })
     }
 
+    
     function load_edges(disease_trimmed, nodes, callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
         'callback':data => {

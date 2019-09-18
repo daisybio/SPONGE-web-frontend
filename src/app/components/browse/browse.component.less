@@ -28,7 +28,7 @@ button, .button-margin {
 .row{
     margin-bottom: 20px;
     margin-right: 0;
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 
 
@@ -330,10 +330,93 @@ button, .button-margin {
   margin-left: -20px;
   color: white;
 
-  
+  }
+
   
 
-}
+  .error-div{
+    border: none;
+    visibility: hidden;
+    #error-gif{
+      height: 8vw;
+      position: relative;
+      top: -2vw;
+      left: 20vw;
+      align-self: center;
+      width: 15vw;
+      z-index: 5;
+    }
+
+   
+
+    #error-BG{
+      position: absolute;
+      width: 80%;
+      left: 10vw;
+      margin: 0 auto;
+     
+      align-self: center;
+    }
+    &#overlay-error {
+      background-color: rgba(0,0,0,0.5); /* your color */
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      z-index: 3050;
+      top: 0;
+      left: 0;
+
+      p#error-text{
+        font-size: 3vw;
+        top: -6vw;
+        left: 9%;
+        align-self: center;
+        color: midnightblue;
+        position: relative;
+      }
+
+      h2{
+        font-size: 1vmax;
+        top: -2vw;
+       // left: -30vw;
+       right: 30%;
+        color: midnightblue;
+        position: relative;
+        z-index: 5;
+        align-self: center;
+      }
+
+      a{
+        border-radius: 10px;
+       
+        position: relative;
+        background: #013c96;
+        align-self: center;
+        border-color: transparent;
+        margin: 0;
+       
+        cursor: pointer;
+        max-width: 180%;
+        max-height: 100%;
+        width: 80px;
+        padding: 0;
+        padding-top: 1;
+        font-size: 100%;
+        text-align: center;
+       
+        right: 47%;
+        top: 1vw;
+        //background: linear-gradient(to right, #004085, #51aef1);
+       
+      }
+  }
+
+  }
+
+
+
+
+
 
 #network-container{
   position: relative;
@@ -454,7 +537,7 @@ tr{
   
 
   #titel-banner{
-    margin-left: 220px;
+  //  margin-left: 220px;
   }
 
   .container-titel{
@@ -469,37 +552,57 @@ tr{
     
     h1{
       text-align: left;
-      
-      margin-bottom: 4px;
+      margin: 0 auto;
+     // margin-bottom: 4px;
      // padding: auto;
+     margin-right: 0;
       font-size: 2vw;
     }
 
     p{
-      margin: auto;
+      margin: 0 auto;
       font-size: smaller;
       padding-top: 20px;
     }
 
-   
+   .header{
+     margin: 0 auto;
+   }
    
 
   h3{
     text-align: left;
+    margin: 0 auto;
     margin-left:0;
+    margin-right: 0;
     padding: auto;
     font-size: 1vw;
   }
     .select-field{
-      margin: auto;
-      margin-top: 0px;
-      
+     
+      margin: 0 auto;
+    margin-top: 0px;
+    margin-bottom: 4px;
+    margin-left: 0;
+    padding-left: 0;
      // margin-right: 0;
       .selectpicker{
         border-radius: 10px;
         background-color: white;
         color: black;
         text-align-last: center;
+
+        @media (min-width: 767px) {
+          width: 70%;
+          height: 40%;
+          font-size: x-small;
+          
+        }
+        @media (min-width: 1024px) {
+         
+          font-size: small;
+          
+        }
       }
     }
     .spinner-center{    

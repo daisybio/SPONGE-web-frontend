@@ -58,7 +58,11 @@ export class Controller {
                 data => {
                     return config.callback(data)
                 }
-            )
+            ).fail(function() { 
+                $('#browse_loading_spinner').addClass('hidden') 
+                
+                $('#overlay-error').css('visibility','visible')
+               })
         }
 
     public get_expression_ceRNA(
@@ -84,7 +88,11 @@ export class Controller {
                 data => {
                     return config.callback(data)
                 }
-            )
+            ).fail(function() { 
+                $('#browse_loading_spinner').addClass('hidden') 
+                
+                $('#overlay-error').css('visibility','visible')
+               })
         }
  
     public get_ceRNA_interactions_all(
@@ -121,7 +129,11 @@ export class Controller {
                 data => {
                     return config.callback(data)
                 }
-            )
+            ).fail(function() { 
+                $('#browse_loading_spinner').addClass('hidden') 
+                
+                $('#overlay-error').css('visibility','visible')
+               })
         }
 
     public get_ceRNA_interactions_specific(
@@ -153,7 +165,11 @@ export class Controller {
                 data => {
                     return config.callback(data)
                 }
-            )
+            ).fail(function() { 
+                $('#browse_loading_spinner').addClass('hidden') 
+                
+                $('#overlay-error').css('visibility','visible')
+               })
         }
 
     public get_ceRNA(
@@ -204,7 +220,12 @@ export class Controller {
         $.getJSON(request,
             data => {
                 return config.callback(data)                
-            })
+            }).fail(function() { 
+                 $('#browse_loading_spinner').addClass('hidden') 
+                 
+                 $('#overlay-error').css('visibility','visible')
+                })
+             
     }
     
     
@@ -217,7 +238,11 @@ export class Controller {
             data => {
                 return callback(data)
             }
-        )
+        ).fail(function() { 
+            $('#browse_loading_spinner').addClass('hidden') 
+            
+            $('#overlay-error').css('visibility','visible')
+           })
     }
 
     public get_dataset_information(disease_name: string, callback: (data) => any) {
@@ -225,7 +250,11 @@ export class Controller {
             data => {
                 return callback(data)
             }
-        )
+        ).fail(function() { 
+            $('#browse_loading_spinner').addClass('hidden') 
+            
+            $('#overlay-error').css('visibility','visible')
+           })
     }
     
     

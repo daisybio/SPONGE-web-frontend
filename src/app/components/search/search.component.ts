@@ -38,6 +38,13 @@ export class SearchComponent implements OnInit {
         }
     })
 
+    $('#home_search_button').click(() => {
+      let search_key = $('#home_search').val()
+      // replace possible empty spaces
+      search_key = search_key.replace(' ', '')
+      window.open( '/search?search_key='+search_key, '_top')
+    })
+    
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
       limit = $('#gene_input_limit').val()
@@ -122,6 +129,8 @@ export class SearchComponent implements OnInit {
         }
       }
     }
+
+   
 
     function parse_mirna_response(response) {
       // get information aboout search key
@@ -356,4 +365,5 @@ export class SearchComponent implements OnInit {
       }
     }
   }
+  
 }
