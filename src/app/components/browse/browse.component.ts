@@ -195,6 +195,7 @@ export class BrowseComponent implements OnInit {
             ordered_data.push(ordered_entry)
           }
           let nodes = [];
+          let node_options = ""   // for node selector
           for (let gene in ordered_data) {
             let id = ordered_data[gene]['ENSG Number'];
             let label = ordered_data[gene]['Gene Symbol'];
@@ -206,7 +207,11 @@ export class BrowseComponent implements OnInit {
             let size = ordered_data[gene]['Eigenvector'];
             let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
+
+            node_options += "<option data-subtext="+label+">"+id+"</option>"
           }
+          // append options to search-dropdown for network
+          $('#network_search_node').html(node_options)
           // build datatable
           let column_names = Object.keys(ordered_data[0]);
           $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
@@ -228,6 +233,8 @@ export class BrowseComponent implements OnInit {
           } );
           // save data for later search
           $('#node_data').text(JSON.stringify(ordered_data))
+
+          console.log(nodes)
 
           /* plot expression data for nodes */
           //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
@@ -255,6 +262,7 @@ export class BrowseComponent implements OnInit {
             ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
             ordered_data.push(ordered_entry)
           }
+
           let column_names = Object.keys(ordered_data[0]);
           $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
           edge_table = $('#interactions-edges-table').DataTable({
@@ -277,6 +285,7 @@ export class BrowseComponent implements OnInit {
             edge_table.draw();
           } );
           let edges = [];
+          let edge_options = ""   // for network search selector
           for (let interaction in ordered_data) {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
@@ -291,7 +300,12 @@ export class BrowseComponent implements OnInit {
               size: size, 
               color: color, 
             })
+            
+            edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
           }
+          // append options to search-dropdown for network
+          $('#network_search_node').append(edge_options)
+
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         }
@@ -709,6 +723,9 @@ export class BrowseComponent implements OnInit {
 
             // Initialize the dragNodes plugin:
             var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
+
+            // network search selector
+            $('#network_search_node').selectpicker()
 
             // stop loading
             disease_selector.attr('disabled',false)
