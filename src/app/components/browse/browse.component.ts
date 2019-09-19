@@ -195,6 +195,7 @@ export class BrowseComponent implements OnInit {
             ordered_data.push(ordered_entry)
           }
           let nodes = [];
+          let node_options = ""   // for node selector
           for (let gene in ordered_data) {
             let id = ordered_data[gene]['ENSG Number'];
             let label = ordered_data[gene]['Gene Symbol'];
@@ -206,7 +207,12 @@ export class BrowseComponent implements OnInit {
             let size = ordered_data[gene]['Eigenvector'];
             let color = default_node_color;
             nodes.push({id, label, x, y , size, color})
+
+            node_options += "<option data-subtext="+label+">"+id+"</option>"
           }
+          // append options to search-dropdown for network
+          $('#network_search_node').html(node_options)
+          $('#network_search_node').selectpicker()
           // build datatable
           let column_names = Object.keys(ordered_data[0]);
           $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
@@ -228,6 +234,8 @@ export class BrowseComponent implements OnInit {
           } );
           // save data for later search
           $('#node_data').text(JSON.stringify(ordered_data))
+
+          console.log(nodes)
 
           /* plot expression data for nodes */
           //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
