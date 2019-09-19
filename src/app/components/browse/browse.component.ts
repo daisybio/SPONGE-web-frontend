@@ -107,7 +107,11 @@ export class BrowseComponent implements OnInit {
     })
 
 
-    run_information();
+    run_information()
+
+    // trigger click on first disease in the beginning
+    $('#load_disease').click()
+  
     
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
@@ -299,29 +303,15 @@ export class BrowseComponent implements OnInit {
       // load all disease names from database and insert them into selector 
       let disease_selector = $('#disease_selectpicker');    
       let selected_disease_result = $('#selector_disease_result');
-      controller.get_datasets(
-        data => {
-          let i = 0
-          for (let disease in data) {
-            disease_selector.append(
-              "<option data-value="+data[disease]['download_url']+">"+ uppercaseFirstLetter(data[disease]['disease_name'])+"</option>"
-              
-            )
-            i++
-          }
-          // trigger click on first disease in the beginning
-          $('#load_disease').click()
-      })
-      
-      disease_selector.selectpicker()
 
+      disease_selector.selectpicker()
+      
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
         // start loading
         disease_selector.attr('disabled',true)
         $('#browse_loading_spinner').removeClass('hidden')
-       
 
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
@@ -647,7 +637,6 @@ export class BrowseComponent implements OnInit {
             /* toggle force atlas 2 */
             $('#toggle_layout').unbind()
             $('#toggle_layout').click( () => {
-              console.log('here')
               if ((network.supervisor || {}).running) {
                 network.killForceAtlas2();
                 document.getElementById('toggle_layout').innerHTML = 'Start layout';

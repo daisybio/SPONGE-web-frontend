@@ -11,7 +11,6 @@ export class CreditsComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    $('.selectpicker').selectpicker()
   }
 
 }
