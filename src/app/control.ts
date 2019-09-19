@@ -29,7 +29,8 @@ export class Controller {
             limit?: number,
             offset?: number,
             information?: number,
-            callback: (data) => any
+            callback: (response) => any,
+            error?: (response) => any
         })
         {
             let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_SPECIFIC
@@ -55,22 +56,22 @@ export class Controller {
                 request += "&information="+config.information
             }
             $.getJSON(request,
-                data => {
-                    return config.callback(data)
+                response => {
+                    return config.callback(response)
                 }
-            ).fail(function() { 
-                $('#browse_loading_spinner').addClass('hidden') 
-                
-                $('#overlay-error').css('visibility','visible')
-               })
-        }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
 
     public get_expression_ceRNA(
         config: {
             disease_name: string,
             ensg_number?: string[],
             gene_symbol?: string[],
-            callback: (data) => any
+            callback: (response) => any,
+            error?: (response) => any
         })
         {
             let request = Controller.API_ENDPOINT+Controller.EXPRESSION_VALUE_CERNA
@@ -85,15 +86,14 @@ export class Controller {
                 request += "&gene_symbol="+config.gene_symbol
             }
             $.getJSON(request,
-                data => {
-                    return config.callback(data)
+                response => {
+                    return config.callback(response)
                 }
-            ).fail(function() { 
-                $('#browse_loading_spinner').addClass('hidden') 
-                
-                $('#overlay-error').css('visibility','visible')
-               })
-        }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
  
     public get_ceRNA_interactions_all(
         config: {
@@ -103,7 +103,8 @@ export class Controller {
             limit?: number, 
             ensg_number?: string[],
             gene_symbol?: string[],
-            callback: (data) => any
+            callback: (response) => any,
+            error?: (response) => any
         }) 
         {
             let request = Controller.API_ENDPOINT+Controller.CERNA_INTERACTION_FINDALL;
@@ -126,15 +127,14 @@ export class Controller {
                 request += "&gene_symbol="+config.gene_symbol
             }
             $.getJSON(request,
-                data => {
-                    return config.callback(data)
+                response => {
+                    return config.callback(response)
                 }
-            ).fail(function() { 
-                $('#browse_loading_spinner').addClass('hidden') 
-                
-                $('#overlay-error').css('visibility','visible')
-               })
-        }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
 
     public get_ceRNA_interactions_specific(
         config: {
@@ -142,7 +142,8 @@ export class Controller {
             gene_symbol?: string[],
             offset?: number,
             ensg_number?: string[],
-            callback: (data) => any
+            callback: (response) => any,
+            error?: (response) => any
         })
         {
             let request = Controller.API_ENDPOINT+Controller.CERNA_INTERACTION_SPECIFIC
@@ -162,15 +163,14 @@ export class Controller {
                 request += "&ensg_number="+config.ensg_number
             }
             $.getJSON(request,
-                data => {
-                    return config.callback(data)
+                response => {
+                    return config.callback(response)
                 }
-            ).fail(function() { 
-                $('#browse_loading_spinner').addClass('hidden') 
-                
-                $('#overlay-error').css('visibility','visible')
-               })
-        }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
 
     public get_ceRNA(
         config: {
@@ -183,7 +183,8 @@ export class Controller {
             descending?: boolean,
             limit?: number,
             offset?: number
-            callback: (data) => any
+            callback: (response) => any,
+            error?: (response) => any
         }
     ){
         let request = Controller.API_ENDPOINT+Controller.FIND_CERNA
@@ -218,25 +219,23 @@ export class Controller {
             request += "&offset="+config.offset
         }
         $.getJSON(request,
-            data => {
-                return config.callback(data)                
-            }).fail(function() { 
-                 $('#browse_loading_spinner').addClass('hidden') 
-                 
-                 $('#overlay-error').css('visibility','visible')
-                })
-             
-    }
+            response => {
+                return config.callback(response)                
+            }
+        ).fail(
+            response => {
+                return config.error(response)
+            })
+        }
     
-    
-    public get_datasets(callback: (data) => any, disease_name?: string) {
+    public get_datasets(callback: (response) => any, disease_name?: string) {
         let request = Controller.API_ENDPOINT+Controller.DATASETS
         if (disease_name != undefined) {
             request += "?disease_name="+disease_name
         }
         $.getJSON(request,
-            data => {
-                return callback(data)
+            response => {
+                return callback(response)
             }
         ).fail(function() { 
             $('#browse_loading_spinner').addClass('hidden') 
@@ -245,15 +244,15 @@ export class Controller {
            })
     }
 
-    public get_dataset_information(disease_name: string, callback: (data) => any) {
+    public get_dataset_information(disease_name: string, callback: (response) => any) {
         $.getJSON(Controller.API_ENDPOINT+Controller.DATASET_INFORMATION+"?disease_name="+disease_name,
-            data => {
-                return callback(data)
+            response => {
+                return callback(response)
             }
         ).fail(function() { 
             $('#browse_loading_spinner').addClass('hidden') 
             
-            $('#overlay-error').css('visibility','visible')
+            $('#error_overlay').css('visibility','visible')
            })
     }
     

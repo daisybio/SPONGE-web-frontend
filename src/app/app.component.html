@@ -1,7 +1,13 @@
-<!--The content below is only a placeholder and can be replaced.-->
-
 <app-header></app-header>
 
 <router-outlet></router-outlet>
 
 <app-footer></app-footer>
+
+<div class="error-div d-flex hidden" id="error_overlay">
+        <img src="/assets/img/error.gif" id="error-gif"> <!--https://tenor.com/view/error-gif-8925016-->
+        <img src="/assets/img/errorDunkel.jpg" id="error-BG"> <!--starline-->
+        <p id="error-text">Ooopps... </p>
+        <h2>We couldn't find a matching dataset. Please try other cutoffs! </h2>
+        <a class="btn btn-secondary" type="button" href="/browse">Magic!</a>
+</div>
