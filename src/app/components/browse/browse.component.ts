@@ -589,6 +589,18 @@ export class BrowseComponent implements OnInit {
               // Filter or find the first matching node then apply focusNode on it
             }
 
+            function searchEdge(edge_to_search) {
+              var edges = network.graph.edges()
+              for (let edge in edges) {
+                if (edges[edge]['id'] == edge_to_search || edges[edge]['label'] == edge_to_search) {
+                  focusNode(network.cameras[0], edges[edge])
+                  edges[edge].color = subgraph_edge_color
+                  break
+                }
+              }
+            }
+
+
             function focusNode(camera, node) {
               sigma.misc.animation.camera(
                 camera,
@@ -604,8 +616,13 @@ export class BrowseComponent implements OnInit {
             }
 
             $('#network_search_node_button').click(() => {
-              let node_to_search = $('#network_search_node').val()
-              searchNode(node_to_search)
+              let to_search = $('#network_search_node').val()
+              if (to_search.startsWith('ENSG')) {
+                searchNode(to_search)
+              } else {
+                searchEdge(to_search)
+              }
+              
             })
 
             /* Save network button */
