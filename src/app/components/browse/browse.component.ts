@@ -234,12 +234,13 @@ export class BrowseComponent implements OnInit {
           // save data for later search
           $('#node_data').text(JSON.stringify(ordered_data))
 
-          console.log(nodes)
-
           /* plot expression data for nodes */
           //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
 
           return callback(nodes)
+          },
+          error: (response) => {
+            helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
       })
     }
@@ -308,6 +309,9 @@ export class BrowseComponent implements OnInit {
 
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
+        },
+        error: (response) => {
+          helper.msg("Something went wrong while loading the interactions.", true)
         }
       })
     }

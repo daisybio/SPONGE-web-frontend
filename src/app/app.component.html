@@ -4,10 +4,24 @@
 
 <app-footer></app-footer>
 
+<!--
 <div class="error-div d-flex hidden" id="error_overlay">
-        <img src="/assets/img/error.gif" id="error-gif"> <!--https://tenor.com/view/error-gif-8925016-->
-        <img src="/assets/img/errorDunkel.jpg" id="error-BG"> <!--starline-->
-        <p id="error-text">Ooopps... </p>
-        <h2>We couldn't find a matching dataset. Please try other cutoffs! </h2>
-        <a class="btn btn-secondary" type="button" href="/browse">Magic!</a>
+    <img src="/assets/img/error.gif" id="error-gif"> 
+    <img src="/assets/img/errorDunkel.jpg" id="error-BG"> 
+    <p id="error_overlay_msg"></p>
+    <a class="btn btn-secondary" type="button" href="/">Magic!</a>
+</div> -->
+
+<div class="modal alert alert-primary alert-dismissible" id="msg_overlay">
+    <p id="msg_overlay_msg"></p>
+    <button type="button" class="close" aria-label="Close" data-dismiss="msg_overlay">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal alert alert-danger alert-dismissible" id="error_overlay">
+    <p id="error_overlay_msg"></p>
+    <button type="button" class="close" aria-label="Close" data-dismiss="error_overlay">
+        <span aria-hidden="true">&times;</span>
+    </button>
 </div>

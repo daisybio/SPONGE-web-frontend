@@ -1,6 +1,6 @@
-import * as $ from "jquery";
 import { Controller } from "../app/control";
 declare var Plotly: any;
+declare var $;
 
 export class Helper {
 
@@ -53,6 +53,22 @@ export class Helper {
               }
           } );
       } );
+    }
+
+    public msg(msg, error=false) {
+      let overlay;
+      if (error) {
+        overlay = $('#error_overlay')
+        $('#error_overlay_msg').text(msg);
+      } else {
+        overlay = $('#msg_overlay')
+        $('#msg_overlay_msg').text(msg);
+      }
+      overlay.modal('show')
+      overlay.find('.close').unbind()
+      overlay.find('.close').click( () => {
+        overlay.modal('hide')
+      })
     }
 
     public expression_heatmap_genes(disease_name, genes, node_id) {

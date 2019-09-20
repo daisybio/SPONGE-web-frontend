@@ -85,6 +85,10 @@ export class SearchComponent implements OnInit {
               parse_cerna_response(response)
               // end loading 
               $('#loading_spinner_results').addClass('hidden')
+            },
+            error: (response) => {
+              helper.msg("Something went wrong finding your ENSG number.", true)
+              $('#loading_spinner_results').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
@@ -97,6 +101,10 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_mirna_response(response)
               // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            },
+            error: (response) => {
+              helper.msg("Something went wrong finding your MIMAT number.", true)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
@@ -111,6 +119,10 @@ export class SearchComponent implements OnInit {
               parse_mirna_response(response)
               // end loading
               $('#loading_spinner_results').addClass('hidden')
+            },
+            error: (response) => {
+              helper.msg("Something went wrong finding your hsa number.", true)
+              $('#loading_spinner_results').addClass('hidden')
             }
           })
         } else {
@@ -123,6 +135,10 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_cerna_response(response)
               // end loading
+              $('#loading_spinner_results').addClass('hidden')
+            },
+            error: (response) => {
+              helper.msg("Something went wrong finding your gene symbol.", true)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
