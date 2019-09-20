@@ -1,11 +1,5 @@
 @import "variables.less"; 
 
-// GENERAL
-html{
-    min-height: 100%;
-    position: relative;
-}
-
 body{
     //padding-top: 90px; // for navbar
     //margin-bottom: -90px;
@@ -96,7 +90,7 @@ thead {
 }
 
 #msg_overlay, #error_overlay {
-    position: absolute;
+    position: fixed;
     width: 600px;
     height: 60px;
     margin-left: auto;
@@ -104,4 +98,8 @@ thead {
     left: 0;
     right: 0;
     top: 20%;
+}
+
+.container-stretch {
+    min-height: calc(98vh - (@header-height + @footer-height))
 }

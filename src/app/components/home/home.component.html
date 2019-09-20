@@ -26,7 +26,10 @@
                                     <form>
                                         <div class="input-group">
                                         
-                                            <input id="home_search" type="text" class="form-control" name="home_search" placeholder="Gene or miRNA">
+                                            <select id="home_search" type="text" class="selectpicker form-control" name="home_search" placeholder="Gene or miRNA" data-live-search=true>
+                                                <option>many options</option>
+
+                                            </select>
                                             <div class="input-group-append">
                                                 <button class="btn btn-outline-secondary" type="button" id="home_search_button">Search   <i class="glyphicon fa fa-search"></i></button>
                                             </div>
@@ -80,7 +83,7 @@
                                  </div>
                 </div>
             
-         <div id="Plot" style="    position: relative;  min-height: 100vw;"><!-- Plotly chart will be drawn inside this DIV --></div>
+         <div id="Plot" style="position: relative"><!-- Plotly chart will be drawn inside this DIV --></div>
            
             <!--
             <div class="carousel" style="margin-top:50px;">
