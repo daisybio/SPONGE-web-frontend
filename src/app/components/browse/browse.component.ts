@@ -102,9 +102,15 @@ export class BrowseComponent implements OnInit {
     });
 
 
-    $('#disease_selectpicker').change( () => {
+    $('#title-BG').change( () => {
       $('#load_disease').click();
+      console.log("find ich");
     })
+
+   if( document.querySelector('#disease_selectpicker')){
+      $('#load_disease').click();
+   //   console.log("find ich");
+    }
 
 
     run_information()
