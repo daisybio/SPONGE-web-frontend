@@ -168,7 +168,7 @@ export class BrowseComponent implements OnInit {
 
     function load_nodes(disease_trimmed, callback?) {
       let sort_by = $('#run-info-select').val().toLowerCase()
-      if (sort_by=="none") {sort_by = undefined}
+      if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
       let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()

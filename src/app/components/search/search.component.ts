@@ -315,12 +315,11 @@ export class SearchComponent implements OnInit {
           "</div>" +
           "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
           "<div class='card-body'>" +
+          "<div id=button_control_"+disease_trimmed+">"+
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Options" +
           "</button>" +
-          "<button class='btn btn-secondary button-margin' type='button' id='expression_" + disease_trimmed + "'>" +
-          "Raw expression data" +
-          "</button>" +
+          "</div>"+
           "<div class='collapse' id='control_" + table_id + "'>" +
           "<div class='card card-body'>" +
           "<div>" +
@@ -367,7 +366,10 @@ export class SearchComponent implements OnInit {
           disease_name: disease.split(' ').join('%20'),
           callback: (response) => {
             // open raw expression data in new tab
-            window.open("data:text/json," + encodeURIComponent(JSON.stringify(response)), "_blank");
+            console.log(response)
+            let json = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response));
+            let buttons = $("#button_control_"+disease_trimmed)
+            buttons.append($('<a href="data:' + json + '" download="expression_'+disease_trimmed+'.json" class="btn btn-secondary">Raw Expression Data</a>'))
           }
         };
         if (search_key.startsWith('ENSG')) {
@@ -375,9 +377,8 @@ export class SearchComponent implements OnInit {
         } else {
           config['gene_symbol'] = [key_information['gene_symbol']]
         }
-        $('#expression_' + disease_trimmed).click(() => {
-          controller.get_expression_ceRNA(config)
-        })
+        controller.get_expression_ceRNA(config)
+
       }
     }
   }
