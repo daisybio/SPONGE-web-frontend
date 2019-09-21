@@ -167,12 +167,14 @@ export class BrowseComponent implements OnInit {
     }
 
     function load_nodes(disease_trimmed, callback?) {
-      let sort_by = $('#disease_selectpicker.sorting-value option:contains('+$('#disease_selectpicker.sorting-value').val()+')').attr('data-value')
+      let sort_by = $('#run-info-select').val().toLowerCase()
+      if (sort_by=="none") {sort_by = undefined}
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
       let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       let limit = $('#input_limit').val()
-      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector,
+      let descending = true
+      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector, 'descending': descending,
       'callback': data => {
           let ordered_data = [];
           // let ensg_numbers = []
