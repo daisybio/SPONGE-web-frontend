@@ -124,7 +124,7 @@ button, .button-margin {
 
 }
 .nav-side-menu {
-    overflow: auto;
+    //overflow: auto;
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
@@ -134,7 +134,7 @@ button, .button-margin {
     z-index: auto;
     top: 0px;
     width: @browse-sidebar-width;
-    height:100%;
+    height:  @browse-sidebar-height;
     // 78.89%; //348
     bottom: 0;
     right: auto;
@@ -147,6 +147,10 @@ button, .button-margin {
     //margin-bottom: 20px;
     /* margin-bottom: 200px; */
   
+    @media (max-width: 1024px) {
+      height: 150%;
+      
+    }
     
    
 }
@@ -411,9 +415,16 @@ button, .button-margin {
   }
 
 
+.row{
+  width: 100%;
+  margin: 0;
+}
 
+#padding-li{
+  padding-left: 0;
+}
 
-
+#padding-re{padding-right: 0;}
 
 #network-container{
   position: relative;
@@ -502,14 +513,70 @@ tr{
     
   }
 
+
   #title-BG{
-    z-index: -3;
+   // z-index: -3;
     position: relative;
     //background-color: #1985e0b5;
     background: linear-gradient(to bottom, #097bf594, #a3edf796);
     border-radius: 10px;
     width: 150%;
     margin-left: -25%;
+    height: calc(100%-20px);
+    height: 120px;
+
+    h1{
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    p{
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+
+    .header{
+      margin-left: 20px
+      
+    }
+
+    .row{
+      justify-content: space-around;
+    }
+    
+    .select-field{
+      margin-right: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      height: 60px;
+      .header{
+        width: 45%;
+        height: 10%;
+        h1{
+          font-size: 18pt;
+          margin-top: 5px;
+          margin-bottom: 5px;
+        }
+
+        h3{
+          font-size: 12pt;
+          margin-top: 5px;
+           margin-bottom: 5px;
+        }
+      }
+
+      .select-field{
+        width: 40%;
+        height: 50%;
+
+        p{
+          margin-top:10px;
+          margin-bottom: 0px;
+        
+        }
+      }
+}
   }
 
   .jumbotron-banner-re{
@@ -547,9 +614,7 @@ tr{
       padding-top: 20px;
     }
 
-   .header{
-     margin: 0 auto;
-   }
+   
    
 
   h3{
@@ -560,7 +625,8 @@ tr{
     padding: auto;
     font-size: 1vw;
   }
-    .select-field{
+  
+  /*.select-field{
      
       margin: 0 auto;
     margin-top: 0px;
@@ -585,8 +651,8 @@ tr{
           font-size: small;
           
         }
-      }
-    }
+      } 
+    } */
     .spinner-center{    
         display: block;
         position: relative;
@@ -938,4 +1004,13 @@ tr{
 
 .banner-middle{
   width: 50%;
+  top:1.5vw;
+  position: relative;
+  
+
+  @media (max-width: 1024px){
+    top: 1vw;
+    position: relative;
+  }
 }
+
