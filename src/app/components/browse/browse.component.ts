@@ -7,7 +7,7 @@ import { CATCH_ERROR_VAR } from '@angular/compiler/src/output/output_ast';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
-
+declare var Plotly: any;
 declare var $;
 // dirty solution 
 declare var require: any
@@ -174,8 +174,15 @@ export class BrowseComponent implements OnInit {
       let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       let limit = $('#input_limit').val()
       let descending = true
-      controller.get_ceRNA({'disease_name':disease_trimmed, 'sorting':sort_by, 'limit':limit, 'betweenness':cutoff_betweenness, 'degree': cutoff_degree, 'eigenvector': cutoff_eigenvector, 'descending': descending,
-      'callback': data => {
+      controller.get_ceRNA({
+        'disease_name':disease_trimmed, 
+        'sorting':sort_by, 
+        'limit':limit, 
+        'betweenness':cutoff_betweenness, 
+        'degree': cutoff_degree, 
+        'eigenvector': cutoff_eigenvector, 
+        'descending': descending,
+        'callback': data => {
           let ordered_data = [];
           // let ensg_numbers = []
           for (let i=0; i < Object.keys(data).length; i++) {
@@ -750,20 +757,89 @@ export class BrowseComponent implements OnInit {
             // network search selector
             $('#network_search_node').selectpicker()
 
+            // zoom out 
+            $('#restart_camera').click()
+
+
+            // load expression data
+            //load_heatmap(this.disease_trimmed, ensg_numbers)
+
             // stop loading
             disease_selector.attr('disabled',false)
             $('#browse_loading_spinner').addClass('hidden') 
 
-            // zoom out 
-            $('#restart_camera').click()
-
           })
         })
       })
-      ;
-      function uppercaseFirstLetter(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-        }
     }
+    
+    function uppercaseFirstLetter(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function load_heatmap(disease, nodes) {
+      console.log("start")
+      controller.get_expression_ceRNA({
+        disease_name: disease,
+        ensg_number: nodes,
+        callback: response => {
+          console.log(response)
+          var x = []
+          var y = []
+          var z = []
+          var seen_genes = []
+          var seen_exp_ids = {}
+          response.forEach( experiment => {
+            let gene = experiment['gene']
+            let expr_value = experiment['exp_value']
+            let expr_ID = experiment['expr_ID'].toString()
+            
+            if (expr_ID in seen_exp_ids) {
+              seen_exp_ids[expr_ID][gene] = expr_value
+            } else {
+              seen_exp_ids[expr_ID] = {gene: expr_value}
+            }
+
+          })
+
+          // check if all genes are in each expr_id
+          for (let expr_id in seen_exp_ids) {
+            let values = seen_exp_ids[expr_id]
+            for (let node in nodes) {
+              if (!(node in values)) {
+                values[node] = null
+              }
+            }
+          }
+          
+          let ordered_genes = {}
+          for(let exrpr_id in seen_exp_ids) {
+            // sort genes alphabetically
+            console.log(exrpr_id[0])
+            Object.keys(exrpr_id).sort().forEach(function(key) {
+              ordered_genes[key] = exrpr_id[key];
+            });
+            for (let gene in ordered_genes) {
+              z.push(ordered_genes[gene])
+            }
+          }
+
+          var data = [
+            {
+              z: z,
+              x: Object.keys(seen_exp_ids),
+              y: nodes.sort(),
+              type: 'heatmap'
+            }
+          ];
+          
+          Plotly.newPlot('test', data);
+        },
+        error: () => {
+          helper.msg("Something went wrong loading your expression data.", true)
+        }
+      })
+    }
+
   }
 }

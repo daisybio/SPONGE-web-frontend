@@ -1,6 +1,6 @@
 import { Controller } from "../app/control";
 declare var Plotly: any;
-declare var $;
+declare var $: any;
 
 export class Helper {
 
@@ -70,6 +70,7 @@ export class Helper {
         overlay.modal('hide')
       })
     }
+
 
     public expression_heatmap_genes(disease_name, genes, node_id) {
       /* genes is list of ensg-numbers 
