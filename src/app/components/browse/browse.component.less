@@ -134,7 +134,7 @@ button, .button-margin {
     z-index: auto;
     top: 0px;
     width: @browse-sidebar-width;
-    height:100%;
+    height:  @browse-sidebar-height;
     // 78.89%; //348
     bottom: 0;
     right: auto;
@@ -147,6 +147,10 @@ button, .button-margin {
     //margin-bottom: 20px;
     /* margin-bottom: 200px; */
   
+    @media (max-width: 1024px) {
+      height: 150%;
+      
+    }
     
    
 }
@@ -411,9 +415,16 @@ button, .button-margin {
   }
 
 
+.row{
+  width: 100%;
+  margin: 0;
+}
 
+#padding-li{
+  padding-left: 0;
+}
 
-
+#padding-re{padding-right: 0;}
 
 #network-container{
   position: relative;
@@ -1002,3 +1013,4 @@ tr{
     position: relative;
   }
 }
+
