@@ -40,9 +40,10 @@
                 <!--Run information tab in sidenav-->
                     <div class="container-fluid" id="run-info">
                         <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-                            <table>
+                           
+                            <table class="table-content">
                                 <td id="table-text">
-                                    <tr>
+                                    <tr class="tr-text">
                                         <p>Select a value to sort by: </p>
                                         <p>Set a cutoff for betweenness (lower bound): </p>
                                         <p>Set a cutoff for degree (lower bound): </p>
@@ -54,13 +55,15 @@
 
                                 <td> 
                                     <tr>
+                                        
                                         <select class="selectpicker sorting-value" id="run-info-select" title="Select sorting value" data-live-search="true">
+                                            
                                             <option data-value="">None</option>
                                             <option data-value="degree">Degree</option>
                                             <option data-value="betweenness">Betweenness</option>
                                             <option data-value="eigenvector">Eigenvector</option>
                                          </select>
-                                        
+                            
                                         <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
                                         <input type="text" class="form-control" id="input_cutoff_degree" value=0>
                                         <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>    
@@ -189,26 +192,13 @@
         
         <div class="row">
             
-        <!--  <div class="col-12">
-                <nav class="nav nav-tabs">
-                    <a class="nav-item nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">Interactions</a> 
-                    <a class="nav-item nav-link" id="v-pills-run_information-tab" data-toggle="pill" href="#v-pills-run_information" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">Run Information</a>
-                </nav>
-            </div>
-        -->
+       
             <div class="col-12">
                 <div class="tab-content" id="v-pills-tabContent">
 
                     <!-- Interactions -->
                     <div class="tab-pane fade show active" id="v-pills-interactions" role="tabpanel" aria-labelledby="v-pills-interactions-tab">
-                    <!--   <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true">Network</a>
-                                <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false">Nodes</a>
-                                <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false">Edges</a>
-                            </div>
-                        </nav> 
-                    -->
+                   
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                                 <div class="container">
@@ -243,19 +233,34 @@
 
                                             </div>
                                         </div>
+                                        <!-- SIDE TABLE-->
                                         <div class="col-md-4">
                                             <span class="hidden" id='node_data'></span>
-                                            <span class="hidden" id="edge_data"></span>
+                                            <span class="hidden" id='edge_data'></span>
                                             
-                                            <div id="node_information" class="hidden">
-                                                    <div>Node Information:</div>
-                                                    <div id="node_information_content"></div>
-                                            </div>
+                                           
                                             
-                                            <div id="edge_information" class="hidden">
+                                            <div id="node_information"  class="hidden">
+                                                    <div class="card card-cascade narrower" id="node-card">
+                                                            
+                                                        <div class="card-body text-center" id="node-title"> Node Information:</div>
+                                                             <div id="node_information_content"></div>
+                                                    </div>
+                                             </div>      
+                                             
+                                             <div id="edge_information"  class="hidden">
+                                                    <div class="card card-cascade narrower" id="node-card">
+                                                            
+                                                        <div class="card-body text-center" id="node-title"> Edge Information:</div>
+                                                        <div id="edge_information_content"></div>
+                                                    </div>
+                                             </div>  
+                                             
+                                         <!--   <div id="edge_information" class="hidden">
                                                     <div>Edge Information:</div>
                                                     <div id="edge_information_content"></div>
-                                            </div>
+                                            </div> -->
+                                            
                                         </div>
                                     </div>
                                 </div>

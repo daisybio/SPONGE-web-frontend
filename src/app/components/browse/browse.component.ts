@@ -485,7 +485,9 @@ export class BrowseComponent implements OnInit {
               for (let entry in data) {
                 if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
                   // build a table to display json
-                  let table = "<table>"
+                  let table = "<table class='table table-striped table-hover'>"
+                
+               
                   for (let attribute in data[entry]) {
                     let row = "<tr>"
                     row += "<td>"+attribute+": </td>"
@@ -493,7 +495,8 @@ export class BrowseComponent implements OnInit {
                     row += "</tr>"
                     table += row
                   }
-                  table += "</table>"
+                  
+                 table += "</table>"
                   $('#node_information_content').html(table)
                   // unhide node information 
                   if (node_information.hasClass('hidden')) {
@@ -513,7 +516,8 @@ export class BrowseComponent implements OnInit {
               for (let entry in data) {
                 if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
                   // build a table to display json
-                  let table = "<table>"
+                 // let table = "<table>"
+                  let table = "<table class='table table-striped table-hover'>"
                   for (let attribute in data[entry]) {
                     let row = "<tr>"
                     row += "<td>"+attribute+": </td>"

@@ -9,6 +9,7 @@
     
     #network-plot-container{
         position: absolute;
+      
        // width: 100%;
         min-width: 500px;
         height: 100%;
@@ -33,13 +34,26 @@ button, .button-margin {
 #v-pills-run_information{
   margin-bottom: 1.3%;
   height: 400px;
- 
+  position: relative;
+
   #table-text{
     position: relative;
       left: 10px;
   }
 
- 
+  #run-info-select{
+  
+    margin-top: 5px;
+    margin-left: 155px;
+    text-align: center;
+    height: 25px;
+      font-size: 15px;
+      text-align: center;
+      padding: 0;
+      align-items: center;
+      padding-left: 10px;
+      width: 120px;
+  }
 
   
   p{
@@ -89,8 +103,13 @@ button, .button-margin {
     
   }
 
-  table{
+  .table-content{
     height: 150px;
+    position: relative;
+    z-index: 5;
+   
+    font-size: 9.5pt;
+    line-height: 30px;
   }
 }
 
@@ -430,6 +449,7 @@ button, .button-margin {
   position: relative;
     margin: 0;
     padding: 0;
+    left: 270px;
 
    .network-control{
      min-width: 600px;
@@ -468,18 +488,7 @@ button, .button-margin {
 }
 
 
-#run-info-select{
-  margin-top: 5px;
-  margin-left: 155px;
-  text-align: center;
-  height: 25px;
-    font-size: 15px;
-    text-align: center;
-    padding: 0;
-    align-items: center;
-    padding-left: 10px;
-    width: 120px;
-}
+ 
 
 
 #collapseExample{
@@ -495,11 +504,18 @@ button, .button-margin {
 
 }
 
-tr{
+.tr-text{
   width: 250px;
+  margin-top: 45px;
   height: auto;
   position: absolute;
 }
+
+.tr-input{
+  margin-top: 8px;
+  left: 32.5px;
+ }
+
   .jumbotron-banner{
     background: url(/assets/img/browse-banner.png);
     position: relative;
@@ -1012,5 +1028,23 @@ tr{
     top: 1vw;
     position: relative;
   }
+}
+
+.side-window-head{
+  background:#0277bd;
+}
+
+#node-title{
+  align-self: center;
+  width: 100%;
+  margin: 0;
+  background-color: #000;
+  color: white;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #007bff, #004085);
+}
+
+#node-card{
+  border-radius: 10px;
 }
 
