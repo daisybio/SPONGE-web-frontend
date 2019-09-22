@@ -29,8 +29,8 @@ export class BrowseComponent implements OnInit {
     
     const default_node_color = '#FFFF00'
     const default_edge_color = '#0000FF'
-    const subgraph_edge_color = '#FF6347'
-    const subgraph_node_color = '#920518'
+    const subgraph_edge_color = '#18ffff'
+    const subgraph_node_color = '#18ffff'
 
     const node_information = $('#node_information')
     const edge_information = $('#edge_information')
