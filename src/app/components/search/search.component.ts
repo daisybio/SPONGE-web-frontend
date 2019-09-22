@@ -267,6 +267,7 @@ export class SearchComponent implements OnInit {
       }
       // append options to search-dropdown for network
       $('#network_search_node').html(node_options)
+      $('#network_search_node').selectpicker()
 
       // save data for later search
       $('#node_data').text(JSON.stringify(data))
