@@ -37,7 +37,7 @@
 
   #table-input{
     position: relative;
-    left: 120px;
+    left: -120px;
     top: 10px;
   }
   #run-info-select{
@@ -112,14 +112,12 @@
   }
 
   .table-content{
-    height: 160px;
     position: relative;
     z-index: auto;
-  
-    font-size: 9.5pt;
+    font-size: 10.5px;
     line-height: 30px;
     width: 500px;
-    letter-spacing: 0.0em;
+    letter-spacing: 0.0rem;
 
 
   }
@@ -155,7 +153,7 @@
 
 }
 .nav-side-menu {
-    overflow: auto;
+   // overflow: auto;
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
@@ -514,10 +512,9 @@
 #selectpicker-select{
   position: absolute;
   width: 90px;
-  left: 65;
-  margin-bottom: 20px;
-  margin-left: 70px;
+  //margin-left: 70px;
     margin-bottom: 20px;
+    left: -185px;
 }
  
 
@@ -537,12 +534,12 @@
 }
 
 .tr-text{
-  width: 250px;
+ // width: 250px;
   top: 10px;
-  height: auto;
+//  height: auto;
   position: relative;
-  font-size: 9.5pt;
-  line-height: 3;
+ // font-size: 9.5pt;
+ // line-height: 3;
   letter-spacing: 0.0em;
 }
 
@@ -564,6 +561,71 @@
     
   }
 
+
+  #title-BG{
+   // z-index: -3;
+    position: relative;
+    //background-color: #1985e0b5;
+    background: linear-gradient(to bottom, #097bf594, #a3edf796);
+    border-radius: 10px;
+    width: 150%;
+    margin-left: -25%;
+    height: calc(100%-20px);
+    height: 120px;
+
+    h1{
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    p{
+      margin-top: 20px;
+      margin-bottom: 5px;
+    }
+
+    .header{
+      margin-left: 20px
+      
+    }
+
+    .row{
+      justify-content: space-around;
+    }
+    
+    .select-field{
+      margin-right: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      height: 60px;
+      .header{
+        width: 45%;
+        height: 10%;
+        h1{
+          font-size: 18pt;
+          margin-top: 5px;
+          margin-bottom: 5px;
+        }
+
+        h3{
+          font-size: 12pt;
+          margin-top: 5px;
+           margin-bottom: 5px;
+        }
+      }
+
+      .select-field{
+        width: 40%;
+        height: 50%;
+
+        p{
+          margin-top:10px;
+          margin-bottom: 0px;
+        
+        }
+      }
+}
+  }
 
   .jumbotron-banner-re{
     background: url(/assets/img/browse-banner-re.png);
