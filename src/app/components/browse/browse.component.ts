@@ -19,7 +19,7 @@ declare var require: any
   styleUrls: ['./browse.component.less']
 })
 export class BrowseComponent implements OnInit {
-  private state$;
+
   disease_trimmed = ''
   selected_disease = ''
 
@@ -36,6 +36,12 @@ export class BrowseComponent implements OnInit {
     
     const controller = new Controller()
     const helper = new Helper()
+
+    // first things first, define dimensions of network container
+    $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
+    $(window).on('resize', function(){
+      $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
+    })
 
 
     /* Sigma configurations */
