@@ -239,6 +239,9 @@ export class BrowseComponent implements OnInit {
           $('#filter_edges :input').keyup( function() {
             edge_table.draw();
           } );
+          // colsearch for table
+          helper.colSearch('interactions-edges-table', edge_table)
+
           let edges = [];
           for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
@@ -561,6 +564,9 @@ export class BrowseComponent implements OnInit {
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ]
           });
+          // colsearch for table
+          helper.colSearch('interactions-nodes-table', node_table)
+
           $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
             $(this).toggleClass('selected');
           } );
