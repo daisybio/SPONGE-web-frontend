@@ -1,92 +1,22 @@
+@import "../../../variables.less"; 
+
 td {
-    display: inline-block;
+  display: inline-block;
 }
 
-section{
-.error-div{
-    border: none;
-    visibility: hidden;
-    #error-gif{
-      height: 8vw;
-      position: relative;
-      top: -2vw;
-      left: 20vw;
-      align-self: center;
-      width: 15vw;
-      z-index: 5;
-    }
-
-   form{
+#network-plot-container-parent{
+   min-width: 500px;
+    height: 500px;
     position: relative;
-    height: 100px;
-    align-self: center;
-    top: 3vw;
-    right: 17%;
-   }
-
-    #error-BG{
-      position: absolute;
-      width: 80%;
-      left: 10vw;
-      margin: 0 auto;
-     
-      align-self: center;
-    }
-    &#overlay-error {
-      background-color: rgba(0,0,0,0.5); /* your color */
-      width: 100%;
-      height: 100%;
-      position: fixed;
-      z-index: 3050;
-      top: 0;
-      left: 0;
-
-      p#error-text{
-        font-size: 3vw;
-        top: -6vw;
-        left: 28%;
-        align-self: center;
-        color: midnightblue;
-        position: relative;
-      }
-
-      h2{
-        font-size: 1vmax;
-        top: -2vw;
-        left: 10vw;
-      // right: 30%;
-        color: midnightblue;
-        position: relative;
-        z-index: 5;
-        align-self: center;
-      }
-
-      a{
-        border-radius: 10px;
-       
-        position: relative;
-        background: #013c96;
-        align-self: center;
-        border-color: transparent;
-        margin: 0;
-       
-        cursor: pointer;
-        max-width: 180%;
-        max-height: 100%;
-        width: 80px;
-        padding: 0;
-        padding-top: 1;
-        font-size: 100%;
-        text-align: center;
-       
-        right: 47%;
-        top: 1vw;
-        //background: linear-gradient(to right, #004085, #51aef1);
-       
-      }
-  }
-
-  }
-
+    display: block;
+    
+    #network-plot-container{
+        position: absolute;
+        min-width: 500px;
+        height: 500px;
+        border: solid 1px black;
+        
+    }  
+    
   
 }
