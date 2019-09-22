@@ -2,8 +2,8 @@ import { Component, OnInit, ErrorHandler} from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 
+
 import sigma from 'sigma';
-import { CATCH_ERROR_VAR } from '@angular/compiler/src/output/output_ast';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -19,18 +19,13 @@ declare var require: any
   styleUrls: ['./browse.component.less']
 })
 export class BrowseComponent implements OnInit {
+  private state$;
   disease_trimmed = ''
   selected_disease = ''
 
-  constructor() {
-   }
+  constructor() { }
 
   ngOnInit() {
-    
-    const default_node_color = '#FFFF00'
-    const default_edge_color = '#0000FF'
-    const subgraph_edge_color = '#FF6347'
-    const subgraph_node_color = '#920518'
 
     const node_information = $('#node_information')
     const edge_information = $('#edge_information')
@@ -41,6 +36,7 @@ export class BrowseComponent implements OnInit {
     
     const controller = new Controller()
     const helper = new Helper()
+
 
     /* Sigma configurations */
     sigma.classes.graph.addMethod('adjacentEdges', function(id) {
@@ -104,20 +100,17 @@ export class BrowseComponent implements OnInit {
 
     $('#title-BG').change( () => {
       $('#load_disease').click();
-      console.log("find ich");
     })
 
    if( document.querySelector('#disease_selectpicker')){
       $('#load_disease').click();
-   //   console.log("find ich");
     }
-
 
     run_information()
 
     // trigger click on first disease in the beginning
     $('#load_disease').click()
-  
+
     
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
@@ -167,11 +160,6 @@ export class BrowseComponent implements OnInit {
       }            
     })
 
-
-    function getRandomInt(max) {
-      return Math.floor(Math.random() * Math.floor(max));
-    }
-
     function load_nodes(disease_trimmed, callback?) {
       let sort_by = $('#run-info-select').val().toLowerCase()
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
@@ -189,68 +177,7 @@ export class BrowseComponent implements OnInit {
         'eigenvector': cutoff_eigenvector, 
         'descending': descending,
         'callback': data => {
-          let ordered_data = [];
-          // let ensg_numbers = []
-          for (let i=0; i < Object.keys(data).length; i++) {
-            let entry = data[i]
-            // change order of columns alredy in object
-            let ordered_entry = {}
-            // flatten data object
-            for (let x in entry['gene']) {
-              entry[x] = entry['gene'][x]
-            }
-            // ensg_numbers.push(entry['ensg_number'])
-            ordered_entry['ENSG Number'] = entry['ensg_number']
-            ordered_entry['Gene Symbol'] = entry['gene_symbol']
-            ordered_entry['Betweeness'] = entry['betweeness']
-            ordered_entry['Eigenvector'] = entry['eigenvector']
-            ordered_entry['Node Degree'] = entry['node_degree']
-            ordered_entry['Gene ID'] = entry['gene_ID']
-            ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
-            ordered_data.push(ordered_entry)
-          }
-          let nodes = [];
-          let node_options = ""   // for node selector
-          for (let gene in ordered_data) {
-            let id = ordered_data[gene]['ENSG Number'];
-            let label = ordered_data[gene]['Gene Symbol'];
-            if (label == '') {
-              label = 'unknown'
-            }
-            let x = getRandomInt(10);
-            let y = getRandomInt(10);
-            let size = ordered_data[gene]['Eigenvector'];
-            let color = default_node_color;
-            nodes.push({id, label, x, y , size, color})
-
-            node_options += "<option data-subtext="+label+">"+id+"</option>"
-          }
-          // append options to search-dropdown for network
-          $('#network_search_node').html(node_options)
-          // build datatable
-          let column_names = Object.keys(ordered_data[0]);
-          $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
-          node_table = $('#interactions-nodes-table').DataTable( {
-            columnDefs: [
-              { render: function ( ordered_data, type, row ) {
-                  return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-                },
-                targets: [2, 3] }
-            ],
-            lengthChange: false,
-            dom: 'Bfrtip',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
-          });
-          $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
-          } );
-          // save data for later search
-          $('#node_data').text(JSON.stringify(ordered_data))
-
-          /* plot expression data for nodes */
-          //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
+          let nodes = parse_node_data(data)
 
           return callback(nodes)
           },
@@ -281,12 +208,17 @@ export class BrowseComponent implements OnInit {
 
           let column_names = Object.keys(ordered_data[0]);
           $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
+          // find index positions from columns to round
+          var index_correlation = column_names.indexOf('Correlation');
+          var index_mscor = column_names.indexOf('MScor');
+          var index_p_value = column_names.indexOf('p-value');
+
           edge_table = $('#interactions-edges-table').DataTable({
             columnDefs: [
               { render: function ( ordered_data, type, row ) {
                       return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
                        },
-                  targets: [ 2, 3, 4 ] }
+                  targets: [ index_correlation, index_mscor, index_p_value ] }
             ],
             dom: 'Bfrtip',
             lengthChange: false,
@@ -302,12 +234,12 @@ export class BrowseComponent implements OnInit {
           } );
           let edges = [];
           let edge_options = ""   // for network search selector
-          for (let interaction in ordered_data) {
+          for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
             let size = 100*data[interaction]['mscore'];
-            let color = default_edge_color;
+            let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
               id: id, 
@@ -334,7 +266,7 @@ export class BrowseComponent implements OnInit {
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
-      let disease_selector = $('#disease_selectpicker');    
+      let disease_selector = $('#disease_selectpicker');
       let selected_disease_result = $('#selector_disease_result');
 
       disease_selector.selectpicker()
@@ -383,7 +315,7 @@ export class BrowseComponent implements OnInit {
             
             let run_table = document.createElement("table")  
             let run_name = document.createElement("th")
-            run_name.innerHTML = uppercaseFirstLetter(header);
+            run_name.innerHTML = helper.uppercaseFirstLetter(header);
             
             run_name.setAttribute("style","text-decoration:underline")
 
@@ -402,7 +334,7 @@ export class BrowseComponent implements OnInit {
               }
               
               var table_entry = document.createElement("tr")
-              table_entry.innerHTML = uppercaseFirstLetter( key)
+              table_entry.innerHTML = helper.uppercaseFirstLetter( key)
               table_entry.setAttribute("style","margin-right:2px")
               
               table_keys.appendChild(table_entry)
@@ -434,274 +366,11 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
-            let graph = {
-              nodes: nodes,
-              edges: edges
-            }
-            network = new sigma({
-              graph: graph,
-                renderer: {
-                  container: document.getElementById('network-plot-container'),
-                  type: 'canvas'
-                },
-                settings: {
-                  minEdgeSize: 0.1,
-                  maxEdgeSize: 2,
-                  minNodeSize: 1,
-                  maxNodeSize: 8,
-                  defaultNodeColor: default_node_color,
-                  autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
-                  animationsTime: 1000,
-                  borderSize: 2,  
-                  outerBorderSize: 3,
-                  enableEdgeHovering: true,
-                  edgeHoverColor: '#2ecc71',
-                  defaultEdgeHoverColor: '#2ecc71',
-                  edgeHoverSizeRatio: 2,
-                  nodeHoverSizeRatio: 2,
-                  edgeHoverExtremities: true,
-                  scalingMode: 'outside',
-                  doubleClickEnabled: false
-                }
-              }
-            )
-
-            var noverlap_config = {
-              nodeMargin: 3.0,
-              scaleNodes: 1.3
-            };
             
-            // Configure the algorithm
-            var noverlap_listener = network.configNoverlap(noverlap_config);
-            network.startNoverlap();
-
-            network.addCamera('cam1')
-
-            network.bind('overNode', (e) => {
-              // events: overNode outNode clickNode doubleClickNode rightClickNode
-              //console.log(e.type, e.data.node.label, e.data.captor, e.data);
-              // load the node information for window on the side
-              let data = JSON.parse($('#node_data').text())
-              for (let entry in data) {
-                if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
-                  // build a table to display json
-                  let table = "<table>"
-                  for (let attribute in data[entry]) {
-                    let row = "<tr>"
-                    row += "<td>"+attribute+": </td>"
-                    row += "<td>"+data[entry][attribute]+"</td>"
-                    row += "</tr>"
-                    table += row
-                  }
-                  table += "</table>"
-                  $('#node_information_content').html(table)
-                  // unhide node information 
-                  if (node_information.hasClass('hidden')) {
-                    node_information.removeClass('hidden')
-                  }
-                  // hide edge information
-                  if (!edge_information.hasClass('hidden')) {
-                    edge_information.addClass('hidden')
-                  }
-                  break
-                }
-              }
-            });
-
-            network.bind('overEdge', (e) => {
-              let data = JSON.parse($('#edge_data').text())
-              for (let entry in data) {
-                if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
-                  // build a table to display json
-                  let table = "<table>"
-                  for (let attribute in data[entry]) {
-                    let row = "<tr>"
-                    row += "<td>"+attribute+": </td>"
-                    row += "<td>"+data[entry][attribute]+"</td>"
-                    row += "</tr>"
-                    table += row
-                  }
-                  table += "</table>"
-                  $('#edge_information_content').html(table)
-                  // unhide node information 
-                  if (edge_information.hasClass('hidden')) {
-                    edge_information.removeClass('hidden')
-                  }
-                  // hide edge information
-                  if (!node_information.hasClass('hidden')) {
-                    node_information.addClass('hidden')
-                  }
-                  break
-                }
-              }
-            })
-
-            network.bind('doubleClickNode', (e) => {
-              node_click_function(e)
-            })
-
-            function node_click_function(e) {
-              {
-                var nodeId = e.data.node.id;
-                let color_all = false;
-                network.graph.adjacentEdges(nodeId).forEach(
-                  (ee) => {
-                    if (ee.color !== subgraph_edge_color){
-                      color_all = true
-                    }
-                  }
-                )
-                if (color_all) {
-                  network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-                    ee.color = subgraph_edge_color
-                  })
-                  // set node color to clicked
-                  e.data.node.color = subgraph_node_color
-                } else {
-                  network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-                    ee.color = default_edge_color
-                  })
-                  // set node color to default
-                  e.data.node.color = default_node_color
-                }
-                network.refresh();
-              };
-            }
-
-            function clear_subgraphs() {
-              network.graph.edges().forEach(
-                (ee) => {
-                  ee.color = default_edge_color
-                })
-              network.graph.nodes().forEach(
-                (node) => {
-                  node.color = default_node_color
-                }
-              )
-              network.refresh()
-            }
-
-            function searchNode(node_to_search) {
-              let error_field = $('#network_search_node_error')
-              var nodes = network.graph.nodes()
-              let found = false
-              for (let node in nodes) {
-                if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
-                  focusNode(network.cameras[0], nodes[node])
-                  nodes[node].color = subgraph_node_color
-                  found = true
-                  break
-                }
-              }
-              if (!found) {
-                // show error
-                error_field.text('Could not find '+ node_to_search)
-                if (error_field.hasClass('hidden')) {
-                  error_field.removeClass('hidden')
-                }
-              } else {
-                // remove error
-                if (!error_field.hasClass('hidden')) {
-                  error_field.addClass('hidden')
-                }
-              }
-              // Filter or find the first matching node then apply focusNode on it
-            }
-
-            function searchEdge(edge_to_search) {
-              var edges = network.graph.edges()
-              for (let edge in edges) {
-                if (edges[edge]['id'] == edge_to_search || edges[edge]['label'] == edge_to_search) {
-                  focusNode(network.cameras[0], edges[edge])
-                  edges[edge].color = subgraph_edge_color
-                  break
-                }
-              }
-            }
-
-
-            function focusNode(camera, node) {
-              sigma.misc.animation.camera(
-                camera,
-                {
-                  x: node['read_cam0:x'],
-                  y: node['read_cam0:y'],
-                  ratio: 1
-                },
-                {
-                  duration: 300
-                }
-              );
-            }
-
-            $('#network_search_node_button').click(() => {
-              let to_search = $('#network_search_node').val()
-              if (to_search.startsWith('ENSG')) {
-                searchNode(to_search)
-              } else {
-                searchEdge(to_search)
-              }
-              
-            })
-
-            /* Save network button */
-            $('#network_snapshot_png').on('click', () => {
-              network.renderers[0].snapshot({
-                format: 'png', 
-                background: 'white', 
-                filename: 'SPONGE_'+this.selected_disease+'_graph.png',
-                labels: true,
-                download: true,
-              });
-            })
-
-            $('#network_snapshot_jpg').on('click', () => {
-              network.renderers[0].snapshot({
-                format: 'jpg', 
-                background: 'white', 
-                filename: 'SPONGE_'+this.selected_disease+'_graph.jpg',
-                labels: true,
-                download: true,
-              });
-            })
-
-            $('#network_snapshot_svg').on('click', () => {
-              network.toSVG({
-                download: true, 
-                filename: 'SPONGE_'+this.selected_disease+'_graph.svg',
-                labels: true,
-                size: 1000
-              });
-            })
-
-            /* restart camera */
-            document.getElementById('restart_camera').addEventListener('click', function() {
-              network.camera.goTo({
-                x: 0,
-                y: 0,
-                angle: 0,
-                ratio: 2
-              });
-            });
-
-            /* toggle force atlas 2 */
-            $('#toggle_layout').unbind()
-            $('#toggle_layout').click( () => {
-              if ((network.supervisor || {}).running) {
-                network.killForceAtlas2();
-                document.getElementById('toggle_layout').innerHTML = 'Start layout';
-              } else {
-                network.startForceAtlas2({worker: true, slowDown: 100});
-                document.getElementById('toggle_layout').innerHTML = 'Stop layout';
-              }
-            });      
-            
-            $('#reset_graph').click( () => {
-              clear_subgraphs();
-            })
+            let network = helper.make_network(this.disease_trimmed, nodes, edges)
 
             $('#export_selected_edges').click(() => {
-              clear_subgraphs();
+              helper.clear_subgraphs(network);
               let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
               if (selected_edges.length === 0) {
                 selected_edges = edge_table.rows({ filter : 'applied'}).data()
@@ -716,10 +385,10 @@ export class BrowseComponent implements OnInit {
                     let selected_edge = selected_edges[i]
                     // 0 and 1 are gene1 and gene2
                     if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
-                      ee.color = subgraph_edge_color
+                      ee.color = helper.subgraph_edge_color
                       break
                     } else {
-                      ee.color = default_edge_color
+                      ee.color = helper.default_edge_color
                     }
                   }
                 }
@@ -730,9 +399,9 @@ export class BrowseComponent implements OnInit {
                 $('#restart_camera').click()
               }, 200)
             })
-
+      
             $('#export_selected_nodes').click(() => {
-              clear_subgraphs();
+              helper.clear_subgraphs(network);
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
               if (selected_nodes_data.length === 0) {
@@ -745,27 +414,18 @@ export class BrowseComponent implements OnInit {
               network.graph.nodes().forEach(
                 (node) => {
                   if (selected_nodes.includes(node['id'])) {
-                    node.color = subgraph_node_color
+                    console.log(node)
+                    node.color = helper.subgraph_node_color
                   }
                 }
               )
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
+                // network.refresh()
                 $('#restart_camera').click()
               }, 500)
             })
-
-
-            // Initialize the dragNodes plugin:
-            var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-
-            // network search selector
-            $('#network_search_node').selectpicker()
-
-            // zoom out 
-            $('#restart_camera').click()
-
 
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
@@ -777,10 +437,6 @@ export class BrowseComponent implements OnInit {
           })
         })
       })
-    }
-    
-    function uppercaseFirstLetter(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     function load_heatmap(disease, nodes) {
@@ -845,6 +501,76 @@ export class BrowseComponent implements OnInit {
           helper.msg("Something went wrong loading your expression data.", true)
         }
       })
+    }
+
+    function parse_node_data(data) {
+      let ordered_data = [];
+          // let ensg_numbers = []
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            // change order of columns alredy in object
+            let ordered_entry = {}
+            // flatten data object
+            for (let x in entry['gene']) {
+              entry[x] = entry['gene'][x]
+            }
+            // ensg_numbers.push(entry['ensg_number'])
+            ordered_entry['ENSG Number'] = entry['ensg_number']
+            ordered_entry['Gene Symbol'] = entry['gene_symbol']
+            ordered_entry['Betweeness'] = entry['betweeness']
+            ordered_entry['Eigenvector'] = entry['eigenvector']
+            ordered_entry['Node Degree'] = entry['node_degree']
+            ordered_entry['Gene ID'] = entry['gene_ID']
+            ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
+            ordered_data.push(ordered_entry)
+          }
+          let nodes = [];
+          let node_options = ""   // for node selector
+          for (let gene in ordered_data) {
+            let id = ordered_data[gene]['ENSG Number'];
+            let label = ordered_data[gene]['Gene Symbol'];
+            if (label == '') {
+              label = 'unknown'
+            }
+            let x = helper.getRandomInt(10);
+            let y = helper.getRandomInt(10);
+            let size = ordered_data[gene]['Eigenvector'];
+            let color = helper.default_node_color;
+            nodes.push({id, label, x, y , size, color})
+
+            node_options += "<option data-subtext="+label+">"+id+"</option>"
+          }
+          // append options to search-dropdown for network
+          $('#network_search_node').html(node_options)
+          // build datatable
+          let column_names = Object.keys(ordered_data[0]);
+
+          // find index positions from columns to round
+          var index_betweeness = column_names.indexOf('Betweeness');
+          var index_eigenvector = column_names.indexOf('Eigenvector');
+          $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
+          node_table = $('#interactions-nodes-table').DataTable( {
+            columnDefs: [
+              { render: function ( ordered_data, type, row ) {
+                  return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+                },
+                targets: [index_betweeness, index_eigenvector] }
+            ],
+            lengthChange: false,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+          });
+          $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
+            $(this).toggleClass('selected');
+          } );
+          // save data for later search
+          $('#node_data').text(JSON.stringify(ordered_data))
+
+          /* plot expression data for nodes */
+          //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
+          return nodes
     }
 
   }

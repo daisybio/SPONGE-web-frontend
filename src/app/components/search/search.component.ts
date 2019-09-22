@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import 'datatables.net';
 declare var $;
 
@@ -12,7 +12,7 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(public router: Router, private route: ActivatedRoute) { }
 
   ngOnInit() {
 
@@ -22,6 +22,8 @@ export class SearchComponent implements OnInit {
     var search_key: string;
     var limit: number;
     var parsed_search_result: any;
+
+    const router = this.router
 
     this.route.queryParams
       .subscribe(params => {
@@ -245,6 +247,69 @@ export class SearchComponent implements OnInit {
       );
     }
 
+    function parse_node_data(data) {
+      // let ensg_numbers = []
+      let nodes = [];
+      let node_options = ""   // for node selector
+      for (let gene in data) {
+        let id = data[gene]['ensg_number'];
+        let label = data[gene]['gene_symbol'];
+        if (label == '') {
+          label = 'unknown'
+        }
+        let x = helper.getRandomInt(10);
+        let y = helper.getRandomInt(10);
+        let size = data[gene]['p_value'];
+        let color = helper.default_node_color;
+        nodes.push({id, label, x, y , size, color})
+
+        node_options += "<option data-subtext="+label+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').html(node_options)
+
+      // save data for later search
+      $('#node_data').text(JSON.stringify(data))
+
+      /* plot expression data for nodes */
+      //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
+      return nodes
+    }
+
+    function load_edges(disease, nodes, callback?) {
+      controller.get_ceRNA_interactions_specific({'disease_name':disease, 'ensg_number':nodes,
+        'callback':data => {
+          let edges = [];
+          let edge_options = ""   // for network search selector
+          for (let interaction in data) {
+            let id = data[interaction]['interactions_genegene_ID'];
+            let source = data[interaction]['gene1'];
+            let target = data[interaction]['gene2'];
+            let size = 100*data[interaction]['mscore'];
+            let color = helper.default_edge_color;
+            //let type = 'line'//, curve
+            edges.push({
+              id: id, 
+              source: source, 
+              target: target, 
+              size: size, 
+              color: color, 
+            })
+            
+            edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+          }
+          // append options to search-dropdown for network
+          $('#network_search_node').append(edge_options)
+
+          $('#edge_data').text(JSON.stringify(data))
+          return callback(edges)
+        },
+        error: (response) => {
+          helper.msg("Something went wrong while loading the interactions.", true)
+        }
+      })
+    }
+
     function parse_cerna_response(response) {
       response.forEach(interaction => {
         let interaction_info = {};
@@ -273,13 +338,13 @@ export class SearchComponent implements OnInit {
           parsed_search_result['diseases'][disease] = []
         }
 
-        interaction_info['ensg_number'] = interaction[gene_to_extract]['ensg_number']
-        interaction_info['gene_symbol'] = interaction[gene_to_extract]['gene_symbol']
-        interaction_info['gene_type'] = interaction[gene_to_extract]['gene_type']
-        interaction_info['chromosome'] = interaction[gene_to_extract]['chromosome_name']
-        interaction_info['correlation'] = interaction['correlation']
+        interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
+        interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol']
+        interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
+        interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
+        interaction_info['Correlation'] = interaction['correlation']
         //interaction_info['gene'] = interaction[gene_to_extract]['gene_ID']
-        interaction_info['mscor'] = interaction['mscore']
+        interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
 
         parsed_search_result['diseases'][disease].push(interaction_info)
@@ -301,7 +366,6 @@ export class SearchComponent implements OnInit {
       $('#key_information').html(key_information_sentence)
 
       // build table out of parsed result for each disease
-      let list_diseases = $('#list_diseases')
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('')
         let table_id: string = disease_trimmed + "-table"
@@ -319,6 +383,7 @@ export class SearchComponent implements OnInit {
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Options" +
           "</button>" +
+          "<button class='export_nodes btn btn-primary button-margin' data-value="+table_id+">Show as Network</button>"+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "'>" +
           "<div class='card card-body'>" +
@@ -366,10 +431,9 @@ export class SearchComponent implements OnInit {
           disease_name: disease.split(' ').join('%20'),
           callback: (response) => {
             // open raw expression data in new tab
-            console.log(response)
             let json = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response));
             let buttons = $("#button_control_"+disease_trimmed)
-            buttons.append($('<a href="data:' + json + '" download="expression_'+disease_trimmed+'.json" class="btn btn-secondary">Raw Expression Data</a>'))
+            buttons.append($('<a href="data:' + json + '" download="expression_'+disease_trimmed+'.json" class="btn btn-secondary button-margin">Raw Expression Data</a>'))
           }
         };
         if (search_key.startsWith('ENSG')) {
@@ -378,6 +442,44 @@ export class SearchComponent implements OnInit {
           config['gene_symbol'] = [key_information['gene_symbol']]
         }
         controller.get_expression_ceRNA(config)
+
+        $(".export_nodes").click( () => {
+          let selected_nodes_data = table.rows('.selected', { filter : 'applied'}).data()
+          if (selected_nodes_data.length === 0) {
+            selected_nodes_data = table.rows({ filter : 'applied'}).data()
+          }
+
+          let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+
+          // parse values from search into correct format
+          let gene
+          let key
+          let new_nodes = {}
+          for (let entry in selected_nodes_data) {
+            if (isNaN(entry as any)) {
+              continue
+            }
+            gene = selected_nodes_data[entry]
+            new_nodes[entry] = {}
+            for (let i=0; i < params_genes_keys.length; i++) {
+              key = params_genes_keys[i]
+              new_nodes[entry][key] = gene[i]
+            }
+          }
+          let nodes = parse_node_data(new_nodes)
+          let ensg_numbers = nodes.map(function(node) {return node.id})
+          load_edges(encodeURI(disease), ensg_numbers, edges => {
+          
+            let network = helper.make_network(disease_trimmed, nodes, edges)
+            // load expression data
+            //load_heatmap(this.disease_trimmed, ensg_numbers)
+
+            if ($('#network').hasClass('hidden')) {
+              $('#network').removeClass('hidden')
+            }
+          })
+
+        })
 
       }
     }
