@@ -53,17 +53,17 @@
                                     </tr>
                                 </td>
 
-                                <td> 
-                                    <tr>
-                                        
-                                        <select class="selectpicker sorting-value" id="run-info-select" title="Select sorting value" data-live-search="true">
-                                            
+                                <td id="table-input"> 
+                                 <tr id="selectpicker-select">
+
+                                        <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true">
                                             <option data-value="">None</option>
                                             <option data-value="degree">Degree</option>
                                             <option data-value="betweenness">Betweenness</option>
                                             <option data-value="eigenvector">Eigenvector</option>
                                          </select>
-                            
+                                
+                                       <!--  <tr> -->
                                         <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
                                         <input type="text" class="form-control" id="input_cutoff_degree" value=0>
                                         <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>    
@@ -77,13 +77,13 @@
         
                             <div class="buttons">
 
-                                <button id="load_disease" type="button" class="btn btn-primary">Go</button>
+                                <button id="load_disease" type="button" class="btn btn-primary button-margin">Go</button>
 
                                 <button class="btn btn-secondary" id="end-button" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
                                         Data of visualized run 
                                 </button>
                                 <a id="selector_diseases_link"  href="" target="_blank">
-                                        <button type="button" id="end-button" class="btn btn-secondary">Download original data <i class="fa fa-link"></i>
+                                        <button type="button" id="end-button" class="btn btn-secondary button-margin">Download original data <i class="fa fa-link"></i>
                                         </button>
                                 </a>
                                 <!--Displays the data of the currently shown run--> 

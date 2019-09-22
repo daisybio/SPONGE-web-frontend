@@ -174,6 +174,7 @@ export class BrowseComponent implements OnInit {
 
     function load_nodes(disease_trimmed, callback?) {
       let sort_by = $('#run-info-select').val().toLowerCase()
+    
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
@@ -224,6 +225,7 @@ export class BrowseComponent implements OnInit {
             nodes.push({id, label, x, y , size, color})
 
             node_options += "<option data-subtext="+label+">"+id+"</option>"
+            
           }
           // append options to search-dropdown for network
           $('#network_search_node').html(node_options)

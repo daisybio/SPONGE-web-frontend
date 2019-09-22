@@ -41,18 +41,24 @@ button, .button-margin {
       left: 10px;
   }
 
+  #table-input{
+    position: relative;
+    left: 120px;
+    top: 10px;
+  }
   #run-info-select{
   
-    margin-top: 5px;
-    margin-left: 155px;
-    text-align: center;
-    height: 25px;
+    //margin-top: 5px;
+    //margin-left: 155px;
+      text-align: center;
+      height: 25px;
       font-size: 15px;
       text-align: center;
       padding: 0;
       align-items: center;
       padding-left: 10px;
       width: 120px;
+      position: relative;
   }
 
   
@@ -77,6 +83,14 @@ button, .button-margin {
     padding: 0;
   }
 
+  select{
+    left: 50px;
+    position: relative;
+    text-align: center;
+    height: 10px;
+    padding: 0;
+  }
+  
   #load_disease{
   //  position: relative;
    //   top: 220px;
@@ -104,10 +118,11 @@ button, .button-margin {
   }
 
   .table-content{
-    height: 150px;
+    height: 160px;
     position: relative;
-    z-index: 5;
-   
+    z-index: auto;
+    text-size-adjust: none;
+    //font-family: Arial, Helvetica, sans-serif;
     font-size: 9.5pt;
     line-height: 30px;
   }
@@ -458,7 +473,7 @@ button, .button-margin {
 
 #input_cutoff_betweenness{
     
-    margin-left: 225px;
+    margin-left: 40px;
     margin-bottom: 5px;
     text-align: center;
     margin-top: 9px;
@@ -467,14 +482,16 @@ button, .button-margin {
 
 #input_cutoff_degree{
   margin-top: 15px;
-  margin-left: 225px;
+  margin-left: 40px;
+//  margin-left: 225px;
   margin-bottom: 5px;
   text-align: center;
 }
 
 #input_cutoff_eigenvector{
   margin-top: 17px;
-  margin-left: 225px;
+  margin-left: 40px;
+ // margin-left: 225px;
   margin-bottom: 5px;
   text-align: center;
 }
@@ -482,14 +499,23 @@ button, .button-margin {
 
 #input_limit{
   margin-top: 20px;
-  margin-left: 225px;
+  margin-left: 40px;
+ // margin-left: 20px;
   margin-bottom: 5px;
   text-align: center;
 }
 
-
+#selectpicker-select{
+  position: absolute;
+  width: 90px;
+  left: 65;
+  margin-bottom: 20px;
+  margin-left: 70px;
+    margin-bottom: 20px;
+}
  
 
+ 
 
 #collapseExample{
   position: relative;
@@ -506,9 +532,11 @@ button, .button-margin {
 
 .tr-text{
   width: 250px;
-  margin-top: 45px;
+  top: 10px;
   height: auto;
   position: absolute;
+  font-size: 9.5pt;
+  line-height: 3;
 }
 
 .tr-input{
