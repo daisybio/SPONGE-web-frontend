@@ -491,7 +491,7 @@ export class BrowseComponent implements OnInit {
                   for (let attribute in data[entry]) {
                     let row = "<tr>"
                     row += "<td>"+attribute+": </td>"
-                    row += "<td>"+data[entry][attribute]+"</td>"
+                    row += "<td    style=' text-align: center;'>"+data[entry][attribute]+"</td>"
                     row += "</tr>"
                     table += row
                   }
