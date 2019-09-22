@@ -216,7 +216,7 @@ export class Helper {
         for (let entry in data) {
           if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
             // build a table to display json
-            let table = "<table>"
+            let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
               let row = "<tr>"
               row += "<td>"+attribute+": </td>"
