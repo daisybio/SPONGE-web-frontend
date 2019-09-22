@@ -233,7 +233,6 @@ export class BrowseComponent implements OnInit {
             edge_table.draw();
           } );
           let edges = [];
-          let edge_options = ""   // for network search selector
           for (let interaction in data) {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
@@ -249,10 +248,8 @@ export class BrowseComponent implements OnInit {
               color: color, 
             })
             
-            edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
           }
-          // append options to search-dropdown for network
-          $('#network_search_node').append(edge_options)
+
 
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
@@ -280,7 +277,6 @@ export class BrowseComponent implements OnInit {
 
         $("#interactions-nodes-table-container").html(''); //clear possible other tables
         $("#interactions-edges-table-container").html(''); //clear possible other tables
-        $('#network-plot-container').html(''); // clear possible other network
 
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
@@ -524,7 +520,7 @@ export class BrowseComponent implements OnInit {
             ordered_data.push(ordered_entry)
           }
           let nodes = [];
-          let node_options = ""   // for node selector
+
           for (let gene in ordered_data) {
             let id = ordered_data[gene]['ENSG Number'];
             let label = ordered_data[gene]['Gene Symbol'];
@@ -536,11 +532,8 @@ export class BrowseComponent implements OnInit {
             let size = ordered_data[gene]['Eigenvector'];
             let color = helper.default_node_color;
             nodes.push({id, label, x, y , size, color})
-
-            node_options += "<option data-subtext="+label+">"+id+"</option>"
           }
-          // append options to search-dropdown for network
-          $('#network_search_node').html(node_options)
+
           // build datatable
           let column_names = Object.keys(ordered_data[0]);
 

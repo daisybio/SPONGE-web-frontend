@@ -136,6 +136,34 @@ export class Helper {
 
       const $this = this
 
+      $('#network-plot-container').html(''); // clear possible other network
+      $('#network-search').html('');  // clear other search options
+
+      $('#network-search').html(
+        "<select id='network_search_node' class='form-control mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-secondary button-margin' >Search</button>"
+      )
+      let node_options = ""   // for node selector
+      for (let node in nodes) {
+        let label = nodes[node]['label']
+        let id = nodes[node]['id']
+        node_options += "<option data-subtext="+label+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(node_options)
+
+      let edge_options = ""   // for network search selector
+      for (let edge in edges) {
+        let source = edges[edge]['source']
+        let target = edges[edge]['target']
+        let id = edges[edge]['id']
+        edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(edge_options)
+
+      $('#network_search_node').selectpicker()
+
       let graph = {
         nodes: nodes,
         edges: edges
@@ -279,27 +307,13 @@ export class Helper {
       }
 
       function searchNode(node_to_search) {
-        let error_field = $('#network_search_node_error')
         var nodes = network.graph.nodes()
-        let found = false
+
         for (let node in nodes) {
           if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
             focusNode(network.cameras[0], nodes[node])
             nodes[node].color = $this.subgraph_node_color
-            found = true
             break
-          }
-        }
-        if (!found) {
-          // show error
-          error_field.text('Could not find '+ node_to_search)
-          if (error_field.hasClass('hidden')) {
-            error_field.removeClass('hidden')
-          }
-        } else {
-          // remove error
-          if (!error_field.hasClass('hidden')) {
-            error_field.addClass('hidden')
           }
         }
         // Filter or find the first matching node then apply focusNode on it
@@ -413,9 +427,6 @@ export class Helper {
 
       // Initialize the dragNodes plugin:
       var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
-
-      // network search selector
-      $('#network_search_node').selectpicker()
 
       // zoom out 
       $('#restart_camera').click()
