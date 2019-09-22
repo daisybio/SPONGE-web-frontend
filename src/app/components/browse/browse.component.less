@@ -143,7 +143,7 @@ button, .button-margin {
 
 }
 .nav-side-menu {
-    //overflow: auto;
+    overflow: auto;
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
@@ -153,8 +153,8 @@ button, .button-margin {
     z-index: auto;
     top: 0px;
     width: @browse-sidebar-width;
-    height:  @browse-sidebar-height;
-    // 78.89%; //348
+    min-height:  @browse-sidebar-height;
+    
     bottom: 0;
     right: auto;
     color: #7f7f94;
@@ -162,7 +162,7 @@ button, .button-margin {
 
     padding: 0;
     margin: 0;
-    margin-top: 89px;
+    //margin-top: 89px;
     //margin-bottom: 20px;
     /* margin-bottom: 200px; */
   
@@ -1035,6 +1035,12 @@ button, .button-margin {
 
 .side-window-head{
   background:#0277bd;
+}
+
+  
+#content-wrapper{
+  height: 100%;
+  position: relative;
 }
 
 #node-title{
