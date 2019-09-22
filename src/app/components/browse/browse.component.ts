@@ -227,11 +227,11 @@ export class BrowseComponent implements OnInit {
                        },
                   targets: [ index_correlation, index_mscor, index_p_value ] }
             ],
-            dom: 'Bfrtip',
-            lengthChange: false,
+            dom: '<"top"Bf>rt<"bottom"lip>',
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
             ],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
           }); 
           $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
             $(this).toggleClass('selected');
@@ -558,11 +558,11 @@ export class BrowseComponent implements OnInit {
                 },
                 targets: [index_betweeness, index_eigenvector] }
             ],
-            lengthChange: false,
-            dom: 'Bfrtip',
+            dom: '<"top"Bf>rt<"bottom"lip>',
             buttons: [
                 'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
+            ],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
           });
           // colsearch for table
           helper.colSearch('interactions-nodes-table', node_table)
