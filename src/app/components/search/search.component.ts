@@ -259,7 +259,7 @@ export class SearchComponent implements OnInit {
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
-        let size = data[gene]['p_value'];
+        let size = data[gene]['p-value'];
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
 
@@ -285,7 +285,7 @@ export class SearchComponent implements OnInit {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscore'];
+            let size = 100*data[interaction]['mscor'];
             let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
@@ -471,6 +471,12 @@ export class SearchComponent implements OnInit {
           load_edges(encodeURI(disease), ensg_numbers, edges => {
           
             let network = helper.make_network(disease_trimmed, nodes, edges)
+            setTimeout(() => {
+              // network.refresh()
+              $('#restart_camera').click()
+              network.refresh()
+            }, 500)
+
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
 

@@ -414,7 +414,6 @@ export class BrowseComponent implements OnInit {
               network.graph.nodes().forEach(
                 (node) => {
                   if (selected_nodes.includes(node['id'])) {
-                    console.log(node)
                     node.color = helper.subgraph_node_color
                   }
                 }

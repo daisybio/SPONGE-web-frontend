@@ -15,6 +15,8 @@ export class Helper {
     default_edge_color = '#0000FF'
     subgraph_edge_color = '#FF6347'
     subgraph_node_color = '#920518'
+    hover_edge_color = '#228B22'
+    hover_node_color = '#228B22'
 
     controller = new Controller()
 
@@ -132,10 +134,6 @@ export class Helper {
 
     public make_network(selected_disease, nodes, edges) {
 
-      console.log(selected_disease)
-      console.log(nodes)
-      console.log(edges)
-
       const $this = this
 
       let graph = {
@@ -184,6 +182,7 @@ export class Helper {
       network.bind('overNode', (e) => {
         // events: overNode outNode clickNode doubleClickNode rightClickNode
         //console.log(e.type, e.data.node.label, e.data.captor, e.data);
+        // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
         for (let entry in data) {
@@ -212,7 +211,12 @@ export class Helper {
         }
       });
 
+      // network.bind('outNode', (e) => { 
+      //   e.data.node.color = $this.default_node_color
+      // })
+
       network.bind('overEdge', (e) => {
+        // e.data.edge.color = $this.hover_edge_color
         let data = JSON.parse($('#edge_data').text())
         for (let entry in data) {
           if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
@@ -239,6 +243,10 @@ export class Helper {
           }
         }
       })
+
+      // network.bind('outEdge', (ee) => { 
+      //   ee.data.edge.color = $this.default_edge_color
+      // })
 
       network.bind('doubleClickNode', (e) => {
         node_click_function(e)
@@ -412,6 +420,7 @@ export class Helper {
       // zoom out 
       $('#restart_camera').click()
 
+      network.refresh()
       return network
     }
 
