@@ -140,8 +140,8 @@ export class Helper {
       $('#network-search').html('');  // clear other search options
 
       $('#network-search').html(
-        "<select id='network_search_node' class='form-control mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
-        "<button id='network_search_node_button' class='btn btn-secondary button-margin' >Search</button>"
+        "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
       )
       let node_options = ""   // for node selector
       for (let node in nodes) {
