@@ -189,12 +189,33 @@
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                                 <div class="container-flex">
-                                    <div class="row">
+                                    <div class="row justify-content-center">
                                         <div class="dynamic-width-network-col">
                                             <div id='network-plot-container-parent'>
                                                 <div id='network-plot-container'></div>
                                             </div>
                                             
+                                            <div class="row justify-content-md-center">
+                                                    <div class="form-inline network-control" id="network-search">
+                                                    </div>
+                                                    <div class="network-control col">
+                                                        <span class="dropdown">
+                                                            <button class="btn btn-sm btn-secondary dropdown-toggle button-margin" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                Save as...
+                                                            </button>
+                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                <a class="dropdown-item" id="network_snapshot_png">.png</a>
+                                                                <a class="dropdown-item" id="network_snapshot_jpg">.jpg</a>
+                                                                <a class="dropdown-item" id="network_snapshot_svg">.svg</a>
+                                                            </div>
+                                                        </span>
+                                                        <button type="button" class="btn btn-sm btn-secondary button-margin" id="restart_camera">Reset camera</button>
+                                                        <button type="button" class="btn btn-sm btn-secondary button-margin" id="toggle_layout">Toggle layout</button>
+                                                        <button type="button" class="btn btn-sm btn-secondary button-margin" id="reset_graph">Reset graph</button>
+                                                    </div>
+            
+                                                </div>
+
                                             <div id='expression_heatmap'>
 
                                             </div>
@@ -231,27 +252,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row justify-content-md-center">
-                                        <div class="form-inline network-control" id="network-search">
-                                        </div>
-                                        <div class="network-control col">
-                                            <span class="dropdown">
-                                                <button class="btn btn-sm btn-secondary dropdown-toggle button-margin" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    Save as...
-                                                </button>
-                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                    <a class="dropdown-item" id="network_snapshot_png">.png</a>
-                                                    <a class="dropdown-item" id="network_snapshot_jpg">.jpg</a>
-                                                    <a class="dropdown-item" id="network_snapshot_svg">.svg</a>
-                                                </div>
-                                            </span>
-                                            <button type="button" class="btn btn-sm btn-secondary button-margin" id="restart_camera">Reset camera</button>
-                                            <button type="button" class="btn btn-sm btn-secondary button-margin" id="toggle_layout">Toggle layout</button>
-                                            <button type="button" class="btn btn-sm btn-secondary button-margin" id="reset_graph">Reset graph</button>
-                                        </div>
-
-                                    </div>
-                                    <div class="col"></div>
+                               
                             </div>
 
                             <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
