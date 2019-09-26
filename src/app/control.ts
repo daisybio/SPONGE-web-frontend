@@ -19,8 +19,32 @@ export class Controller {
 
     static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
     // static EXPRESSION_VALUE_MIRNA = "/exprValue/getmirNA"
-    
 
+    static STRING_SEARCH = "/stringSearch"
+
+
+    public search_string(
+        config: {
+            search_string: string,
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.STRING_SEARCH
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            request += "search_string="+config.search_string
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
+    
     public get_miRNA_interactions_all(
         config: {
             disease_name?: string,
