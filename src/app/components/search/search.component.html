@@ -12,9 +12,9 @@
         <div class="card-body">
         <div class="row">
             <div class="col-md-12">
-               
+                <span class="cancer-type">Cancer Type:</span>&nbsp;
                 <div class="col-md-auto select-field">
-                    <span>Cancer Type:</span>&nbsp;
+                    
                     <select class="selectpicker diseases" show-subtext="true" data-live-search="true">
                             <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-HNSC">Head and neck squamous
                                 cell carcinoma</option>
@@ -65,9 +65,9 @@
 
         <div class="row">
         <div id="options_gene" class="hidden col">
-            <p>Searching for a gene</p>
+            <p> You are currently searching for a gene</p>
             <table> 
-                <td>
+                <td class="td-dim">
                     <tr>
                         <p class='ensg_number'>Enter ENSG-number or Gene-Symbol: </p>
                         <p>Limit: </p>
@@ -83,7 +83,7 @@
             <button class='btn btn-primary' id='options_gene_go'>Go</button>
         </div>
         <div id="options_mirna" class="hidden">
-            <p>Searching for miRNA</p>
+            <p>You are currently searching for miRNA</p>
             <table>
                 <td>
                     <tr>
@@ -98,7 +98,9 @@
                     </tr>
                 </td>
             </table>
+            <div class="go-btn">
             <button class='btn btn-primary' id='options_mirna_go'>Go</button>
+        </div>
         </div>
      </div>
     </div>
