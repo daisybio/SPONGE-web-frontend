@@ -138,7 +138,7 @@ export class SearchComponent implements OnInit {
       let key_information = response[0]['mirna']
       let key_information_sentence = "Results for " + key_information['mir_ID'] + " (" + key_information['hs_nr'] + ")"
       $('#key_information').html(key_information_sentence)
-
+      console.log(response)
       // parse response
       response.forEach(interaction => {
         let row = {}

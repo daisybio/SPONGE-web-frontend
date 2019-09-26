@@ -285,8 +285,9 @@ export class BrowseComponent implements OnInit {
         disease_selector.attr('disabled',true)
         $('#browse_loading_spinner').removeClass('hidden')
 
-        $("#interactions-nodes-table-container").html(''); //clear possible other tables
-        $("#interactions-edges-table-container").html(''); //clear possible other tables
+        $("#interactions-nodes-table-container").html(''); //clear possible older tables
+        $("#interactions-edges-table-container").html(''); //clear possible older tables
+        $("#expression_heatmap").html(''); //clear possible older expression map
 
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
@@ -433,7 +434,7 @@ export class BrowseComponent implements OnInit {
             })
 
             // load expression data
-            //load_heatmap(this.disease_trimmed, ensg_numbers)
+            load_heatmap(this.disease_trimmed, ensg_numbers)
 
             // stop loading
             disease_selector.attr('disabled',false)
@@ -445,65 +446,67 @@ export class BrowseComponent implements OnInit {
     }
 
     function load_heatmap(disease, nodes) {
-      console.log("start")
       controller.get_expression_ceRNA({
         disease_name: disease,
         ensg_number: nodes,
         callback: response => {
-          console.log(response)
-          var x = []
-          var y = []
           var z = []
-          var seen_genes = []
-          var seen_exp_ids = {}
-          response.forEach( experiment => {
+          var seen_sample_ids = {}
+          let ordered_genes = nodes.sort()
+
+          for (let e in response) {
+            let experiment = response[e]
             let gene = experiment['gene']
             let expr_value = experiment['exp_value']
-            let expr_ID = experiment['expr_ID'].toString()
-            
-            if (expr_ID in seen_exp_ids) {
-              seen_exp_ids[expr_ID][gene] = expr_value
+            let sample_ID = experiment['sample_ID']
+            if (seen_sample_ids.hasOwnProperty(sample_ID)) {
+              seen_sample_ids[sample_ID][gene] = expr_value
             } else {
-              seen_exp_ids[expr_ID] = {gene: expr_value}
-            }
-
-          })
-
-          // check if all genes are in each expr_id
-          for (let expr_id in seen_exp_ids) {
-            let values = seen_exp_ids[expr_id]
-            for (let node in nodes) {
-              if (!(node in values)) {
-                values[node] = null
-              }
+              let new_obj = {}
+              new_obj[gene] = expr_value
+              seen_sample_ids[sample_ID] = new_obj
             }
           }
-          
-          let ordered_genes = {}
-          for(let exrpr_id in seen_exp_ids) {
-            // sort genes alphabetically
-            console.log(exrpr_id[0])
-            Object.keys(exrpr_id).sort().forEach(function(key) {
-              ordered_genes[key] = exrpr_id[key];
-            });
-            for (let gene in ordered_genes) {
-              z.push(ordered_genes[gene])
+
+          // sort genes alphabetically
+          ordered_genes.forEach((ensg_number) => {
+            ordered_genes[ensg_number];
+          });
+          for(let sample_ID in seen_sample_ids) {
+            let genes_values = seen_sample_ids[sample_ID]
+            let l = []
+            for (let j in Object.values(ordered_genes)) {
+              let gene = ordered_genes[j]
+              l.push(genes_values[gene])
             }
+            z.push(l)
           }
 
           var data = [
             {
               z: z,
-              x: Object.keys(seen_exp_ids),
-              y: nodes.sort(),
+              y: Object.keys(seen_sample_ids),
+              x: ordered_genes,
               type: 'heatmap'
             }
           ];
+
+          var layout = {
+            title: 'Expression Heatmap',
+            annotations: [],
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            yaxis: {
+              automargin: true,
+              showticklabels: false,
+              ticks: '',
+            },
+          };
           
-          Plotly.newPlot('test', data);
+          Plotly.newPlot('expression_heatmap', data, layout);
         },
         error: () => {
-          helper.msg("Something went wrong loading your expression data.", true)
+          helper.msg("Something went wrong loading the expression data.", true)
         }
       })
     }

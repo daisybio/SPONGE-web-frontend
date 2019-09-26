@@ -80,6 +80,7 @@ export class Controller {
             if (config.information != undefined) {
                 request += "&information="+config.information
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -187,6 +188,7 @@ export class Controller {
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
