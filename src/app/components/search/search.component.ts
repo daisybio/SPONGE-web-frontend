@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import 'datatables.net';
 declare var $;
 
@@ -12,7 +12,7 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
-  constructor(public router: Router, private route: ActivatedRoute) { }
+  constructor(private route: ActivatedRoute) { }
 
   ngOnInit() {
 
@@ -20,32 +20,14 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
 
     var search_key: string;
-    var limit: number;
+    var limit: number = 100;
     var parsed_search_result: any;
-
-    const router = this.router
 
     this.route.queryParams
       .subscribe(params => {
-        search_key = params.search_key;
+        search_key = decodeURIComponent(params.search_key);
       });
 
-    let disease_selector = $('.selectpicker.diseases')
-    controller.get_datasets(
-      data => {
-        for (let disease in data) {
-          disease_selector.append(
-            "<option data-subtext ="+data[disease]['download_url']+">"+data[disease]['disease_name']+"</option>"
-          )
-        }
-    })
-
-    $('#home_search_button').click(() => {
-      let search_key = $('#home_search').val()
-      // replace possible empty spaces
-      search_key = search_key.replace(' ', '')
-      window.open( '/search?search_key='+search_key, '_top')
-    })
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
@@ -63,7 +45,7 @@ export class SearchComponent implements OnInit {
     search()
 
 
-    function search(limit = 11) {
+    function search(limit=100) {
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
@@ -94,6 +76,7 @@ export class SearchComponent implements OnInit {
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
+          console.log("MIAT NUMER")
           // key is MIMAT number
           $('#options_mirna').removeClass('hidden')
           $('#mirna_input_limit').val(search_key)
@@ -110,7 +93,7 @@ export class SearchComponent implements OnInit {
               $('#loading_spinner_results').addClass('hidden')
             }
           })
-        } else if (search_key.startsWith('hsa-miR-')) {
+        } else if (search_key.startsWith('hsa-')) {
           // key is hsa number
           $('#options_mirna').removeClass('hidden')
           $('#mirna_input_limit').val(search_key)

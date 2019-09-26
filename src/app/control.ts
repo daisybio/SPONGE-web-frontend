@@ -25,7 +25,7 @@ export class Controller {
 
     public search_string(
         config: {
-            search_string: string,
+            searchString: string,
             callback: (response) => any,
             error?: (response) => any
         })
@@ -34,7 +34,8 @@ export class Controller {
             if (Object.keys(config).length > 1) {
                 request += '?'
             }
-            request += "search_string="+config.search_string
+            request += "searchString="+config.searchString
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)

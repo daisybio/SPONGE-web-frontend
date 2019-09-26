@@ -34,6 +34,7 @@
               "node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
               "node_modules/bootstrap/dist/css/bootstrap-reboot.min.css",
               "node_modules/bootstrap-select/dist/css/bootstrap-select.min.css",
+              "node_modules/jquery-ui-dist/jquery-ui.min.css",
               "src/styles.less"
             ],
             "scripts": [
@@ -60,7 +61,8 @@
               "node_modules/sigma/plugins/sigma.layout.forceAtlas2/worker.js",
               "node_modules/sigma/build/plugins/sigma.layout.noverlap.min.js",
               "node_modules/sigma/build/plugins/sigma.plugins.animate.min.js",
-              "node_modules/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js"
+              "node_modules/sigma/plugins/sigma.exporters.svg/sigma.exporters.svg.js",
+              "node_modules/jquery-ui-dist/jquery-ui.min.js"
             ]
           },
           "configurations": {
