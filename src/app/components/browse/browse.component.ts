@@ -9,8 +9,6 @@ import sigma from 'sigma';
 declare const sigma: any;
 declare var Plotly: any;
 declare var $;
-// dirty solution 
-declare var require: any
 
 
 @Component({
@@ -27,12 +25,8 @@ export class BrowseComponent implements OnInit {
 
   ngOnInit() {
 
-    const node_information = $('#node_information')
-    const edge_information = $('#edge_information')
-
     var node_table
     var edge_table
-    var network
     
     const controller = new Controller()
     const helper = new Helper()
@@ -67,13 +61,13 @@ export class BrowseComponent implements OnInit {
         if ( settings.nTable.id !== 'interactions-edges-table' ) {
           return true;
         }
-        var mscore_min = parseFloat( $('#mscore_min').val());
-        var mscore_max = parseFloat( $('#mscore_max').val());
-        var mscore = parseFloat( data[3] ) || 0; // use data for the mscore column
-        if (( isNaN( mscore_min ) && isNaN( mscore_max ) ) ||
-              ( isNaN( mscore_min ) && mscore <= mscore_max ) ||
-              ( mscore_min <= mscore && isNaN( mscore_max ) ) ||
-              ( mscore_min <= mscore && mscore <= mscore_max ))
+        var mscor_min = parseFloat( $('#mscor_min').val());
+        var mscor_max = parseFloat( $('#mscor_max').val());
+        var mscor = parseFloat( data[3] ) || 0; // use data for the mscor column
+        if (( isNaN( mscor_min ) && isNaN( mscor_max ) ) ||
+              ( isNaN( mscor_min ) && mscor <= mscor_max ) ||
+              ( mscor_min <= mscor && isNaN( mscor_max ) ) ||
+              ( mscor_min <= mscor && mscor <= mscor_max ))
         {
             return true;
         }
@@ -247,7 +241,7 @@ export class BrowseComponent implements OnInit {
             let id = data[interaction]['interactions_genegene_ID'];
             let source = data[interaction]['gene1'];
             let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscore'];
+            let size = 100*data[interaction]['mscor'];
             let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
@@ -259,7 +253,6 @@ export class BrowseComponent implements OnInit {
             })
             
           }
-
 
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
@@ -434,7 +427,7 @@ export class BrowseComponent implements OnInit {
             })
 
             // load expression data
-            load_heatmap(this.disease_trimmed, ensg_numbers)
+            helper.load_heatmap(this.disease_trimmed, ensg_numbers)
 
             // stop loading
             disease_selector.attr('disabled',false)
@@ -442,72 +435,6 @@ export class BrowseComponent implements OnInit {
 
           })
         })
-      })
-    }
-
-    function load_heatmap(disease, nodes) {
-      controller.get_expression_ceRNA({
-        disease_name: disease,
-        ensg_number: nodes,
-        callback: response => {
-          var z = []
-          var seen_sample_ids = {}
-          let ordered_genes = nodes.sort()
-
-          for (let e in response) {
-            let experiment = response[e]
-            let gene = experiment['gene']
-            let expr_value = experiment['exp_value']
-            let sample_ID = experiment['sample_ID']
-            if (seen_sample_ids.hasOwnProperty(sample_ID)) {
-              seen_sample_ids[sample_ID][gene] = expr_value
-            } else {
-              let new_obj = {}
-              new_obj[gene] = expr_value
-              seen_sample_ids[sample_ID] = new_obj
-            }
-          }
-
-          // sort genes alphabetically
-          ordered_genes.forEach((ensg_number) => {
-            ordered_genes[ensg_number];
-          });
-          for(let sample_ID in seen_sample_ids) {
-            let genes_values = seen_sample_ids[sample_ID]
-            let l = []
-            for (let j in Object.values(ordered_genes)) {
-              let gene = ordered_genes[j]
-              l.push(genes_values[gene])
-            }
-            z.push(l)
-          }
-
-          var data = [
-            {
-              z: z,
-              y: Object.keys(seen_sample_ids),
-              x: ordered_genes,
-              type: 'heatmap'
-            }
-          ];
-
-          var layout = {
-            title: 'Expression Heatmap',
-            annotations: [],
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            yaxis: {
-              automargin: true,
-              showticklabels: false,
-              ticks: '',
-            },
-          };
-          
-          Plotly.newPlot('expression_heatmap', data, layout);
-        },
-        error: () => {
-          helper.msg("Something went wrong loading the expression data.", true)
-        }
       })
     }
 
@@ -580,6 +507,5 @@ export class BrowseComponent implements OnInit {
           //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
           return nodes
     }
-
   }
 }

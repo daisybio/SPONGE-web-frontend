@@ -90,43 +90,68 @@ export class Helper {
       return Math.floor(Math.random() * Math.floor(max));
     }
 
-    public expression_heatmap_genes(disease_name, genes, node_id) {
-      /* genes is list of ensg-numbers 
-      node id is html node to plot graph into */
+    public load_heatmap(disease, nodes) {
       this.controller.get_expression_ceRNA({
-        disease_name: disease_name,
-        ensg_number: genes,
-        callback: (response) => {
-          console.log(response) 
-          // flatten response
+        disease_name: disease,
+        ensg_number: nodes,
+        callback: response => {
           var z = []
-          var x = []
-          var y = []
-          var seen_genes = []
-          var seen_exp_ids = []
-          response.forEach( gene_object => {
-            console.log(gene_object)
-            let gene = gene_object['gene']
-            let expr_value = gene_object['exp_value']
-            let expr_ID = gene_object['expr_ID']
-            if (!(expr_ID in seen_exp_ids)) {
-              seen_exp_ids.push(expr_ID)
+          var seen_sample_ids = {}
+          let ordered_genes = nodes.sort()
+
+          for (let e in response) {
+            let experiment = response[e]
+            let gene = experiment['gene']
+            let expr_value = experiment['exp_value']
+            let sample_ID = experiment['sample_ID']
+            if (seen_sample_ids.hasOwnProperty(sample_ID)) {
+              seen_sample_ids[sample_ID][gene] = expr_value
             } else {
-              console.log(expr_ID)
+              let new_obj = {}
+              new_obj[gene] = expr_value
+              seen_sample_ids[sample_ID] = new_obj
             }
-          })
-          console.log(seen_exp_ids)
+          }
+
+          // sort genes alphabetically
+          ordered_genes.forEach((ensg_number) => {
+            ordered_genes[ensg_number];
+          });
+          for(let sample_ID in seen_sample_ids) {
+            let genes_values = seen_sample_ids[sample_ID]
+            let l = []
+            for (let j in Object.values(ordered_genes)) {
+              let gene = ordered_genes[j]
+              l.push(genes_values[gene])
+            }
+            z.push(l)
+          }
+
           var data = [
             {
-              z: [[1, 20, 30, 50, 1], [20, 1, 60, 80, 30], [30, 60, 1, -10, 20]],
-              x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-              y: ['Morning', 'Afternoon', 'Evening'],
+              z: z,
+              y: Object.keys(seen_sample_ids),
+              x: ordered_genes,
               type: 'heatmap'
             }
           ];
+
+          var layout = {
+            title: 'Expression Heatmap',
+            annotations: [],
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            yaxis: {
+              automargin: true,
+              showticklabels: false,
+              ticks: '',
+            },
+          };
           
-          Plotly.newPlot(node_id, data);
-      
+          Plotly.newPlot('expression_heatmap', data, layout);
+        },
+        error: () => {
+          this.msg("Something went wrong loading the expression data.", true)
         }
       })
     }
@@ -168,6 +193,7 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
+      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -175,10 +201,10 @@ export class Helper {
             type: 'canvas'
           },
           settings: {
-            minEdgeSize: 0.1,
-            maxEdgeSize: 2,
-            minNodeSize: 1,
-            maxNodeSize: 8,
+            // minEdgeSize: 0.1,
+            // maxEdgeSize: 2,
+            // minNodeSize: 1,
+            // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
             autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
             animationsTime: 1000,
@@ -239,17 +265,13 @@ export class Helper {
         }
       });
 
-      // network.bind('outNode', (e) => { 
-      //   e.data.node.color = $this.default_node_color
-      // })
-
       network.bind('overEdge', (e) => {
         // e.data.edge.color = $this.hover_edge_color
         let data = JSON.parse($('#edge_data').text())
         for (let entry in data) {
           if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
             // build a table to display json
-            let table = "<table>"
+            let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
               let row = "<tr>"
               row += "<td>"+attribute+": </td>"
@@ -259,11 +281,11 @@ export class Helper {
             }
             table += "</table>"
             $('#edge_information_content').html(table)
-            // unhide node information 
+            // unhide edge information 
             if ($('#edge_information').hasClass('hidden')) {
               $('#edge_information').removeClass('hidden')
             }
-            // hide edge information
+            // hide node information
             if (!$('#node_information').hasClass('hidden')) {
               $('#node_information').addClass('hidden')
             }
