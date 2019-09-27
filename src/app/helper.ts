@@ -6,6 +6,23 @@ declare const sigma: any;
 declare var Plotly: any;
 declare var $: any;
 
+/* Sigma configurations */
+sigma.classes.graph.addMethod('adjacentEdges', function(id) {
+  if (typeof id !== 'string')
+    throw 'adjacentEdges: the node id must be a string.';
+  var a = this.allNeighborsIndex[id],
+      eid,
+      target,
+      edges = [];
+  for(target in a) {
+    for(eid in a[target]) {
+      edges.push(a[target][eid]);
+    }
+  }
+  return edges;
+});
+
+
 export class Helper {
 
     constructor() {
@@ -161,24 +178,6 @@ export class Helper {
 
       const $this = this
 
-      /* Sigma configurations */
-      if (typeof sigma.classes.graph.adjacentEdges === undefined) { 
-        sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-          if (typeof id !== 'string')
-            throw 'adjacentEdges: the node id must be a string.';
-          var a = this.allNeighborsIndex[id],
-              eid,
-              target,
-              edges = [];
-          for(target in a) {
-            for(eid in a[target]) {
-              edges.push(a[target][eid]);
-            }
-          }
-          return edges;
-        });
-      }
-
       $('#network-plot-container').html(''); // clear possible other network
       $('#network-search').html('');  // clear other search options
 
@@ -211,7 +210,6 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
-      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -323,8 +321,6 @@ export class Helper {
       function node_click_function(e) {
         var nodeId = e.data.node.id;
         let color_all = false;
-        console.log(network)
-        console.log(network.graph)
         network.graph.adjacentEdges(nodeId).forEach(
           (ee) => {
             if (ee.color !== $this.subgraph_edge_color){
