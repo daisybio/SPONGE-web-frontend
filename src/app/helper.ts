@@ -193,6 +193,7 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
+      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -233,11 +234,13 @@ export class Helper {
       network.addCamera('cam1')
 
       network.bind('overNode', (e) => {
+        console.log("here")
         // events: overNode outNode clickNode doubleClickNode rightClickNode
         //console.log(e.type, e.data.node.label, e.data.captor, e.data);
         // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
+        console.log(data)
         for (let entry in data) {
           if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
             // build a table to display json

@@ -440,72 +440,72 @@ export class BrowseComponent implements OnInit {
 
     function parse_node_data(data) {
       let ordered_data = [];
-          // let ensg_numbers = []
-          for (let i=0; i < Object.keys(data).length; i++) {
-            let entry = data[i]
-            // change order of columns alredy in object
-            let ordered_entry = {}
-            // flatten data object
-            for (let x in entry['gene']) {
-              entry[x] = entry['gene'][x]
-            }
-            // ensg_numbers.push(entry['ensg_number'])
-            ordered_entry['ENSG Number'] = entry['ensg_number']
-            ordered_entry['Gene Symbol'] = entry['gene_symbol']
-            ordered_entry['Betweeness'] = entry['betweeness']
-            ordered_entry['Eigenvector'] = entry['eigenvector']
-            ordered_entry['Node Degree'] = entry['node_degree']
-            ordered_entry['Gene ID'] = entry['gene_ID']
-            ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
-            ordered_data.push(ordered_entry)
-          }
-          let nodes = [];
+      // let ensg_numbers = []
+      for (let i=0; i < Object.keys(data).length; i++) {
+        let entry = data[i]
+        // change order of columns alredy in object
+        let ordered_entry = {}
+        // flatten data object
+        for (let x in entry['gene']) {
+          entry[x] = entry['gene'][x]
+        }
+        // ensg_numbers.push(entry['ensg_number'])
+        ordered_entry['ENSG Number'] = entry['ensg_number']
+        ordered_entry['Gene Symbol'] = entry['gene_symbol']
+        ordered_entry['Betweeness'] = entry['betweeness']
+        ordered_entry['Eigenvector'] = entry['eigenvector']
+        ordered_entry['Node Degree'] = entry['node_degree']
+        ordered_entry['Gene ID'] = entry['gene_ID']
+        ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
+        ordered_data.push(ordered_entry)
+      }
+      let nodes = [];
 
-          for (let gene in ordered_data) {
-            let id = ordered_data[gene]['ENSG Number'];
-            let label = ordered_data[gene]['Gene Symbol'];
-            if (label == '') {
-              label = 'unknown'
-            }
-            let x = helper.getRandomInt(10);
-            let y = helper.getRandomInt(10);
-            let size = ordered_data[gene]['Eigenvector'];
-            let color = helper.default_node_color;
-            nodes.push({id, label, x, y , size, color})
-          }
+      for (let gene in ordered_data) {
+        let id = ordered_data[gene]['ENSG Number'];
+        let label = ordered_data[gene]['Gene Symbol'];
+        if (label == '') {
+          label = 'unknown'
+        }
+        let x = helper.getRandomInt(10);
+        let y = helper.getRandomInt(10);
+        let size = ordered_data[gene]['Eigenvector'];
+        let color = helper.default_node_color;
+        nodes.push({id, label, x, y , size, color})
+      }
 
-          // build datatable
-          let column_names = Object.keys(ordered_data[0]);
+      // build datatable
+      let column_names = Object.keys(ordered_data[0]);
 
-          // find index positions from columns to round
-          var index_betweeness = column_names.indexOf('Betweeness');
-          var index_eigenvector = column_names.indexOf('Eigenvector');
-          $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
-          node_table = $('#interactions-nodes-table').DataTable( {
-            columnDefs: [
-              { render: function ( ordered_data, type, row ) {
-                  return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-                },
-                targets: [index_betweeness, index_eigenvector] }
-            ],
-            dom: '<"top"Bf>rt<"bottom"lip>',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
-          });
-          // colsearch for table
-          helper.colSearch('interactions-nodes-table', node_table)
+      // find index positions from columns to round
+      var index_betweeness = column_names.indexOf('Betweeness');
+      var index_eigenvector = column_names.indexOf('Eigenvector');
+      $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
+      node_table = $('#interactions-nodes-table').DataTable( {
+        columnDefs: [
+          { render: function ( ordered_data, type, row ) {
+              return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+            },
+            targets: [index_betweeness, index_eigenvector] }
+        ],
+        dom: '<"top"Bf>rt<"bottom"lip>',
+        buttons: [
+            'copy', 'csv', 'excel', 'pdf', 'print'
+        ],
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+      });
+      // colsearch for table
+      helper.colSearch('interactions-nodes-table', node_table)
 
-          $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
-          } );
-          // save data for later search
-          $('#node_data').text(JSON.stringify(ordered_data))
+      $('#interactions-nodes-table tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+      } );
+      // save data for later search
+      $('#node_data').text(JSON.stringify(ordered_data))
 
-          /* plot expression data for nodes */
-          //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
-          return nodes
+      /* plot expression data for nodes */
+      //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
+      return nodes
     }
   }
 }

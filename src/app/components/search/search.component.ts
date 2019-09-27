@@ -242,7 +242,7 @@ export class SearchComponent implements OnInit {
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
-        let size = data[gene]['p-value'];
+        let size = parseFloat(data[gene]['p-value']);
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
 
@@ -253,7 +253,27 @@ export class SearchComponent implements OnInit {
       $('#network_search_node').selectpicker()
 
       // save data for later search
-      $('#node_data').text(JSON.stringify(data))
+      let ordered_data = [];
+      // let ensg_numbers = []
+      for (let i=0; i < Object.keys(data).length; i++) {
+        let entry = data[i]
+        // change order of columns alredy in object
+        let ordered_entry = {}
+        // flatten data object
+        for (let x in entry['gene']) {
+          entry[x] = entry['gene'][x]
+        }
+        // ensg_numbers.push(entry['ensg_number'])
+        ordered_entry['ENSG Number'] = entry['ensg_number']
+        ordered_entry['Gene Symbol'] = entry['gene_symbol']
+        ordered_entry['Betweeness'] = entry['betweeness']
+        ordered_entry['Eigenvector'] = entry['eigenvector']
+        ordered_entry['Node Degree'] = entry['node_degree']
+        ordered_entry['Gene ID'] = entry['gene_ID']
+        ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
+        ordered_data.push(ordered_entry)
+      }
+      $('#node_data').text(JSON.stringify(ordered_data))
 
       /* plot expression data for nodes */
       //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
@@ -285,7 +305,22 @@ export class SearchComponent implements OnInit {
           // append options to search-dropdown for network
           $('#network_search_node').append(edge_options)
 
-          $('#edge_data').text(JSON.stringify(data))
+          let ordered_data = []
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            // change order of columns alredy in object
+            let ordered_entry = {}
+            ordered_entry['Gene 1'] = entry['gene1']
+            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Correlation'] = entry['correlation']
+            ordered_entry['MScor'] = entry['mscor']
+            ordered_entry['p-value'] = entry['p_value']
+            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
+            ordered_data.push(ordered_entry)
+          }
+
+
+          $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         },
         error: (response) => {
