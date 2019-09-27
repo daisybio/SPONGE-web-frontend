@@ -76,7 +76,6 @@ export class SearchComponent implements OnInit {
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
-          console.log("MIAT NUMER")
           // key is MIMAT number
           $('#options_mirna').removeClass('hidden')
           $('#mirna_input_limit').val(search_key)
@@ -138,7 +137,6 @@ export class SearchComponent implements OnInit {
       let key_information = response[0]['mirna']
       let key_information_sentence = "Results for " + key_information['mir_ID'] + " (" + key_information['hs_nr'] + ")"
       $('#key_information').html(key_information_sentence)
-      console.log(response)
       // parse response
       response.forEach(interaction => {
         let row = {}
@@ -299,7 +297,6 @@ export class SearchComponent implements OnInit {
               size: size, 
               color: color, 
             })
-            
             edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
           }
           // append options to search-dropdown for network
@@ -324,6 +321,7 @@ export class SearchComponent implements OnInit {
           return callback(edges)
         },
         error: (response) => {
+          console.log(response)
           helper.msg("Something went wrong while loading the interactions.", true)
         }
       })
@@ -402,7 +400,7 @@ export class SearchComponent implements OnInit {
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Options" +
           "</button>" +
-          "<button class='export_nodes btn btn-primary button-margin' data-value="+table_id+">Show as Network</button>"+
+          "<button class='export_nodes btn btn-primary button-margin' value="+table_id+">Show as Network</button>"+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "'>" +
           "<div class='card card-body'>" +
@@ -462,7 +460,8 @@ export class SearchComponent implements OnInit {
         }
         controller.get_expression_ceRNA(config)
 
-        $(".export_nodes").click( () => {
+        $(".export_nodes").click( function() {
+          let table = $('#'+$(this).val()).DataTable()
           let selected_nodes_data = table.rows('.selected', { filter : 'applied'}).data()
           if (selected_nodes_data.length === 0) {
             selected_nodes_data = table.rows({ filter : 'applied'}).data()
@@ -495,7 +494,6 @@ export class SearchComponent implements OnInit {
               $('#restart_camera').click()
               network.refresh()
             }, 500)
-
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
 

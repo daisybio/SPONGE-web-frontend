@@ -161,6 +161,24 @@ export class Helper {
 
       const $this = this
 
+      /* Sigma configurations */
+      if (typeof sigma.classes.graph.adjacentEdges === undefined) { 
+        sigma.classes.graph.addMethod('adjacentEdges', function(id) {
+          if (typeof id !== 'string')
+            throw 'adjacentEdges: the node id must be a string.';
+          var a = this.allNeighborsIndex[id],
+              eid,
+              target,
+              edges = [];
+          for(target in a) {
+            for(eid in a[target]) {
+              edges.push(a[target][eid]);
+            }
+          }
+          return edges;
+        });
+      }
+
       $('#network-plot-container').html(''); // clear possible other network
       $('#network-search').html('');  // clear other search options
 
@@ -234,13 +252,11 @@ export class Helper {
       network.addCamera('cam1')
 
       network.bind('overNode', (e) => {
-        console.log("here")
         // events: overNode outNode clickNode doubleClickNode rightClickNode
         //console.log(e.type, e.data.node.label, e.data.captor, e.data);
         // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
-        console.log(data)
         for (let entry in data) {
           if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
             // build a table to display json
@@ -305,29 +321,31 @@ export class Helper {
       })
 
       function node_click_function(e) {
-          var nodeId = e.data.node.id;
-          let color_all = false;
-          network.graph.adjacentEdges(nodeId).forEach(
-            (ee) => {
-              if (ee.color !== $this.subgraph_edge_color){
-                color_all = true
-              }
+        var nodeId = e.data.node.id;
+        let color_all = false;
+        console.log(network)
+        console.log(network.graph)
+        network.graph.adjacentEdges(nodeId).forEach(
+          (ee) => {
+            if (ee.color !== $this.subgraph_edge_color){
+              color_all = true
             }
-          )
-          if (color_all) {
-            network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-              ee.color = $this.subgraph_edge_color
-            })
-            // set node color to clicked
-            e.data.node.color = $this.subgraph_node_color
-          } else {
-            network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-              ee.color = $this.default_edge_color
-            })
-            // set node color to default
-            e.data.node.color = $this.default_node_color
           }
-          network.refresh();
+        )
+        if (color_all) {
+          network.graph.adjacentEdges(nodeId).forEach( (ee) => {
+            ee.color = $this.subgraph_edge_color
+          })
+          // set node color to clicked
+          e.data.node.color = $this.subgraph_node_color
+        } else {
+          network.graph.adjacentEdges(nodeId).forEach( (ee) => {
+            ee.color = $this.default_edge_color
+          })
+          // set node color to default
+          e.data.node.color = $this.default_node_color
+        }
+        network.refresh();
       }
 
       function searchNode(node_as_string) {

@@ -37,23 +37,6 @@ export class BrowseComponent implements OnInit {
       $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
     })
 
-
-    /* Sigma configurations */
-    sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-      if (typeof id !== 'string')
-        throw 'adjacentEdges: the node id must be a string.';
-      var a = this.allNeighborsIndex[id],
-          eid,
-          target,
-          edges = [];
-      for(target in a) {
-        for(eid in a[target]) {
-          edges.push(a[target][eid]);
-        }
-      }
-      return edges;
-    });
-
     /* Datatable configurations */
     $.fn.dataTable.ext.search.push(
       // filter for mscor
