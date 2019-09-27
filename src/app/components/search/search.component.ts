@@ -20,7 +20,7 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
 
     var search_key: string;
-    var limit: number = 100;
+    var limit: number = 20;
     var parsed_search_result: any;
 
     this.route.queryParams
@@ -42,10 +42,10 @@ export class SearchComponent implements OnInit {
     })
 
 
-    search()
+    search(limit)
 
 
-    function search(limit=100) {
+    function search(limit) {
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()

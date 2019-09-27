@@ -193,7 +193,6 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
-      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -328,32 +327,33 @@ export class Helper {
           network.refresh();
       }
 
-      function searchNode(node_to_search) {
+      function searchNode(node_as_string) {
         var nodes = network.graph.nodes()
-
-        for (let node in nodes) {
-          if (nodes[node]['id'] == node_to_search || nodes[node]['label'] == node_to_search) {
-            focusNode(network.cameras[0], nodes[node])
-            nodes[node].color = $this.subgraph_node_color
+        let node
+        for (node in nodes) {
+          if (nodes[node]['id'] == node_as_string || nodes[node]['label'] == node_as_string) {
             break
           }
         }
-        // Filter or find the first matching node then apply focusNode on it
+        return nodes[node]
       }
 
-      function searchEdge(edge_to_search) {
+      function searchEdge(edge_as_string) {
         var edges = network.graph.edges()
-        for (let edge in edges) {
-          if (edges[edge]['id'] == edge_to_search || edges[edge]['label'] == edge_to_search) {
-            focusEdge(network.cameras[0], edges[edge])
-            edges[edge].color = $this.subgraph_edge_color
+        let edge
+        for (edge in edges) {
+          if (edges[edge]['id'] == edge_as_string || edges[edge]['label'] == edge_as_string) {
             break
           }
         }
+        return edges[edge]
       }
 
 
-      function focusNode(camera, node) {
+      function focusNode(node_as_string) {
+        let camera = network.cameras[0]
+        let node = searchNode(node_as_string)
+        node.color = $this.subgraph_node_color
         sigma.misc.animation.camera(
           camera,
           {
@@ -367,12 +367,21 @@ export class Helper {
         );
       }
 
-      function focusEdge(camera, edge) {
+      function focusEdge(edge_as_string) {
+        let camera = network.cameras[0]
+        let edge = searchEdge(edge_as_string)
+        let source = searchNode(edge["source"])
+        let target = searchNode(edge["target"])
+
+        let x = (source['read_cam0:x'] + target['read_cam0:x']) / 2
+        let y = (source['read_cam0:y'] + target['read_cam0:y']) / 2
+
+        edge.color = $this.subgraph_edge_color
         sigma.misc.animation.camera(
           camera,
           {
-            x: edge['read_cam0:x'],
-            y: edge['read_cam0:y'],
+            x: Number(x.toFixed()),
+            y: Number(y.toFixed()),
             ratio: 1
           },
           {
@@ -384,9 +393,9 @@ export class Helper {
       $('#network_search_node_button').click(() => {
         let to_search = $('#network_search_node').val()
         if (to_search.startsWith('ENSG')) {
-          searchNode(to_search)
+          focusNode(to_search)
         } else {
-          searchEdge(to_search)
+          focusEdge(to_search)
         }
         
       })
