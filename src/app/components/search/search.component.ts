@@ -416,24 +416,25 @@ export class SearchComponent implements OnInit {
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' value="+table_id+">Show as Network</button>"+
           "</div>"+
-          "<div class='collapse' id='control_" + table_id + "'>" +
-          "<div class='card card-body'>" +
+          "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
+          "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
           "<div>" +
           "<p>Set filter for mscor</p>" +
-          "<span>Minimum: </span><input type='text' id='mscore_min_" + table_id + "' name='mscore_min'>&nbsp;" +
-          "<span>Maximum: </span><input type='text' id='mscore_max_" + table_id + "' name='mscore_max'>" +
+          "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_min_" + table_id + "' name='mscore_min'>&nbsp;" +
+          "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_max_" + table_id + "' name='mscore_max'>" +
           "</div>" +
           "<hr>" +
           "<div>" +
           "<p>Set filter for P-value</p>" +
-          "<span>Minimum: </span><input type='text' id='pvalue_min_" + table_id + "' name='pvalue_min'>&nbsp;" +
-          "<span>Maximum: </span><input type='text' id='pvalue_max_" + table_id + "' name='pvalue_max'>" +
+          "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_min_" + table_id + "' name='pvalue_min'>&nbsp;" +
+          "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_max_" + table_id + "' name='pvalue_max'>" +
           "</div>" +
           "</div>" +
           "</div>" +
           "<div class='card-body-table'></div>" +
           "</div>" +
           "</div>"
+         
         $('#disease_accordion').append(accordion_card)
 
         let html_table = helper.buildTable(
