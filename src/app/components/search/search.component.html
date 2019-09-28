@@ -152,13 +152,13 @@
             
                         <div id="node_information"  class="hidden">
                             <div class="card card-cascade narrower" id="node-card">
-                                <div class="card-body text-center graph-information-title"> Node Information:</div>
+                                <div class="card-body text-center graph-information-title"> Node Information</div>
                                 <div id="node_information_content"></div>
                             </div>
                         </div>      
                         <div id="edge_information"  class="hidden">
                             <div class="card card-cascade narrower" id="node-card">
-                                <div class="card-body text-center graph-information-title"> Edge Information:</div>
+                                <div class="card-body text-center graph-information-title"> Edge Information</div>
                                 <div id="edge_information_content"></div>
                             </div>
                         </div>  
@@ -170,15 +170,19 @@
 
         <hr/>
 
-        <div class="row">
+        <div class="row" style="margin-bottom: 20px">
             <div class="col-md-12" id='search_results'>
-                <h3> Results </h3>
+                <div class="results text-center">
+                        <h3> Results </h3>
+                        <div id='key_information'></div>
+                </div>
+                
                 <div class="text-center hidden" id="loading_spinner_results" >
                     <div class="spinner-border" role="status">
                         <span class="sr-only">Loading...</span>
                     </div>
                 </div>
-                <div id='key_information'></div>
+               
                 <div id='disease_accordion'></div>
             </div>
         </div>

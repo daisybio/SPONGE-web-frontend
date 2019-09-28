@@ -22,6 +22,7 @@ export class SearchComponent implements OnInit {
     var search_key: string;
     var limit: number = 20;
     var parsed_search_result: any;
+   
 
     this.route.queryParams
       .subscribe(params => {
@@ -199,6 +200,7 @@ export class SearchComponent implements OnInit {
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
+          $(this).css("background-color",helper.select_color)
         })
       }
     }
@@ -453,6 +455,7 @@ export class SearchComponent implements OnInit {
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
+          $(this).css("background-color",helper.select_color)
         })
 
         // BUTTON: load expression information for gene in this disease

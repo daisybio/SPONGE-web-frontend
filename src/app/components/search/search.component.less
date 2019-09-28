@@ -9,12 +9,16 @@ td {
     height: 500px;
     position: relative;
     display: block;
-    
+    margin-top: 20px;
+    margin-bottom: 10px;
+
     #network-plot-container{
         position: absolute;
         min-width: 500px;
         height: 500px;
-        border: solid 1px black;
+        border: solid 3px #023f75;
+        border-radius: 10px;
+        
         
     }  
     
@@ -24,7 +28,7 @@ td {
 #card-dim{
   position: relative;
   width: 600px;
-  border-radius: 5px 20px 10px 10px;
+  border-radius: 10px 20px 10px 10px;
   margin: 20px;
   height: auto;
 }
@@ -112,7 +116,13 @@ td {
   position: relative;
 }
 
-
+.results{
+  margin-bottom: 20px;
+  color: aliceblue;
+  border-radius: 4px 100px 4px;
+  background-color: #052444;
+  padding: 5px;
+}
 
 .title-bg{
   background: url("/assets/img/search-title-stretch-zs-2.png") no-repeat center center; 
@@ -149,3 +159,43 @@ td {
     font-size: 35pt;
   }
  }
+
+ 
+   tr.selected{
+    background-color: #0d49bd91;
+   }
+
+   #node-card{
+    border-radius: 10px;
+  }
+ 
+   #node_information{
+     margin-top: 20px;
+
+     .card-body{
+      color: white;
+      background-color: #024076;
+      border-radius: 10px 10px 0px 0px;
+
+      
+    }
+
+    #node_information_content{
+      border-radius: 10px 10px 0px 0px;
+
+    }
+   }
+
+   #edge_information{
+    margin-top: 20px;
+
+    .card-body{
+      color: white;
+      background-color: #024076;
+      border-radius: 10px 10px 0px 0px;
+    }
+  }
+
+  .graph-information-title{
+    background: linear-gradient(to bottom, #0960bd, #004085);
+  }

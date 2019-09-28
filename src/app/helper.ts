@@ -34,6 +34,7 @@ export class Helper {
     subgraph_node_color = '#920518'
     hover_edge_color = '#228B22'
     hover_node_color = '#228B22'
+    select_color= 'rgba(13, 73, 189, 0.67)'
 
     controller = new Controller()
 
