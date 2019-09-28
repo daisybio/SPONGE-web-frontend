@@ -1,18 +1,12 @@
 <section>
+    <!--title banner-->
     <div class="jumbotron jumbotron-fluid title-bg">
         <div class="flex title-text">
-        <h1>Search</h1>
-        <h3>Search for a gene or miRNA</h3>  
-    </div>
+          <h1>Search</h1>
+          <h3>Search for a gene or miRNA</h3>  
+        </div>
     </div>
     <div class="container-fluid container-stretch">
-       <!-- <div class="header text-center">
-           <h1>Search</h1>
-            <h3>Search for a gene or miRNA</h3> 
-            
-        </div> -->
-
-       
         <div class="row">
             <!-- start search information  -->
             <div class="col-md-auto">
@@ -70,7 +64,7 @@
                         </div>
 
                         <div id="options_gene" class="hidden col">
-                            <p> You are currently searching for a gene</p>
+                            <p class="note"> You are currently searching for a gene</p>
                             <table> 
                                 <td class="td-dim">
                                     <tr>
@@ -80,8 +74,8 @@
                                 </td>
                                 <td>
                                     <tr>
-                                        <input type="text" class="form-control ensg_number" id="gene_search_keys">
-                                        <input type="text" class="form-control" id="gene_input_limit"> 
+                                        <input type="text" class="form-control ensg_number input-size autocomplete" id="gene_search_keys">
+                                        <input type="text" class="form-control input-size" id="gene_input_limit" value="20"> 
                                     </tr>
                                 </td>
                             </table>
@@ -98,8 +92,8 @@
                                 </td>
                                 <td>
                                     <tr>
-                                        <input type="text" class="form-control mimat_number" id="mirn_search_keys">
-                                        <input type="text" class="form-control" id='mirna_input_limit'>
+                                        <input type="text" class="form-control mimat_number input-size autocomplete" id="mirn_search_keys">
+                                        <input type="text" class="form-control" id='mirna_input_limit' value="20">
                                     </tr>
                                 </td>
                             </table>

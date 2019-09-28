@@ -506,6 +506,35 @@ export class SearchComponent implements OnInit {
 
       }
     }
+
+    $(function() {  
+      $( ".autocomplete" ).autocomplete({
+        source: ( request, response ) => {
+          controller.search_string({
+            searchString: request.term,
+            callback: (data) => {
+              // put all values in a list
+              let values = []
+              for (let entry in data) {
+                values.push(Object.values(data[entry])[0])
+              }
+              response(values)
+            },
+            error: () => {
+              console.log(request)
+            }
+          })
+        },
+        minLength: 3,
+        search: function() {
+          $( this ).addClass( "loading" );
+        },
+        response: function() {
+          $( this ).removeClass( "loading" );
+        }
+      });
+    });
+
   }
   
 }
