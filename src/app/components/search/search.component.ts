@@ -78,7 +78,7 @@ export class SearchComponent implements OnInit {
         } else if (search_key.startsWith('MIMAT')) {
           // key is MIMAT number
           $('#options_mirna').removeClass('hidden')
-          $('#mirna_input_limit').val(search_key)
+          $('#mirna_search_keys').val(search_key)
           controller.get_miRNA_interactions_all({
             limit: limit,
             mimat_number: [search_key],
@@ -95,7 +95,7 @@ export class SearchComponent implements OnInit {
         } else if (search_key.startsWith('hsa-')) {
           // key is hsa number
           $('#options_mirna').removeClass('hidden')
-          $('#mirna_input_limit').val(search_key)
+          $('#mirna_search_keys').val(search_key)
           controller.get_miRNA_interactions_all({
             limit: limit,
             hs_number: [search_key],

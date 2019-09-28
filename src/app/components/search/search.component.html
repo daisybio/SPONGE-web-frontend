@@ -61,7 +61,7 @@
                                     <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-CESC">Cervical &amp;
                                         endocervical cancer</option>
                             </select>
-                        </div>
+                         </div>
 
                         <div id="options_gene" class="hidden col">
                             <p class="note"> You are currently searching for a gene</p>
@@ -79,12 +79,14 @@
                                     </tr>
                                 </td>
                             </table>
-                            <button class='btn btn-primary' id='options_gene_go'>Go</button>
-                        </div>
-                        <div id="options_mirna" class="hidden">
-                            <p>You are currently searching for miRNA</p>
+                            <div class="go-btn">
+                                 <button class='btn btn-primary' id='options_gene_go'>Go</button>
+                             </div>
+                         </div>
+                      <div id="options_mirna" class="hidden">
+                            <p class="note">You are currently searching for miRNA</p>
                             <table>
-                                <td>
+                                <td class="td-dim"> 
                                     <tr>
                                         <p class='mimat_number'>Enter Mimat-Number or HS-Number: </p>
                                         <p>Limit: </p>
@@ -92,18 +94,18 @@
                                 </td>
                                 <td>
                                     <tr>
-                                        <input type="text" class="form-control mimat_number input-size autocomplete" id="mirn_search_keys">
+                                        <input type="text" class="form-control mimat_number input-size autocomplete" id="mirna_search_keys">
                                         <input type="text" class="form-control" id='mirna_input_limit' value="20">
                                     </tr>
                                 </td>
                             </table>
                             <div class="go-btn">
-                            <button class='btn btn-primary' id='options_mirna_go'>Go</button>
-                        </div>
-                        </div>
-                    </div>
+                                 <button class='btn btn-primary' id='options_mirna_go'>Go</button>
+                            </div>
+                         </div>
+                     </div>
                 </div>
-            </div>
+             </div>
             <!-- End search information -->
 
 
@@ -160,9 +162,9 @@
                                 <div id="edge_information_content"></div>
                             </div>
                         </div>  
-                    </div>
+                     </div>
                 </div>
-            </div>
+             </div>
 
         </div>
 
