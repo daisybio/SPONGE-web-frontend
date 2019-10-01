@@ -27,12 +27,12 @@ export class Helper {
 
     constructor() {
     }
-
-    default_node_color = '#FFFF00'
+//'#007bff'
+    default_node_color = '#052444'   //'#0066CC'
     default_edge_color = '#0000FF'
     subgraph_edge_color = '#FF6347'
     subgraph_node_color = '#920518'
-    hover_edge_color = '#228B22'
+    hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
     select_color= 'rgba(13, 73, 189, 0.67)'
 
