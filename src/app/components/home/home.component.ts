@@ -89,7 +89,7 @@ export class HomeComponent implements OnInit {
         61153123.0
         ],
       type: 'bar',
-      name: 'Count of shared mRNAs',
+      name: 'Count of shared miRNAs',
       marker: {
         color: 'rgb(19,63,103)',
         opacity: 1
