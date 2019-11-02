@@ -1,7 +1,7 @@
 import { Component, OnInit, ErrorHandler} from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
-
+import { Session } from "../../session";
 
 import sigma from 'sigma';
 
@@ -30,6 +30,7 @@ export class BrowseComponent implements OnInit {
     
     const controller = new Controller()
     const helper = new Helper()
+    let session = null
 
     // first things first, define dimensions of network container
     $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
@@ -349,8 +350,11 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
-            
-            let network = helper.make_network(this.disease_trimmed, nodes, edges)
+            let network = null;
+            $.when(helper.make_network(this.disease_trimmed, nodes, edges)).done( (new_network) => {
+              network = new_network
+              session = new Session(network)
+            })
 
             $('#export_selected_edges').click(() => {
               helper.clear_subgraphs(network);

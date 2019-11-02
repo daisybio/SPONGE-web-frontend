@@ -27,8 +27,8 @@ export class Helper {
 
     constructor() {
     }
-//'#007bff'
-    default_node_color = '#052444'   //'#0066CC'
+
+    default_node_color = '#052444'
     default_edge_color = '#0000FF'
     subgraph_edge_color = '#FF6347'
     subgraph_node_color = '#920518'
@@ -497,4 +497,5 @@ export class Helper {
       network.refresh()
     }
 
+    
 }
