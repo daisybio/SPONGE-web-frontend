@@ -30,11 +30,12 @@ export class BrowseComponent implements OnInit {
 
     const controller = new Controller()
     const helper = new Helper()
+    let url_storage;  // save here which nodes and edges to mark while API data is loading
 
     this.activatedRoute.queryParams.subscribe(params => {
       if (Object.keys(params).length > 0) {
         // there are url params, load previous session
-        helper.load_session_url(params)
+        url_storage = helper.load_session_url(params)
       }
     });
 
@@ -164,15 +165,21 @@ export class BrowseComponent implements OnInit {
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
       let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+      // check the eigenvector cutoff since it is different to the others
+      if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
+        helper.msg("The eigenvector should be between 0 and 1.", true)
+        $('#browse_loading_spinner').addClass('hidden')
+        return 
+      }
       let limit = $('#input_limit').val()
       let descending = true
       controller.get_ceRNA({
-        'disease_name':disease_trimmed, 
-        'sorting':sort_by, 
-        'limit':limit, 
-        'betweenness':cutoff_betweenness, 
-        'degree': cutoff_degree, 
-        'eigenvector': cutoff_eigenvector, 
+        'disease_name':disease_trimmed,
+        'sorting':sort_by,
+        'limit':limit,
+        'betweenness':cutoff_betweenness,
+        'degree': cutoff_degree,
+        'eigenvector': cutoff_eigenvector,
         'descending': descending,
         'callback': data => {
           let nodes = parse_node_data(data)
@@ -180,12 +187,12 @@ export class BrowseComponent implements OnInit {
           return callback(nodes)
           },
           error: (response) => {
+            $('#browse_loading_spinner').addClass('hidden')
             helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
       })
     }
 
-    
     function load_edges(disease_trimmed, nodes, callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
         'callback':data => {
@@ -370,7 +377,7 @@ export class BrowseComponent implements OnInit {
             })
 
             $('#export_selected_edges').click(() => {
-              helper.clear_subgraphs(network);
+              //helper.clear_subgraphs(network);
               let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
               if (selected_edges.length === 0) {
                 selected_edges = edge_table.rows({ filter : 'applied'}).data()
@@ -401,7 +408,7 @@ export class BrowseComponent implements OnInit {
             })
       
             $('#export_selected_nodes').click(() => {
-              helper.clear_subgraphs(network);
+              //helper.clear_subgraphs(network);
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
               if (selected_nodes_data.length === 0) {
@@ -425,6 +432,21 @@ export class BrowseComponent implements OnInit {
                 $('#restart_camera').click()
               }, 500)
             })
+
+            // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
+            if (url_storage && Object.keys(url_storage)) {
+              if ('nodes' in url_storage) {
+                // mark nodes in nodes table
+                helper.mark_nodes(node_table, url_storage['nodes'])
+                // mark nodes in graph
+                $('#export_selected_nodes').click()
+              }
+              if ('edges' in url_storage) {
+                helper.mark_edges(edge_table, url_storage['edges'])
+                // mark edges in graph
+                $('#export_selected_edges').click()
+              }
+            }
 
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
