@@ -3,7 +3,8 @@ import { Helper } from '../app/helper';
 import * as $ from "jquery";
 
 export class Session {
-    network
+    network;
+    url = null
 
     constructor(network) {
         this.network = network

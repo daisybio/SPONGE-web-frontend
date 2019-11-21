@@ -1,5 +1,7 @@
 import { Controller } from "../app/control";
 import sigma from 'sigma';
+import { enableDebugTools } from '@angular/platform-browser';
+import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -497,32 +499,66 @@ export class Helper {
       network.refresh()
     }
 
+    public mark_nodes(table, nodes) {
+      table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        if (nodes.includes(this.data()[0])) {
+          $(this.node()).addClass('selected')
+        }
+      });
+    }
+
+    public mark_edges(table, edges) {
+      table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        if (edges.includes(this.data()[5])) {
+          $(this.node()).addClass('selected')
+        }
+      });
+    }
+
     public load_session_url(params) {
       console.log(params);
+      let nodes, edges = [] 
+      // set options 
       for (let key in params) {
         let val = params[key]
         switch (key) {
           case 'cancer': {
             $('#disease_selectpicker').val(val)
+            break
           }
           case 'limit': {
             $('#input_limit').val(val)
+            break
           } 
           case 'c_eig': {
             $('#input_cutoff_eigenvector').val(val)
+            break
           } 
           case 'c_deg': {
             $('#input_cutoff_degree').val(val)
+            break
           }
           case 'c_bet': {
             $('#input_cutoff_betweenness').val(val)
+            break
           }
           case 'sorting': {
             $('#run-info-select').val(val)
+            break
+          }
+          case 'nodes': {
+            // store nodes to mark after loading plot
+            nodes = val.split(',')
+            break
+          }
+          case 'edges': {
+            // store edges to mark after loading plot
+            edges = val.split(',')
+            break
           }
         }
       }
+      return({'nodes': nodes, 'edges': edges})
     }
-
-    
+  
 }
