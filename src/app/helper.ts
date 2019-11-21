@@ -497,5 +497,32 @@ export class Helper {
       network.refresh()
     }
 
+    public load_session_url(params) {
+      console.log(params);
+      for (let key in params) {
+        let val = params[key]
+        switch (key) {
+          case 'cancer': {
+            $('#disease_selectpicker').val(val)
+          }
+          case 'limit': {
+            $('#input_limit').val(val)
+          } 
+          case 'c_eig': {
+            $('#input_cutoff_eigenvector').val(val)
+          } 
+          case 'c_deg': {
+            $('#input_cutoff_degree').val(val)
+          }
+          case 'c_bet': {
+            $('#input_cutoff_betweenness').val(val)
+          }
+          case 'sorting': {
+            $('#run-info-select').val(val)
+          }
+        }
+      }
+    }
+
     
 }

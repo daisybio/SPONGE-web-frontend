@@ -2,6 +2,7 @@ import { Component, OnInit, ErrorHandler} from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { Session } from "../../session";
+import {Router, ActivatedRoute, Params} from '@angular/router';
 
 import sigma from 'sigma';
 
@@ -14,22 +15,34 @@ declare var $;
 @Component({
   selector: 'app-browse',
   templateUrl: './browse.component.html',
-  styleUrls: ['./browse.component.less']
+  styleUrls: ['./browse.component.less'],
 })
 export class BrowseComponent implements OnInit {
 
   disease_trimmed = ''
   selected_disease = ''
 
-  constructor() { }
+  constructor(private activatedRoute: ActivatedRoute) {
+
+  }
 
   ngOnInit() {
+
+    const controller = new Controller()
+    const helper = new Helper()
+
+    this.activatedRoute.queryParams.subscribe(params => {
+      if (Object.keys(params).length > 0) {
+        // there are url params, load previous session
+        helper.load_session_url(params)
+      }
+    });
+
 
     var node_table
     var edge_table
     
-    const controller = new Controller()
-    const helper = new Helper()
+
     let session = null
 
     // first things first, define dimensions of network container

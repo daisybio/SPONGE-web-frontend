@@ -11,7 +11,6 @@ export class Session {
             this.update_url()
         })
         $('#network-plot-container').dblclick( () => {
-            console.log("here")
             this.update_url()
         })
     }
@@ -19,7 +18,7 @@ export class Session {
     helper = new Helper()
 
     public init() {
-
+      console.log("here")
     }
 
     public update_url() {
@@ -32,6 +31,31 @@ export class Session {
         }
         if (selected['nodes'].length > 0) {
             url_params += '&nodes=' + encodeURIComponent(selected['nodes'].join())
+        }
+
+        // sorting value
+        if ($('#run-info-select').val()) {
+          url_params += '&sorting=' + encodeURIComponent($('#run-info-select').val().toString())
+        } 
+
+        // cutoff betweenness
+        if ($('#input_cutoff_betweenness').val()) {
+          url_params += '&c_bet=' + encodeURIComponent($('#input_cutoff_betweenness').val().toString())
+        }
+
+        // cutoff degree
+        if ($('#input_cutoff_degree').val()) {
+          url_params += '&c_deg=' + encodeURIComponent($('#input_cutoff_degree').val().toString())
+        }
+
+        // cutoff eigenvector
+        if ($('#input_cutoff_eigenvector').val()) {
+          url_params += '&c_eig=' + encodeURIComponent($('#input_cutoff_eigenvector').val().toString())
+        }
+
+        // limit
+        if ($('#input_limit').val()) {
+          url_params += '&limit=' + encodeURIComponent($('#input_limit').val().toString())
         }
 
         let path = window.location.pathname
