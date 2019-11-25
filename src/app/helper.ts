@@ -177,7 +177,7 @@ export class Helper {
     }
 
 
-    public make_network(selected_disease, nodes, edges) {
+    public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
 
       const $this = this
 
@@ -346,9 +346,22 @@ export class Helper {
         }
         network.refresh();
 
+        // mark node in node_table
+        if (node_table) {
+          $this.mark_nodes(node_table, e.data.node.id)
+        }
+        // mark edges in edge_table
+        if (edge_table) {
+          let edges = network.graph.adjacentEdges(nodeId).map((ee) => String(ee.id))
+          $this.mark_edges(edge_table, edges)
+        }
+
       }
 
       function searchNode(node_as_string) {
+        /*
+        Searches for a given node-string "ENSG..." in the network and returns the node object
+        */
         var nodes = network.graph.nodes()
         let node
         for (node in nodes) {
@@ -360,6 +373,9 @@ export class Helper {
       }
 
       function searchEdge(edge_as_string) {
+        /*
+        Searches for a given edge-id in the network and returns the edge object
+        */
         var edges = network.graph.edges()
         let edge
         for (edge in edges) {
@@ -372,6 +388,11 @@ export class Helper {
 
 
       function focusNode(node_as_string) {
+        /*
+        This function is used to show one node in the network. 
+        The camera moves to center the given node-string "ENSG..." and the node gets marked.
+        Afterwards, the node gets also marked in the node_table.
+        */
         let camera = network.cameras[0]
         let node = searchNode(node_as_string)
         node.color = $this.subgraph_node_color
@@ -386,9 +407,19 @@ export class Helper {
             duration: 300
           }
         );
+        // mark node in node table
+        if (node_table) {
+          $this.mark_nodes(node_table, node_as_string)
+        }
+
       }
 
       function focusEdge(edge_as_string) {
+        /*
+        This function is used to show one edge in the network. 
+        The camera moves to center the given edge-string and the edge gets marked.
+        Afterwards, the edge gets also marked in the edge_table.
+        */
         let camera = network.cameras[0]
         let edge = searchEdge(edge_as_string)
         let source = searchNode(edge["source"])
@@ -409,6 +440,10 @@ export class Helper {
             duration: 300
           }
         );
+        // mark edge in node table
+        if (edge_table) {
+          $this.mark_edges(edge_table, edge_as_string)
+        }
       }
 
       $('#network_search_node_button').click(() => {
@@ -500,6 +535,10 @@ export class Helper {
       network.refresh()
     }
 
+    public clear_table(table) {
+
+    }
+
     public mark_nodes(table, nodes) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
         if (nodes.includes(this.data()[0])) {
@@ -517,7 +556,6 @@ export class Helper {
     }
 
     public load_session_url(params) {
-      console.log(params);
       let nodes, edges = [] 
       // set options 
       for (let key in params) {
