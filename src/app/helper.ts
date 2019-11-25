@@ -510,6 +510,8 @@ export class Helper {
       
       $('#reset_graph').click( () => {
         this.clear_subgraphs(network);
+        this.clear_table(node_table);
+        this.clear_table(edge_table);
       })
 
       // Initialize the dragNodes plugin:
@@ -536,7 +538,11 @@ export class Helper {
     }
 
     public clear_table(table) {
-
+      table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        if ($(this.node()).hasClass('selected')){
+          $(this.node()).removeClass('selected')
+        }
+      });
     }
 
     public mark_nodes(table, nodes) {
