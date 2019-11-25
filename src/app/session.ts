@@ -8,11 +8,20 @@ export class Session {
 
     constructor(network) {
         this.network = network
-        $('#load_disease').click( () => {
+        // BROWSE
+        $('#load_disease, #export_selected_nodes, #export_selected_edges').click( () => {
+            // TODO maybe timeout until nodes are marked?
             this.update_url()
         })
+
+        // SEARCH
+        $('#options_gene_go').click( () => {
+          this.update_url()
+        })
+
+        // ALL
         $('#network-plot-container').dblclick( () => {
-            this.update_url()
+          this.update_url()
         })
     }
 
@@ -23,6 +32,7 @@ export class Session {
     }
 
     public update_url() {
+        // BROWSE
         let cancer:string = $('#disease_selectpicker').val().toString();
         let selected = this.get_selected()
 
@@ -33,7 +43,7 @@ export class Session {
         if (selected['nodes'].length > 0) {
             url_params += '&nodes=' + encodeURIComponent(selected['nodes'].join())
         }
-
+        /////////////////// BROWSE START
         // sorting value
         if ($('#run-info-select').val()) {
           url_params += '&sorting=' + encodeURIComponent($('#run-info-select').val().toString())
@@ -58,6 +68,16 @@ export class Session {
         if ($('#input_limit').val()) {
           url_params += '&limit=' + encodeURIComponent($('#input_limit').val().toString())
         }
+        /////////////////// BROWSE END
+
+        /////////////////// SEARCH START
+        if ($('#gene_input_limit').val()) {
+          url_params += '&limit=' + encodeURIComponent($('#gene_input_limit').val().toString())
+        }
+        if ($('#gene_search_keys').val()) {
+          url_params += '&search_key=' + encodeURIComponent($('#gene_search_keys').val().toString())
+        }
+        /////////////////// SEARCH START
 
         let path = window.location.pathname
 

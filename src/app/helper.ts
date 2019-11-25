@@ -122,7 +122,7 @@ export class Helper {
           for (let e in response) {
             let experiment = response[e]
             let gene = experiment['gene']
-            let expr_value = experiment['exp_value']
+            let expr_value = experiment['expr_value']
             let sample_ID = experiment['sample_ID']
             if (seen_sample_ids.hasOwnProperty(sample_ID)) {
               seen_sample_ids[sample_ID][gene] = expr_value
@@ -167,7 +167,7 @@ export class Helper {
               ticks: '',
             },
           };
-          
+
           Plotly.newPlot('expression_heatmap', data, layout);
         },
         error: () => {
@@ -345,6 +345,7 @@ export class Helper {
           e.data.node.color = $this.default_node_color
         }
         network.refresh();
+
       }
 
       function searchNode(node_as_string) {
@@ -554,6 +555,10 @@ export class Helper {
           case 'edges': {
             // store edges to mark after loading plot
             edges = val.split(',')
+            break
+          }
+          case 'search_key': {
+            $('#gene_search_keys').val(val)
             break
           }
         }

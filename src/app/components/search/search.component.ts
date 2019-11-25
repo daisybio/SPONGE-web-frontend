@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
-import { ActivatedRoute } from "@angular/router";
+import { Session } from "../../session";
+import {Router, ActivatedRoute, Params} from '@angular/router';
 import 'datatables.net';
 declare var $;
 
@@ -12,7 +13,7 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private activatedRoute: ActivatedRoute) { }
 
   ngOnInit() {
 
@@ -22,10 +23,16 @@ export class SearchComponent implements OnInit {
     var search_key: string;
     var limit: number = 20;
     var parsed_search_result: any;
-   
+    var url_storage;
+    let session = null
 
-    this.route.queryParams
+    this.activatedRoute.queryParams
       .subscribe(params => {
+        // search key should always be defined
+        if (Object.keys(params).length > 1) {
+          // there are url params, load previous session
+          url_storage = helper.load_session_url(params)
+        }
         search_key = decodeURIComponent(params.search_key);
       });
 
@@ -50,7 +57,6 @@ export class SearchComponent implements OnInit {
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
-
       /* search_key is defined */
       if (search_key != undefined) {
         // start loading data
@@ -192,7 +198,7 @@ export class SearchComponent implements OnInit {
         )
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
-        var table = $("#" + table_id).DataTable({
+        let table = $("#" + table_id).DataTable({
           orderCellsTop: true,
         })
         helper.colSearch(table_id, table)
@@ -282,7 +288,7 @@ export class SearchComponent implements OnInit {
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['Node Degree'] = entry['node_degree']
         ordered_entry['Gene ID'] = entry['gene_ID']
-        ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
+        ordered_entry['Network Analysis ID'] = entry['network_analysis_ID']
         ordered_data.push(ordered_entry)
       }
       $('#node_data').text(JSON.stringify(ordered_data))
@@ -329,7 +335,6 @@ export class SearchComponent implements OnInit {
             ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
             ordered_data.push(ordered_entry)
           }
-
 
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
@@ -505,11 +510,14 @@ export class SearchComponent implements OnInit {
           load_edges(encodeURI(disease), ensg_numbers, edges => {
           
             let network = helper.make_network(disease_trimmed, nodes, edges)
+            session = new Session(network)
+
             setTimeout(() => {
               // network.refresh()
               $('#restart_camera').click()
               network.refresh()
             }, 500)
+
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
 
@@ -520,6 +528,11 @@ export class SearchComponent implements OnInit {
 
         })
 
+        // mark rows in datatable and in network if we restore old session
+        if (url_storage) {
+          helper.mark_nodes(table, url_storage['nodes'])
+          $('.export_nodes').last().click()
+        }
       }
     }
 
