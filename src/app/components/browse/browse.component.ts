@@ -371,7 +371,7 @@ export class BrowseComponent implements OnInit {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
             let network = null;
-            $.when(helper.make_network(this.disease_trimmed, nodes, edges)).done( (new_network) => {
+            $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (new_network) => {
               network = new_network
               session = new Session(network)
             })
