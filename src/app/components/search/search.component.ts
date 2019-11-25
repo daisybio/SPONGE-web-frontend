@@ -36,7 +36,7 @@ export class SearchComponent implements OnInit {
         // search key should always be defined
         if (Object.keys(params).length > 1) {
           // there are url params, load previous session
-          url_storage = helper.load_session_url(params)
+          // url_storage = helper.load_session_url(params)
         }
         search_key = decodeURIComponent(params.search_key);
       });
