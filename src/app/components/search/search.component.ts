@@ -3,6 +3,7 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { ActivatedRoute } from "@angular/router";
 import 'datatables.net';
+declare var Plotly: any;
 declare var $;
 
 @Component({
@@ -551,6 +552,55 @@ export class SearchComponent implements OnInit {
       });
     });
 
+
+    $('#KMP-plot-container').append(KMP_test);
+    function KMP_test() {
+      //einlesen der test daten für den KM Plot
+      let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
+      var testSD = JSON.stringify(json);
+      var wholeJason = JSON.parse(testSD);
+      console.log(wholeJason[0].donors.length);
+      
+      var timeGesamt = [];
+      var sestimateGesamt = [];
+      //checken ob die wirklich parallel der reihenach gelesen u gespeichert werden
+      for (let i=0; i < wholeJason[0].donors.length; i++) {
+       timeGesamt.push(wholeJason[0].donors[i].time);
+       sestimateGesamt.push(wholeJason[0].donors[i].survivalEstimate);
+
+    }
+    console.log(timeGesamt[0]);
+    console.log(sestimateGesamt[0]);
+      //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
+      //Im beispiel fall nur y estimate gegen time x
+      var trace1 = {
+        x: timeGesamt, 
+        y: sestimateGesamt, 
+        type: 'scatter'
+      };
+      var trace2 = {
+        x: [.01, .1, 1, 10, 100], 
+        y: [1, 10, 100, 1000, 10000], 
+        type: 'scatter'
+      };
+      var data = [trace1];
+      var layout = {
+        xaxis: {
+          
+          
+          title: 'Duration(years)',
+          autorange: true
+        }, 
+        yaxis: {
+          title: 'Survival Rate',
+          autorange: true
+          
+        }
+      };
+      Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
+    }
   }
+
+  
   
 }

@@ -1,0 +1,1482 @@
+[
+  {
+    "donors": [
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.010951403148528405,
+        "survivalEstimate": 1,
+        "submitter_id": "TCGA-HZ-7922",
+        "id": "6f777943-ffcb-46d9-872d-514559dee00d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.019164955509924708,
+        "survivalEstimate": 1,
+        "submitter_id": "TCGA-HZ-A8P1",
+        "id": "b8e0f4fb-c916-43b8-afd2-8077a7e3aebc"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.02190280629705681,
+        "survivalEstimate": 1,
+        "submitter_id": "TCGA-IB-AAUM",
+        "id": "cfda26b9-d417-425c-9a72-fa76ca4b296c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.024640657084188913,
+        "survivalEstimate": 1,
+        "submitter_id": "TCGA-RL-AAAS",
+        "id": "c53d66d9-ad9a-417e-a441-df5bcf1ae13f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.03285420944558522,
+        "survivalEstimate": 1,
+        "submitter_id": "TCGA-US-A77G",
+        "id": "74aa6675-28b7-46dc-9015-f07a07c7b018"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.08487337440109514,
+        "survivalEstimate": 0.9944444444444445,
+        "submitter_id": "TCGA-FB-AAQ3",
+        "id": "5965cd7b-f384-4473-826a-8381e362d10e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.09034907597535935,
+        "survivalEstimate": 0.9888888888888888,
+        "submitter_id": "TCGA-HZ-A77Q",
+        "id": "ce9e0431-19a1-4ea9-85b0-44a9e9792e03"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.11225188227241616,
+        "survivalEstimate": 0.9888888888888888,
+        "submitter_id": "TCGA-IB-A6UG",
+        "id": "45e48080-0b27-45f4-8149-1ae7e36c6933"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.16700889801505817,
+        "survivalEstimate": 0.9833019460138104,
+        "submitter_id": "TCGA-FZ-5920",
+        "id": "a1d138fb-bba7-44d2-8071-c14470634e4c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.1806981519507187,
+        "survivalEstimate": 0.9777150031387318,
+        "submitter_id": "TCGA-2J-AAB1",
+        "id": "75119d1a-93e5-4ae7-9d60-69ee929a0772"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.2190280629705681,
+        "survivalEstimate": 0.9721280602636534,
+        "submitter_id": "TCGA-2J-AAB8",
+        "id": "2e8f90f4-aed3-43b0-985c-dfdc2581f24f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.2600958247775496,
+        "survivalEstimate": 0.9721280602636534,
+        "submitter_id": "TCGA-F2-A7TX",
+        "id": "1f5494c4-e26c-4512-96d9-30412b5b32ce"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.2600958247775496,
+        "survivalEstimate": 0.9721280602636534,
+        "submitter_id": "TCGA-Q3-AA2A",
+        "id": "23908554-b98e-4ff8-98e7-dee3e2c5feaf"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.28199863107460643,
+        "survivalEstimate": 0.9664761529365391,
+        "submitter_id": "TCGA-2L-AAQI",
+        "id": "a28cfa95-5a99-40f3-928e-7a94f2492d2c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.30116358658453113,
+        "survivalEstimate": 0.9608242456094248,
+        "submitter_id": "TCGA-IB-7887",
+        "id": "fe699c36-82ef-45dd-b636-8c18a9ef6c76"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.3203285420944558,
+        "survivalEstimate": 0.9551723382823105,
+        "submitter_id": "TCGA-IB-7893",
+        "id": "0944ce65-a89a-4916-b90a-f674b334281e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.32854209445585214,
+        "survivalEstimate": 0.9495204309551962,
+        "submitter_id": "TCGA-HZ-8005",
+        "id": "21814c02-6aa5-4b98-8fd8-41ca0b04ccd2"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.33675564681724846,
+        "survivalEstimate": 0.9438685236280819,
+        "submitter_id": "TCGA-IB-7886",
+        "id": "f73dfd7f-e054-46ff-9485-e8d05afe2da6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.33675564681724846,
+        "survivalEstimate": 0.9438685236280819,
+        "submitter_id": "TCGA-FB-AAQ1",
+        "id": "ff8dac97-42ff-4f48-81c4-50315ad8de58"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.35044490075290896,
+        "survivalEstimate": 0.9325647089738535,
+        "submitter_id": "TCGA-HV-A5A3",
+        "id": "d4f66f06-9289-45c1-b9eb-aaef991a4bb6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.3915126625598905,
+        "survivalEstimate": 0.9269128016467392,
+        "submitter_id": "TCGA-2L-AAQA",
+        "id": "d8aa891c-8050-471e-ad3e-32b9c5e9db03"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.3942505133470226,
+        "survivalEstimate": 0.9212608943196249,
+        "submitter_id": "TCGA-IB-AAUN",
+        "id": "638b1a6a-c222-414c-96bc-f259f0afb278"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.39698836413415467,
+        "survivalEstimate": 0.9156089869925107,
+        "submitter_id": "TCGA-IB-7646",
+        "id": "d1e0f479-77dd-42cd-89cb-c1eeac60c10a"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.4134154688569473,
+        "survivalEstimate": 0.9099570796653964,
+        "submitter_id": "TCGA-HZ-8638",
+        "id": "5f9a5aba-8db8-45cc-8784-c5058445bd6f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.4188911704312115,
+        "survivalEstimate": 0.9043051723382821,
+        "submitter_id": "TCGA-FB-AAQ2",
+        "id": "f5558dc7-5bef-426f-a6bf-b704fd5dbda0"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.4243668720054757,
+        "survivalEstimate": 0.8986532650111678,
+        "submitter_id": "TCGA-FZ-5921",
+        "id": "345a375c-15cc-453a-8054-e68a35178082"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.4380561259411362,
+        "survivalEstimate": 0.8930013576840535,
+        "submitter_id": "TCGA-HZ-A77O",
+        "id": "fe01a390-f45e-4352-a253-af8ef7ee9628"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.49007529089664614,
+        "survivalEstimate": 0.8873494503569392,
+        "submitter_id": "TCGA-FB-A4P5",
+        "id": "b2e29f26-29af-4e2d-84dd-c513b4a07c70"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.5010266940451745,
+        "survivalEstimate": 0.881697543029825,
+        "submitter_id": "TCGA-IB-AAUQ",
+        "id": "afe89625-b355-454d-8c0b-b4161edd69f8"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.5311430527036276,
+        "survivalEstimate": 0.8760456357027107,
+        "submitter_id": "TCGA-HZ-A4BH",
+        "id": "2c636fb4-c341-4c55-b920-27bc2d40c815"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.5913757700205339,
+        "survivalEstimate": 0.8760456357027107,
+        "submitter_id": "TCGA-F2-7276",
+        "id": "e4babd46-005a-4af3-8041-131648d9c2c6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.5995893223819302,
+        "survivalEstimate": 0.8703570276786671,
+        "submitter_id": "TCGA-IB-A5SQ",
+        "id": "4f87e061-e773-48f2-84ba-32401396500e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6132785763175906,
+        "survivalEstimate": 0.8646684196546235,
+        "submitter_id": "TCGA-3A-A9IB",
+        "id": "3cbf56e6-dccc-40fe-b06e-2621a2121e9d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.6160164271047228,
+        "survivalEstimate": 0.8589798116305799,
+        "submitter_id": "TCGA-IB-AAUS",
+        "id": "69285f58-9b70-4262-acc0-8cf3d47540c3"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.6242299794661191,
+        "survivalEstimate": 0.8589798116305799,
+        "submitter_id": "TCGA-FB-AAPS",
+        "id": "2048d0f9-ed9f-46df-bcd4-3dfd9137670f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6297056810403833,
+        "survivalEstimate": 0.8589798116305799,
+        "submitter_id": "TCGA-IB-AAUW",
+        "id": "18960eb6-2d79-4d12-886a-4cd1e8fc1e21"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.6351813826146475,
+        "survivalEstimate": 0.8532148464518512,
+        "submitter_id": "TCGA-HV-A5A4",
+        "id": "3264459c-adeb-486e-ab8f-274574441593"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6379192334017796,
+        "survivalEstimate": 0.8532148464518512,
+        "submitter_id": "TCGA-F2-A44G",
+        "id": "20094e3e-cee3-41dd-8553-1fc393117786"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6461327857631759,
+        "survivalEstimate": 0.8474106638229271,
+        "submitter_id": "TCGA-HZ-7920",
+        "id": "1fe937f7-b4e5-4cf6-be9b-215a012533c6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6543463381245722,
+        "survivalEstimate": 0.8416064811940029,
+        "submitter_id": "TCGA-IB-AAUO",
+        "id": "869e61d6-fbbf-4ca2-be1a-57b82a03c7a1"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6680355920602327,
+        "survivalEstimate": 0.8358022985650788,
+        "submitter_id": "TCGA-FB-AAQ6",
+        "id": "8475c44d-e091-4c65-b1b4-9a77ae3c0e1d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.6707734428473648,
+        "survivalEstimate": 0.8299981159361547,
+        "submitter_id": "TCGA-IB-AAUU",
+        "id": "a53c919a-4e08-46f1-af3f-30b16b597c33"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.6844626967830253,
+        "survivalEstimate": 0.8299981159361547,
+        "submitter_id": "TCGA-IB-A7LX",
+        "id": "712c2f78-c736-42ce-b689-a954c5290987"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.6899383983572895,
+        "survivalEstimate": 0.8241530587816748,
+        "submitter_id": "TCGA-HV-A7OL",
+        "id": "2e0701e1-e16f-457f-b939-7b1128f4a58b"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.731006160164271,
+        "survivalEstimate": 0.8241530587816748,
+        "submitter_id": "TCGA-OE-A75W",
+        "id": "4a60e87e-6bc1-4ae0-9ccb-4cdc3e99c608"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.758384668035592,
+        "survivalEstimate": 0.8182662512189486,
+        "submitter_id": "TCGA-2J-AABU",
+        "id": "0b4b50c7-aa0b-4a64-807b-d3cb47eeeb6f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.7611225188227242,
+        "survivalEstimate": 0.8123794436562224,
+        "submitter_id": "TCGA-L1-A7W4",
+        "id": "ab449860-46e5-485e-abd5-31c5abef2c58"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.783025325119781,
+        "survivalEstimate": 0.8064926360934961,
+        "submitter_id": "TCGA-RB-AA9M",
+        "id": "9d5c5303-550f-454f-8fd4-8abcdd311215"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.785763175906913,
+        "survivalEstimate": 0.8064926360934961,
+        "submitter_id": "TCGA-IB-AAUT",
+        "id": "88eaebfc-d740-4cdc-88f5-df5e08633e2d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.7912388774811773,
+        "survivalEstimate": 0.8064926360934961,
+        "submitter_id": "TCGA-HV-A5A5",
+        "id": "1b31d2e9-5b05-4fff-88d6-3a95bf8f8d43"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.7994524298425736,
+        "survivalEstimate": 0.8064926360934961,
+        "submitter_id": "TCGA-2L-AAQL",
+        "id": "1db061c0-9b28-4bf9-8ad2-0383c69b6800"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.8021902806297057,
+        "survivalEstimate": 0.8004740343316044,
+        "submitter_id": "TCGA-2J-AAB6",
+        "id": "70797499-16e6-48cc-8ae4-1e692713dad3"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.8076659822039699,
+        "survivalEstimate": 0.7944554325697125,
+        "submitter_id": "TCGA-F2-6880",
+        "id": "c60a4c63-607b-4d59-8625-bc5d20207647"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.8186173853524983,
+        "survivalEstimate": 0.7944554325697125,
+        "submitter_id": "TCGA-HZ-8315",
+        "id": "02dbd5fa-e31f-4486-8df8-5b851f2e92bd"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.8432580424366872,
+        "survivalEstimate": 0.7883908872829208,
+        "submitter_id": "TCGA-HZ-A49I",
+        "id": "27286a38-1035-4a22-9ebc-874df8c49026"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.8432580424366872,
+        "survivalEstimate": 0.7883908872829208,
+        "submitter_id": "TCGA-3A-A9IZ",
+        "id": "517e0f20-56cc-470e-8c5f-543efa10cfb5"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.8569472963723477,
+        "survivalEstimate": 0.7762617967093375,
+        "submitter_id": "TCGA-LB-A9Q5",
+        "id": "31c23e65-1f18-4f59-8a54-31febedef8a2"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.8596851471594799,
+        "survivalEstimate": 0.7701972514225458,
+        "submitter_id": "TCGA-HZ-7923",
+        "id": "565ee830-5236-4414-aeaa-48ea7eb3b753"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.8733744010951403,
+        "survivalEstimate": 0.7701972514225458,
+        "submitter_id": "TCGA-2J-AABT",
+        "id": "3f9cc59e-9f7d-40d1-9365-28b40dff3c59"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.9034907597535934,
+        "survivalEstimate": 0.7701972514225458,
+        "submitter_id": "TCGA-HZ-A77P",
+        "id": "5971a597-1e16-4f6d-8d7b-0e69c6bdcead"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.9144421629021219,
+        "survivalEstimate": 0.7701972514225458,
+        "submitter_id": "TCGA-F2-6879",
+        "id": "8d9bd437-8b4b-4da5-87ba-6b5790f05022"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.9253935660506503,
+        "survivalEstimate": 0.7639859832659124,
+        "submitter_id": "TCGA-IB-AAUR",
+        "id": "6788e0e5-b67f-4fe6-aabb-6d0430ae2d06"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 0.9582477754962354,
+        "survivalEstimate": 0.7639859832659124,
+        "submitter_id": "TCGA-YB-A89D",
+        "id": "b84b58c7-95b8-4162-8e61-414f8fe422c6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.9664613278576317,
+        "survivalEstimate": 0.7639859832659124,
+        "submitter_id": "TCGA-FB-A7DR",
+        "id": "d47e214d-efbc-436d-b928-303d1f5135c4"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 0.999315537303217,
+        "survivalEstimate": 0.7576720495199132,
+        "submitter_id": "TCGA-IB-A5SO",
+        "id": "c6388925-c0a1-4610-a6b9-d9d9500d88c6"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.002053388090349,
+        "survivalEstimate": 0.751358115773914,
+        "submitter_id": "TCGA-XD-AAUI",
+        "id": "9a2db69e-d429-45d4-89ca-a2c4e0cfc116"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.002053388090349,
+        "survivalEstimate": 0.751358115773914,
+        "submitter_id": "TCGA-HZ-8002",
+        "id": "4b37b026-1d41-4bad-8996-7cb1f0e569af"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0266940451745379,
+        "survivalEstimate": 0.7387302482819154,
+        "submitter_id": "TCGA-FB-A78T",
+        "id": "2ad10199-1381-42b7-b54f-da34c1b1d3c0"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0349075975359343,
+        "survivalEstimate": 0.7324163145359162,
+        "submitter_id": "TCGA-HZ-8317",
+        "id": "a2fd0991-cfbd-4162-8ca9-2ed096f54a14"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.0376454483230664,
+        "survivalEstimate": 0.726102380789917,
+        "submitter_id": "TCGA-LB-A8F3",
+        "id": "f852de27-b600-44a4-ab30-d74108dfc2e9"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0431211498973305,
+        "survivalEstimate": 0.726102380789917,
+        "submitter_id": "TCGA-FB-AAPU",
+        "id": "712335e1-f1e9-44b9-957c-497ea5e8fa2f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.0622861054072552,
+        "survivalEstimate": 0.7197330616601808,
+        "submitter_id": "TCGA-YH-A8SY",
+        "id": "503d7e36-df78-428d-9971-09ff707645c2"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.0732375085557837,
+        "survivalEstimate": 0.7197330616601808,
+        "submitter_id": "TCGA-H6-8124",
+        "id": "7e4e5633-6f83-4b46-b6eb-64b3f2866ba3"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0759753593429158,
+        "survivalEstimate": 0.7197330616601808,
+        "submitter_id": "TCGA-LB-A7SX",
+        "id": "5750a6ed-2516-456d-97d4-2f6486845ed8"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0787132101300478,
+        "survivalEstimate": 0.7132489800236026,
+        "submitter_id": "TCGA-IB-7644",
+        "id": "1782bf45-7350-4053-8dd1-45faf4ed8dd9"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0787132101300478,
+        "survivalEstimate": 0.7132489800236026,
+        "submitter_id": "TCGA-2L-AAQJ",
+        "id": "f96ab3fe-bb11-4585-a35e-52d400e55ab7"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.08145106091718,
+        "survivalEstimate": 0.7002808167504462,
+        "submitter_id": "TCGA-XD-AAUH",
+        "id": "b46b5a4c-59fc-4769-b05a-d15f9aaa753a"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.0869267624914443,
+        "survivalEstimate": 0.7002808167504462,
+        "submitter_id": "TCGA-H6-A45N",
+        "id": "758b70f6-8064-4f43-aabe-e5f968fe2955"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.106091718001369,
+        "survivalEstimate": 0.6937361362200681,
+        "submitter_id": "TCGA-IB-AAUV",
+        "id": "6983fc34-9577-45e1-b246-40e18fab953f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.1389459274469542,
+        "survivalEstimate": 0.6937361362200681,
+        "submitter_id": "TCGA-Q3-A5QY",
+        "id": "1756244e-13bc-4ed7-8b91-005608803d91"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.1498973305954825,
+        "survivalEstimate": 0.6937361362200681,
+        "submitter_id": "TCGA-XD-AAUG",
+        "id": "f89d429f-4747-468b-b894-89583bd8ab02"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.1772758384668036,
+        "survivalEstimate": 0.6937361362200681,
+        "submitter_id": "TCGA-US-A77E",
+        "id": "5aa57fff-4515-4076-8798-55015bb4f156"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.1800136892539357,
+        "survivalEstimate": 0.6870008339266694,
+        "submitter_id": "TCGA-IB-AAUP",
+        "id": "0a3c8161-4186-4c95-8288-9928d6db0355"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.1991786447638604,
+        "survivalEstimate": 0.6870008339266694,
+        "submitter_id": "TCGA-2J-AABR",
+        "id": "507a4e05-d5ab-4dbb-9b4f-76b1a21b79dd"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.2046543463381245,
+        "survivalEstimate": 0.6870008339266694,
+        "submitter_id": "TCGA-2J-AABO",
+        "id": "a8c3e333-865d-4060-8ce4-453aa6f9f0e8"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.242984257357974,
+        "survivalEstimate": 0.6870008339266694,
+        "submitter_id": "TCGA-HZ-8519",
+        "id": "70c2c861-01de-47bc-abfd-b7d14d68e1a1"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2539356605065024,
+        "survivalEstimate": 0.6870008339266694,
+        "submitter_id": "TCGA-3A-A9IU",
+        "id": "cd9dc5c5-1161-43ea-a617-1356a3b23e16"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2594113620807665,
+        "survivalEstimate": 0.679990621335581,
+        "submitter_id": "TCGA-IB-A5SS",
+        "id": "31aca8a3-7107-4b9d-8b6a-c07caa2a9339"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.264887063655031,
+        "survivalEstimate": 0.6729804087444925,
+        "submitter_id": "TCGA-IB-8126",
+        "id": "4387a2c2-8007-4735-a48c-34a2b476018e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.267624914442163,
+        "survivalEstimate": 0.6729804087444925,
+        "submitter_id": "TCGA-2J-AABP",
+        "id": "a4569ce7-dde7-4660-a24c-409d294b2b8c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2758384668035592,
+        "survivalEstimate": 0.6729804087444925,
+        "submitter_id": "TCGA-RB-A7B8",
+        "id": "5bfe94ed-88b9-44ce-8bbd-1285ab9678a4"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.2785763175906912,
+        "survivalEstimate": 0.6658210426940192,
+        "submitter_id": "TCGA-Z5-AAPL",
+        "id": "6a4e10b6-e6c4-4210-ae4d-0d8e8d0cb3ec"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2785763175906912,
+        "survivalEstimate": 0.6658210426940192,
+        "submitter_id": "TCGA-IB-7649",
+        "id": "ec9ac713-08e9-4559-b606-5f58d2c4df50"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2867898699520877,
+        "survivalEstimate": 0.658583857447345,
+        "submitter_id": "TCGA-PZ-A5RE",
+        "id": "c26002e7-abf1-42b9-bf36-0e97249d872f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.2950034223134839,
+        "survivalEstimate": 0.651346672200671,
+        "submitter_id": "TCGA-FB-AAQ0",
+        "id": "81b6b844-d760-4146-9b01-1c4b2596eb77"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3032169746748803,
+        "survivalEstimate": 0.644109486953997,
+        "submitter_id": "TCGA-IB-7654",
+        "id": "65e5bf5f-f22a-4ec2-8839-aeda37212b98"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3141683778234086,
+        "survivalEstimate": 0.6368723017073228,
+        "submitter_id": "TCGA-FZ-5924",
+        "id": "4fcfd545-c259-4a9d-a393-7135795048a8"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3169062286105406,
+        "survivalEstimate": 0.6296351164606486,
+        "submitter_id": "TCGA-IB-7889",
+        "id": "31e66b80-c684-4ee8-82ae-36d00f36bc88"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.319644079397673,
+        "survivalEstimate": 0.6223979312139745,
+        "submitter_id": "TCGA-IB-A5SP",
+        "id": "bd73ed94-5f4f-4eb3-8b9b-391af4422d0e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.322381930184805,
+        "survivalEstimate": 0.6223979312139745,
+        "submitter_id": "TCGA-IB-A7M4",
+        "id": "6a0a280d-4a30-4071-afe7-de6b82a6e34c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.325119780971937,
+        "survivalEstimate": 0.6223979312139745,
+        "submitter_id": "TCGA-2J-AABK",
+        "id": "c24c54ea-4095-460d-bb53-e3629a56cd62"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3278576317590691,
+        "survivalEstimate": 0.6223979312139745,
+        "submitter_id": "TCGA-FB-AAPP",
+        "id": "1422bc35-4597-4e76-aa75-8e79613e67d5"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3305954825462012,
+        "survivalEstimate": 0.6148991609583844,
+        "submitter_id": "TCGA-IB-7897",
+        "id": "01775b06-5836-469c-8537-120cb8cc94e9"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.3442847364818618,
+        "survivalEstimate": 0.6074003907027943,
+        "submitter_id": "TCGA-HZ-A49H",
+        "id": "17142718-742e-464a-8e0f-a6b9ac8fad75"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3634496919917864,
+        "survivalEstimate": 0.6074003907027943,
+        "submitter_id": "TCGA-FB-A5VM",
+        "id": "40d9b9f7-42b7-4cfd-af95-660777ad0529"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.3634496919917864,
+        "survivalEstimate": 0.6074003907027943,
+        "submitter_id": "TCGA-XD-AAUL",
+        "id": "597a5a56-244b-4218-a55d-5d08217ea28c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.3990417522245038,
+        "survivalEstimate": 0.5997117781622526,
+        "submitter_id": "TCGA-US-A779",
+        "id": "53c94a86-1b4d-4833-a169-d990c460b301"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.4154688569472964,
+        "survivalEstimate": 0.592023165621711,
+        "submitter_id": "TCGA-HZ-8637",
+        "id": "459028fd-0cd8-4e6d-a668-71fd60bd0a37"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.4154688569472964,
+        "survivalEstimate": 0.592023165621711,
+        "submitter_id": "TCGA-F2-A8YN",
+        "id": "5dbb4642-6636-4d67-9e73-25c7312aec44"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.4182067077344285,
+        "survivalEstimate": 0.5842333871266885,
+        "submitter_id": "TCGA-HZ-7926",
+        "id": "2be42cc2-9b97-4821-afc2-d1e42eb3932d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.429158110882957,
+        "survivalEstimate": 0.576443608631666,
+        "submitter_id": "TCGA-IB-8127",
+        "id": "0b4443a0-087d-47e7-9e67-795eac6750c3"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.4373716632443532,
+        "survivalEstimate": 0.576443608631666,
+        "submitter_id": "TCGA-S4-A8RO",
+        "id": "a9c0f3a1-01eb-4f01-b58a-708b2960e685"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.4565366187542779,
+        "survivalEstimate": 0.576443608631666,
+        "submitter_id": "TCGA-HV-AA8X",
+        "id": "16b38977-aea1-4c75-89ec-4fb551f652dd"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.4811772758384667,
+        "survivalEstimate": 0.5684374474006707,
+        "submitter_id": "TCGA-FZ-5926",
+        "id": "735dd13d-33a5-4fac-bc55-3f37e9b16e57"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.4921286789869952,
+        "survivalEstimate": 0.5604312861696753,
+        "submitter_id": "TCGA-HZ-8636",
+        "id": "02ef2e1a-5afe-4c00-a3ea-7f4a153f1da4"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.5550992470910336,
+        "survivalEstimate": 0.55242512493868,
+        "submitter_id": "TCGA-US-A77J",
+        "id": "3a3a8fe1-e35c-45d0-aa0b-4fefa9ee9183"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.5989048596851472,
+        "survivalEstimate": 0.5444189637076847,
+        "submitter_id": "TCGA-M8-A5N4",
+        "id": "f0a4944c-d6cf-4163-a1ab-189803464b03"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.6043805612594113,
+        "survivalEstimate": 0.5444189637076847,
+        "submitter_id": "TCGA-F2-A44H",
+        "id": "570f9947-1ce5-49c7-9619-49439df6c7a9"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.620807665982204,
+        "survivalEstimate": 0.5444189637076847,
+        "submitter_id": "TCGA-F2-7273",
+        "id": "4c9e6085-41c3-4cfe-ad3d-5f94196a86e0"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.623545516769336,
+        "survivalEstimate": 0.5361701915302955,
+        "submitter_id": "TCGA-HZ-7919",
+        "id": "2faea98a-edf7-4e92-bfb7-f91a36259872"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.6317590691307324,
+        "survivalEstimate": 0.5279214193529064,
+        "submitter_id": "TCGA-HZ-8003",
+        "id": "68c0bc1b-3195-4ed6-8345-3ca53dfc54fc"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.6372347707049966,
+        "survivalEstimate": 0.5196726471755172,
+        "submitter_id": "TCGA-IB-7890",
+        "id": "5494af7d-403a-423b-b7ff-e6db9c117e93"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.6509240246406571,
+        "survivalEstimate": 0.511423874998128,
+        "submitter_id": "TCGA-IB-7651",
+        "id": "3559f697-8fec-4f36-962c-632272fe9c9c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.6509240246406571,
+        "survivalEstimate": 0.511423874998128,
+        "submitter_id": "TCGA-HZ-A9TJ",
+        "id": "94cd2278-7c76-423b-a44b-564776211a07"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.6618754277891854,
+        "survivalEstimate": 0.503039877047339,
+        "submitter_id": "TCGA-2J-AABA",
+        "id": "e3a19e63-bae5-498b-9687-41194aa5728d"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.68104038329911,
+        "survivalEstimate": 0.49465587909654996,
+        "submitter_id": "TCGA-HZ-7925",
+        "id": "f91eb33d-76f0-418c-9962-11a5b31ca1dc"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.6947296372347707,
+        "survivalEstimate": 0.486271881145761,
+        "submitter_id": "TCGA-FZ-5923",
+        "id": "7ebe2e36-4692-4b4b-a75d-b75972f664c2"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.7166324435318274,
+        "survivalEstimate": 0.477887883194972,
+        "submitter_id": "TCGA-2J-AAB9",
+        "id": "a5748656-5330-417a-8938-01f69ddb3576"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.7357973990417521,
+        "survivalEstimate": 0.46950388524418296,
+        "submitter_id": "TCGA-3A-A9I9",
+        "id": "396ff766-a383-4f42-bce3-f2f32b7f1151"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.7385352498288844,
+        "survivalEstimate": 0.461119887293394,
+        "submitter_id": "TCGA-IB-A5ST",
+        "id": "6c0ea771-ea86-4db6-994a-2372b2b8f536"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.78507871321013,
+        "survivalEstimate": 0.461119887293394,
+        "submitter_id": "TCGA-2J-AABV",
+        "id": "232073a1-2bf3-4539-a396-bde7836f9aeb"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.7987679671457906,
+        "survivalEstimate": 0.4525806301212941,
+        "submitter_id": "TCGA-HZ-A4BK",
+        "id": "514d12b0-6f60-406e-bde9-a090e918ebff"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.8069815195071868,
+        "survivalEstimate": 0.4525806301212941,
+        "submitter_id": "TCGA-HZ-A49G",
+        "id": "47cb93bc-8f6b-4b2a-804c-bb4fc78df9e1"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.809719370294319,
+        "survivalEstimate": 0.4525806301212941,
+        "submitter_id": "TCGA-HZ-7289",
+        "id": "1521ac6d-31f7-4240-9d54-4f7600e78e16"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.8234086242299794,
+        "survivalEstimate": 0.44370650011891577,
+        "submitter_id": "TCGA-IB-A6UF",
+        "id": "56a1b8ff-a71c-4e5f-9c3c-d8162ff896aa"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.8234086242299794,
+        "survivalEstimate": 0.44370650011891577,
+        "submitter_id": "TCGA-IB-7647",
+        "id": "d14154a5-9c8a-4c55-8c2d-64f3cad7b7d5"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.83709787816564,
+        "survivalEstimate": 0.43465126542261134,
+        "submitter_id": "TCGA-H8-A6C1",
+        "id": "3e09fd70-6464-42f6-96a6-b51d7c298fc5"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.8507871321013005,
+        "survivalEstimate": 0.43465126542261134,
+        "submitter_id": "TCGA-2J-AABE",
+        "id": "58c1c391-5ea3-4432-bb1e-e7e1974954bc"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.8726899383983573,
+        "survivalEstimate": 0.43465126542261134,
+        "submitter_id": "TCGA-2L-AAQE",
+        "id": "8e7d5615-5142-4d53-a460-2cafade1f690"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.891854893908282,
+        "survivalEstimate": 0.4252023248699459,
+        "submitter_id": "TCGA-2J-AABF",
+        "id": "886d6116-d496-444f-9b7b-7449dad31055"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.9028062970568105,
+        "survivalEstimate": 0.41575338431728043,
+        "submitter_id": "TCGA-US-A774",
+        "id": "09fd6d9e-c715-4d57-88f9-238dd74c79a7"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 1.9219712525667352,
+        "survivalEstimate": 0.406304443764615,
+        "submitter_id": "TCGA-S4-A8RP",
+        "id": "ce2bfd9e-6382-47bb-9fd1-b77afe57e948"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.9329226557152634,
+        "survivalEstimate": 0.3968555032119495,
+        "submitter_id": "TCGA-HZ-8001",
+        "id": "55cee1dd-15a0-4717-a281-63e08e2cfdf9"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.9603011635865846,
+        "survivalEstimate": 0.3968555032119495,
+        "submitter_id": "TCGA-FB-AAPZ",
+        "id": "f2313562-c894-486d-a9b6-ed362e12a32a"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.9712525667351128,
+        "survivalEstimate": 0.3968555032119495,
+        "submitter_id": "TCGA-XN-A8T5",
+        "id": "382b279f-87e1-4dbc-a2ca-c1dfde1cf254"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 1.995893223819302,
+        "survivalEstimate": 0.3968555032119495,
+        "submitter_id": "TCGA-2J-AAB4",
+        "id": "33833131-1482-42d5-9cf5-01cade540234"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 2.004106776180698,
+        "survivalEstimate": 0.3968555032119495,
+        "submitter_id": "TCGA-FB-A545",
+        "id": "b0cb81ad-3c20-4d56-ab7d-f64c0caee1ce"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.0177960301163584,
+        "survivalEstimate": 0.3864119373379509,
+        "submitter_id": "TCGA-S4-A8RM",
+        "id": "c70621cc-c8e1-441d-93ec-bd6922cc7f61"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 2.020533880903491,
+        "survivalEstimate": 0.3864119373379509,
+        "submitter_id": "TCGA-3A-A9IC",
+        "id": "67e9abc1-4b6f-4054-bdc4-29906c55c682"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 2.028747433264887,
+        "survivalEstimate": 0.37567827241189666,
+        "submitter_id": "TCGA-FZ-5919",
+        "id": "ff03311b-d20d-49ee-8de4-d4487c3f2633"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.0342231348391513,
+        "survivalEstimate": 0.36494460748584245,
+        "submitter_id": "TCGA-3A-A9J0",
+        "id": "a308a5ee-8ea1-47ee-823d-14736d74a925"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.099931553730322,
+        "survivalEstimate": 0.36494460748584245,
+        "submitter_id": "TCGA-FB-A4P6",
+        "id": "9246c642-3231-4137-a24b-3efae151b655"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.299794661190965,
+        "survivalEstimate": 0.36494460748584245,
+        "submitter_id": "TCGA-HZ-7924",
+        "id": "ad220f0d-06b7-4dad-a87d-36dff31c8623"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 2.4996577686516086,
+        "survivalEstimate": 0.36494460748584245,
+        "submitter_id": "TCGA-IB-7891",
+        "id": "ca2da39a-263c-4238-9826-de7d52e63d0f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.518822724161533,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-HV-AA8V",
+        "id": "0fa89fbc-307a-48d5-adce-192556755c22"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.6036960985626285,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-XN-A8T3",
+        "id": "dd7bcdd8-1660-4dab-9860-9d136c4cee77"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.652977412731006,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-2J-AABI",
+        "id": "2aaf212f-000a-4a9d-8a4a-198fa94f491e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.652977412731006,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-HZ-7918",
+        "id": "620e0648-ec20-4a12-a6cb-5546fe829c77"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.6776180698151952,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-HV-A7OP",
+        "id": "5c51fbfe-153c-4cd2-97bd-e444daa0b20f"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.732375085557837,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-3A-A9IS",
+        "id": "cf825b86-7ec2-4e90-bcce-3b5637b90b70"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.7953456536618755,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-3A-A9IH",
+        "id": "10f0d40b-c4c4-441b-9cfb-bef5e44aa91e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 2.839151266255989,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-3A-A9IX",
+        "id": "959e1f13-360e-4e12-add5-bf9a376990d2"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 2.8993839835728954,
+        "survivalEstimate": 0.35317220079275075,
+        "submitter_id": "TCGA-FB-AAPY",
+        "id": "953359da-e535-48e6-97dc-1b4ccad6a671"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 3.0143737166324436,
+        "survivalEstimate": 0.3371189189385348,
+        "submitter_id": "TCGA-FZ-5922",
+        "id": "a46fb053-616d-41e4-b38b-2bccf17125c0"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.0198494182067077,
+        "survivalEstimate": 0.32106563708431884,
+        "submitter_id": "TCGA-3A-A9IV",
+        "id": "1c2341f3-558b-4555-90ff-c7a23ef85c0b"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.055441478439425,
+        "survivalEstimate": 0.32106563708431884,
+        "submitter_id": "TCGA-IB-7652",
+        "id": "178e68c0-4cb8-4042-a942-5a159ec1e12b"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 3.0937713894592744,
+        "survivalEstimate": 0.32106563708431884,
+        "submitter_id": "TCGA-FB-AAPQ",
+        "id": "ecdd0e44-0add-4a08-a3f8-ab2f51df7afd"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.3292265571526354,
+        "survivalEstimate": 0.3032286572463011,
+        "submitter_id": "TCGA-US-A776",
+        "id": "d211e0c1-7968-4343-8aae-27fab0039367"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.4414784394250515,
+        "survivalEstimate": 0.3032286572463011,
+        "submitter_id": "TCGA-IB-7885",
+        "id": "77e49007-3e44-4157-beae-8f7e94234c78"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.5236139630390144,
+        "survivalEstimate": 0.3032286572463011,
+        "submitter_id": "TCGA-2J-AABH",
+        "id": "c53328b4-0930-4e6a-a648-283b5565295e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.62217659137577,
+        "survivalEstimate": 0.3032286572463011,
+        "submitter_id": "TCGA-3A-A9I7",
+        "id": "556baca9-03d6-48a3-9216-4fc441e99f90"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 3.646817248459959,
+        "survivalEstimate": 0.3032286572463011,
+        "submitter_id": "TCGA-IB-7888",
+        "id": "05d2adb3-5c6d-4edc-ba4c-bdbf628f4eee"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 3.786447638603696,
+        "survivalEstimate": 0.2799033759196626,
+        "submitter_id": "TCGA-2L-AAQM",
+        "id": "7240d5da-b54e-436b-8069-f2c9f516b75e"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 4.112251882272417,
+        "survivalEstimate": 0.2799033759196626,
+        "submitter_id": "TCGA-IB-7645",
+        "id": "7a1d9862-910b-403e-9eab-697dc65618c7"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 4.2217659137577,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-3A-A9IR",
+        "id": "5898434d-cfa3-4515-a0c0-810d7e515120"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 4.91170431211499,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-3A-A9I5",
+        "id": "9924e309-5c47-42fe-b937-547f2b3d6842"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 5.075975359342916,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-3A-A9IJ",
+        "id": "5f468c25-73c3-49d5-ba12-50653dfe2c41"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 5.316906228610541,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-3A-A9IO",
+        "id": "13cf4e4c-8d5f-4854-a350-428fdf1ff340"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 5.519507186858316,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-YY-A8LH",
+        "id": "ede2e8a7-465e-4725-880d-519899aba0c0"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 5.574264202600959,
+        "survivalEstimate": 0.2544576144724205,
+        "submitter_id": "TCGA-HV-A5A6",
+        "id": "40fc7973-91c4-4fa8-a105-7fc3d6f3817c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 5.705681040383299,
+        "survivalEstimate": 0.2035660915779364,
+        "submitter_id": "TCGA-3A-A9IN",
+        "id": "dd5074b2-462d-4267-8b9b-5a4c54e5978c"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": false,
+        "time": 5.973990417522245,
+        "survivalEstimate": 0.2035660915779364,
+        "submitter_id": "TCGA-3E-AAAZ",
+        "id": "9d449aa3-b740-4d5a-9aea-880b6f84cff4"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 6.2559890485968515,
+        "survivalEstimate": 0.13571072771862425,
+        "submitter_id": "TCGA-3E-AAAY",
+        "id": "a643d0b8-aa50-481c-9f12-f2e634d61d90"
+      },
+      {
+        "project_id": "TCGA-PAAD",
+        "censored": true,
+        "time": 7.5044490075290895,
+        "survivalEstimate": 0.13571072771862425,
+        "submitter_id": "TCGA-3A-A9IL",
+        "id": "24a40289-96fd-4c1a-a953-45a46a0a0e9d"
+      }
+    ],
+    "meta": {
+      "id": 140616669482088,
+      "label": "S1"
+    }
+  }
+]
