@@ -434,6 +434,7 @@ export class BrowseComponent implements OnInit {
             })
 
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
+            console.log(url_storage)
             if (url_storage && Object.keys(url_storage)) {
               if ('nodes' in url_storage) {
                 // mark nodes in nodes table

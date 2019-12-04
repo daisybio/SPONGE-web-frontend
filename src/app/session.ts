@@ -27,15 +27,12 @@ export class Session {
 
     helper = new Helper()
 
-    public init() {
-      console.log("here")
-    }
-
     public update_url() {
         // BROWSE
         let cancer:string = $('#disease_selectpicker').val().toString();
         let selected = this.get_selected()
-
+        console.log("selected")
+        console.log(selected)
         let url_params = '?cancer='+encodeURIComponent(cancer)
         if (selected['edges'].length > 0) {
             url_params += '&edges=' + encodeURIComponent(selected['edges'].join())
@@ -80,6 +77,7 @@ export class Session {
         /////////////////// SEARCH START
 
         let path = window.location.pathname
+        console.log(path)
 
         window.history.pushState(null, '', path+url_params)
     }
@@ -87,7 +85,7 @@ export class Session {
     public get_selected() {
         let edges = []
         let nodes = []
-        if (!(this.network == null)) {
+        if (this.network != null) {
           this.network.graph.edges().forEach(
             (ee) => {
               if (ee.color == this.helper.subgraph_edge_color) {

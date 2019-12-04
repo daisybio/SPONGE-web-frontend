@@ -547,7 +547,7 @@ export class Helper {
 
     public mark_nodes(table, nodes) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
-        if (nodes.includes(this.data()[0])) {
+        if (nodes && nodes.includes(this.data()[0])) {
           $(this.node()).addClass('selected')
         }
       });
@@ -555,14 +555,14 @@ export class Helper {
 
     public mark_edges(table, edges) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
-        if (edges.includes(this.data()[5])) {
+        if (edges && edges.includes(this.data()[5])) {
           $(this.node()).addClass('selected')
         }
       });
     }
 
     public load_session_url(params) {
-      let nodes, edges = [] 
+      let nodes = [], edges = [] 
       // set options 
       for (let key in params) {
         let val = params[key]
