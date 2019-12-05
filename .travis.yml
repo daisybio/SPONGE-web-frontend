@@ -1,28 +1,23 @@
-language: node_js
+dist: trusty
+sudo: false
 
+language: node_js
 node_js:
-  - 'node'
-  - '10'
   - '8'
 
-env:
-  - workerCount=3 timeout=600000
-
-matrix:
-  fast_finish: true
-
-branches:
-  only:
-  - master
-  - /^release-.*/
-
-install:
-  - npm uninstall typescript --no-save
-  - npm install
+addons:
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
 
 cache:
   directories:
-    - node_modules
+    - ./node_modules
 
-git:
-  depth: 1
+install:
+  - npm install
+
+script:
+  - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
