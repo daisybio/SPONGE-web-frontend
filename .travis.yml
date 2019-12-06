@@ -14,11 +14,13 @@ addons:
 
 cache:
   directories:
-    - "./node_modules"
+    - ./node_modules
 
 install:
   - npm install
 
+
+    
 script:
   - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
 
