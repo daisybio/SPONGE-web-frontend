@@ -19,8 +19,10 @@ services:
 before_install:
 - openssl aes-256-cbc -K $encrypted_07e532bff347_key -iv $encrypted_07e532bff347_iv
   -in sshkey.enc -out sshkey -d
-- docker build -t SPONGE-frontend .
-- docker run -d -p 127.0.0.1:80:4567 SPONGE-frontend
+- docker build -t sponge-frontend .
+- docker run -d -p 127.0.0.1:80:4567 sponge-frontend
 - docker ps -a
 script:
 - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
+after_success:
+- bash deploy.sh
