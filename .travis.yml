@@ -19,5 +19,13 @@ cache:
 install:
   - npm install
 
+services:
+  - docker
+
+before_install:
+  - docker build -t SPONGE-frontend .
+  - docker run -d -p 127.0.0.1:80:4567 SPONGE-frontend 
+  - docker ps -a
+
 script:
   - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
