@@ -16,9 +16,7 @@ install:
 - npm install
 services:
 - docker
-before_install:
-- openssl aes-256-cbc -K $encrypted_07e532bff347_key -iv $encrypted_07e532bff347_iv
-  -in sshkey.enc -out sshkey -d
+
 
 script:
 - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
