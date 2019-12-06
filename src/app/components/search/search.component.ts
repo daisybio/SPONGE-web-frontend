@@ -3,6 +3,8 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { ActivatedRoute } from "@angular/router";
 import 'datatables.net';
+import { all } from 'q';
+import { callbackify } from 'util';
 declare var Plotly: any;
 declare var $;
 
@@ -560,7 +562,78 @@ export class SearchComponent implements OnInit {
       var testSD = JSON.stringify(json);
       var wholeJason = JSON.parse(testSD);
       console.log(wholeJason[0].donors.length);
+
+      var dn="kidney clear cell carcinoma";
+      var test = ["ENSG00000259090"];
+      var gs = [];
       
+      let sampleIDs = [];
+      controller.get_survival_rates({
+        disease_name: dn,
+        ensg_number: test,
+        
+       
+
+
+       
+        callback: (response2) => {
+          
+          var allResp=JSON.stringify(response2);
+          var allResp2 = JSON.parse(allResp);
+          console.log(allResp2.patient_information); //array mit den einträgen
+          
+            
+           
+            for (let i=0; i < allResp2.length; i++) {  //rausziehen der samples anhand der patienten info
+              sampleIDs.push(allResp2[i].patient_information);
+          //   console.log("Neu "+allResp2[i].patient_information);
+            }
+           
+          
+          
+          //parse_cerna_response(response)
+          // end loading
+       //   $('#loading_spinner_results').addClass('hidden')
+      response2(sampleIDs);
+        },
+        error: (response2) => {
+         //helper.msg("Something went wrong finding your gene symbol.", true)
+          //$('#loading_spinner_results').addClass('hidden')
+        }
+      });
+
+console.log(JSON.stringify(sampleIDs));
+
+      controller.get_survival_sampleInfo({
+        disease_name : dn,
+        sample_ID: sampleIDs,
+       
+        callback: (response3) => {
+          
+          var tmp=JSON.stringify(response3);
+          var allResp2 = JSON.parse(tmp);
+          console.log(tmp); //array mit den einträgen
+          
+            
+           
+          //  for (let i=0; i < allResp2.length; i++) {  //rausziehen der samples anhand der patienten info
+           //   sampleIDs.push(allResp2[i].patient_information);
+           //  console.log("Neu "+allResp2[i].patient_information);
+           // }
+           
+          
+          
+          //parse_cerna_response(response)
+          // end loading
+       //   $('#loading_spinner_results').addClass('hidden')
+        },
+        error: (response2) => {
+         //helper.msg("Something went wrong finding your gene symbol.", true)
+          //$('#loading_spinner_results').addClass('hidden')
+        }
+      })
+      //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
+      // für jdn eintrag /survivalAnalysis/sampleInformation holen
       var timeGesamt = [];
       var sestimateGesamt = [];
       //checken ob die wirklich parallel der reihenach gelesen u gespeichert werden
@@ -568,6 +641,7 @@ export class SearchComponent implements OnInit {
        timeGesamt.push(wholeJason[0].donors[i].time);
        sestimateGesamt.push(wholeJason[0].donors[i].survivalEstimate);
 
+      //Berechnen d survival estimates aus survival time and disease status
     }
     console.log(timeGesamt[0]);
     console.log(sestimateGesamt[0]);
