@@ -5,6 +5,7 @@ import { ActivatedRoute } from "@angular/router";
 import 'datatables.net';
 import { all } from 'q';
 import { callbackify } from 'util';
+import { JsonPipe } from '@angular/common';
 declare var Plotly: any;
 declare var $;
 
@@ -567,34 +568,19 @@ export class SearchComponent implements OnInit {
       var test = ["ENSG00000259090"];
       var gs = [];
       
-      let sampleIDs = [];
+      
+
       controller.get_survival_rates({
         disease_name: dn,
         ensg_number: test,
         
-       
-
-
-       
-        callback: (response2) => {
+        callback: (response) => {
           
-          var allResp=JSON.stringify(response2);
-          var allResp2 = JSON.parse(allResp);
-          console.log(allResp2.patient_information); //array mit den einträgen
+         parse_survival_data(response);
           
-            
-           
-            for (let i=0; i < allResp2.length; i++) {  //rausziehen der samples anhand der patienten info
-              sampleIDs.push(allResp2[i].patient_information);
-          //   console.log("Neu "+allResp2[i].patient_information);
-            }
-           
-          
-          
-          //parse_cerna_response(response)
-          // end loading
+         // end loading
        //   $('#loading_spinner_results').addClass('hidden')
-      response2(sampleIDs);
+     
         },
         error: (response2) => {
          //helper.msg("Something went wrong finding your gene symbol.", true)
@@ -602,56 +588,115 @@ export class SearchComponent implements OnInit {
         }
       });
 
-console.log(JSON.stringify(sampleIDs));
-
-      controller.get_survival_sampleInfo({
-        disease_name : dn,
-        sample_ID: sampleIDs,
-       
-        callback: (response3) => {
-          
-          var tmp=JSON.stringify(response3);
-          var allResp2 = JSON.parse(tmp);
-          console.log(tmp); //array mit den einträgen
-          
-            
-           
-          //  for (let i=0; i < allResp2.length; i++) {  //rausziehen der samples anhand der patienten info
-           //   sampleIDs.push(allResp2[i].patient_information);
-           //  console.log("Neu "+allResp2[i].patient_information);
-           // }
-           
-          
-          
-          //parse_cerna_response(response)
-          // end loading
-       //   $('#loading_spinner_results').addClass('hidden')
-        },
-        error: (response2) => {
-         //helper.msg("Something went wrong finding your gene symbol.", true)
-          //$('#loading_spinner_results').addClass('hidden')
-        }
-      })
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
       // für jdn eintrag /survivalAnalysis/sampleInformation holen
+      function parse_survival_data(response){
+        let samples = [];
+        var allResp=JSON.stringify(response);
+        var allResp2 = JSON.parse(allResp);
+        console.log(allResp2.patient_information); //array mit den einträgen
+        
+          
+         
+          for (let i=0; i < allResp2.length; i++) {  //rausziehen der patienten info
+             //Gleich berechnen des SE u speichern des ergebnisses in array mit sample id u (gene)//
+             //Dafür abspeichern des JSon in seperaten array damit man eins zum durchsuchen hat und eins zum abarbeiten
+            samples.push(allResp2[i]);
+            
+          }
+          //Sortieren nach der survival time
+          samples.sort((a,b) => (a.patient_information.survival_time > b.patient_information.survival_time) ? 1: -1);
+          console.log(samples[0].patient_information)
+          console.log(samples[1].patient_information)
+          console.log(samples[2].patient_information)
+          console.log(samples[3].patient_information)
+          //TO-DO sicherstellen das 1 zeit auch nur 1 mal durchgegangen wird
+          let SE_array=[]
+          let seen_time =[]
+          let last_estimate=1;
+          for (let i=0; i < samples.length; i++) {  
+            if(samples[i].patient_information.survival_time != null && !seen_time.includes(samples[i].patient_information.survival_time)){
+            let time = samples[i].patient_information.survival_time; 
+            seen_time.push(time);
+
+            
+            //alle einträge mit der time raus holen
+            let censored_0=[];
+            let censored_1=[];
+            let count_time=0;
+            let bigger_equal_time=0;
+            //Durchsuchen von samples nach der zeit u zählen wie viele 0 und 1 wobei 0 ein event ist also tod
+            for (let j=0; j < samples.length; j++) { 
+              if(samples[j].patient_information.survival_time == time){
+                if(samples[j].patient_information.disease_status == 0){
+                  censored_0.push(samples[j]);
+                }else{
+                  censored_1.push(samples[j]);
+                }
+                count_time++; //wie viele insgesamt mit der time gibt es
+              }
+              if(samples[j].patient_information.survival_time >= time){
+              bigger_equal_time +=1
+              }
+            }
+              
+              let n = censored_0.length; //hier ist ein tod eingetreten 
+              let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
+              if(SE_array.length>0){
+              for(let v=0; v< SE_array.length;v++){
+                vorherSE *= SE_array[v];
+              }
+            }
+
+
+             // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
+          
+             var estimate = last_estimate*(1-(n/bigger_equal_time));
+             last_estimate = estimate;
+
+              SE_array.push(estimate);
+           
+              console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
+
+              var modified_JSON = Object(JSON.stringify(allResp2[i].patient_information))
+             
+            //  console.log(modified_JSON);
+            
+            
+          }
+         }
+         console.log(samples.length); //495
+         
+        
+     
+
+//console.log(JSON.stringify(sampleIDs[0].patient_information.sample_ID));
+
+
+      
       var timeGesamt = [];
       var sestimateGesamt = [];
       //checken ob die wirklich parallel der reihenach gelesen u gespeichert werden
-      for (let i=0; i < wholeJason[0].donors.length; i++) {
-       timeGesamt.push(wholeJason[0].donors[i].time);
-       sestimateGesamt.push(wholeJason[0].donors[i].survivalEstimate);
+      for (let i=0; i < allResp2.length; i++) {
+      // timeGesamt.push(sampleIDs[i].survival_time);
+       
+      
+     //  sestimateGesamt.push(wholeJason[0].donors[i].survivalEstimate);
 
       //Berechnen d survival estimates aus survival time and disease status
     }
-    console.log(timeGesamt[0]);
+    
+    console.log(seen_time);
     console.log(sestimateGesamt[0]);
+    
       //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
       //Im beispiel fall nur y estimate gegen time x
       var trace1 = {
-        x: timeGesamt, 
-        y: sestimateGesamt, 
+        x: seen_time, 
+        y: SE_array, 
         type: 'scatter'
       };
+      
       var trace2 = {
         x: [.01, .1, 1, 10, 100], 
         y: [1, 10, 100, 1000, 10000], 
@@ -672,6 +717,7 @@ console.log(JSON.stringify(sampleIDs));
         }
       };
       Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
+    };
     }
   }
 
