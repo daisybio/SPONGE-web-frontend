@@ -150,6 +150,7 @@ export class Controller {
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)

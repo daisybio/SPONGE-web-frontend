@@ -456,7 +456,7 @@ export class Helper {
             duration: 300
           }
         );
-        // mark edge in node table
+        // mark edge in edge table
         if (edge_table) {
           $this.mark_edges_table(edge_table, edge_as_string)
         }
@@ -526,8 +526,9 @@ export class Helper {
       
       $('#reset_graph').click( () => {
         this.clear_subgraphs(network);
-        this.clear_table(node_table);
-        this.clear_table(edge_table);
+        if (node_table) this.clear_table(node_table)  // no node table in search
+        if (edge_table) this.clear_table(edge_table)  // no edge table in search
+        session.update_url()
       })
 
       // Initialize the dragNodes plugin:
@@ -577,8 +578,49 @@ export class Helper {
       });
     }
 
+    public mark_nodes_network(network, nodes:string[]) {
+      network.graph.nodes().forEach(
+        (node) => {
+          if (nodes.includes(node['id'])) {
+            node.color = this.subgraph_node_color
+          }
+        }
+      )
+    }
+
+    public mark_edges_network(network, edges:string[], based_on_id=false) {
+      // find selected edges in graph and mark them
+      if (based_on_id) {
+        network.graph.edges().forEach(
+          (ee) => {
+            if (edges.includes(ee['id'].toString())){
+              ee.color = this.subgraph_edge_color
+            }
+          }
+        )
+      } else {
+        network.graph.edges().forEach(
+          (ee) => {
+            let edge_nodes = []
+            edge_nodes.push(ee['source'])
+            edge_nodes.push(ee['target'])
+            for(let i = 0; i < edges.length; i++) {
+              let selected_edge = edges[i]
+              // 0 and 1 are gene1 and gene2
+              if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
+                ee.color = this.subgraph_edge_color
+                break
+              } else {
+                ee.color = this.default_edge_color
+              }
+            }
+          }
+        )
+      }
+    }
+
     public load_session_url(params) {
-      let nodes = [], edges = [] 
+      let nodes = [], edges = [], active_cancer
       // set options 
       for (let key in params) {
         let val = params[key]
@@ -621,9 +663,13 @@ export class Helper {
             $('#gene_search_keys').val(val)
             break
           }
+          case 'active_cancer': {
+            active_cancer = val
+            break
+          }
         }
       }
-      return({'nodes': nodes, 'edges': edges})
+      return({'nodes': nodes, 'edges': edges, 'active_cancer': active_cancer})
     }
   
 }

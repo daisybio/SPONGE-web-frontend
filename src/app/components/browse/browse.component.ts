@@ -108,7 +108,6 @@ export class BrowseComponent implements OnInit {
 
     // trigger click on first disease in the beginning
     $('#load_disease').click()
-
     
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
@@ -375,24 +374,8 @@ export class BrowseComponent implements OnInit {
               if (selected_edges.length === 0) {
                 selected_edges = edge_table.rows({ filter : 'applied'}).data()
               }
-              // find selected edges in graph and mark them
-              network.graph.edges().forEach(
-                (ee) => {
-                  let edge_nodes = []
-                  edge_nodes.push(ee['source'])
-                  edge_nodes.push(ee['target'])
-                  for(let i = 0; i < selected_edges.length; i++) {
-                    let selected_edge = selected_edges[i]
-                    // 0 and 1 are gene1 and gene2
-                    if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
-                      ee.color = helper.subgraph_edge_color
-                      break
-                    } else {
-                      ee.color = helper.default_edge_color
-                    }
-                  }
-                }
-              )
+              helper.mark_edges_network(network, selected_edges)
+
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
@@ -411,13 +394,8 @@ export class BrowseComponent implements OnInit {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
-              network.graph.nodes().forEach(
-                (node) => {
-                  if (selected_nodes.includes(node['id'])) {
-                    node.color = helper.subgraph_node_color
-                  }
-                }
-              )
+              helper.mark_nodes_network(network, selected_nodes)
+              
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
