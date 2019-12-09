@@ -18,7 +18,6 @@ cache:
 
 install:
   - npm install
-  - npm installl -g chromedriver@76.0.1
 
 services:
   - docker
