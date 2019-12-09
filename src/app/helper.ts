@@ -8,26 +8,31 @@ declare const sigma: any;
 declare var Plotly: any;
 declare var $: any;
 
-/* Sigma configurations */
-sigma.classes.graph.addMethod('adjacentEdges', function(id) {
-  if (typeof id !== 'string')
-    throw 'adjacentEdges: the node id must be a string.';
-  var a = this.allNeighborsIndex[id],
-      eid,
-      target,
-      edges = [];
-  for(target in a) {
-    for(eid in a[target]) {
-      edges.push(a[target][eid]);
-    }
-  }
-  return edges;
-});
-
 
 export class Helper {
 
     constructor() {
+
+      try {
+        /* Sigma configurations */
+        sigma.classes.graph.addMethod('adjacentEdges', function(id) {
+          if (typeof id !== 'string')
+            throw 'adjacentEdges: the node id must be a string.';
+          var a = this.allNeighborsIndex[id],
+              eid,
+              target,
+              edges = [];
+          for(target in a) {
+            for(eid in a[target]) {
+              edges.push(a[target][eid]);
+            }
+          }
+          return edges;
+        });
+      } catch {
+        console.log("adjacent_edges exists")
+      }
+
     }
 
     default_node_color = '#052444'
