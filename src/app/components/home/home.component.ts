@@ -21,7 +21,7 @@ export class HomeComponent implements OnInit {
 
     $('[data-toggle="popover_search_info"]').popover({
       trigger: 'hover', sanitize: false, sanitizeFn: content => content
-    });     
+    });
 
     var mRNAcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
     var Coorelationcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");

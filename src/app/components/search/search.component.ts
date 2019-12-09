@@ -530,7 +530,7 @@ export class SearchComponent implements OnInit {
 
         // mark rows in datatable and in network if we restore old session
         if (url_storage) {
-          helper.mark_nodes(table, url_storage['nodes'])
+          helper.mark_nodes_table(table, url_storage['nodes'])
           $('.export_nodes').last().click()
         }
       }

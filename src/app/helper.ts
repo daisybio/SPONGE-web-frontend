@@ -1,4 +1,5 @@
 import { Controller } from "../app/control";
+import { Session } from "../app/session";
 import sigma from 'sigma';
 import { enableDebugTools } from '@angular/platform-browser';
 import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
@@ -245,6 +246,8 @@ export class Helper {
           }
         }
       )
+      
+      let session = new Session(network)
 
       var noverlap_config = {
         nodeMargin: 3.0,
@@ -327,6 +330,10 @@ export class Helper {
       })
 
       function node_click_function(e) {
+        /*
+        marks clicked node + adjacent edges
+        this function althers the network, hence triggers url update
+        */
         var nodeId = e.data.node.id;
         let color_all = false;
         network.graph.adjacentEdges(nodeId).forEach(
@@ -353,14 +360,16 @@ export class Helper {
 
         // mark node in node_table
         if (node_table) {
-          $this.mark_nodes(node_table, e.data.node.id)
+          $this.mark_nodes_table(node_table, e.data.node.id)
         }
         // mark edges in edge_table
         if (edge_table) {
           let edges = network.graph.adjacentEdges(nodeId).map((ee) => String(ee.id))
-          $this.mark_edges(edge_table, edges)
+          $this.mark_edges_table(edge_table, edges)
         }
 
+        // network was altered, update url
+        session.update_url()
       }
 
       function searchNode(node_as_string) {
@@ -414,16 +423,18 @@ export class Helper {
         );
         // mark node in node table
         if (node_table) {
-          $this.mark_nodes(node_table, node_as_string)
+          $this.mark_nodes_table(node_table, node_as_string)
         }
 
       }
 
       function focusEdge(edge_as_string) {
         /*
-        This function is used to show one edge in the network. 
+        This function is used to show one edge in the network.
         The camera moves to center the given edge-string and the edge gets marked.
         Afterwards, the edge gets also marked in the edge_table.
+
+        Returns network and corresponding session
         */
         let camera = network.cameras[0]
         let edge = searchEdge(edge_as_string)
@@ -447,7 +458,7 @@ export class Helper {
         );
         // mark edge in node table
         if (edge_table) {
-          $this.mark_edges(edge_table, edge_as_string)
+          $this.mark_edges_table(edge_table, edge_as_string)
         }
       }
 
@@ -526,7 +537,7 @@ export class Helper {
       $('#restart_camera').click()
 
       network.refresh()
-      return network
+      return({'network': network, 'session': session})
     }
 
     public clear_subgraphs(network) {
@@ -550,17 +561,17 @@ export class Helper {
       });
     }
 
-    public mark_nodes(table, nodes) {
+    public mark_nodes_table(table, nodes:string[]) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
-        if (nodes && nodes.includes(this.data()[0])) {
+        if (nodes.length && nodes.includes(this.data()[0])) {
           $(this.node()).addClass('selected')
         }
       });
     }
 
-    public mark_edges(table, edges) {
+    public mark_edges_table(table, edges:string[]) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
-        if (edges && edges.includes(this.data()[5])) {
+        if (edges.length && edges.includes(this.data()[5])) {
           $(this.node()).addClass('selected')
         }
       });
