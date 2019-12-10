@@ -1,6 +1,6 @@
 dist: trusty
 sudo: false
-os: windows
+os: linux
 
 language: node_js
 node_js:
@@ -24,6 +24,7 @@ services:
   - docker
 
 before_install:
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9876 http://0.0.0.0 &
   - openssl aes-256-cbc -K $encrypted_07e532bff347_key -iv $encrypted_07e532bff347_iv
     -in sshkey.enc -out sshkey -d
   - docker build -t sponge-frontend .
