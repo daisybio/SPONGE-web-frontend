@@ -28,10 +28,13 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['ChromeHeadless'],
     singleRun: true,
+    browserDisconnectTimeout: 10000,
     browserNoActivityTimeout: 60000,
+    captureTimeout: 100000,
     restartOnFileChange: true,
+
+    browsers: ['Chrome', 'ChromeHeadless', 'ChromeHeadlessNoSandbox'],
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',

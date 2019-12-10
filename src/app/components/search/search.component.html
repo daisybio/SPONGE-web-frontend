@@ -18,6 +18,7 @@
                         <div class="col-md-auto select-field">
                             
                             <select class="selectpicker diseases" show-subtext="true" data-live-search="true" id="disease_selectpicker">
+                                    <option>All</option>
                                     <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-HNSC">Head and neck squamous
                                         cell carcinoma</option>
                                     <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-BRCA">Breast invasive carcinoma
@@ -131,9 +132,9 @@
                                     Save as...
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" id="network_snapshot_png">.png</a>
-                                    <a class="dropdown-item" id="network_snapshot_jpg">.jpg</a>
-                                    <a class="dropdown-item" id="network_snapshot_svg">.svg</a>
+                                    <a class="dropdown-item" id="network_snapshot_png">png</a>
+                                    <a class="dropdown-item" id="network_snapshot_jpg">jpg</a>
+                                    <a class="dropdown-item" id="network_snapshot_svg">svg</a>
                                 </div>
                             </span>
                             <button type="button button-margin" class="btn btn-secondary button-margin"
@@ -141,7 +142,7 @@
                             <button type="button button-margin" class="btn btn-secondary button-margin"
                                 id="toggle_layout">Force Atlas 2</button>
                             <button type="button button-margin" class="btn btn-secondary button-margin"
-                                id="reset_graph">reset graph</button>
+                                id="reset_graph">Reset colors</button>
                         </div>
                         <div id='expression_heatmap'>
                         </div>

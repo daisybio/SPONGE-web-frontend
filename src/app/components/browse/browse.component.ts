@@ -108,7 +108,6 @@ export class BrowseComponent implements OnInit {
 
     // trigger click on first disease in the beginning
     $('#load_disease').click()
-
     
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
@@ -305,7 +304,6 @@ export class BrowseComponent implements OnInit {
           }
         }
         
-
         // get specific run information
         controller.get_dataset_information(this.disease_trimmed, 
           data => {
@@ -316,7 +314,6 @@ export class BrowseComponent implements OnInit {
             let header = data['dataset']['disease_name']
             delete data['dataset']
             
-            
             let run_table = document.createElement("table")  
             let run_name = document.createElement("th")
             run_name.innerHTML = helper.uppercaseFirstLetter(header);
@@ -326,11 +323,9 @@ export class BrowseComponent implements OnInit {
             let table= document.createElement("tr")
             table.appendChild(run_name)
             
-
             let table_keys= document.createElement("td")
             let table_values= document.createElement("td")
             
-
             for (let key in data) {
               let value = data[key]
               if(value == null){
@@ -342,8 +337,6 @@ export class BrowseComponent implements OnInit {
               table_entry.setAttribute("style","margin-right:2px")
               
               table_keys.appendChild(table_entry)
-              
-              
 
               var table_entryV = document.createElement("tr")
               table_entryV.innerHTML = value
@@ -360,7 +353,6 @@ export class BrowseComponent implements OnInit {
             run_table.appendChild(table_keys)
             run_table.appendChild(table_values)
             selected_disease_result.append(run_table)
-           
           }
         )
 
@@ -371,9 +363,9 @@ export class BrowseComponent implements OnInit {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
             let network = null;
-            $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (new_network) => {
-              network = new_network
-              session = new Session(network)
+            $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
+              network = network_data['network']
+              session = network_data['session']
             })
 
             $('#export_selected_edges').click(() => {
@@ -382,24 +374,8 @@ export class BrowseComponent implements OnInit {
               if (selected_edges.length === 0) {
                 selected_edges = edge_table.rows({ filter : 'applied'}).data()
               }
-              // find selected edges in graph and mark them
-              network.graph.edges().forEach(
-                (ee) => {
-                  let edge_nodes = []
-                  edge_nodes.push(ee['source'])
-                  edge_nodes.push(ee['target'])
-                  for(let i = 0; i < selected_edges.length; i++) {
-                    let selected_edge = selected_edges[i]
-                    // 0 and 1 are gene1 and gene2
-                    if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
-                      ee.color = helper.subgraph_edge_color
-                      break
-                    } else {
-                      ee.color = helper.default_edge_color
-                    }
-                  }
-                }
-              )
+              helper.mark_edges_network(network, selected_edges)
+
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
@@ -418,13 +394,8 @@ export class BrowseComponent implements OnInit {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
-              network.graph.nodes().forEach(
-                (node) => {
-                  if (selected_nodes.includes(node['id'])) {
-                    node.color = helper.subgraph_node_color
-                  }
-                }
-              )
+              helper.mark_nodes_network(network, selected_nodes)
+              
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
@@ -435,14 +406,14 @@ export class BrowseComponent implements OnInit {
 
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
             if (url_storage && Object.keys(url_storage)) {
-              if ('nodes' in url_storage) {
+              if ('nodes' in url_storage && url_storage['nodes'].length) {
                 // mark nodes in nodes table
-                helper.mark_nodes(node_table, url_storage['nodes'])
+                helper.mark_nodes_table(node_table, url_storage['nodes'])
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
               }
-              if ('edges' in url_storage) {
-                helper.mark_edges(edge_table, url_storage['edges'])
+              if ('edges' in url_storage && url_storage['edges'].length) {
+                helper.mark_edges_table(edge_table, url_storage['edges'])
                 // mark edges in graph
                 $('#export_selected_edges').click()
               }
@@ -451,8 +422,8 @@ export class BrowseComponent implements OnInit {
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
 
-            // stop loading
-            disease_selector.attr('disabled',false)
+            // stop loading screen
+            disease_selector.attr('disabled', false)
             $('#browse_loading_spinner').addClass('hidden') 
 
           })
@@ -461,6 +432,9 @@ export class BrowseComponent implements OnInit {
     }
 
     function parse_node_data(data) {
+      /*
+      parses the returned node data from the api
+      */
       let ordered_data = [];
       // let ensg_numbers = []
       for (let i=0; i < Object.keys(data).length; i++) {

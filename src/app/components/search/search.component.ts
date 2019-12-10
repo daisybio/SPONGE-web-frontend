@@ -30,6 +30,7 @@ export class SearchComponent implements OnInit {
     var parsed_search_result: any;
     var url_storage;
     let session = null
+    let active_cancer_name:string   // name of the currently displayed cancer type in the network
 
     this.activatedRoute.queryParams
       .subscribe(params => {
@@ -40,7 +41,6 @@ export class SearchComponent implements OnInit {
         }
         search_key = decodeURIComponent(params.search_key);
       });
-
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
@@ -53,15 +53,14 @@ export class SearchComponent implements OnInit {
       limit = $('#mirna_input_limit').val()
       search(limit)
     })
-
-
+    
     search(limit)
-
 
     function search(limit) {
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
+      $('#network-container').empty()
       /* search_key is defined */
       if (search_key != undefined) {
         // start loading data
@@ -69,6 +68,13 @@ export class SearchComponent implements OnInit {
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
+
+        let disease_name = $('#disease_selectpicker').val()
+        if (disease_name == 'All') {
+          disease_name = undefined
+        } else {
+          disease_name = encodeURIComponent(disease_name)
+        }
 
         // check if key is ENSG number
         if (search_key.startsWith('ENSG')) {
@@ -80,13 +86,14 @@ export class SearchComponent implements OnInit {
           controller.get_ceRNA_interactions_all({
             ensg_number: [search_key],
             limit: limit,
+            disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
               // end loading 
               $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("Something went wrong finding your ENSG number.", true)
+              helper.msg("We could not find any matches your ENSG number and your cancer type.", false)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
@@ -100,13 +107,14 @@ export class SearchComponent implements OnInit {
           controller.get_miRNA_interactions_all({
             limit: limit,
             mimat_number: [search_key],
+            disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
               // end loading
               $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("Something went wrong finding your MIMAT number.", true)
+              helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
@@ -120,13 +128,14 @@ export class SearchComponent implements OnInit {
           controller.get_miRNA_interactions_all({
             limit: limit,
             hs_number: [search_key],
+            disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
               // end loading
               $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("Something went wrong finding your hsa number.", true)
+              helper.msg("We could not find any matches your hsa number and your cancer type.", false)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
@@ -140,21 +149,20 @@ export class SearchComponent implements OnInit {
           controller.get_ceRNA_interactions_all({
             gene_symbol: [search_key],
             limit: limit,
+            disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
               // end loading
               $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("Something went wrong finding your gene symbol.", true)
+              helper.msg("We could not find any matches your gene and your cancer type.", false)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
         }
       }
     }
-
-   
 
     function parse_mirna_response(response) {
       // get information aboout search key
@@ -253,19 +261,35 @@ export class SearchComponent implements OnInit {
       );
     }
 
-    function parse_node_data(data) {
-      // let ensg_numbers = []
+    function parse_node_data(nodes_table_data:Object, keys:string[]) {
+      // parse values from search into correct format
+      let gene
+      let key
+      let nodes_data = {}
+      for (let entry in nodes_table_data) {
+        if (isNaN(entry as any)) {
+          continue
+        }
+        gene = nodes_table_data[entry]
+        nodes_data[entry] = {}
+        // map colname to value since we can just export the values from the table
+        for (let i=0; i < keys.length; i++) {
+          key = keys[i]
+          nodes_data[entry][key] = gene[i]
+        }
+      }
+
       let nodes = [];
       let node_options = ""   // for node selector
-      for (let gene in data) {
-        let id = data[gene]['ensg_number'];
-        let label = data[gene]['gene_symbol'];
+      for (let gene in nodes_data) {
+        let id = nodes_data[gene]['ensg_number'];
+        let label = nodes_data[gene]['gene_symbol'];
         if (label == '') {
           label = 'unknown'
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
-        let size = parseFloat(data[gene]['p-value']);
+        let size = parseFloat(nodes_data[gene]['p-value']);
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
 
@@ -278,8 +302,8 @@ export class SearchComponent implements OnInit {
       // save data for later search
       let ordered_data = [];
       // let ensg_numbers = []
-      for (let i=0; i < Object.keys(data).length; i++) {
-        let entry = data[i]
+      for (let i=0; i < Object.keys(nodes_data).length; i++) {
+        let entry = nodes_data[i]
         // change order of columns alredy in object
         let ordered_entry = {}
         // flatten data object
@@ -303,7 +327,7 @@ export class SearchComponent implements OnInit {
       return nodes
     }
 
-    function load_edges(disease, nodes, callback?) {
+    function load_edges(disease:string, nodes:string[], callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease, 'ensg_number':nodes,
         'callback':data => {
           let edges = [];
@@ -316,17 +340,16 @@ export class SearchComponent implements OnInit {
             let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
-              id: id, 
-              source: source, 
-              target: target, 
-              size: size, 
-              color: color, 
+              id: id,
+              source: source,
+              target: target,
+              size: size,
+              color: color,
             })
             edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
           }
           // append options to search-dropdown for network
           $('#network_search_node').append(edge_options)
-
           let ordered_data = []
           for (let i=0; i < Object.keys(data).length; i++) {
             let entry = data[i]
@@ -340,7 +363,6 @@ export class SearchComponent implements OnInit {
             ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
             ordered_data.push(ordered_entry)
           }
-
           $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         },
@@ -477,6 +499,9 @@ export class SearchComponent implements OnInit {
             let json = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response));
             let buttons = $("#button_control_"+disease_trimmed)
             buttons.append($('<a href="data:' + json + '" download="expression_'+disease_trimmed+'.json" class="btn btn-secondary button-margin">Raw Expression Data</a>'))
+          },
+          error: (response) => {
+            console.log("here")
           }
         };
         if (search_key.startsWith('ENSG')) {
@@ -486,56 +511,58 @@ export class SearchComponent implements OnInit {
         }
         controller.get_expression_ceRNA(config)
 
+        // mark rows in datatable (and thus later in network) if we restore old session
+        if (url_storage) {
+          helper.mark_nodes_table(table, url_storage['nodes'])
+        }
+
         $(".export_nodes").click( function() {
           let table = $('#'+$(this).val()).DataTable()
-          let selected_nodes_data = table.rows('.selected', { filter : 'applied'}).data()
-          if (selected_nodes_data.length === 0) {
-            selected_nodes_data = table.rows({ filter : 'applied'}).data()
-          }
+
+          // set the active cancer variable
+          active_cancer_name = $(this).closest('.card').find('button').first().text()
+          console.log(active_cancer_name)
 
           let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+          
+          let nodes = parse_node_data(table.rows().data(), params_genes_keys)
+          let nodes_to_mark = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys)
 
-          // parse values from search into correct format
-          let gene
-          let key
-          let new_nodes = {}
-          for (let entry in selected_nodes_data) {
-            if (isNaN(entry as any)) {
-              continue
-            }
-            gene = selected_nodes_data[entry]
-            new_nodes[entry] = {}
-            for (let i=0; i < params_genes_keys.length; i++) {
-              key = params_genes_keys[i]
-              new_nodes[entry][key] = gene[i]
-            }
-          }
-          let nodes = parse_node_data(new_nodes)
           let ensg_numbers = nodes.map(function(node) {return node.id})
+          let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
+
+          helper.mark_nodes_table(table, ensg_numbers_to_mark)
           load_edges(encodeURI(disease), ensg_numbers, edges => {
           
-            let network = helper.make_network(disease_trimmed, nodes, edges)
-            session = new Session(network)
+            let network_data = helper.make_network(disease_trimmed, nodes, edges)
+            let network = network_data['network']
+            session = network_data['session']
 
             setTimeout(() => {
               // network.refresh()
               $('#restart_camera').click()
+              helper.mark_nodes_network(network, ensg_numbers_to_mark)
+              if (url_storage) helper.mark_edges_network(network, url_storage['edges'], true)
               network.refresh()
+              // store active cancer name
+              $('#network-plot-container').val(active_cancer_name)
+              session.update_url()
             }, 500)
 
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
 
+            // finish loading process
             if ($('#network').hasClass('hidden')) {
               $('#network').removeClass('hidden')
+              // clear url storage so no more information is stored
+              url_storage = undefined
             }
           })
-
         })
 
-        // mark rows in datatable and in network if we restore old session
-        if (url_storage) {
-          helper.mark_nodes(table, url_storage['nodes'])
+        // load network immediately if we restore old session
+        if (url_storage && url_storage['active_cancer'] == disease) {
           $('.export_nodes').last().click()
         }
       }
