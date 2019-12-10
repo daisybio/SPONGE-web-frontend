@@ -31,7 +31,7 @@ export class SearchComponent implements OnInit {
     var url_storage;
     let session = null
     let active_cancer_name:string   // name of the currently displayed cancer type in the network
-
+    let ensg_nr
     this.activatedRoute.queryParams
       .subscribe(params => {
         // search key should always be defined
@@ -506,6 +506,7 @@ export class SearchComponent implements OnInit {
         };
         if (search_key.startsWith('ENSG')) {
           config['ensg_number'] = [key_information['gene']]
+          ensg_nr=[key_information['gene']]
         } else {
           config['gene_symbol'] = [key_information['gene_symbol']]
         }
@@ -602,15 +603,15 @@ export class SearchComponent implements OnInit {
     function KMP_test() 
     {
       //einlesen der test daten für den KM Plot
-      let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
-      var testSD = JSON.stringify(json);
-      var wholeJason = JSON.parse(testSD);
-      console.log(wholeJason[0].donors.length);
+     // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
+     // var testSD = JSON.stringify(json);
+      //var wholeJason = JSON.parse(testSD);
+      //console.log(wholeJason[0].donors.length);
 
-      var dn="kidney clear cell carcinoma";
-      var test = ["ENSG00000259090"];
+      var dn= "bladder urothelial carcinoma";
+      var test = ['ENSG00000179915'];
       
-      
+      console.log(ensg_nr+" "+active_cancer_name)
       let overexpression_0=[]
       let overexpression_1=[]
       let mean_se =[]
