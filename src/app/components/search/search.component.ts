@@ -589,8 +589,12 @@ export class SearchComponent implements OnInit {
       });
 
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
-      // für jdn eintrag /survivalAnalysis/sampleInformation holen
-      function parse_survival_data(response){
+      // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
+      // außerdem zusätzlicher knopf um gen auszu wählen u dafür plots zu machen
+
+      //Funktion noch mal für overexpression:0 und overexpression:1 
+      function parse_survival_data(response)
+      {
         let samples = [];
         var allResp=JSON.stringify(response);
         var allResp2 = JSON.parse(allResp);
@@ -642,11 +646,11 @@ export class SearchComponent implements OnInit {
               
               let n = censored_0.length; //hier ist ein tod eingetreten 
               let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
-              if(SE_array.length>0){
-              for(let v=0; v< SE_array.length;v++){
-                vorherSE *= SE_array[v];
-              }
-            }
+            //  if(SE_array.length>0){
+             /// for(let v=0; v< SE_array.length;v++){
+               // vorherSE *= SE_array[v];
+             // }
+           // }
 
 
              // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
@@ -658,15 +662,15 @@ export class SearchComponent implements OnInit {
            
               console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
 
-              var modified_JSON = Object(JSON.stringify(allResp2[i].patient_information))
+             
              
             //  console.log(modified_JSON);
             
             
           }
-         }
+       }
          console.log(samples.length); //495
-         
+         var ensg = 'Survival Analysis of gene ' + JSON.stringify(allResp2[0].gene)
         
      
 
@@ -676,15 +680,7 @@ export class SearchComponent implements OnInit {
       
       var timeGesamt = [];
       var sestimateGesamt = [];
-      //checken ob die wirklich parallel der reihenach gelesen u gespeichert werden
-      for (let i=0; i < allResp2.length; i++) {
-      // timeGesamt.push(sampleIDs[i].survival_time);
-       
-      
-     //  sestimateGesamt.push(wholeJason[0].donors[i].survivalEstimate);
-
-      //Berechnen d survival estimates aus survival time and disease status
-    }
+    
     
     console.log(seen_time);
     console.log(sestimateGesamt[0]);
@@ -704,10 +700,17 @@ export class SearchComponent implements OnInit {
       };
       var data = [trace1];
       var layout = {
+        title: {
+          text:ensg ,
+          font: {
+            family: 'Courier New, monospace',
+            size: 12,
+          }
+        },
         xaxis: {
           
           
-          title: 'Duration(years)',
+          title: 'Duration(days)',
           autorange: true
         }, 
         yaxis: {
