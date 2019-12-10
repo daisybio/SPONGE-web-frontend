@@ -6,6 +6,7 @@ import 'datatables.net';
 import { all } from 'q';
 import { callbackify } from 'util';
 import { JsonPipe } from '@angular/common';
+import { parse } from 'querystring';
 declare var Plotly: any;
 declare var $;
 
@@ -557,7 +558,9 @@ export class SearchComponent implements OnInit {
 
 
     $('#KMP-plot-container').append(KMP_test);
-    function KMP_test() {
+
+    function KMP_test() 
+    {
       //einlesen der test daten für den KM Plot
       let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
       var testSD = JSON.stringify(json);
@@ -566,9 +569,17 @@ export class SearchComponent implements OnInit {
 
       var dn="kidney clear cell carcinoma";
       var test = ["ENSG00000259090"];
-      var gs = [];
       
       
+      let overexpression_0=[]
+      let overexpression_1=[]
+      let mean_se =[]
+      let overexpression_0_se =[]
+      let overexpression_1_se =[]
+      let seen_time_mean=[]
+      let seen_time_0=[]
+      let seen_time_1=[]
+
 
       controller.get_survival_rates({
         disease_name: dn,
@@ -576,8 +587,22 @@ export class SearchComponent implements OnInit {
         
         callback: (response) => {
           
-         parse_survival_data(response);
+        mean_se= parse_survival_data(response,seen_time_mean);
+        
+         for (let j=0; j < response.length; j++) { 
           
+            if(response[j].overexpression == 0){
+              overexpression_0.push(response[j]);
+            }else{
+              overexpression_1.push(response[j]);
+            }
+        }
+        console.log('1 '+overexpression_1.length)
+        console.log('0 '+overexpression_0.length)
+        overexpression_1_se = parse_survival_data(overexpression_1,seen_time_1);
+        overexpression_0_se = parse_survival_data(overexpression_0, seen_time_0);
+
+        plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene)
          // end loading
        //   $('#loading_spinner_results').addClass('hidden')
      
@@ -587,15 +612,18 @@ export class SearchComponent implements OnInit {
           //$('#loading_spinner_results').addClass('hidden')
         }
       });
-
+    }
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
       // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
       // außerdem zusätzlicher knopf um gen auszu wählen u dafür plots zu machen
 
       //Funktion noch mal für overexpression:0 und overexpression:1 
-      function parse_survival_data(response)
+      function parse_survival_data(response,seen_time)
       {
         let samples = [];
+        
+        
+
         var allResp=JSON.stringify(response);
         var allResp2 = JSON.parse(allResp);
         console.log(allResp2.patient_information); //array mit den einträgen
@@ -616,112 +644,124 @@ export class SearchComponent implements OnInit {
           console.log(samples[3].patient_information)
           //TO-DO sicherstellen das 1 zeit auch nur 1 mal durchgegangen wird
           let SE_array=[]
-          let seen_time =[]
+         // let seen_time =[]
           let last_estimate=1;
-          for (let i=0; i < samples.length; i++) {  
-            if(samples[i].patient_information.survival_time != null && !seen_time.includes(samples[i].patient_information.survival_time)){
-            let time = samples[i].patient_information.survival_time; 
-            seen_time.push(time);
-
-            
-            //alle einträge mit der time raus holen
-            let censored_0=[];
-            let censored_1=[];
-            let count_time=0;
-            let bigger_equal_time=0;
-            //Durchsuchen von samples nach der zeit u zählen wie viele 0 und 1 wobei 0 ein event ist also tod
-            for (let j=0; j < samples.length; j++) { 
-              if(samples[j].patient_information.survival_time == time){
-                if(samples[j].patient_information.disease_status == 0){
-                  censored_0.push(samples[j]);
-                }else{
-                  censored_1.push(samples[j]);
-                }
-                count_time++; //wie viele insgesamt mit der time gibt es
-              }
-              if(samples[j].patient_information.survival_time >= time){
-              bigger_equal_time +=1
-              }
-            }
+          for (let i=0; i < samples.length; i++) 
+          {
+            if(samples[i].patient_information.survival_time != null && !seen_time.includes(samples[i].patient_information.survival_time))
+            {
+              let time = samples[i].patient_information.survival_time; 
+              seen_time.push(time);
+            //  seen_time_input.push(time);
               
-              let n = censored_0.length; //hier ist ein tod eingetreten 
-              let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
-            //  if(SE_array.length>0){
-             /// for(let v=0; v< SE_array.length;v++){
-               // vorherSE *= SE_array[v];
+              //alle einträge mit der time raus holen
+              let censored_0=[];
+              let censored_1=[];
+              let count_time=0;
+              let bigger_equal_time=0;
+              //Durchsuchen von samples nach der zeit u zählen wie viele 0 und 1 wobei 0 ein event ist also tod
+              for (let j=0; j < samples.length; j++) { 
+                if(samples[j].patient_information.survival_time == time){
+                  if(samples[j].patient_information.disease_status == 0){
+                    censored_0.push(samples[j]);
+                  }else{
+                    censored_1.push(samples[j]);
+                  }
+                  count_time++; //wie viele insgesamt mit der time gibt es
+                }
+                if(samples[j].patient_information.survival_time >= time){
+                bigger_equal_time +=1
+                }
+              }
+                
+                let n = censored_0.length; //hier ist ein tod eingetreten 
+                let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
+              //  if(SE_array.length>0){
+              /// for(let v=0; v< SE_array.length;v++){
+                // vorherSE *= SE_array[v];
+              // }
              // }
-           // }
 
 
-             // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
-          
-             var estimate = last_estimate*(1-(n/bigger_equal_time));
-             last_estimate = estimate;
-
-              SE_array.push(estimate);
-           
-              console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
-
-             
-             
-            //  console.log(modified_JSON);
+              // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
             
+              var estimate = last_estimate*(1-(n/bigger_equal_time));
+              last_estimate = estimate;
+
+                SE_array.push(estimate);
             
-          }
-       }
-         console.log(samples.length); //495
-         var ensg = 'Survival Analysis of gene ' + JSON.stringify(allResp2[0].gene)
+             //   console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
+
+              
+              
+              //  console.log(modified_JSON);
+             }
+           }
+
+       return SE_array;
+     }
+
+     function plot_KMP(mean_se,overexpression_0_se ,overexpression_1_se,seen_time_mean,seen_time_1,seen_time_0,gene_name ) 
+     {       
+       
+        console.log(mean_se.length); //495
+        var ensg = 'Survival Analysis of gene ' + gene_name
+      
         
-     
-
-//console.log(JSON.stringify(sampleIDs[0].patient_information.sample_ID));
-
-
+        var sestimateGesamt = [];
+    
+    
+        console.log(seen_time_mean);
+        console.log(sestimateGesamt[0]);
       
-      var timeGesamt = [];
-      var sestimateGesamt = [];
-    
-    
-    console.log(seen_time);
-    console.log(sestimateGesamt[0]);
-    
-      //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
-      //Im beispiel fall nur y estimate gegen time x
-      var trace1 = {
-        x: seen_time, 
-        y: SE_array, 
-        type: 'scatter'
-      };
-      
-      var trace2 = {
-        x: [.01, .1, 1, 10, 100], 
-        y: [1, 10, 100, 1000, 10000], 
-        type: 'scatter'
-      };
-      var data = [trace1];
-      var layout = {
-        title: {
-          text:ensg ,
-          font: {
-            family: 'Courier New, monospace',
-            size: 12,
+        //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
+        //Im beispiel fall nur y estimate gegen time x
+        var mean = {
+          x: seen_time_mean, 
+          y: mean_se, 
+          type: 'scatter',
+          name: 'Normal SE calculations'
+
+        };
+        
+        var overexpression_0 = {
+          x: seen_time_0, 
+          y: overexpression_0_se, 
+          type: 'scatter',
+          name: 'Underexpressed Genes'
+        };
+
+        var overexpression_1= {
+          x: seen_time_1, 
+          y: overexpression_1_se, 
+          type: 'scatter',
+          name: 'Overexpressed Genes'
+        };
+
+        var data = [mean,overexpression_0,overexpression_1];
+        var layout = {
+          title: {
+            text:ensg ,
+            font: {
+              family: 'Courier New, monospace',
+              size: 12,
+            }
+          },
+          xaxis: {
+            
+            
+            title: 'Duration(days)',
+            autorange: true
+          }, 
+          yaxis: {
+            title: 'Survival Rate',
+            autorange: true
+            
           }
-        },
-        xaxis: {
-          
-          
-          title: 'Duration(days)',
-          autorange: true
-        }, 
-        yaxis: {
-          title: 'Survival Rate',
-          autorange: true
-          
-        }
-      };
-      Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
-    };
-    }
+        };
+        Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
+     };
+    
   }
 
   
