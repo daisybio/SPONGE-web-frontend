@@ -5,6 +5,13 @@ language: node_js
 node_js:
   - '10'
 
+services:
+  - docker
+
+branches:
+  only:
+  - master
+
 addons:
   apt:
     sources:
@@ -20,4 +27,5 @@ install:
   - npm install
 
 script:
-  - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
+  - npm run test-headless
+  - make travis
