@@ -47,6 +47,7 @@ export class SearchComponent implements OnInit {
       search_key = $('#gene_search_keys').val()
       limit = $('#gene_input_limit').val()
       search(limit)
+      
     })
 
     $('#options_mirna_go').click( () => {
@@ -759,6 +760,7 @@ export class SearchComponent implements OnInit {
      {       
        
         console.log(mean_se.length); //495
+        Plotly.purge('myDiv');
         var ensg = 'Survival Analysis of gene ' + gene_name
       
         
