@@ -4,7 +4,7 @@ import { Helper } from "../../helper";
 import { Session } from "../../session";
 import {Router, ActivatedRoute, Params} from '@angular/router';
 import 'datatables.net';
-import { all } from 'q';
+import { all, async } from 'q';
 import { callbackify } from 'util';
 import { JsonPipe } from '@angular/common';
 import { parse } from 'querystring';
@@ -31,7 +31,8 @@ export class SearchComponent implements OnInit {
     var url_storage;
     let session = null
     let active_cancer_name:string   // name of the currently displayed cancer type in the network
-    let ensg_nr
+    let ensg4KMP:string
+  
     this.activatedRoute.queryParams
       .subscribe(params => {
         // search key should always be defined
@@ -421,6 +422,7 @@ export class SearchComponent implements OnInit {
         chromosome: parsed_search_result['key']['chromosome_name']
       }
       let key_information_sentence = "For gene " + key_information['gene']
+      ensg4KMP=key_information['gene']
       if (key_information['gene_symbol'] != '') {
         key_information_sentence += " (" + key_information['gene_symbol'] + ")"
       }
@@ -506,7 +508,7 @@ export class SearchComponent implements OnInit {
         };
         if (search_key.startsWith('ENSG')) {
           config['ensg_number'] = [key_information['gene']]
-          ensg_nr=[key_information['gene']]
+        
         } else {
           config['gene_symbol'] = [key_information['gene_symbol']]
         }
@@ -522,7 +524,7 @@ export class SearchComponent implements OnInit {
 
           // set the active cancer variable
           active_cancer_name = $(this).closest('.card').find('button').first().text()
-          console.log(active_cancer_name)
+          console.log(active_cancer_name+" "+search_key)
 
           let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
           
@@ -553,19 +555,28 @@ export class SearchComponent implements OnInit {
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
 
+            if($('#plots').hasClass('hidden')){
+              $('#plots').removeClass('hidden')  
+              
+            }
             // finish loading process
             if ($('#network').hasClass('hidden')) {
               $('#network').removeClass('hidden')
+            
               // clear url storage so no more information is stored
               url_storage = undefined
             }
+            
           })
+          $('#KMP-plot-container').append(KMP_test(active_cancer_name,ensg4KMP));
         })
 
         // load network immediately if we restore old session
         if (url_storage && url_storage['active_cancer'] == disease) {
           $('.export_nodes').last().click()
         }
+
+       
       }
     }
 
@@ -598,9 +609,9 @@ export class SearchComponent implements OnInit {
     });
 
 
-    $('#KMP-plot-container').append(KMP_test);
-
-    function KMP_test() 
+    
+    
+    function KMP_test(active_cancer_name, ensg) 
     {
       //einlesen der test daten für den KM Plot
      // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
@@ -608,10 +619,12 @@ export class SearchComponent implements OnInit {
       //var wholeJason = JSON.parse(testSD);
       //console.log(wholeJason[0].donors.length);
 
-      var dn= "bladder urothelial carcinoma";
-      var test = ['ENSG00000179915'];
+      var dn= active_cancer_name //"bladder urothelial carcinoma";
+      var test = [ensg]//['ENSG00000179915'];
       
-      console.log(ensg_nr+" "+active_cancer_name)
+      
+
+      console.log(ensg+" test "+ active_cancer_name)
       let overexpression_0=[]
       let overexpression_1=[]
       let mean_se =[]
