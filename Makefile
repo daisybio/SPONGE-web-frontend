@@ -1,4 +1,4 @@
-PORTS = 4700:4700
+PORTS = 4200:80
 VERSION = latest
 
 IMAGE_NAME = biomedbigdata/sponge-web-frontend
