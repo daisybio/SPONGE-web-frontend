@@ -536,6 +536,9 @@ export class Helper {
 
       network.bind('doubleClickNode', (e) => {
         node_click_function(e)
+        if($('#plots').hasClass('hidden')){
+          $('#plots').removeClass('hidden') 
+        }
       })
 
       function node_click_function(e) {
