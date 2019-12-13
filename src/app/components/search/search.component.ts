@@ -8,6 +8,7 @@ import { all, async } from 'q';
 import { callbackify } from 'util';
 import { JsonPipe } from '@angular/common';
 import { parse } from 'querystring';
+import { config } from 'rxjs';
 declare var Plotly: any;
 declare var $;
 
@@ -525,7 +526,7 @@ export class SearchComponent implements OnInit {
 
           // set the active cancer variable
           active_cancer_name = $(this).closest('.card').find('button').first().text()
-          console.log(active_cancer_name+" "+search_key)
+         
 
           let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
           
@@ -534,6 +535,7 @@ export class SearchComponent implements OnInit {
 
           let ensg_numbers = nodes.map(function(node) {return node.id})
           let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
+        
 
           helper.mark_nodes_table(table, ensg_numbers_to_mark)
           load_edges(encodeURI(disease), ensg_numbers, edges => {
@@ -548,6 +550,16 @@ export class SearchComponent implements OnInit {
               helper.mark_nodes_network(network, ensg_numbers_to_mark)
               if (url_storage) helper.mark_edges_network(network, url_storage['edges'], true)
               network.refresh()
+              if(helper.node_clicked()!="test")
+              {
+            
+              console.log('hihi klick')
+            //  let to_search = $('#network_search_node').val()
+              //wenn auf node geklickt wird, wird ensg von der node und cancer name übergeben --> müsste immer gleich sein
+           //falls gen in mehreren sets vorkommt wird nur d Plot zu dem zugehörigen netzwerk angezeigt
+           $('#KMP-plot-container').append(KMP_test(active_cancer_name,ensg4KMP)); //diesease_name  ensg4KMP
+            
+              }
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
@@ -569,14 +581,16 @@ export class SearchComponent implements OnInit {
             }
             
           })
-          $('#KMP-plot-container').append(KMP_test(active_cancer_name,ensg4KMP));
+
         })
 
         // load network immediately if we restore old session
         if (url_storage && url_storage['active_cancer'] == disease) {
           $('.export_nodes').last().click()
+          
         }
 
+       
        
       }
     }
@@ -608,10 +622,11 @@ export class SearchComponent implements OnInit {
         }
       });
     });
-
-
+   
     
     
+     
+      
     function KMP_test(active_cancer_name, ensg) 
     {
       //einlesen der test daten für den KM Plot
@@ -657,7 +672,7 @@ export class SearchComponent implements OnInit {
         overexpression_1_se = parse_survival_data(overexpression_1,seen_time_1);
         overexpression_0_se = parse_survival_data(overexpression_0, seen_time_0);
 
-        plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene)
+        plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
          // end loading
        //   $('#loading_spinner_results').addClass('hidden')
      
@@ -756,12 +771,12 @@ export class SearchComponent implements OnInit {
        return SE_array;
      }
 
-     function plot_KMP(mean_se,overexpression_0_se ,overexpression_1_se,seen_time_mean,seen_time_1,seen_time_0,gene_name ) 
+     function plot_KMP(mean_se,overexpression_0_se ,overexpression_1_se,seen_time_mean,seen_time_1,seen_time_0,gene_name, disease_name ) 
      {       
        
         console.log(mean_se.length); //495
         Plotly.purge('myDiv');
-        var ensg = 'Survival Analysis of gene ' + gene_name
+        var ensg = 'Survival Analysis of gene ' + gene_name + 'from cancer set '+ disease_name
       
         
         var sestimateGesamt = [];
@@ -794,7 +809,7 @@ export class SearchComponent implements OnInit {
           name: 'Overexpressed Genes'
         };
 
-        var data = [mean,overexpression_0,overexpression_1];
+        var data = [overexpression_0,overexpression_1];
         var layout = {
           title: {
             text:ensg ,

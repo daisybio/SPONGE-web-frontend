@@ -182,6 +182,217 @@ export class Helper {
       })
     }
 
+    public load_KMP(ensg) 
+    {
+      //einlesen der test daten für den KM Plot
+     // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
+     // var testSD = JSON.stringify(json);
+      //var wholeJason = JSON.parse(testSD);
+      //console.log(wholeJason[0].donors.length);
+      var dn =$(this).closest('.card').find('button').first().text();
+      $(".export_nodes").click( function() {
+        let table = $('#'+$(this).val()).DataTable()
+
+        // set the active cancer variable
+        dn = $(this).closest('.card').find('button').first().text()
+      })
+     
+      var test = [ensg]//['ENSG00000179915'];
+      
+      
+
+      console.log(ensg+" test "+ dn)
+      let overexpression_0=[]
+      let overexpression_1=[]
+      let mean_se =[]
+      let overexpression_0_se =[]
+      let overexpression_1_se =[]
+      let seen_time_mean=[]
+      let seen_time_0=[]
+      let seen_time_1=[]
+
+
+      this.controller.get_survival_rates({
+        disease_name: dn,
+        ensg_number: test,
+        
+        callback: (response) => {
+          
+        mean_se= this.parse_survival_data(response,seen_time_mean);
+        
+         for (let j=0; j < response.length; j++) { 
+          
+            if(response[j].overexpression == 0){
+              overexpression_0.push(response[j]);
+            }else{
+              overexpression_1.push(response[j]);
+            }
+        }
+        console.log('1 '+overexpression_1.length)
+        console.log('0 '+overexpression_0.length)
+        overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
+        overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
+
+        this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
+         // end loading
+       //   $('#loading_spinner_results').addClass('hidden')
+     
+        },
+        error: (response2) => {
+         //helper.msg("Something went wrong finding your gene symbol.", true)
+          //$('#loading_spinner_results').addClass('hidden')
+        }
+      });
+    }
+      //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
+      // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
+      // außerdem zusätzlicher knopf um gen auszu wählen u dafür plots zu machen
+
+      //Funktion noch mal für overexpression:0 und overexpression:1 
+      parse_survival_data(response,seen_time)
+      {
+        let samples = [];
+        
+        
+
+        var allResp=JSON.stringify(response);
+        var allResp2 = JSON.parse(allResp);
+        console.log(allResp2.patient_information); //array mit den einträgen
+        
+          
+         
+          for (let i=0; i < allResp2.length; i++) {  //rausziehen der patienten info
+             //Gleich berechnen des SE u speichern des ergebnisses in array mit sample id u (gene)//
+             //Dafür abspeichern des JSon in seperaten array damit man eins zum durchsuchen hat und eins zum abarbeiten
+            samples.push(allResp2[i]);
+            
+          }
+          //Sortieren nach der survival time
+          samples.sort((a,b) => (a.patient_information.survival_time > b.patient_information.survival_time) ? 1: -1);
+          console.log(samples[0].patient_information)
+          console.log(samples[1].patient_information)
+          console.log(samples[2].patient_information)
+          console.log(samples[3].patient_information)
+          //TO-DO sicherstellen das 1 zeit auch nur 1 mal durchgegangen wird
+          let SE_array=[]
+         // let seen_time =[]
+          let last_estimate=1;
+          for (let i=0; i < samples.length; i++) 
+          {
+            if(samples[i].patient_information.survival_time != null && !seen_time.includes(samples[i].patient_information.survival_time))
+            {
+              let time = samples[i].patient_information.survival_time; 
+              seen_time.push(time);
+            //  seen_time_input.push(time);
+              
+              //alle einträge mit der time raus holen
+              let censored_0=[];
+              let censored_1=[];
+              let count_time=0;
+              let bigger_equal_time=0;
+              //Durchsuchen von samples nach der zeit u zählen wie viele 0 und 1 wobei 0 ein event ist also tod
+              for (let j=0; j < samples.length; j++) { 
+                if(samples[j].patient_information.survival_time == time){
+                  if(samples[j].patient_information.disease_status == 0){
+                    censored_0.push(samples[j]);
+                  }else{
+                    censored_1.push(samples[j]);
+                  }
+                  count_time++; //wie viele insgesamt mit der time gibt es
+                }
+                if(samples[j].patient_information.survival_time >= time){
+                bigger_equal_time +=1
+                }
+              }
+                
+                let n = censored_0.length; //hier ist ein tod eingetreten 
+                let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
+              //  if(SE_array.length>0){
+              /// for(let v=0; v< SE_array.length;v++){
+                // vorherSE *= SE_array[v];
+              // }
+             // }
+
+
+              // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
+            
+              var estimate = last_estimate*(1-(n/bigger_equal_time));
+              last_estimate = estimate;
+
+                SE_array.push(estimate);
+            
+             //   console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
+
+              
+              
+              //  console.log(modified_JSON);
+             }
+           }
+
+       return SE_array;
+     }
+
+     plot_KMP(mean_se,overexpression_0_se ,overexpression_1_se,seen_time_mean,seen_time_1,seen_time_0,gene_name, disease_name ) 
+     {       
+       
+        console.log(mean_se.length); //495
+        Plotly.purge('myDiv');
+        var ensg = 'Survival Analysis of gene ' + gene_name + 'from cancer set '+ disease_name
+      
+        
+        var sestimateGesamt = [];
+    
+    
+        console.log(seen_time_mean);
+        console.log(sestimateGesamt[0]);
+      
+        //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
+        //Im beispiel fall nur y estimate gegen time x
+        var mean = {
+          x: seen_time_mean, 
+          y: mean_se, 
+          type: 'scatter',
+          name: 'Normal SE calculations'
+
+        };
+        
+        var overexpression_0 = {
+          x: seen_time_0, 
+          y: overexpression_0_se, 
+          type: 'scatter',
+          name: 'Underexpressed Genes'
+        };
+
+        var overexpression_1= {
+          x: seen_time_1, 
+          y: overexpression_1_se, 
+          type: 'scatter',
+          name: 'Overexpressed Genes'
+        };
+
+        var data = [overexpression_0,overexpression_1];
+        var layout = {
+          title: {
+            text:ensg ,
+            font: {
+              family: 'Courier New, monospace',
+              size: 12,
+            }
+          },
+          xaxis: {
+            
+            
+            title: 'Duration(days)',
+            autorange: true
+          }, 
+          yaxis: {
+            title: 'Survival Rate',
+            autorange: true
+            
+          }
+        };
+        Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
+     };
 
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
 
@@ -321,6 +532,8 @@ export class Helper {
         }
       })
 
+
+     
       // network.bind('outEdge', (ee) => { 
       //   ee.data.edge.color = $this.default_edge_color
       // })
@@ -367,10 +580,12 @@ export class Helper {
           let edges = network.graph.adjacentEdges(nodeId).map((ee) => String(ee.id))
           $this.mark_edges_table(edge_table, edges)
         }
-
+        $this.node_is_clicked(nodeId)
+        $this.load_KMP(nodeId) 
         // network was altered, update url
         session.update_url()
       }
+
 
       function searchNode(node_as_string) {
         /*
@@ -541,6 +756,14 @@ export class Helper {
       return({'network': network, 'session': session})
     }
 
+    nodeIDclicked:any = "test";
+    public node_is_clicked(nodeID){
+      this.nodeIDclicked= nodeID
+      console.log(this.nodeIDclicked)
+     } 
+    public node_clicked(){
+      return this.nodeIDclicked
+    }
     public clear_subgraphs(network) {
       network.graph.edges().forEach(
         (ee) => {
@@ -671,5 +894,7 @@ export class Helper {
       }
       return({'nodes': nodes, 'edges': edges, 'active_cancer': active_cancer})
     }
+
+    
   
 }
