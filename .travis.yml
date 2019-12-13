@@ -28,4 +28,4 @@ install:
 
 script:
   - npm run test-headless
-  #- make travis
+  - make travis
