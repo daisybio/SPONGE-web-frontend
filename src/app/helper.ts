@@ -189,13 +189,9 @@ export class Helper {
      // var testSD = JSON.stringify(json);
       //var wholeJason = JSON.parse(testSD);
       //console.log(wholeJason[0].donors.length);
-      var dn =$(this).closest('.card').find('button').first().text();
-      $(".export_nodes").click( function() {
-        let table = $('#'+$(this).val()).DataTable()
-
-        // set the active cancer variable
-        dn = $(this).closest('.card').find('button').first().text()
-      })
+     var dn = encodeURIComponent($('#network-plot-container').val().toString())
+     
+     console.log(dn+" vorher")
      
       var test = [ensg]//['ENSG00000179915'];
       
@@ -581,9 +577,11 @@ export class Helper {
           $this.mark_edges_table(edge_table, edges)
         }
         $this.node_is_clicked(nodeId)
-        $this.load_KMP(nodeId) 
+        
         // network was altered, update url
         session.update_url()
+
+        $this.load_KMP(nodeId) 
       }
 
 

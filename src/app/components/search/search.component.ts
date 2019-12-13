@@ -550,16 +550,7 @@ export class SearchComponent implements OnInit {
               helper.mark_nodes_network(network, ensg_numbers_to_mark)
               if (url_storage) helper.mark_edges_network(network, url_storage['edges'], true)
               network.refresh()
-              if(helper.node_clicked()!="test")
-              {
-            
-              console.log('hihi klick')
-            //  let to_search = $('#network_search_node').val()
-              //wenn auf node geklickt wird, wird ensg von der node und cancer name übergeben --> müsste immer gleich sein
-           //falls gen in mehreren sets vorkommt wird nur d Plot zu dem zugehörigen netzwerk angezeigt
-           $('#KMP-plot-container').append(KMP_test(active_cancer_name,ensg4KMP)); //diesease_name  ensg4KMP
-            
-              }
+              
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
@@ -624,7 +615,16 @@ export class SearchComponent implements OnInit {
     });
    
     
-    
+    if(helper.node_clicked()!="test")
+    {
+  
+    console.log('hihi klick')
+  //  let to_search = $('#network_search_node').val()
+    //wenn auf node geklickt wird, wird ensg von der node und cancer name übergeben --> müsste immer gleich sein
+ //falls gen in mehreren sets vorkommt wird nur d Plot zu dem zugehörigen netzwerk angezeigt
+ $('#KMP-plot-container').append(KMP_test(active_cancer_name,ensg4KMP)); //diesease_name  ensg4KMP
+  
+    }
      
       
     function KMP_test(active_cancer_name, ensg) 
