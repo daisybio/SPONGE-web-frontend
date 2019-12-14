@@ -2,7 +2,7 @@ PORTS = 4200:80
 VERSION = latest
 
 IMAGE_NAME = biomedbigdata/sponge-web-frontend
-CONTAINER_NAME = sponge-fronted
+CONTAINER_NAME = sponge-web-fronted
 CONTAINER_INSTANCE = default
 
 build: 
