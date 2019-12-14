@@ -182,7 +182,7 @@ export class Helper {
       })
     }
 
-    public load_KMP(ensg) 
+    public load_KMP(ensgList) 
     {
       //einlesen der test daten für den KM Plot
      // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
@@ -191,13 +191,15 @@ export class Helper {
       //console.log(wholeJason[0].donors.length);
      var dn = encodeURIComponent($('#network-plot-container').val().toString())
      
-     console.log(dn+" vorher")
+     console.log(dn+" vorher"+ this.load_session_url['nodes'] )
      
-      var test = [ensg]//['ENSG00000179915'];
+      var test = ensgList[0]//['ENSG00000179915'];
       
-      
+      let PlotList=$('KMP-plot-container-parent').children
+      console.log($('KMP-plot-container-parent').children)
+    for(let $o=0; $o<ensgList.length;$o++){
 
-      console.log(ensg+" test "+ dn)
+      console.log(ensgList+" test "+ dn)
       let overexpression_0=[]
       let overexpression_1=[]
       let mean_se =[]
@@ -206,39 +208,67 @@ export class Helper {
       let seen_time_mean=[]
       let seen_time_0=[]
       let seen_time_1=[]
-
-
-      this.controller.get_survival_rates({
-        disease_name: dn,
-        ensg_number: test,
-        
-        callback: (response) => {
-          
-        mean_se= this.parse_survival_data(response,seen_time_mean);
-        
-         for (let j=0; j < response.length; j++) { 
-          
-            if(response[j].overexpression == 0){
-              overexpression_0.push(response[j]);
-            }else{
-              overexpression_1.push(response[j]);
-            }
-        }
-        console.log('1 '+overexpression_1.length)
-        console.log('0 '+overexpression_0.length)
-        overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
-        overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
-
-        this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
-         // end loading
-       //   $('#loading_spinner_results').addClass('hidden')
      
-        },
-        error: (response2) => {
-         //helper.msg("Something went wrong finding your gene symbol.", true)
-          //$('#loading_spinner_results').addClass('hidden')
-        }
-      });
+      if( $('#myDiv_'+ensgList[$o]).length <=0){
+        this.controller.get_survival_rates({
+          disease_name: dn,
+          ensg_number: [ensgList[$o]],
+          
+          callback: (response) => {
+            
+          mean_se= this.parse_survival_data(response,seen_time_mean);
+          
+          for (let j=0; j < response.length; j++) { 
+            
+              if(response[j].overexpression == 0){
+                overexpression_0.push(response[j]);
+              }else{
+                overexpression_1.push(response[j]);
+              }
+          }
+          console.log('1 '+overexpression_1.length)
+          console.log('0 '+overexpression_0.length)
+          overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
+          overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
+
+
+          let add_KMP_Plot =  "<div  id='kmp-plot-container' style='background-color:white;margin-bottom:10px; min-width: 485px; height: 408px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='width: 480px; height: 400px;'></div> "+"</div>"
+      
+          
+
+          $('#KMP-plot-container-parent').append(add_KMP_Plot)
+          
+          this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
+          
+         //falls ne node abgewählt wird soll auch der plot gelöscht werden
+//schwachsinn schnittmenge zw url u plot childes
+         for (let el in $('#KMP-plot-container-parent').children.length){
+          if( $('#KMP-plot-container-parent').children[el].match('myDiv_'+ensgList[$o]) )
+          {
+            console.log( PlotList[el].id )
+             $('#myDiv_'+ensgList[$o]).remove()
+          }
+        
+         }
+    
+          // end loading
+        //   $('#loading_spinner_results').addClass('hidden')
+      
+          },
+          error: (response2) => {
+          //helper.msg("Something went wrong finding your gene symbol.", true)
+            //$('#loading_spinner_results').addClass('hidden')
+          }
+        
+        });
+      }
+     }
+     console.log(PlotList)
+     for(let e in PlotList){
+    
+       $('#myDiv_'+PlotList[e]).remove()
+     }
+    
     }
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
       // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
@@ -332,7 +362,7 @@ export class Helper {
      {       
        
         console.log(mean_se.length); //495
-        Plotly.purge('myDiv');
+       // Plotly.purge('myDiv');
         var ensg = 'Survival Analysis of gene ' + gene_name + 'from cancer set '+ disease_name
       
         
@@ -387,7 +417,7 @@ export class Helper {
             
           }
         };
-        Plotly.plot('myDiv', data, layout, {showSendToCloud: true});
+        Plotly.plot('myDiv_'+gene_name ,data, layout, {showSendToCloud: true});
      };
 
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
@@ -584,7 +614,8 @@ export class Helper {
         // network was altered, update url
         session.update_url()
 
-        $this.load_KMP(nodeId) 
+        
+        $this.load_KMP(session.get_selected()['nodes']) 
       }
 
 
