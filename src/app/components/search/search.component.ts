@@ -535,7 +535,7 @@ export class SearchComponent implements OnInit {
 
           let ensg_numbers = nodes.map(function(node) {return node.id})
           let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
-        
+          
 
           helper.mark_nodes_table(table, ensg_numbers_to_mark)
           load_edges(encodeURI(disease), ensg_numbers, edges => {
@@ -554,6 +554,8 @@ export class SearchComponent implements OnInit {
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
+              helper.load_KMP(ensg_numbers_to_mark) 
+              
             }, 500)
 
             // load expression data
@@ -567,7 +569,7 @@ export class SearchComponent implements OnInit {
               // clear url storage so no more information is stored
               url_storage = undefined
             }
-            
+          
           })
 
         })
@@ -575,10 +577,12 @@ export class SearchComponent implements OnInit {
         // load network immediately if we restore old session
         if (url_storage && url_storage['active_cancer'] == disease) {
           $('.export_nodes').last().click()
+          //helper.load_KMP(url_storage['nodes']) 
           
+          $('#plots').removeClass('hidden')
         }
 
-       
+        
        
       }
     }
