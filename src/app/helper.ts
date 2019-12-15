@@ -191,7 +191,7 @@ export class Helper {
       //console.log(wholeJason[0].donors.length);
      var dn = encodeURIComponent($('#network-plot-container').val().toString())
      
-     console.log(dn+" vorher"+ this.load_session_url['nodes'] )
+     console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
    
      
       var test = ensgList[0]//['ENSG00000179915'];
@@ -238,12 +238,12 @@ export class Helper {
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
 
 
-          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='myDiv_"+response[0].gene +"'style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
+          let add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
       
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
 
 
-          $('#KMP-plot-container-parent').append(add_KMP_Plot)
+          $('#plots').append(add_KMP_Plot)
           
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
      
@@ -356,7 +356,7 @@ export class Helper {
        
         console.log(mean_se.length); //495
         Plotly.purge('myDiv_'+gene_name);
-        var ensg = 'Survival Analysis of gene ' + gene_name + 'from cancer set '+ disease_name
+        var ensg = 'Survival Analysis of gene ' + gene_name + ' from cancer set '+ $('#network-plot-container').val().toString()
       
         
         var sestimateGesamt = [];
@@ -391,13 +391,14 @@ export class Helper {
 
         var data = [overexpression_0,overexpression_1];
         var layout = {
-          autosize: false,
-          width:480,
-          height: 400,
+         // autosize: false,
+        //  width:480,
+         // height: 400,
+        
           title: {
             text:ensg ,
             font: {
-              family: 'Courier New, monospace',
+              family: 'Arial, monospace',
               size: 11,
             }
           },
