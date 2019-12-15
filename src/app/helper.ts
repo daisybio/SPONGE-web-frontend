@@ -196,7 +196,7 @@ export class Helper {
      
       var test = ensgList[0]//['ENSG00000179915'];
       
-      
+      //Rauslöschen des KMP-Plots wenn Node deselected wird
       if($('#myDiv_'+clicked_Node).length >0){
         console.log("gabs schon")
         $('#myDiv_'+clicked_Node).remove()
@@ -206,7 +206,7 @@ export class Helper {
     for(let $o=0; $o<ensgList.length;$o++){
      
 
-      console.log(ensgList+" test "+ dn)
+     
       let overexpression_0=[]
       let overexpression_1=[]
       let mean_se =[]
@@ -233,8 +233,7 @@ export class Helper {
                 overexpression_1.push(response[j]);
               }
           }
-          console.log('1 '+overexpression_1.length)
-          console.log('0 '+overexpression_0.length)
+         
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
 
@@ -247,17 +246,7 @@ export class Helper {
           $('#KMP-plot-container-parent').append(add_KMP_Plot)
           
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
-          
-         //falls ne node abgewählt wird soll auch der plot gelöscht werden
-//schwachsinn schnittmenge zw url u plot childes
-         for (let el in $('#KMP-plot-container-parent').children.length){
-          if( $('#KMP-plot-container-parent').children[el].match('myDiv_'+ensgList[$o]) )
-          {
-            console.log( PlotList[el].id )
-             $('#myDiv_'+ensgList[$o]).remove()
-          }
-        
-         }
+     
     
           // end loading
         //   $('#loading_spinner_results').addClass('hidden')
