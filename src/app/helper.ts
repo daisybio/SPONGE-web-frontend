@@ -394,24 +394,25 @@ export class Helper {
          // autosize: false,
         //  width:480,
          // height: 400,
-        
+          legend:{
+            orientation:"h",
+            y: -0.35,
+          },
           title: {
             text:ensg ,
             font: {
-              family: 'Arial, monospace',
-              size: 11,
+              family: 'Arial, bold',
+              size: 12,
+              color: '#052444',
             }
           },
           xaxis: {
-            
-            
             title: 'Duration(days)',
             autorange: true
           }, 
           yaxis: {
             title: 'Survival Rate',
-            autorange: true
-            
+            autorange: true  
           }
         };
         Plotly.plot('myDiv_'+gene_name ,data, layout, {showSendToCloud: true});
