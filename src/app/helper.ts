@@ -182,7 +182,7 @@ export class Helper {
       })
     }
 
-    public load_KMP(ensgList) 
+    public load_KMP(ensgList,clicked_Node) 
     {
       //einlesen der test daten für den KM Plot
      // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
@@ -192,12 +192,19 @@ export class Helper {
      var dn = encodeURIComponent($('#network-plot-container').val().toString())
      
      console.log(dn+" vorher"+ this.load_session_url['nodes'] )
+   
      
       var test = ensgList[0]//['ENSG00000179915'];
       
-      let PlotList=$('KMP-plot-container-parent').children
-      console.log($('KMP-plot-container-parent').children)
+      
+      if($('#myDiv_'+clicked_Node).length >0){
+        console.log("gabs schon")
+        $('#myDiv_'+clicked_Node).remove()
+        
+      }
+      
     for(let $o=0; $o<ensgList.length;$o++){
+     
 
       console.log(ensgList+" test "+ dn)
       let overexpression_0=[]
@@ -264,11 +271,7 @@ export class Helper {
         });
       }
      }
-     console.log(PlotList)
-     for(let e in PlotList){
-    
-       $('#myDiv_'+PlotList[e]).remove()
-     }
+     
     
     }
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
@@ -618,7 +621,7 @@ export class Helper {
         session.update_url()
 
         
-        $this.load_KMP(session.get_selected()['nodes']) 
+        $this.load_KMP(session.get_selected()['nodes'],nodeId) 
       }
 
 
