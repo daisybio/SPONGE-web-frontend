@@ -232,7 +232,7 @@ export class Helper {
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
 
 
-          let add_KMP_Plot =  "<div  id='kmp-plot-container' style='background-color:white;margin-bottom:10px; min-width: 485px; height: 408px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='width: 480px; height: 400px;'></div> "+"</div>"
+          let add_KMP_Plot =  "<div class='col' id='kmp-plot-container' style='background-color:white;margin:10px; min-width: 485px; height: 408px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='width: 480px; height: 400px;'></div> "+"</div>"
       
           
 
