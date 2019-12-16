@@ -554,7 +554,7 @@ export class SearchComponent implements OnInit {
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
-              helper.load_KMP(ensg_numbers_to_mark) 
+              helper.load_KMP(ensg_numbers_to_mark,"") 
               
             }, 500)
 
