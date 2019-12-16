@@ -380,6 +380,7 @@ export class BrowseComponent implements OnInit {
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
                 $('#restart_camera').click()
+                helper.load_KMP(ensg_numbers,"") 
               }, 200)
             })
       
@@ -401,6 +402,7 @@ export class BrowseComponent implements OnInit {
               setTimeout(() => {
                 // network.refresh()
                 $('#restart_camera').click()
+                helper.load_KMP(ensg_numbers,"") 
               }, 500)
             })
 
@@ -421,7 +423,7 @@ export class BrowseComponent implements OnInit {
 
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
-
+             
             // stop loading screen
             disease_selector.attr('disabled', false)
             $('#browse_loading_spinner').addClass('hidden') 

@@ -191,6 +191,8 @@ export class SearchComponent implements OnInit {
       // build html for response_data
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('')
+        disease_trimmed= disease_trimmed.replace('&', "_")
+        console.log(disease_trimmed)
         let table_id: string = disease_trimmed + "-table"
         let accordion_card = "<div class='card'>" +
           "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
