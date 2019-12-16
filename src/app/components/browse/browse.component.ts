@@ -380,7 +380,7 @@ export class BrowseComponent implements OnInit {
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
                 $('#restart_camera').click()
-                helper.load_KMP(ensg_numbers,"") 
+                
               }, 200)
             })
       
@@ -402,7 +402,7 @@ export class BrowseComponent implements OnInit {
               setTimeout(() => {
                 // network.refresh()
                 $('#restart_camera').click()
-                helper.load_KMP(ensg_numbers,"") 
+               
               }, 500)
             })
 
@@ -413,6 +413,7 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
+                helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
               if ('edges' in url_storage && url_storage['edges'].length) {
                 helper.mark_edges_table(edge_table, url_storage['edges'])
@@ -423,7 +424,8 @@ export class BrowseComponent implements OnInit {
 
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
-             
+           
+             console.log(ensg_numbers)
             // stop loading screen
             disease_selector.attr('disabled', false)
             $('#browse_loading_spinner').addClass('hidden') 

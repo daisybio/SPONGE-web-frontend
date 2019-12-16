@@ -182,17 +182,22 @@ export class Helper {
       })
     }
 
-    public load_KMP(ensgList,clicked_Node) 
+    public load_KMP(ensgList,clicked_Node,disease_name) 
     {
       //einlesen der test daten für den KM Plot
      // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
      // var testSD = JSON.stringify(json);
       //var wholeJason = JSON.parse(testSD);
       //console.log(wholeJason[0].donors.length);
-     var dn = encodeURIComponent($('#network-plot-container').val().toString())
-     
-     console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
-   
+      var dn
+      if(disease_name == ""){
+     dn = encodeURIComponent($('#network-plot-container').val().toString())
+     }else{
+       dn = disease_name
+     }
+     //console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
+     console.log( dn +" vorher"+ ensgList+" "+clicked_Node )
+
      
       var test = ensgList[0]//['ENSG00000179915'];
       
@@ -612,7 +617,7 @@ export class Helper {
         session.update_url()
 
         
-        $this.load_KMP(session.get_selected()['nodes'],nodeId) 
+        $this.load_KMP(session.get_selected()['nodes'],nodeId,"") 
       }
 
 
