@@ -190,9 +190,7 @@ export class SearchComponent implements OnInit {
 
       // build html for response_data
       for (let disease in parsed_search_result['diseases']) {
-        let disease_trimmed = disease.split(' ').join('')
-        disease_trimmed= disease_trimmed.replace('&', "_")
-        console.log(disease_trimmed)
+        let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         let accordion_card = "<div class='card'>" +
           "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
@@ -436,7 +434,7 @@ export class SearchComponent implements OnInit {
 
       // build table out of parsed result for each disease
       for (let disease in parsed_search_result['diseases']) {
-        let disease_trimmed = disease.split(' ').join('')
+        let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         let accordion_card = "<div class='card'>" +
           "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
@@ -480,6 +478,8 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
+        console.log(disease_trimmed)
+        console.log($('#collapse_' + disease_trimmed))
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
         push_interaction_filters(table_id)
