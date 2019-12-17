@@ -2,20 +2,18 @@
  <div class="container" >
           <div class="jumbotron shadow-lg" id="bigBox">
                 
-                <h1 class="display-4" id="headline">What's possible on SPONGE Web <br> Tutorial & Explanations</h1>
-             <!--   <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
+                <h1 class="display-4" id="headline">What's possible on SPONGE Web <br> Tutorial & Documentation</h1>
                 <hr class="my-4">
 
                 <p> </p>
-          
+          <!--Kurz Beschreibung warum die Web App von SPONGE -->
               <div class="card shadow">
-              <!--  <h3 class="card-header" id="card-header">How to use the search on home</h3> -->
+               <h3 class="card-header" id="card-header">What is SPONG-web good for?</h3> 
                 <div class="card-body">
-                  <img src="../../../assets/img/bioconductor_logo_rgb.jpg" width="15%" height="15%" style="float: right;" >
-                  <h4 class="card-title">You can enter a gene symbol, ENSG number or miRNA to search in the SPONGE database for all interactions.</h4>
-                 <!-- <p class="card-text">If you want to know more about the people behind SPONGE, visit the Website of the ListLab.</p>-->
-                  <a href="https://bioconductor.org/packages/release/bioc/html/SPONGE.html" targe="_blank" class="btn btn-primary" id="link-button">Bring me to Bioconductor!</a>
-                  <div style="clear:both"></div>
+                <p class="card-text" style="text-align: justify;">
+                    MicroRNAs are important small non-coding transcriptional regulators involved in many biological processes and human diseases. It is assumed that at least half of the genes in the human genome are influenced by miRNA regulation. Since the number of transcripts with miRNA binding sites far exceeds the number of different miRNAs, these are in competition, creating a complex competing endogenous RNA (ceRNA) interaction network. We applied SPONGE, a method for the fast construction of genome-wide ceRNA interaction network using sparse partial correlation, to infer ceRNA regulatory networks for 23 cancer types in The Cancer Genome Atlas. To make these networks accessible for biomedical research, we created SPONGE-web, a web resource featuring an application programming interface that allows software developers and data analysts to query and filter ceRNA networks efficiently. As an application case and to make this rich resource easily accessible, we further developed a web interface that allows users to visualize ceRNA networks interactively. Access to the web interface or the API requires no login or registration. SPONGE-web enables its users to identify potent ceRNA regulators via network centrality analysis and to assess their potential as a cancer biomarker through survival analysis. In summary, SPONGE-web is a novel, feature-rich web resource supporting the community in studying ceRNA regulation.
+
+                </p>
                 </div>
           </div>
           
@@ -24,7 +22,7 @@
           <div class="row d-flex justify-content-center">
             <div class="col-4">
                 <div class="card shadow" style="max-width: 18rem;">
-                  <div class="card-header" id="card-header" style="background-color: #051e3e ;">Documentation of the API</div>
+                  <h5 class="card-header" id="card-header" style="background-color: #051e3e ;">Documentation of the API</h5>
                   <div class="card-body" style="background-color: #adcbe3 ;">
                       <p class="card-title">Follow the white rabbit and check out & play with our API! </p>
                     <a class="d-flex justify-content-center" href="http://10.162.163.20:5000/ui/" target="_blank">
@@ -53,17 +51,60 @@
           </div>
         <p> </p>
             
-              <div class="card shadow" id="contact">
-                    <h3 class="card-header" id="card-header">Contact</h3>
-                    <div class="card-body">
-                      <img src="../../../assets/img/TUM-Logo.png" width="15%" height="15%" style="float: right;" >
-                      <h4 class="card-title">The List Group @BaumbachLab TUM</h4>
-                      <p class="card-text">If you want to know more about the people behind SPONGE, visit the Website of the ListLab.</p>
-                      <a href="https://www.baumbachlab.net/list-lab" class="btn btn-primary" id="link-button">ListLab @TUM</a>
-                      <div style="clear:both"></div>
-                    </div>
+        <div class="card shadow" id="contact">
+          <h3 class="card-header" id="card-header">Browser Compabilities</h3>
+          <div class="card-body">
+          <p class="card-text">
+            The following table displays all tested browser and os versions.
+          </p>
+         
+              <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">OS</th>
+                      <th scope="col">Version</th>
+                      <th scope="col">Chrome</th>
+                      <th scope="col">Opera</th>
+                      <th scope="col">Firefox</th>
+                      <th scope="col">Microsoft Edge</th>
+                      <th scope="col">Safari</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="card-body-dark">
+                      <th scope="row">Linux</th>
+                      <td>Ubuntu 18.04.3</td>
+                      <td>not tested</td>
+                      <td>65.0.3467.62</td>
+                      <td>71.0</td>
+                      <td>n/a</td>
+                      <td>n/a</td>
+            
+                    </tr>
+                    <tr>
+                      <th scope="row">Windows</th>
+                      <td>10</td> <!--browser version-->
+                      <td>not tested</td>
+                      <td>not tested</td>
+                      <td>Ubuntu 18.04.3</td>
+                      <td>not tested</td>
+                      <td>n/a</td>
+                      
+                    </tr>
+                    <tr class="card-body-dark">
+                      <th scope="row">MacOS</th>
+                      <td>HighSierra</td>
+                      <td>not tested</td>
+                      <td>not tested</td>
+                      <td>not tested</td>
+                      <td>n/a</td>
+                      <td>not tested</td>
+                    
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-        
+            </div>
          </div>
     
          
