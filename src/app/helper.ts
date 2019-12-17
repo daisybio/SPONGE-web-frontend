@@ -184,6 +184,8 @@ export class Helper {
 
     public load_KMP(ensgList,clicked_Node,disease_name) 
     {
+        // start loading data
+        $('#loading_spinner_KMP').removeClass('hidden')
       //einlesen der test daten für den KM Plot
      // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
      // var testSD = JSON.stringify(json);
@@ -204,6 +206,7 @@ export class Helper {
       if($('#myDiv_'+clicked_Node).length >0){
         console.log("gabs schon")
         $('#myDiv_'+clicked_Node).remove()
+        $('#loading_spinner_KMP').addClass('hidden')
         
       }
       
@@ -253,12 +256,12 @@ export class Helper {
      
     
           // end loading
-        //   $('#loading_spinner_results').addClass('hidden')
+           $('#loading_spinner_KMP').addClass('hidden')
       
           },
           error: (response2) => {
-          //helper.msg("Something went wrong finding your gene symbol.", true)
-            //$('#loading_spinner_results').addClass('hidden')
+          this.msg("Something went wrong creating the survival analysis.", true)
+          $('#loading_spinner_KMP').addClass('hidden')
           }
         
         });
