@@ -2,48 +2,55 @@
  <div class="container" >
           <div class="jumbotron shadow-lg" id="bigBox">
                 
-                <h1 class="display-4" id="headline">What's possible on SPONGE Web - Tutorial & Explanations</h1>
+                <h1 class="display-4" id="headline">What's possible on SPONGE Web <br> Tutorial & Explanations</h1>
              <!--   <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
                 <hr class="my-4">
 
                 <p> </p>
           
               <div class="card shadow">
-                <h3 class="card-header" id="card-header">How to use the search on home</h3>
+              <!--  <h3 class="card-header" id="card-header">How to use the search on home</h3> -->
                 <div class="card-body">
                   <img src="../../../assets/img/bioconductor_logo_rgb.jpg" width="15%" height="15%" style="float: right;" >
                   <h4 class="card-title">You can enter a gene symbol, ENSG number or miRNA to search in the SPONGE database for all interactions.</h4>
                  <!-- <p class="card-text">If you want to know more about the people behind SPONGE, visit the Website of the ListLab.</p>-->
-                  <a href="https://bioconductor.org/packages/release/bioc/html/SPONGE.html" class="btn btn-primary" id="link-button">Bring me to Bioconductor!</a>
+                  <a href="https://bioconductor.org/packages/release/bioc/html/SPONGE.html" targe="_blank" class="btn btn-primary" id="link-button">Bring me to Bioconductor!</a>
                   <div style="clear:both"></div>
                 </div>
           </div>
           
           <p> </p>
 
-
-                <div class="card shadow">
-                        <h3 class="card-header" id="card-header">Documentation of the API</h3>
-                        <div class="card-body">
-                          <img src="../../../assets/img/GitHub-Mark.png" width="15%" height="15%" style="float: right;" >
-                          <!--<h4 class="card-title"></h4> -->
-                          
-                          <p class="card-text">Here you can check out the documentation of the database and API.</p>
-                          <a href="http://10.162.163.20:5000/ui/" class="btn btn-primary" id="link-button">Bring me to API documentation!</a>
-                          <div style="clear:both"></div>
-                        </div>
+          <div class="row d-flex justify-content-center">
+            <div class="col-4">
+                <div class="card shadow" style="max-width: 18rem;">
+                  <div class="card-header" id="card-header" style="background-color: #051e3e ;">Documentation of the API</div>
+                  <div class="card-body" style="background-color: #adcbe3 ;">
+                      <p class="card-title">Follow the white rabbit and check out & play with our API! </p>
+                    <a class="d-flex justify-content-center" href="http://10.162.163.20:5000/ui/" target="_blank">
+                      <img src="../../../assets/img/api_rabbit.png" width="60%" height="60%">
+                    </a>
+                  </div>
                 </div>
-                
-            <p> </p>
+              </div>
+              
+           
 
-            <div class="card shadow">
-                    <h3 class="card-header" id="card-header">Publications</h3>
+            <div class="col">
+                <div class="card shadow">
+                    <h3 class="card-header" id="card-header">How to use the search on home</h3>
                     <div class="card-body">
-                     <img src="../../../assets/img/scrollicon.svg" width="10%" height="10%" style="float: right;" >
-                      
+                     
+                      <p class="card-text">You can enter a gene symbol, ENSG number or miRNA to search in the SPONGE database for all corresponding interactions.
+                          <br> On the next side you will find tables of the found cancer sets. You can search those tables for other genes/miRNAs or create 
+                          a network from those table entries.  
+
+                      </p>
+                    
                     </div>
             </div>
-            
+            </div>
+          </div>
         <p> </p>
             
               <div class="card shadow" id="contact">
