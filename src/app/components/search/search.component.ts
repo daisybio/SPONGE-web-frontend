@@ -64,6 +64,7 @@ export class SearchComponent implements OnInit {
       $('#key_information').empty()
       $('#disease_accordion').empty()
       $('#network-container').empty()
+      $('#plots').empty()
       /* search_key is defined */
       if (search_key != undefined) {
         // start loading data

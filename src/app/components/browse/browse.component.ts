@@ -284,7 +284,7 @@ export class BrowseComponent implements OnInit {
         $("#interactions-nodes-table-container").html(''); //clear possible older tables
         $("#interactions-edges-table-container").html(''); //clear possible older tables
         $("#expression_heatmap").html(''); //clear possible older expression map
-
+        $('#plots').empty()
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 

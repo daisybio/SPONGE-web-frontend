@@ -189,12 +189,11 @@ export class Helper {
      // var testSD = JSON.stringify(json);
       //var wholeJason = JSON.parse(testSD);
       //console.log(wholeJason[0].donors.length);
-      var dn
-      if(disease_name == ""){
-     dn = encodeURIComponent($('#network-plot-container').val().toString())
-     }else{
-       dn = disease_name
-     }
+      var dn=$('#disease_selectpicker').val().toString() 
+      
+      if(dn == "All" || disease_name == ""){
+        dn = encodeURIComponent($('#network-plot-container').val().toString())
+        }
      //console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
      console.log( dn +" vorher"+ ensgList+" "+clicked_Node )
 
@@ -360,7 +359,7 @@ export class Helper {
      {       
        
         console.log(mean_se.length); //495
-        Plotly.purge('myDiv_'+gene_name);
+       // Plotly.purge('myDiv_'+gene_name);
         var ensg = 'Survival Analysis of gene ' + gene_name + ' from cancer set '+ $('#network-plot-container').val().toString()
       
         
@@ -615,9 +614,10 @@ export class Helper {
         
         // network was altered, update url
         session.update_url()
-
+        console.log("cancer set name "+encodeURIComponent(selected_disease))
         
-        $this.load_KMP(session.get_selected()['nodes'],nodeId,"") 
+        
+        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
       }
 
 
