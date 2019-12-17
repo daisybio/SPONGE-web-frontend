@@ -46,15 +46,22 @@ export class SearchComponent implements OnInit {
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
-      limit = $('#gene_input_limit').val()
-      search(limit)
-      
+      if (search_key == '') {
+        helper.msg("Please select a search gene", false)
+      } else {
+        limit = $('#gene_input_limit').val()
+        search(limit)
+      }    
     })
 
     $('#options_mirna_go').click( () => {
       search_key = $('#mirna_search_keys').val()
-      limit = $('#mirna_input_limit').val()
-      search(limit)
+      if (search_key == '') {
+        helper.msg("Please select a search gene", false)
+      } else {
+        limit = $('#mirna_input_limit').val()
+        search(limit)
+      }
     })
     
     search(limit)
