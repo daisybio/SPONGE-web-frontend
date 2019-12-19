@@ -195,6 +195,7 @@ export class HomeComponent implements OnInit {
       let search_key = $('#home_search').val()
       // replace possible empty spaces
       search_key = search_key.replace(' ', '')
+     search_key= search_key.split(/\(/)[1].substring(0,search_key.split(/\(/)[1].length-1)
       window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
@@ -207,7 +208,7 @@ export class HomeComponent implements OnInit {
               // put all values in a list
               let values = []
               for (let entry in data) {
-                values.push(Object.values(data[entry])[0])
+                values.push(Object.values(data[entry])[1]+" ("+Object.values(data[entry])[0]+")")
               }
               response(values)
             },

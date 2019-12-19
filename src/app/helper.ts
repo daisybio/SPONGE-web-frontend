@@ -387,14 +387,14 @@ export class Helper {
         };
         
         var overexpression_0 = {
-          x: seen_time_0, 
+          x: Plotly.d3.format(seen_time_0), 
           y: overexpression_0_se, 
           type: 'scatter',
           name: 'Underexpressed Genes'
         };
 
         var overexpression_1= {
-          x: seen_time_1, 
+          x: Plotly.d3.format(seen_time_1), 
           y: overexpression_1_se, 
           type: 'scatter',
           name: 'Overexpressed Genes'
