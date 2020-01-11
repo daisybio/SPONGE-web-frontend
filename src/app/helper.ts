@@ -193,7 +193,7 @@ export class Helper {
       //console.log(wholeJason[0].donors.length);
       var dn=$('#disease_selectpicker').val().toString() 
       
-      if(dn == "All" || disease_name == ""){
+      if(dn == "All"){
         dn = encodeURIComponent($('#network-plot-container').val().toString())
         }
      //console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
@@ -251,6 +251,10 @@ export class Helper {
 
 
           $('#plots').append(add_KMP_Plot)
+          if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
+            dn = $('#network-plot-container').val().toString()
+            }
+          
           
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
      
@@ -356,8 +360,8 @@ export class Helper {
      {       
        
         console.log(mean_se.length); //495
-       // Plotly.purge('myDiv_'+gene_name);
-        var ensg = 'Survival Analysis of gene ' + gene_name + ' from cancer set '+ $('#network-plot-container').val().toString()
+       // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
+        var ensg = 'Survival Analysis of gene ' + gene_name + ' from cancer set <br>'+ disease_name
       
         
         var sestimateGesamt = [];
@@ -612,7 +616,7 @@ export class Helper {
         
         // network was altered, update url
         session.update_url()
-        console.log("cancer set name "+encodeURIComponent(selected_disease))
+        console.log("cancer set name "+encodeURIComponent(selected_disease)) 
         
         
         $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
