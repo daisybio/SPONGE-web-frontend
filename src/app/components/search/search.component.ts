@@ -50,6 +50,7 @@ export class SearchComponent implements OnInit {
         helper.msg("Please select a search gene", false)
       } else {
         limit = $('#gene_input_limit').val()
+        //helper.check_gene_interaction()
         search(limit)
       }    
     })
@@ -65,6 +66,31 @@ export class SearchComponent implements OnInit {
     })
     
     search(limit)
+
+    function draw_cancer_type_accordion(disease_names = null) {
+      if (disease_names == null) {
+        //controller.check_gene_interaction({})
+      }
+      // build html for response_data
+      for (let disease in disease_names) {
+        let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
+        let table_id: string = disease_trimmed + "-table"
+        let accordion_card = "<div class='card'>" +
+          "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
+          "<h5 class='mb-0'>" +
+          "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
+          disease +
+          "</button>" +
+          "</h5>" +
+          "</div>" +
+          "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
+          "<div class='card-body'>" +
+          "<div class='card-body-table'></div>" +
+          "</div>" +
+          "</div>"
+        $('#disease_accordion').append(accordion_card)
+      }
+    }
 
     function search(limit) {
       // clear older search-results
@@ -195,26 +221,11 @@ export class SearchComponent implements OnInit {
           parsed_search_result['diseases'][disease] = [row]
         }
       })
+      draw_cancer_type_accordion(parsed_search_result['diseases'])
 
-      // build html for response_data
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
-        let accordion_card = "<div class='card'>" +
-          "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
-          "<h5 class='mb-0'>" +
-          "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
-          disease +
-          "</button>" +
-          "</h5>" +
-          "</div>" +
-          "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
-          "<div class='card-body'>" +
-          "<div class='card-body-table'></div>" +
-          "</div>" +
-          "</div>"
-        $('#disease_accordion').append(accordion_card)
-
         let html_table = helper.buildTable(
           parsed_search_result['diseases'][disease],
           table_id,
@@ -371,7 +382,7 @@ export class SearchComponent implements OnInit {
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
+            ordered_entry['ID'] = entry['interactions_genegene_ID']
             ordered_data.push(ordered_entry)
           }
           $('#edge_data').text(JSON.stringify(ordered_data))
@@ -564,7 +575,7 @@ export class SearchComponent implements OnInit {
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
-              helper.load_KMP(ensg_numbers_to_mark,"","") 
+              helper.load_KMP(ensg_numbers_to_mark,"", "") 
               
             }, 500)
 

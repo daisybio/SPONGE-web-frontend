@@ -206,7 +206,7 @@ export class BrowseComponent implements OnInit {
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
+            ordered_entry['ID'] = i
             ordered_data.push(ordered_entry)
           }
 
@@ -240,11 +240,11 @@ export class BrowseComponent implements OnInit {
           helper.colSearch('interactions-edges-table', edge_table)
 
           let edges = [];
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscor'];
+          for (let interaction in ordered_data) {
+            let id = ordered_data[interaction]['ID'];
+            let source = ordered_data[interaction]['Gene 1']['ensg_number'];
+            let target = ordered_data[interaction]['Gene 2']['ensg_number'];
+            let size = 100*ordered_data[interaction]['MScor'];
             let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
@@ -425,7 +425,6 @@ export class BrowseComponent implements OnInit {
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
            
-             console.log(ensg_numbers)
             // stop loading screen
             disease_selector.attr('disabled', false)
             $('#browse_loading_spinner').addClass('hidden') 

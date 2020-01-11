@@ -8,6 +8,7 @@ export class Controller {
     static API_ENDPOINT = "http://10.162.163.20:5000"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
+    static CHECKGENEINTERACTION = "/ceRNAInteraction/checkGeneInteraction"
     static FIND_CERNA = "/findceRNA"
 
     static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
@@ -39,6 +40,35 @@ export class Controller {
                 request += '?'
             }
             request += "searchString="+config.searchString
+            console.log(request)
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
+
+    public check_gene_interaction(
+        config: {
+            ensg_number?: string[],
+            gene_symbol?: string[],
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_SPECIFIC
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            if (config.ensg_number != undefined) {
+                request += "&ensg_number="+config.ensg_number
+            }
+            if (config.gene_symbol != undefined) {
+                request += "&gene_symbol="+config.gene_symbol
+            }
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -191,6 +221,7 @@ export class Controller {
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -247,6 +278,7 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
+        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                

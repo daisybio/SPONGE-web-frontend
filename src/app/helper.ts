@@ -173,7 +173,7 @@ export class Helper {
               ticks: '',
             },
           };
-
+          console.log(data)
           Plotly.newPlot('expression_heatmap', data, layout);
         },
         error: () => {
@@ -346,12 +346,6 @@ export class Helper {
               last_estimate = estimate;
 
                 SE_array.push(estimate);
-            
-             //   console.log(SE_array[SE_array.length]+" "+time+" "+estimate+" "+vorherSE)
-
-              
-              
-              //  console.log(modified_JSON);
              }
            }
 
@@ -461,6 +455,7 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
+      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -538,7 +533,7 @@ export class Helper {
         // e.data.edge.color = $this.hover_edge_color
         let data = JSON.parse($('#edge_data').text())
         for (let entry in data) {
-          if (data[entry]['interaction gene-gene ID'] == e.data.edge.id) {
+          if (data[entry]['ID'] == e.data.edge.id) {
             // build a table to display json
             let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
