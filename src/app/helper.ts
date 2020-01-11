@@ -3,6 +3,7 @@ import { Session } from "../app/session";
 import sigma from 'sigma';
 import { enableDebugTools } from '@angular/platform-browser';
 import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
+import { ExpressionStatement } from '@angular/compiler';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -124,10 +125,10 @@ export class Helper {
           var z = []
           var seen_sample_ids = {}
           let ordered_genes = nodes.sort()
-
+          
           for (let e in response) {
             let experiment = response[e]
-            let gene = experiment['gene']
+            let gene = experiment['gene']['ensg_number']
             let expr_value = experiment['expr_value']
             let sample_ID = experiment['sample_ID']
             if (seen_sample_ids.hasOwnProperty(sample_ID)) {
@@ -143,6 +144,7 @@ export class Helper {
           ordered_genes.forEach((ensg_number) => {
             ordered_genes[ensg_number];
           });
+          console.log("seen sample ids ", seen_sample_ids)
           for(let sample_ID in seen_sample_ids) {
             let genes_values = seen_sample_ids[sample_ID]
             let l = []
