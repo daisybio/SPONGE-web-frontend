@@ -144,7 +144,6 @@ export class Helper {
           ordered_genes.forEach((ensg_number) => {
             ordered_genes[ensg_number];
           });
-          console.log("seen sample ids ", seen_sample_ids)
           for(let sample_ID in seen_sample_ids) {
             let genes_values = seen_sample_ids[sample_ID]
             let l = []
@@ -175,7 +174,6 @@ export class Helper {
               ticks: '',
             },
           };
-          console.log(data)
           Plotly.newPlot('expression_heatmap', data, layout);
         },
         error: () => {
@@ -186,36 +184,25 @@ export class Helper {
 
     public load_KMP(ensgList,clicked_Node,disease_name) 
     {
-        // start loading data
-        $('#loading_spinner_KMP').removeClass('hidden')
-      //einlesen der test daten für den KM Plot
-     // let json = require('/home/veronika/Dokumente/Sponge/Git/SPONGE-web-frontend/src/assets/img/survival-plot.json');
-     // var testSD = JSON.stringify(json);
-      //var wholeJason = JSON.parse(testSD);
-      //console.log(wholeJason[0].donors.length);
+      // start loading data
+      $('#loading_spinner_KMP').removeClass('hidden')
+
       var dn=$('#disease_selectpicker').val().toString() 
       
       if(dn == "All"){
         dn = encodeURIComponent($('#network-plot-container').val().toString())
         }
-     //console.log( $('#network-plot-container').val().toString()+" vorher"+ this.load_session_url['nodes'] )
-     console.log( dn +" vorher"+ ensgList+" "+clicked_Node )
-
      
       var test = ensgList[0]//['ENSG00000179915'];
       
       //Rauslöschen des KMP-Plots wenn Node deselected wird
       if($('#myDiv_'+clicked_Node).length >0){
-        console.log("gabs schon")
         $('#myDiv_'+clicked_Node).remove()
         $('#loading_spinner_KMP').addClass('hidden')
-        
       }
       
     for(let $o=0; $o<ensgList.length;$o++){
-     
-
-     
+          
       let overexpression_0=[]
       let overexpression_1=[]
       let mean_se =[]
@@ -246,21 +233,17 @@ export class Helper {
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
 
-
           let add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
       
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
-
 
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
             }
-          
-          
+                    
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0, response[0].gene, dn)
-     
-    
+         
           // end loading
            $('#loading_spinner_KMP').addClass('hidden')
       
@@ -269,12 +252,9 @@ export class Helper {
           this.msg("Something went wrong creating the survival analysis.", true)
           $('#loading_spinner_KMP').addClass('hidden')
           }
-        
         });
       }
      }
-     
-    
     }
       //1. mit /survivalAnalysis/getRates das gen anhängen aus dem json die survival rate id holen und damit
       // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
@@ -284,14 +264,9 @@ export class Helper {
       parse_survival_data(response,seen_time)
       {
         let samples = [];
-        
-        
 
         var allResp=JSON.stringify(response);
-        var allResp2 = JSON.parse(allResp);
-        console.log(allResp2.patient_information); //array mit den einträgen
-        
-          
+        var allResp2 = JSON.parse(allResp);  
          
           for (let i=0; i < allResp2.length; i++) {  //rausziehen der patienten info
              //Gleich berechnen des SE u speichern des ergebnisses in array mit sample id u (gene)//
@@ -301,10 +276,6 @@ export class Helper {
           }
           //Sortieren nach der survival time
           samples.sort((a,b) => (a.patient_information.survival_time > b.patient_information.survival_time) ? 1: -1);
-          console.log(samples[0].patient_information)
-          console.log(samples[1].patient_information)
-          console.log(samples[2].patient_information)
-          console.log(samples[3].patient_information)
           //TO-DO sicherstellen das 1 zeit auch nur 1 mal durchgegangen wird
           let SE_array=[]
          // let seen_time =[]
@@ -345,7 +316,6 @@ export class Helper {
               // }
              // }
 
-
               // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
             
               var estimate = last_estimate*(1-(n/bigger_equal_time));
@@ -361,16 +331,10 @@ export class Helper {
      plot_KMP(mean_se,overexpression_0_se ,overexpression_1_se,seen_time_mean,seen_time_1,seen_time_0,gene_name, disease_name ) 
      {       
        
-        console.log(mean_se.length); //495
        // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
         var ensg = 'Survival Analysis of gene ' + gene_name + ' from cancer set <br>'+ disease_name
-      
         
         var sestimateGesamt = [];
-    
-    
-        console.log(seen_time_mean);
-        console.log(sestimateGesamt[0]);
       
         //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
         //Im beispiel fall nur y estimate gegen time x
@@ -428,7 +392,6 @@ export class Helper {
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
 
       const $this = this
-
       $('#network-plot-container').html(''); // clear possible other network
       $('#network-search').html('');  // clear other search options
 
@@ -461,7 +424,6 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
-      console.log(graph)
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -618,7 +580,6 @@ export class Helper {
         
         // network was altered, update url
         session.update_url()
-        console.log("cancer set name "+encodeURIComponent(selected_disease)) 
         
         
         $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
@@ -797,7 +758,6 @@ export class Helper {
     nodeIDclicked:any = "test";
     public node_is_clicked(nodeID){
       this.nodeIDclicked= nodeID
-      console.log(this.nodeIDclicked)
      } 
     public node_clicked(){
       return this.nodeIDclicked

@@ -193,7 +193,7 @@ export class SearchComponent implements OnInit {
               $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("We could not find any matches your gene and your cancer type.", false)
+              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
               $('#loading_spinner_results').addClass('hidden')
             }
           })
@@ -352,13 +352,28 @@ export class SearchComponent implements OnInit {
     function load_edges(disease:string, nodes:string[], callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease, 'ensg_number':nodes,
         'callback':data => {
+          let ordered_data = []
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            // change order of columns alredy in object
+            let ordered_entry = {}
+            ordered_entry['Gene 1'] = entry['gene1']
+            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Correlation'] = entry['correlation']
+            ordered_entry['MScor'] = entry['mscor']
+            ordered_entry['p-value'] = entry['p_value']
+            ordered_entry['ID'] = i
+            ordered_data.push(ordered_entry)
+          }
+          $('#edge_data').text(JSON.stringify(ordered_data))
+
           let edges = [];
           let edge_options = ""   // for network search selector
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscor'];
+          for (let interaction in ordered_data) {
+            let id = ordered_data[interaction]['ID'];
+            let source = ordered_data[interaction]['Gene 1']['ensg_number'];
+            let target = ordered_data[interaction]['Gene 2']['ensg_number'];
+            let size = 100*ordered_data[interaction]['MScor'];
             let color = helper.default_edge_color;
             //let type = 'line'//, curve
             edges.push({
@@ -372,20 +387,6 @@ export class SearchComponent implements OnInit {
           }
           // append options to search-dropdown for network
           $('#network_search_node').append(edge_options)
-          let ordered_data = []
-          for (let i=0; i < Object.keys(data).length; i++) {
-            let entry = data[i]
-            // change order of columns alredy in object
-            let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']
-            ordered_entry['Gene 2'] = entry['gene2']
-            ordered_entry['Correlation'] = entry['correlation']
-            ordered_entry['MScor'] = entry['mscor']
-            ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['ID'] = entry['interactions_genegene_ID']
-            ordered_data.push(ordered_entry)
-          }
-          $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         },
         error: (response) => {
@@ -450,7 +451,6 @@ export class SearchComponent implements OnInit {
       key_information_sentence += " on chromosome " + key_information['chromosome']
 
       $('#key_information').html(key_information_sentence)
-
       // build table out of parsed result for each disease
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
@@ -497,8 +497,6 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
-        console.log(disease_trimmed)
-        console.log($('#collapse_' + disease_trimmed))
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
         push_interaction_filters(table_id)
@@ -542,7 +540,7 @@ export class SearchComponent implements OnInit {
           helper.mark_nodes_table(table, url_storage['nodes'])
         }
 
-        $(".export_nodes").click( function() {
+        $(".export_nodes").last().click( function() {
           let table = $('#'+$(this).val()).DataTable()
 
           // set the active cancer variable
