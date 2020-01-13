@@ -167,7 +167,7 @@ export class BrowseComponent implements OnInit {
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
         helper.msg("The eigenvector should be between 0 and 1.", true)
-        $('#browse_loading_spinner').addClass('hidden')
+        $('#loading_spinner').addClass('hidden')
         return 
       }
       let limit = $('#input_limit').val()
@@ -186,7 +186,7 @@ export class BrowseComponent implements OnInit {
           return callback(nodes)
           },
           error: (response) => {
-            $('#browse_loading_spinner').addClass('hidden')
+            $('#loading_spinner').addClass('hidden')
             helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
       })
@@ -279,7 +279,7 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click(function() {
         // start loading
         disease_selector.attr('disabled',true)
-        $('#browse_loading_spinner').removeClass('hidden')
+        $('#loading_spinner').removeClass('hidden')
 
         $("#interactions-nodes-table-container").html(''); //clear possible older tables
         $("#interactions-edges-table-container").html(''); //clear possible older tables
@@ -427,7 +427,7 @@ export class BrowseComponent implements OnInit {
            
             // stop loading screen
             disease_selector.attr('disabled', false)
-            $('#browse_loading_spinner').addClass('hidden') 
+            $('#loading_spinner').addClass('hidden') 
 
           })
         })

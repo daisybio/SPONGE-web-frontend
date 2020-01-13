@@ -101,7 +101,7 @@ export class SearchComponent implements OnInit {
       /* search_key is defined */
       if (search_key != undefined) {
         // start loading data
-        $('#loading_spinner_results').removeClass('hidden')
+        $('#loading_spinner').removeClass('hidden')
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
@@ -127,11 +127,11 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_cerna_response(response)
               // end loading 
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your ENSG number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
@@ -148,11 +148,11 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_mirna_response(response)
               // end loading
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('hsa-')) {
@@ -169,11 +169,11 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_mirna_response(response)
               // end loading
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your hsa number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             }
           })
         } else {
@@ -190,11 +190,11 @@ export class SearchComponent implements OnInit {
             callback: (response) => {
               parse_cerna_response(response)
               // end loading
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
+              $('#loading_spinner').addClass('hidden')
             }
           })
         }
