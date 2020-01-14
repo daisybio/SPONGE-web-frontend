@@ -201,8 +201,8 @@ export class BrowseComponent implements OnInit {
             let entry = data[i]
             // change order of columns alredy in object
             let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']
-            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
+            ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
@@ -241,11 +241,11 @@ export class BrowseComponent implements OnInit {
 
           let edges = [];
           for (let interaction in ordered_data) {
-            let id = ordered_data[interaction]['ID'];
-            let source = ordered_data[interaction]['Gene 1']['ensg_number'];
-            let target = ordered_data[interaction]['Gene 2']['ensg_number'];
-            let size = 100*ordered_data[interaction]['MScor'];
-            let color = helper.default_edge_color;
+            let id = ordered_data[interaction]['ID']
+            let source = ordered_data[interaction]['Gene 1']
+            let target = ordered_data[interaction]['Gene 2']
+            let size = 100*ordered_data[interaction]['MScor']
+            let color = helper.default_edge_color
             //let type = 'line'//, curve
             edges.push({
               id: id, 
@@ -439,23 +439,19 @@ export class BrowseComponent implements OnInit {
       parses the returned node data from the api
       */
       let ordered_data = [];
-      // let ensg_numbers = []
       for (let i=0; i < Object.keys(data).length; i++) {
         let entry = data[i]
         // change order of columns alredy in object
         let ordered_entry = {}
         // flatten data object
         for (let x in entry['gene']) {
-          entry[x] = entry['gene'][x]
+          entry[x] = entry['gene'][x] 
         }
-        // ensg_numbers.push(entry['ensg_number'])
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']
         ordered_entry['Betweeness'] = entry['betweeness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['Node Degree'] = entry['node_degree']
-        ordered_entry['Gene ID'] = entry['gene_ID']
-        ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
         ordered_data.push(ordered_entry)
       }
       let nodes = [];

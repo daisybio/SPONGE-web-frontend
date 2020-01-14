@@ -93,6 +93,9 @@ export class SearchComponent implements OnInit {
     }
 
     function search(limit) {
+      // start loading
+      $('#loading_spinner').removeClass('hidden')
+
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
@@ -100,8 +103,6 @@ export class SearchComponent implements OnInit {
       $('#plots').empty()
       /* search_key is defined */
       if (search_key != undefined) {
-        // start loading data
-        $('#loading_spinner').removeClass('hidden')
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
@@ -126,12 +127,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
-              // end loading 
-              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your ENSG number and your cancer type.", false)
-              $('#loading_spinner').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
@@ -147,12 +145,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
-              // end loading
-              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
-              $('#loading_spinner').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('hsa-')) {
@@ -168,12 +163,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
-              // end loading
-              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your hsa number and your cancer type.", false)
-              $('#loading_spinner').addClass('hidden')
             }
           })
         } else {
@@ -189,12 +181,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
-              // end loading
-              $('#loading_spinner').addClass('hidden')
             },
             error: (response) => {
               helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
-              $('#loading_spinner').addClass('hidden')
             }
           })
         }
@@ -397,6 +386,8 @@ export class SearchComponent implements OnInit {
     }
 
     function parse_cerna_response(response) {
+      $('#loading_spinner').removeClass('hidden')
+
       response.forEach(interaction => {
         let interaction_info = {};
         let gene_to_extract;
@@ -541,12 +532,14 @@ export class SearchComponent implements OnInit {
         }
 
         $(".export_nodes").last().click( function() {
+          // start loading spinner
+          $('#loading_spinner').removeClass('hidden')
+
           let table = $('#'+$(this).val()).DataTable()
 
           // set the active cancer variable
           active_cancer_name = $(this).closest('.card').find('button').first().text()
          
-
           let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
           
           let nodes = parse_node_data(table.rows().data(), params_genes_keys)
@@ -555,7 +548,6 @@ export class SearchComponent implements OnInit {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
           
-
           helper.mark_nodes_table(table, ensg_numbers_to_mark)
           load_edges(encodeURI(disease), ensg_numbers, edges => {
           
@@ -574,24 +566,29 @@ export class SearchComponent implements OnInit {
               $('#network-plot-container').val(active_cancer_name)
               session.update_url()
               helper.load_KMP(ensg_numbers_to_mark,"", "") 
-              
             }, 500)
 
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
-
             
             // finish loading process
             if ($('#network').hasClass('hidden')) {
               $('#network').removeClass('hidden')
             
-              // clear url storage so no more information is stored
+              // clear url storage so no more information is loaded 
               url_storage = undefined
+              
             }
+
+            // remove loading spinner
+            console.log("end loading")
+            $('#loading_spinner').addClass('hidden');
           
           })
 
         })
+
+        $('#loading_spinner').addClass('hidden');  
 
         // load network immediately if we restore old session
         if (url_storage && url_storage['active_cancer'] == disease) {
@@ -600,9 +597,6 @@ export class SearchComponent implements OnInit {
           
           $('#plots').removeClass('hidden')
         }
-
-        
-       
       }
     }
 
