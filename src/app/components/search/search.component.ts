@@ -296,7 +296,7 @@ export class SearchComponent implements OnInit {
         let id = nodes_data[gene]['ensg_number'];
         let label = nodes_data[gene]['gene_symbol'];
         if (label == '') {
-          label = 'unknown'
+          label = nodes_data[gene]['ensg_number']
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
@@ -346,8 +346,8 @@ export class SearchComponent implements OnInit {
             let entry = data[i]
             // change order of columns alredy in object
             let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']
-            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
+            ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
@@ -360,10 +360,11 @@ export class SearchComponent implements OnInit {
           let edge_options = ""   // for network search selector
           for (let interaction in ordered_data) {
             let id = ordered_data[interaction]['ID'];
-            let source = ordered_data[interaction]['Gene 1']['ensg_number'];
-            let target = ordered_data[interaction]['Gene 2']['ensg_number'];
+            let source = ordered_data[interaction]['Gene 1'];
+            let target = ordered_data[interaction]['Gene 2'];
             let size = 100*ordered_data[interaction]['MScor'];
-            let color = helper.default_edge_color;
+            let color = helper.choose_edge_color(ordered_data[interaction]['p-value']);
+            console.log(ordered_data[interaction])
             //let type = 'line'//, curve
             edges.push({
               id: id,

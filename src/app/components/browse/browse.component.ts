@@ -245,7 +245,7 @@ export class BrowseComponent implements OnInit {
             let source = ordered_data[interaction]['Gene 1']
             let target = ordered_data[interaction]['Gene 2']
             let size = 100*ordered_data[interaction]['MScor']
-            let color = helper.default_edge_color
+            let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
             //let type = 'line'//, curve
             edges.push({
               id: id, 
@@ -460,7 +460,7 @@ export class BrowseComponent implements OnInit {
         let id = ordered_data[gene]['ENSG Number'];
         let label = ordered_data[gene]['Gene Symbol'];
         if (label == '') {
-          label = 'unknown'
+          label = ordered_data[gene]['ENSG Number']
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);

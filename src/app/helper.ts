@@ -44,6 +44,15 @@ export class Helper {
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
     select_color= 'rgba(13, 73, 189, 0.67)'
+    edge_color_pvalues_bins = {
+      0.0 : '#fdbe85',
+      0.2 : '#fd9f55',
+      0.4 : '#f87f2c',
+      0.6 : '#e85e0f',
+      0.8 : '#c94503'
+    }
+
+    original_edges = undefined
 
     controller = new Controller()
 
@@ -389,7 +398,20 @@ export class Helper {
         Plotly.plot('myDiv_'+gene_name ,data, layout, {showSendToCloud: true});
      };
 
+    public choose_edge_color(value){
+      let color = this.default_edge_color
+      for (let step in this.edge_color_pvalues_bins) {
+        if (value > step) {
+          color = this.edge_color_pvalues_bins[step]
+        }
+      }
+      return color
+    }
+
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
+
+      // store edges for edge_color in case of reset
+      this.original_edges = edges
 
       const $this = this
       $('#network-plot-container').html(''); // clear possible other network
@@ -424,6 +446,7 @@ export class Helper {
         nodes: nodes,
         edges: edges
       }
+
       let network = new sigma({
         graph: graph,
           renderer: {
@@ -528,7 +551,7 @@ export class Helper {
 
      
       // network.bind('outEdge', (ee) => { 
-      //   ee.data.edge.color = $this.default_edge_color
+      //   ee.data.edge.color = this.original_edges[ee.id]['color']
       // })
 
       network.bind('doubleClickNode', (e) => {
@@ -560,7 +583,7 @@ export class Helper {
           e.data.node.color = $this.subgraph_node_color
         } else {
           network.graph.adjacentEdges(nodeId).forEach( (ee) => {
-            ee.color = $this.default_edge_color
+            ee.color = $this.original_edges[ee.id]['color']
           })
           // set node color to default
           e.data.node.color = $this.default_node_color
@@ -765,7 +788,7 @@ export class Helper {
     public clear_subgraphs(network) {
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = this.default_edge_color
+          ee.color = this.original_edges[ee.id]['color']
         })
       network.graph.nodes().forEach(
         (node) => {
@@ -832,7 +855,7 @@ export class Helper {
                 ee.color = this.subgraph_edge_color
                 break
               } else {
-                ee.color = this.default_edge_color
+                ee.color = this.original_edges[ee.id]['color']
               }
             }
           }
