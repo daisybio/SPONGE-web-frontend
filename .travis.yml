@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 sudo: false
 
 language: node_js
@@ -11,13 +11,13 @@ services:
 branches:
   only:
   - master
-before_install: sudo -E -y apt-get install google-chrome-stable
+
 addons:
   apt:
     sources:
       - google-chrome
     packages:
-      - google-chrome-stable --allow-unauthenticated
+      - google-chrome-stable
 
 cache:
   directories:
