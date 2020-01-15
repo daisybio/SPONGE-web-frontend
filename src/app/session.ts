@@ -82,7 +82,7 @@ export class Session {
     if ($('#network-plot-container').val()) {
       url_params += '&active_cancer=' + encodeURIComponent($('#network-plot-container').val().toString())
     }
-    /////////////////// SEARCH START
+    /////////////////// SEARCH END
 
     let path = window.location.pathname
 
@@ -109,6 +109,8 @@ export class Session {
       }
       return {'edges': edges, 'nodes': nodes}
     }
+
+  public get_displayed() {}
   
 
 

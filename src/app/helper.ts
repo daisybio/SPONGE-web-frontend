@@ -565,7 +565,11 @@ export class Helper {
       //   ee.data.edge.color = this.original_edges[ee.id]['color']
       // })
 
-      network.bind('onClick', (e) => {
+      network.bind('clickNode', (e) => {
+        this.clear_colors(network)
+        e.data.node.color = $this.subgraph_node_color
+        network.refresh()
+
         $this.load_KMP(session.get_selected()['nodes'],e.data.node.id,selected_disease) 
         if($('#plots').hasClass('hidden')){
           $('#plots').removeClass('hidden') 
