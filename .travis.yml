@@ -11,13 +11,13 @@ services:
 branches:
   only:
   - master
-
+before_install: sudo -E -y apt-get install google-chrome-stable
 addons:
   apt:
     sources:
       - google-chrome
     packages:
-      - google-chrome
+      - google-chrome-stable
 
 cache:
   directories:
