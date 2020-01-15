@@ -176,9 +176,9 @@ export class BrowseComponent implements OnInit {
         'disease_name':disease_trimmed,
         'sorting':sort_by,
         'limit':limit,
-        'betweenness':cutoff_betweenness,
-        'degree': cutoff_degree,
-        'eigenvector': cutoff_eigenvector,
+        'minBetweenness':cutoff_betweenness,
+        'minNodeDegree': cutoff_degree,
+        'minEigenvector': cutoff_eigenvector,
         'descending': descending,
         'callback': data => {
           let nodes = parse_node_data(data)
