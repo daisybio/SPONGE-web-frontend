@@ -236,9 +236,9 @@ export class Controller {
         config: {
             disease_name : string,
             gene_type?: string,
-            betweenness?: number,
-            degree?: number,
-            eigenvector?: number,
+            minBetweenness?: number,
+            minNodeDegree?: number,
+            minEigenvector?: number,
             sorting?: string,
             descending?: boolean,
             limit?: number,
@@ -257,14 +257,14 @@ export class Controller {
         if (config.gene_type != undefined) {
             request += "&gene_type="+config.gene_type
         }
-        if (config.betweenness != undefined) {
-            request += "&betweenness="+config.betweenness
+        if (config.minBetweenness != undefined) {
+            request += "&betweenness="+config.minBetweenness
         }
-        if (config.degree != undefined) {
-            request += "&degree="+config.degree
+        if (config.minNodeDegree != undefined) {
+            request += "&degree="+config.minNodeDegree
         }
-        if (config.eigenvector != undefined) {
-            request += "&eigenvector="+config.eigenvector
+        if (config.minEigenvector != undefined) {
+            request += "&eigenvector="+config.minEigenvector
         }
         if (config.sorting != undefined) {
             request += "&sorting="+config.sorting

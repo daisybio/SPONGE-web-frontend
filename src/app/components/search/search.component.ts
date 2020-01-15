@@ -27,6 +27,7 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
 
     var search_key: string;
+    var search_key_ensg:string;
     var limit: number = 20;
     var parsed_search_result: any;
     var url_storage;
@@ -46,6 +47,8 @@ export class SearchComponent implements OnInit {
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
+      
+      search_key= search_key.split(/\(/)[1].substring(0,search_key.split(/\(/)[1].length-1)
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -565,6 +568,7 @@ export class SearchComponent implements OnInit {
               
               // store active cancer name
               $('#network-plot-container').val(active_cancer_name)
+            
               session.update_url()
               helper.load_KMP(ensg_numbers_to_mark,"", "") 
             }, 500)
@@ -610,7 +614,7 @@ export class SearchComponent implements OnInit {
               // put all values in a list
               let values = []
               for (let entry in data) {
-                values.push(Object.values(data[entry])[0])
+                values.push(Object.values(data[entry])[1]+" ("+Object.values(data[entry])[0]+")")
               }
               response(values)
             },
