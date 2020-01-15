@@ -167,7 +167,7 @@ export class BrowseComponent implements OnInit {
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
         helper.msg("The eigenvector should be between 0 and 1.", true)
-        $('#browse_loading_spinner').addClass('hidden')
+        $('#loading_spinner').addClass('hidden')
         return 
       }
       let limit = $('#input_limit').val()
@@ -186,7 +186,7 @@ export class BrowseComponent implements OnInit {
           return callback(nodes)
           },
           error: (response) => {
-            $('#browse_loading_spinner').addClass('hidden')
+            $('#loading_spinner').addClass('hidden')
             helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
       })
@@ -201,12 +201,12 @@ export class BrowseComponent implements OnInit {
             let entry = data[i]
             // change order of columns alredy in object
             let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']
-            ordered_entry['Gene 2'] = entry['gene2']
+            ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
+            ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
             ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
+            ordered_entry['ID'] = i
             ordered_data.push(ordered_entry)
           }
 
@@ -240,12 +240,12 @@ export class BrowseComponent implements OnInit {
           helper.colSearch('interactions-edges-table', edge_table)
 
           let edges = [];
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscor'];
-            let color = helper.default_edge_color;
+          for (let interaction in ordered_data) {
+            let id = ordered_data[interaction]['ID']
+            let source = ordered_data[interaction]['Gene 1']
+            let target = ordered_data[interaction]['Gene 2']
+            let size = 100*ordered_data[interaction]['MScor']
+            let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
             //let type = 'line'//, curve
             edges.push({
               id: id, 
@@ -279,7 +279,7 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click(function() {
         // start loading
         disease_selector.attr('disabled',true)
-        $('#browse_loading_spinner').removeClass('hidden')
+        $('#loading_spinner').removeClass('hidden')
 
         $("#interactions-nodes-table-container").html(''); //clear possible older tables
         $("#interactions-edges-table-container").html(''); //clear possible older tables
@@ -425,10 +425,9 @@ export class BrowseComponent implements OnInit {
             // load expression data
             helper.load_heatmap(this.disease_trimmed, ensg_numbers)
            
-             console.log(ensg_numbers)
             // stop loading screen
             disease_selector.attr('disabled', false)
-            $('#browse_loading_spinner').addClass('hidden') 
+            $('#loading_spinner').addClass('hidden') 
 
           })
         })
@@ -440,23 +439,19 @@ export class BrowseComponent implements OnInit {
       parses the returned node data from the api
       */
       let ordered_data = [];
-      // let ensg_numbers = []
       for (let i=0; i < Object.keys(data).length; i++) {
         let entry = data[i]
         // change order of columns alredy in object
         let ordered_entry = {}
         // flatten data object
         for (let x in entry['gene']) {
-          entry[x] = entry['gene'][x]
+          entry[x] = entry['gene'][x] 
         }
-        // ensg_numbers.push(entry['ensg_number'])
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']
         ordered_entry['Betweeness'] = entry['betweeness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['Node Degree'] = entry['node_degree']
-        ordered_entry['Gene ID'] = entry['gene_ID']
-        ordered_entry['Netowrk Analysis ID'] = entry['network_analysis_ID']
         ordered_data.push(ordered_entry)
       }
       let nodes = [];
@@ -465,7 +460,7 @@ export class BrowseComponent implements OnInit {
         let id = ordered_data[gene]['ENSG Number'];
         let label = ordered_data[gene]['Gene Symbol'];
         if (label == '') {
-          label = 'unknown'
+          label = ordered_data[gene]['ENSG Number']
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);

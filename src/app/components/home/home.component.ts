@@ -208,7 +208,11 @@ export class HomeComponent implements OnInit {
               // put all values in a list
               let values = []
               for (let entry in data) {
-                values.push(Object.values(data[entry])[1]+" ("+Object.values(data[entry])[0]+")")
+                if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
+                  values.push(data[entry]['gene_symbol'])
+                } else {
+                  values.push(data[entry]['ensg_number'])
+                }             
               }
               response(values)
             },

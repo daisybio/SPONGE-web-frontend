@@ -53,6 +53,7 @@ export class SearchComponent implements OnInit {
         helper.msg("Please select a search gene", false)
       } else {
         limit = $('#gene_input_limit').val()
+        //helper.check_gene_interaction()
         search(limit)
       }    
     })
@@ -69,7 +70,35 @@ export class SearchComponent implements OnInit {
     
     search(limit)
 
+    function draw_cancer_type_accordion(disease_names = null) {
+      if (disease_names == null) {
+        //controller.check_gene_interaction({})
+      }
+      // build html for response_data
+      for (let disease in disease_names) {
+        let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
+        let table_id: string = disease_trimmed + "-table"
+        let accordion_card = "<div class='card'>" +
+          "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
+          "<h5 class='mb-0'>" +
+          "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
+          disease +
+          "</button>" +
+          "</h5>" +
+          "</div>" +
+          "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
+          "<div class='card-body'>" +
+          "<div class='card-body-table'></div>" +
+          "</div>" +
+          "</div>"
+        $('#disease_accordion').append(accordion_card)
+      }
+    }
+
     function search(limit) {
+      // start loading
+      $('#loading_spinner').removeClass('hidden')
+
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
@@ -77,12 +106,6 @@ export class SearchComponent implements OnInit {
       $('#plots').empty()
       /* search_key is defined */
       if (search_key != undefined) {
-      //  console.log(search_key.split(/\(/)[0])
-      //  search_key=search_key.split(/\(/)[0]
-      //  search_key_ensg=search_key.split(/\(/)[1]
-
-        // start loading data
-        $('#loading_spinner_results').removeClass('hidden')
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
@@ -93,7 +116,7 @@ export class SearchComponent implements OnInit {
         } else {
           disease_name = encodeURIComponent(disease_name)
         }
-        
+
         // check if key is ENSG number
         if (search_key.startsWith('ENSG')) {
           if(!$('#options_mirna').hasClass('hidden')){
@@ -107,12 +130,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
-              // end loading 
-              $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your ENSG number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('MIMAT')) {
@@ -128,12 +148,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
-              // end loading
-              $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
             }
           })
         } else if (search_key.startsWith('hsa-')) {
@@ -149,12 +166,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_mirna_response(response)
-              // end loading
-              $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
               helper.msg("We could not find any matches your hsa number and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
             }
           })
         } else {
@@ -170,12 +184,9 @@ export class SearchComponent implements OnInit {
             disease_name: disease_name,
             callback: (response) => {
               parse_cerna_response(response)
-              // end loading
-              $('#loading_spinner_results').addClass('hidden')
             },
             error: (response) => {
-              helper.msg("We could not find any matches your gene and your cancer type.", false)
-              $('#loading_spinner_results').addClass('hidden')
+              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
             }
           })
         }
@@ -202,26 +213,11 @@ export class SearchComponent implements OnInit {
           parsed_search_result['diseases'][disease] = [row]
         }
       })
+      draw_cancer_type_accordion(parsed_search_result['diseases'])
 
-      // build html for response_data
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
-        let accordion_card = "<div class='card'>" +
-          "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
-          "<h5 class='mb-0'>" +
-          "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
-          disease +
-          "</button>" +
-          "</h5>" +
-          "</div>" +
-          "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
-          "<div class='card-body'>" +
-          "<div class='card-body-table'></div>" +
-          "</div>" +
-          "</div>"
-        $('#disease_accordion').append(accordion_card)
-
         let html_table = helper.buildTable(
           parsed_search_result['diseases'][disease],
           table_id,
@@ -303,7 +299,7 @@ export class SearchComponent implements OnInit {
         let id = nodes_data[gene]['ensg_number'];
         let label = nodes_data[gene]['gene_symbol'];
         if (label == '') {
-          label = 'unknown'
+          label = nodes_data[gene]['ensg_number']
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
@@ -348,14 +344,30 @@ export class SearchComponent implements OnInit {
     function load_edges(disease:string, nodes:string[], callback?) {
       controller.get_ceRNA_interactions_specific({'disease_name':disease, 'ensg_number':nodes,
         'callback':data => {
+          let ordered_data = []
+          for (let i=0; i < Object.keys(data).length; i++) {
+            let entry = data[i]
+            // change order of columns alredy in object
+            let ordered_entry = {}
+            ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
+            ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
+            ordered_entry['Correlation'] = entry['correlation']
+            ordered_entry['MScor'] = entry['mscor']
+            ordered_entry['p-value'] = entry['p_value']
+            ordered_entry['ID'] = i
+            ordered_data.push(ordered_entry)
+          }
+          $('#edge_data').text(JSON.stringify(ordered_data))
+
           let edges = [];
           let edge_options = ""   // for network search selector
-          for (let interaction in data) {
-            let id = data[interaction]['interactions_genegene_ID'];
-            let source = data[interaction]['gene1'];
-            let target = data[interaction]['gene2'];
-            let size = 100*data[interaction]['mscor'];
-            let color = helper.default_edge_color;
+          for (let interaction in ordered_data) {
+            let id = ordered_data[interaction]['ID'];
+            let source = ordered_data[interaction]['Gene 1'];
+            let target = ordered_data[interaction]['Gene 2'];
+            let size = 100*ordered_data[interaction]['MScor'];
+            let color = helper.choose_edge_color(ordered_data[interaction]['p-value']);
+            console.log(ordered_data[interaction])
             //let type = 'line'//, curve
             edges.push({
               id: id,
@@ -368,20 +380,6 @@ export class SearchComponent implements OnInit {
           }
           // append options to search-dropdown for network
           $('#network_search_node').append(edge_options)
-          let ordered_data = []
-          for (let i=0; i < Object.keys(data).length; i++) {
-            let entry = data[i]
-            // change order of columns alredy in object
-            let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']
-            ordered_entry['Gene 2'] = entry['gene2']
-            ordered_entry['Correlation'] = entry['correlation']
-            ordered_entry['MScor'] = entry['mscor']
-            ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['interaction gene-gene ID'] = entry['interactions_genegene_ID']
-            ordered_data.push(ordered_entry)
-          }
-          $('#edge_data').text(JSON.stringify(ordered_data))
           return callback(edges)
         },
         error: (response) => {
@@ -392,6 +390,8 @@ export class SearchComponent implements OnInit {
     }
 
     function parse_cerna_response(response) {
+      $('#loading_spinner').removeClass('hidden')
+
       response.forEach(interaction => {
         let interaction_info = {};
         let gene_to_extract;
@@ -446,7 +446,6 @@ export class SearchComponent implements OnInit {
       key_information_sentence += " on chromosome " + key_information['chromosome']
 
       $('#key_information').html(key_information_sentence)
-
       // build table out of parsed result for each disease
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
@@ -493,8 +492,6 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
-        console.log(disease_trimmed)
-        console.log($('#collapse_' + disease_trimmed))
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
         push_interaction_filters(table_id)
@@ -538,13 +535,15 @@ export class SearchComponent implements OnInit {
           helper.mark_nodes_table(table, url_storage['nodes'])
         }
 
-        $(".export_nodes").click( function() {
+        $(".export_nodes").last().click( function() {
+          // start loading spinner
+          $('#loading_spinner').removeClass('hidden')
+
           let table = $('#'+$(this).val()).DataTable()
 
           // set the active cancer variable
           active_cancer_name = $(this).closest('.card').find('button').first().text()
          
-
           let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
           
           let nodes = parse_node_data(table.rows().data(), params_genes_keys)
@@ -553,7 +552,6 @@ export class SearchComponent implements OnInit {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
           
-
           helper.mark_nodes_table(table, ensg_numbers_to_mark)
           load_edges(encodeURI(disease), ensg_numbers, edges => {
           
@@ -572,25 +570,30 @@ export class SearchComponent implements OnInit {
               $('#network-plot-container').val(active_cancer_name)
             
               session.update_url()
-              helper.load_KMP(ensg_numbers_to_mark,"","") 
-              
+              helper.load_KMP(ensg_numbers_to_mark,"", "") 
             }, 500)
 
             // load expression data
             //load_heatmap(this.disease_trimmed, ensg_numbers)
-
             
             // finish loading process
             if ($('#network').hasClass('hidden')) {
               $('#network').removeClass('hidden')
             
-              // clear url storage so no more information is stored
+              // clear url storage so no more information is loaded 
               url_storage = undefined
+              
             }
+
+            // remove loading spinner
+            console.log("end loading")
+            $('#loading_spinner').addClass('hidden');
           
           })
 
         })
+
+        $('#loading_spinner').addClass('hidden');  
 
         // load network immediately if we restore old session
         if (url_storage && url_storage['active_cancer'] == disease) {
@@ -599,9 +602,6 @@ export class SearchComponent implements OnInit {
           
           $('#plots').removeClass('hidden')
         }
-
-        
-       
       }
     }
 

@@ -45,9 +45,9 @@
                                 <td id="table-text">
                                     <tr class="tr-text">
                                         <p>Select a value to sort by: </p>
-                                        <p>Set a cutoff for betweenness (lower bound): </p>
+                                        <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
                                         <p>Set a cutoff for degree (lower bound): </p>
-                                        <p>Set a cutoff for eigenvector (lower bound): </p>
+                                        <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
                                         <p>Set a Limit for displayed data</p>
                                         <p id="text">(the more the slower): </p>                          
                                     </tr>
@@ -58,15 +58,15 @@
 
                                         <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true">
                                             <option data-value="">None</option>
-                                            <option data-value="degree">Degree</option>
                                             <option data-value="betweenness">Betweenness</option>
+                                            <option data-value="degree">Degree</option>
                                             <option data-value="eigenvector">Eigenvector</option>
                                          </select>
                                 
                                        <!--  <tr> -->
-                                        <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                        <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
                                         <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                        <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>    
+                                        <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
                                         <input type="text" class="form-control" id="input_limit" value=10>
                                     </tr>
                                 </td>
@@ -156,23 +156,6 @@
         </div>
         
     </div>
-    <!--Upper section with title, select and the spinner-->
-    
-    <div class="row align-items-center" id="titel-banner"> 
-        <div class="text-center hidden" id='browse_loading_spinner'>
-            <div class="spinner-center" role="status" id="overlay">
-                <div class="row">
-                    <div class="cssload-thecube">
-                    <div class="cssload-cube cssload-c1"></div>
-                    <div class="cssload-cube cssload-c2"></div>
-                    <div class="cssload-cube cssload-c4"></div>
-                    <div class="cssload-cube cssload-c3"></div>
-                </div>
-                <div class="spinner-text">Loading</div> 
-                <p id="demo"></p>
-            </div>
-        </div>
-    </div> 
 
     <!--Container with Network-->
     <div class="d-flex" id="network-container">       
@@ -211,7 +194,7 @@
                                                         </span>
                                                         <button type="button" class="btn btn-sm btn-secondary button-margin" id="restart_camera">Reset camera</button>
                                                         <button type="button" class="btn btn-sm btn-secondary button-margin" id="toggle_layout">Force Atlas 2</button>
-                                                        <button type="button" class="btn btn-sm btn-secondary button-margin" id="reset_graph">Reset colors</button>
+                                                        <button type="button" class="btn btn-sm btn-secondary button-margin" id="reset_graph">Reset Graph</button>
                                                     </div>
             
                                                 </div>
@@ -306,9 +289,9 @@
                             <td>
                                 <tr>
                                     <p>Select a value to sort by: </p>
-                                    <p>Set a cutoff for betweenness (lower bound): </p>
+                                    <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
                                     <p>Set a cutoff for degree (lower bound): </p>
-                                    <p>Set a cutoff for eigenvector (lower bound): </p>
+                                    <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
                                     <p>Set a Limit for displayed data (the more the slower): </p>
                                     
                                 </tr>
@@ -320,9 +303,9 @@
                                         <option data-value="betweenness">Betweenness</option>
                                         <option data-value="eigenvector">Eigenvector</option>
                                     </select>
-                                    <input type="text" class="form-control" id="input_cutoff_betweenness" value=0>
+                                    <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
                                     <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                    <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0>
+                                    <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
                                     <input type="text" class="form-control" id="input_limit" value=10> 
                                 </tr>
                             </td>
@@ -358,4 +341,3 @@
     </div>
 </div>
 </div>
-<!-- END MAIN-CONTENT-->
