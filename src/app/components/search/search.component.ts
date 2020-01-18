@@ -1,14 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
-import { Session } from "../../session";
 import {Router, ActivatedRoute, Params} from '@angular/router';
 import 'datatables.net';
-import { all, async } from 'q';
-import { callbackify } from 'util';
-import { JsonPipe } from '@angular/common';
-import { parse } from 'querystring';
-import { config } from 'rxjs';
+
 declare var Plotly: any;
 declare var $;
 
