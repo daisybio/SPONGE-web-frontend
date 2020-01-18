@@ -3,6 +3,7 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { Session } from "../../session";
 import {Router, ActivatedRoute, Params} from '@angular/router';
+import { SharedService } from "../../shared.service"
 
 import sigma from 'sigma';
 
@@ -22,7 +23,10 @@ export class BrowseComponent implements OnInit {
   disease_trimmed = ''
   selected_disease = ''
 
-  constructor(private activatedRoute: ActivatedRoute) {
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private shared_service: SharedService
+    ) {
 
   }
 
@@ -30,6 +34,8 @@ export class BrowseComponent implements OnInit {
 
     const controller = new Controller()
     const helper = new Helper()
+    //const shared_service = new SharedService()
+
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
     this.activatedRoute.queryParams.subscribe(params => {
@@ -38,6 +44,9 @@ export class BrowseComponent implements OnInit {
         url_storage = helper.load_session_url(params)
       }
     });
+
+    console.log(url_storage)
+    console.log(this.shared_service.getData())
 
 
     var node_table

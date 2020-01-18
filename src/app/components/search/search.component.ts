@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { Controller } from "../../control";
-import { Helper } from "../../helper";
-import {Router, ActivatedRoute, Params} from '@angular/router';
-import 'datatables.net';
+import { Component, OnInit } from '@angular/core'
+import { Controller } from "../../control"
+import { Helper } from "../../helper"
+import {Router, ActivatedRoute, Params} from '@angular/router'
+import { SharedService } from "../../shared.service"
+import 'datatables.net'
 
 declare var Plotly: any;
 declare var $;
@@ -14,12 +15,17 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
-  constructor(private activatedRoute: ActivatedRoute) { }
+  constructor(
+    private activatedRoute: ActivatedRoute, 
+    private router: Router,
+    private shared_service: SharedService
+    ) { }
 
   ngOnInit() {
 
     const controller = new Controller()
     const helper = new Helper()
+    const $this = this
 
     var search_key: string;
     var search_key_ensg:string;
@@ -531,6 +537,26 @@ export class SearchComponent implements OnInit {
         }
 
         $(".export_nodes").last().click( function() {
+          /* export data to browse page, where a graph will be shown */ 
+
+          let table = $('#'+$(this).val()).DataTable()
+          active_cancer_name = $(this).closest('.card').find('button').first().text()
+          let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+
+          // get data
+          let nodes = parse_node_data(table.rows().data(), params_genes_keys)
+          let ensg_numbers = nodes.map(function(node) {return node.id})
+
+          $this.shared_service.setData({
+            nodes: nodes,
+            edges: ensg_numbers,
+            cancer_type: active_cancer_name
+          })
+
+          // navigate to browse
+          $this.router.navigateByUrl('browse');
+
+          /*
           // start loading spinner
           $('#loading_spinner').removeClass('hidden')
 
@@ -583,9 +609,9 @@ export class SearchComponent implements OnInit {
             // remove loading spinner
             console.log("end loading")
             $('#loading_spinner').addClass('hidden');
-          
+            
           })
-
+*/
         })
 
         $('#loading_spinner').addClass('hidden');  
