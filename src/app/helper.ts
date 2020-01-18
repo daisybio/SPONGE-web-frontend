@@ -52,13 +52,6 @@ export class Helper {
       0.8 : '#c94503'
     }
 
-    // storing nodes and edges allows to undo any alteration of the graph
-    original_edges = undefined
-    original_nodes = undefined
-    original_selected_disease = undefined
-    original_node_table = undefined
-    original_edge_table = undefined
-
     controller = new Controller()
 
     public buildTable(data, table_name, column_names) {
@@ -413,16 +406,7 @@ export class Helper {
       return color
     }
 
-    public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null, subgraph=false) {
-
-      // store edges for edge_color in case of reset
-      if (!subgraph){
-        this.original_selected_disease = selected_disease
-        this.original_edges = edges
-        this.original_nodes = nodes
-        this.original_node_table = node_table
-        this.original_edge_table = edge_table
-      }
+    public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
 
       const $this = this
       $('#network-plot-container').html(''); // clear possible other network
@@ -481,7 +465,7 @@ export class Helper {
             nodeHoverSizeRatio: 2,
             edgeHoverExtremities: true,
             scalingMode: 'outside',
-            doubleClickEnabled: false
+            doubleClickEnabled: true
           }
         }
       )
@@ -560,48 +544,19 @@ export class Helper {
         }
       })
 
-     
       // network.bind('outEdge', (ee) => { 
-      //   ee.data.edge.color = this.original_edges[ee.id]['color']
+      //   ee.data.edge.color = this.default_edge_color
       // })
 
-      network.bind('clickNode', (e) => {
-        this.clear_colors(network)
-        e.data.node.color = $this.subgraph_node_color
-        network.refresh()
-        console.log(String(e.data.node.id))
-        $this.load_KMP(session.get_selected()['nodes'],String(e.data.node.id),selected_disease) 
-        if($('#plots').hasClass('hidden')){
-          $('#plots').removeClass('hidden') 
-        }
-      })
-
       network.bind('doubleClickNode', (e) => {
-        if (!subgraph) {
-          node_doubleclick_function(e)
-        }
-      })
+        this.clear_colors(network)
 
-      function node_doubleclick_function(e) {
-        /*
-        removes everything but neighborhood
-        this function alters the network, hence triggers url update
-        */
         var nodeId = e.data.node.id;
-        let edges = []
-        let nodes = [get_original_node(nodeId)]
-        network.graph.adjacentEdges(nodeId).forEach(
-          (ee) => {
-            edges.push($this.original_edges[ee.id])
-            if (nodeId != ee.source) {
-              nodes.push(get_original_node(ee.source))
-            } else {
-              nodes.push(get_original_node(ee.target))
-            }
-          }
-        )
-        
-        $this.make_network(selected_disease, nodes, edges, node_table, edge_table, true)
+        network.graph.adjacentEdges(nodeId).forEach( (ee) => {
+          ee.color = $this.subgraph_edge_color
+        })
+        // set node color to clicked
+        e.data.node.color = $this.subgraph_node_color
 
         // mark node in node_table
         if (node_table) {
@@ -612,11 +567,38 @@ export class Helper {
           let edges = network.graph.adjacentEdges(nodeId).map((ee) => String(ee.id))
           $this.mark_edges_table(edge_table, edges)
         }
+
+        network.refresh()
+
+        // network was altered, update url
+        session.update_url()
+
+      })
+
+
+      network.bind('clickNode', (e) => {
+        /*
+        removes everything but neighborhood
+        this function alters the network, hence triggers url update
+        */
+        var nodeId = e.data.node.id;
+
+        // set node color to clicked
+        e.data.node.color = $this.subgraph_node_color
+        network.refresh()
+        
+
         $this.node_is_clicked(nodeId)
         
         // network was altered, update url
         session.update_url()
-      }
+
+        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
+
+        if($('#plots').hasClass('hidden')){
+          $('#plots').removeClass('hidden') 
+        }
+      })
 
 
       function searchNode(node_as_string) {
@@ -645,15 +627,6 @@ export class Helper {
           }
         }
         return edges[edge]
-      }
-
-      function get_original_node(id) {
-        for (let node of $this.original_nodes) {
-          if (node['id'] == id) {
-            return node
-          }
-        }
-        return undefined
       }
 
       function focusNode(node_as_string) {
@@ -780,8 +753,7 @@ export class Helper {
       });      
       
       $('#reset_graph').click( () => {
-        //this.clear_colors(network);
-        this.reset_network();
+        this.clear_colors(network);
         if (node_table) this.clear_table(node_table)  // no node table in search
         if (edge_table) this.clear_table(edge_table)  // no edge table in search
         session.update_url()
@@ -807,7 +779,7 @@ export class Helper {
     public clear_colors(network) {
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = this.original_edges[ee.id]['color']
+          ee.color = this.default_edge_color
         })
       network.graph.nodes().forEach(
         (node) => {
@@ -815,10 +787,6 @@ export class Helper {
         }
       )
       network.refresh()
-    }
-
-    public reset_network() {
-      this.make_network(this.original_selected_disease, this.original_nodes, this.original_edges, this.original_node_table, this.original_edge_table, true)
     }
 
     public clear_table(table) {
@@ -878,7 +846,7 @@ export class Helper {
                 ee.color = this.subgraph_edge_color
                 break
               } else {
-                ee.color = this.original_edges[ee.id]['color']
+                ee.color = this.default_edge_color
               }
             }
           }
