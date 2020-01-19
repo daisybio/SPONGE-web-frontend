@@ -40,7 +40,6 @@ export class Controller {
                 request += '?'
             }
             request += "searchString="+config.searchString
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -254,7 +253,6 @@ export class Controller {
         }
     ){
         let request = Controller.API_ENDPOINT+Controller.FIND_CERNA
-        console.log(config)
         if (Object.keys(config).length > 1) {
             request += '?'
         }

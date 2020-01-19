@@ -281,7 +281,6 @@ export class SearchComponent implements OnInit {
     }
 
     function parse_node_data(nodes_table_data:Object, keys:string[]) {
-      console.log(nodes_table_data)
       // parse values from search into correct format
       let gene
       let key
@@ -373,7 +372,6 @@ export class SearchComponent implements OnInit {
             let target = ordered_data[interaction]['Gene 2'];
             let size = 100*ordered_data[interaction]['MScor'];
             let color = helper.choose_edge_color(ordered_data[interaction]['p-value']);
-            console.log(ordered_data[interaction])
             //let type = 'line'//, curve
             edges.push({
               id: id,
@@ -436,7 +434,6 @@ export class SearchComponent implements OnInit {
         parsed_search_result['diseases'][disease].push(interaction_info)
 
       }); // end for each
-      console.log(parsed_search_result)
       // Set key-gene information
       let key_information = {
         gene: parsed_search_result['key']['ensg_number'],
@@ -526,7 +523,7 @@ export class SearchComponent implements OnInit {
             buttons.append($('<a href="data:' + json + '" download="expression_'+disease_trimmed+'.json" class="btn btn-secondary button-margin">Raw Expression Data</a>'))
           },
           error: (response) => {
-            console.log("here")
+            helper.msg("Something went wrong while preparing the data for the download.", true)
           }
         };
         if (search_key.startsWith('ENSG')) {
@@ -557,6 +554,7 @@ export class SearchComponent implements OnInit {
 
           $this.shared_service.setData({
             'nodes': ensg_numbers,
+            'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
             'cancer_type': active_cancer_name
           })
 

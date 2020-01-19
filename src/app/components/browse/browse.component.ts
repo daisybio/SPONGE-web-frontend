@@ -39,6 +39,9 @@ export class BrowseComponent implements OnInit {
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
+
+    //##################################################################################
+    // Here we check if there is information (e.g. from session or from search) to load
     /* In case we restore an old session */
     this.activatedRoute.queryParams.subscribe(params => {
       if (Object.keys(params).length > 0) {
@@ -51,9 +54,7 @@ export class BrowseComponent implements OnInit {
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
     }
-    
-    console.log(this.shared_service.getData())
-
+    //##################################################################################
 
     let node_table
     let edge_table
@@ -439,10 +440,13 @@ export class BrowseComponent implements OnInit {
               }, 500)
             })
 
+            //##################################################################################
+            // Here we check if there is data to be marked in the network/tables (e.g. from old session of search)
             // check if there is data in the shared_service, meaning we came from search and want to load specific data
             if (shared_data != undefined) {
-              if ('nodes' in shared_data) {
-                helper.mark_nodes_table(node_table, shared_data['nodes'])
+              if ('nodes_marked' in shared_data) {
+                helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
+                $('#export_selected_nodes').click()
               }
             }
 
@@ -462,6 +466,7 @@ export class BrowseComponent implements OnInit {
                 // mark edges in graph
                 $('#export_selected_edges').click()
               }*/
+              //##################################################################################
             }
 
             // load expression data
