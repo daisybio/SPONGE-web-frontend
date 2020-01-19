@@ -70,6 +70,7 @@ export class SearchComponent implements OnInit {
     
     search(limit)
 
+
     function draw_cancer_type_accordion(disease_names = null) {
       if (disease_names == null) {
         //controller.check_gene_interaction({})
@@ -119,6 +120,33 @@ export class SearchComponent implements OnInit {
         } else {
           disease_name = encodeURIComponent(disease_name)
         }
+
+        // load pie chart for gene
+        limit = $('#gene_input_limit').val()
+        controller.gene_count({
+          gene_symbol: [search_key],
+          callback: (data) => {
+            console.log(data)
+            let values = data.map(function(node) {return node.count_all})
+            let labels = data.map(function(node) {return node.run.dataset.disease_name})
+            var plot_data = [{
+              values: values,
+              labels: labels,
+              type: 'pie'
+            }];
+            
+            var layout = {
+              height: 800,
+              width: 1000,
+              title: 'Interactions',
+              annotations: [],
+              paper_bgcolor: 'rgba(0,0,0,0)',
+              plot_bgcolor: 'rgba(0,0,0,0)',
+            };
+            
+            Plotly.newPlot('pie_chart_container', plot_data, layout);
+          }
+        })
 
         // check if key is ENSG number
         if (search_key.startsWith('ENSG')) {
@@ -558,63 +586,6 @@ export class SearchComponent implements OnInit {
 
           // navigate to browse
           $this.router.navigateByUrl('browse');
-
-          /*
-          // start loading spinner
-          $('#loading_spinner').removeClass('hidden')
-
-          let table = $('#'+$(this).val()).DataTable()
-
-          // set the active cancer variable
-          active_cancer_name = $(this).closest('.card').find('button').first().text()
-         
-          let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
-          
-          let nodes = parse_node_data(table.rows().data(), params_genes_keys)
-          let nodes_to_mark = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys)
-
-          let ensg_numbers = nodes.map(function(node) {return node.id})
-          let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
-          
-          helper.mark_nodes_table(table, ensg_numbers_to_mark)
-          load_edges(encodeURI(disease), ensg_numbers, edges => {
-          
-            let network_data = helper.make_network(disease_trimmed, nodes, edges)
-            let network = network_data['network']
-            session = network_data['session']
-
-            setTimeout(() => {
-              // network.refresh()
-              $('#restart_camera').click()
-              helper.mark_nodes_network(network, ensg_numbers_to_mark)
-              if (url_storage) helper.mark_edges_network(network, url_storage['edges'], true)
-              network.refresh()
-              
-              // store active cancer name
-              $('#network-plot-container').val(active_cancer_name)
-            
-              session.update_url()
-              helper.load_KMP(ensg_numbers_to_mark,"", "") 
-            }, 500)
-
-            // load expression data
-            //load_heatmap(this.disease_trimmed, ensg_numbers)
-            
-            // finish loading process
-            if ($('#network').hasClass('hidden')) {
-              $('#network').removeClass('hidden')
-            
-              // clear url storage so no more information is loaded 
-              url_storage = undefined
-              
-            }
-
-            // remove loading spinner
-            console.log("end loading")
-            $('#loading_spinner').addClass('hidden');
-            
-          })
-*/
         })
 
         $('#loading_spinner').addClass('hidden');  

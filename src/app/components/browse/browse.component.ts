@@ -12,7 +12,6 @@ declare const sigma: any;
 declare var Plotly: any;
 declare var $;
 
-
 @Component({
   selector: 'app-browse',
   templateUrl: './browse.component.html',
