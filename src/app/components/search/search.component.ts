@@ -238,7 +238,6 @@ export class SearchComponent implements OnInit {
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
-          $(this).css("background-color",helper.select_color)
         })
       }
     }
@@ -510,7 +509,6 @@ export class SearchComponent implements OnInit {
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
-          $(this).css("background-color",helper.select_color)
         })
 
         // BUTTON: load expression information for gene in this disease
