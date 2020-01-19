@@ -33,6 +33,7 @@ export class SearchComponent implements OnInit {
     var parsed_search_result: any;
     var url_storage;
     let session = null
+    let disease_name:string          // name of cancer in search box
     let active_cancer_name:string   // name of the currently displayed cancer type in the network
     let ensg4KMP:string
   
@@ -77,11 +78,13 @@ export class SearchComponent implements OnInit {
       for (let disease in disease_names) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
+        // make first letter uppercase
+        let disease_label = disease.charAt(0).toUpperCase() + disease.substring(1);
         let accordion_card = "<div class='card'>" +
           "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
           "<h5 class='mb-0'>" +
           "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
-          disease +
+          disease_label +
           "</button>" +
           "</h5>" +
           "</div>" +
@@ -103,13 +106,14 @@ export class SearchComponent implements OnInit {
       $('#disease_accordion').empty()
       $('#network-container').empty()
       $('#plots').empty()
+
+      disease_name = $('#disease_selectpicker').val()
       /* search_key is defined */
       if (search_key != undefined) {
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
 
-        let disease_name = $('#disease_selectpicker').val()
         if (disease_name == 'All') {
           disease_name = undefined
         } else {
@@ -390,7 +394,7 @@ export class SearchComponent implements OnInit {
 
     function parse_cerna_response(response) {
       $('#loading_spinner').removeClass('hidden')
-
+      console.log(response)
       response.forEach(interaction => {
         let interaction_info = {};
         let gene_to_extract;
@@ -449,11 +453,13 @@ export class SearchComponent implements OnInit {
       for (let disease in parsed_search_result['diseases']) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
+        // make first letter uppercase
+        let disease_label = disease.charAt(0).toUpperCase() + disease.substring(1);
         let accordion_card = "<div class='card'>" +
           "<div class='card-header' id='heading_" + disease_trimmed + "'>" +
           "  <h5 class='mb-0'>" +
           "<button class='btn btn-link collapsed' data-toggle='collapse' data-target='#collapse_" + disease_trimmed + "' aria-expanded='false' aria-controls='collapse_" + disease_trimmed + "'>" +
-          disease +
+          disease_label +
           "</button>" +
           "</h5>" +
           "</div>" +

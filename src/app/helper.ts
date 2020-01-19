@@ -45,11 +45,11 @@ export class Helper {
     hover_node_color = '#228B22'
     select_color= 'rgba(13, 73, 189, 0.67)'
     edge_color_pvalues_bins = {
-      0.0 : '#fdbe85',
-      0.2 : '#fd9f55',
-      0.4 : '#f87f2c',
-      0.6 : '#e85e0f',
-      0.8 : '#c94503'
+      0.95 : '#fdbe85',
+      0.8 : '#fd9f55',
+      0.7 : '#f87f2c',
+      0.5 : '#e85e0f',
+      0.0 : '#c94503'
     }
 
     controller = new Controller()
@@ -861,6 +861,7 @@ export class Helper {
         let val = params[key]
         switch (key) {
           case 'cancer': {
+            console.log(val, "here")
             $('#disease_selectpicker').val(val)
             break
           }

@@ -34,7 +34,8 @@ export class BrowseComponent implements OnInit {
 
     const controller = new Controller()
     const helper = new Helper()
-    //const shared_service = new SharedService()
+    const $this = this
+    const shared_data = $this.shared_service.getData()
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
@@ -43,12 +44,10 @@ export class BrowseComponent implements OnInit {
       if (Object.keys(params).length > 0) {
         // there are url params, load previous session
         url_storage = helper.load_session_url(params)
-        console.log(url_storage)
       }
     });
 
-    /* In case we passed data from search to browse (shared service) */
-    const shared_data = this.shared_service.getData()
+    /* In case we passed data from search to browse (shared service), set cancer type */
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
     }
@@ -174,38 +173,45 @@ export class BrowseComponent implements OnInit {
     })
 
     function load_nodes(disease_trimmed, callback?) {
-      let sort_by = $('#run-info-select').val().toLowerCase()
+      // load data if nothing was loaded in search page
+      if (shared_data == undefined) {
+        let sort_by = $('#run-info-select').val().toLowerCase()
     
-      if (sort_by=="none" || sort_by=="") {sort_by = undefined}
-      let cutoff_betweenness = $('#input_cutoff_betweenness').val()
-      let cutoff_degree = $('#input_cutoff_degree').val()
-      let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
-      // check the eigenvector cutoff since it is different to the others
-      if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
-        helper.msg("The eigenvector should be between 0 and 1.", true)
-        $('#loading_spinner').addClass('hidden')
-        return 
-      }
-      let limit = $('#input_limit').val()
-      let descending = true
-      controller.get_ceRNA({
-        'disease_name':disease_trimmed,
-        'sorting':sort_by,
-        'limit':limit,
-        'minBetweenness':cutoff_betweenness,
-        'minNodeDegree': cutoff_degree,
-        'minEigenvector': cutoff_eigenvector,
-        'descending': descending,
-        'callback': data => {
-          let nodes = parse_node_data(data)
-
-          return callback(nodes)
-          },
-          error: (response) => {
-            $('#loading_spinner').addClass('hidden')
-            helper.msg("Something went wrong while loading the ceRNAs.", true)
+        if (sort_by=="none" || sort_by=="") {sort_by = undefined}
+        let cutoff_betweenness = $('#input_cutoff_betweenness').val()
+        let cutoff_degree = $('#input_cutoff_degree').val()
+        let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+        // check the eigenvector cutoff since it is different to the others
+        if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
+          helper.msg("The eigenvector should be between 0 and 1.", true)
+          $('#loading_spinner').addClass('hidden')
+          return 
+        }
+        let limit = $('#input_limit').val()
+        let descending = true
+        controller.get_ceRNA({
+          'disease_name':disease_trimmed,
+          'sorting':sort_by,
+          'limit':limit,
+          'minBetweenness':cutoff_betweenness,
+          'minNodeDegree': cutoff_degree,
+          'minEigenvector': cutoff_eigenvector,
+          'descending': descending,
+          'callback': data => {
+            console.log(data)
+            let nodes = parse_node_data(data)
+  
+            return callback(nodes)
+            },
+            error: (response) => {
+              $('#loading_spinner').addClass('hidden')
+              helper.msg("Something went wrong while loading the ceRNAs.", true)
+            }
           }
-      })
+        )
+      } else {
+        return callback(parse_node_data(shared_data['nodes']))
+      }
     }
 
     function load_edges(disease_trimmed, nodes, callback?) {
