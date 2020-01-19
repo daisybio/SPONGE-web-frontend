@@ -159,6 +159,7 @@ export class Controller {
             descending?: boolean, 
             information?: boolean,
             limit?: number, 
+            pValue?: number,
             ensg_number?: string[],
             gene_symbol?: string[],
             callback: (response) => any,
@@ -177,6 +178,9 @@ export class Controller {
             }
             if (config.limit != undefined) {
                 request += "&limit="+config.limit
+            }
+            if (config.pValue != undefined) {
+                request += "&pValue="+config.pValue
             }
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
@@ -235,6 +239,8 @@ export class Controller {
     public get_ceRNA(
         config: {
             disease_name : string,
+            ensg_number?: string[],
+            gene_symbol?: string[],
             gene_type?: string,
             minBetweenness?: number,
             minNodeDegree?: number,
@@ -248,11 +254,18 @@ export class Controller {
         }
     ){
         let request = Controller.API_ENDPOINT+Controller.FIND_CERNA
+        console.log(config)
         if (Object.keys(config).length > 1) {
             request += '?'
         }
         if (config.disease_name != undefined) {
             request += "&disease_name="+config.disease_name
+        }
+        if (config.ensg_number != undefined) {
+            request += "&ensg_number="+config.ensg_number
+        }
+        if (config.gene_symbol != undefined) {
+            request += "&gene_symbol="+config.gene_symbol
         }
         if (config.gene_type != undefined) {
             request += "&gene_type="+config.gene_type

@@ -131,6 +131,7 @@ export class SearchComponent implements OnInit {
             ensg_number: [search_key],
             limit: limit,
             disease_name: disease_name,
+            pValue: 1,
             callback: (response) => {
               parse_cerna_response(response)
             },
@@ -185,6 +186,7 @@ export class SearchComponent implements OnInit {
             gene_symbol: [search_key],
             limit: limit,
             disease_name: disease_name,
+            pValue: 1,
             callback: (response) => {
               parse_cerna_response(response)
             },
@@ -279,6 +281,7 @@ export class SearchComponent implements OnInit {
     }
 
     function parse_node_data(nodes_table_data:Object, keys:string[]) {
+      console.log(nodes_table_data)
       // parse values from search into correct format
       let gene
       let key
@@ -394,7 +397,6 @@ export class SearchComponent implements OnInit {
 
     function parse_cerna_response(response) {
       $('#loading_spinner').removeClass('hidden')
-      console.log(response)
       response.forEach(interaction => {
         let interaction_info = {};
         let gene_to_extract;
@@ -434,7 +436,7 @@ export class SearchComponent implements OnInit {
         parsed_search_result['diseases'][disease].push(interaction_info)
 
       }); // end for each
-
+      console.log(parsed_search_result)
       // Set key-gene information
       let key_information = {
         gene: parsed_search_result['key']['ensg_number'],
@@ -554,8 +556,7 @@ export class SearchComponent implements OnInit {
           // let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
 
           $this.shared_service.setData({
-            'nodes': nodes,
-            'edges': ensg_numbers,
+            'nodes': ensg_numbers,
             'cancer_type': active_cancer_name
           })
 
