@@ -898,6 +898,7 @@ export class Helper {
             $('#gene_search_keys').val(val)
             break
           }
+          // needed for search
           case 'active_cancer': {
             active_cancer = val
             break

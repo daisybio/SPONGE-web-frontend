@@ -48,8 +48,6 @@ export class SearchComponent implements OnInit {
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val()
-      
-      search_key= search_key.split(/\(/)[1].substring(0,search_key.split(/\(/)[1].length-1)
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -545,12 +543,14 @@ export class SearchComponent implements OnInit {
 
           // get data
           let nodes = parse_node_data(table.rows().data(), params_genes_keys)
+          // let nodes_to_mark = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys)
           let ensg_numbers = nodes.map(function(node) {return node.id})
+          // let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
 
           $this.shared_service.setData({
-            nodes: nodes,
-            edges: ensg_numbers,
-            cancer_type: active_cancer_name
+            'nodes': nodes,
+            'edges': ensg_numbers,
+            'cancer_type': active_cancer_name
           })
 
           // navigate to browse

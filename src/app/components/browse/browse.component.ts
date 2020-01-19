@@ -38,19 +38,26 @@ export class BrowseComponent implements OnInit {
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
+    /* In case we restore an old session */
     this.activatedRoute.queryParams.subscribe(params => {
       if (Object.keys(params).length > 0) {
         // there are url params, load previous session
         url_storage = helper.load_session_url(params)
+        console.log(url_storage)
       }
     });
 
-    console.log(url_storage)
+    /* In case we passed data from search to browse (shared service) */
+    const shared_data = this.shared_service.getData()
+    if (shared_data != undefined) {
+      $('#disease_selectpicker').val(shared_data['cancer_type'])
+    }
+    
     console.log(this.shared_service.getData())
 
 
-    var node_table
-    var edge_table
+    let node_table
+    let edge_table
     
 
     let session = null
@@ -415,8 +422,15 @@ export class BrowseComponent implements OnInit {
               }, 500)
             })
 
+            // check if there is data in the shared_service, meaning we came from search and want to load specific data
+            if (shared_data != undefined) {
+              if ('nodes' in shared_data) {
+                helper.mark_nodes_table(node_table, shared_data['nodes'])
+              }
+            }
+
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
-            if (url_storage && Object.keys(url_storage)) {
+            else if (url_storage && Object.keys(url_storage)) {
               if ('nodes' in url_storage && url_storage['nodes'].length) {
                 // mark nodes in nodes table
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
@@ -424,11 +438,13 @@ export class BrowseComponent implements OnInit {
                 $('#export_selected_nodes').click()
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
+              /*
+              // TODO:  we currently cant restore edges bc of missing ids
               if ('edges' in url_storage && url_storage['edges'].length) {
                 helper.mark_edges_table(edge_table, url_storage['edges'])
                 // mark edges in graph
                 $('#export_selected_edges').click()
-              }
+              }*/
             }
 
             // load expression data
