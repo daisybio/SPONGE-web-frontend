@@ -33,7 +33,6 @@ export class SearchComponent implements OnInit {
     var parsed_search_result: any;
     var url_storage;
     let session = null
-    let disease_name:string          // name of cancer in search box
     let active_cancer_name:string   // name of the currently displayed cancer type in the network
     let ensg4KMP:string
     let count_object
@@ -107,18 +106,11 @@ export class SearchComponent implements OnInit {
       $('#network-container').empty()
       $('#plots').empty()
 
-      disease_name = $('#disease_selectpicker').val()
       /* search_key is defined */
       if (search_key != undefined) {
         parsed_search_result = {}
         parsed_search_result['diseases'] = {}
         parsed_search_result['key'] = undefined
-
-        if (disease_name == 'All') {
-          disease_name = undefined
-        } else {
-          disease_name = encodeURIComponent(disease_name)
-        }
 
         // load pie chart for gene
         limit = $('#gene_input_limit').val()
@@ -466,7 +458,7 @@ export class SearchComponent implements OnInit {
           controller.get_miRNA_interactions_all({
             limit: limit,
             mimat_number: [search_key],
-            disease_name: disease_name,
+            disease_name: disease,
             callback: (response) => {
               parse_mirna_response(response)
             },
@@ -479,7 +471,7 @@ export class SearchComponent implements OnInit {
           controller.get_miRNA_interactions_all({
             limit: limit,
             hs_number: [search_key],
-            disease_name: disease_name,
+            disease_name: disease,
             callback: (response) => {
               parse_mirna_response(response)
             },
