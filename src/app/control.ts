@@ -41,6 +41,7 @@ export class Controller {
                 request += '?'
             }
             request += "searchString="+config.searchString
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
