@@ -205,6 +205,7 @@ export class HomeComponent implements OnInit {
             searchString: request.term,
             callback: (data) => {
               // put all values in a list
+              console.log(data)
               let values = []
               for (let entry in data) {
                 if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {

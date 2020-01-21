@@ -148,76 +148,17 @@ export class SearchComponent implements OnInit {
             
             Plotly.newPlot('pie_chart_container', plot_data, layout);
 
+            // handle click function on pie chart
             $('#pie_chart_container').on('plotly_click', function(_, data){
-              console.log(_)
-              console.log(data)
+              // open accordion tab and start loading
+              $( "button:contains('"+data.points[0].label+"')" ).click()
+              // scroll down to opened accordion tab
+              $([document.documentElement, document.body]).animate({
+                scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
+            }, 1000);
             });
 
-            // check if key is ENSG number
-            if (search_key.startsWith('ENSG')) {
-              if(!$('#options_mirna').hasClass('hidden')){
-                $('#options_mirna').addClass('hidden')
-              }
-              $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key)
-              controller.get_ceRNA_interactions_all({
-                ensg_number: [search_key],
-                limit: limit,
-                disease_name: disease_name,
-                pValue: 1,
-                callback: (response) => {
-                  parse_cerna_response(response)
-                },
-                error: (response) => {
-                  helper.msg("We could not find any matches your ENSG number and your cancer type.", false)
-                }
-              })
-            } else if (search_key.startsWith('MIMAT')) {
-              if(!$('#options_gene').hasClass('hidden')){
-                $('#options_gene').addClass('hidden')
-              }
-              // key is MIMAT number
-              $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key)
-              controller.get_miRNA_interactions_all({
-                limit: limit,
-                mimat_number: [search_key],
-                disease_name: disease_name,
-                callback: (response) => {
-                  parse_mirna_response(response)
-                },
-                error: (response) => {
-                  helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
-                }
-              })
-            } else if (search_key.startsWith('hsa-')) {
-              if(!$('#options_gene').hasClass('hidden')){
-                $('#options_gene').addClass('hidden')
-              }
-              // key is hsa number
-              $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key)
-              controller.get_miRNA_interactions_all({
-                limit: limit,
-                hs_number: [search_key],
-                disease_name: disease_name,
-                callback: (response) => {
-                  parse_mirna_response(response)
-                },
-                error: (response) => {
-                  helper.msg("We could not find any matches your hsa number and your cancer type.", false)
-                }
-              })
-            } else {
-              if(!$('#options_mirna').hasClass('hidden')){
-                $('#options_mirna').addClass('hidden')
-              }
-              // key is gene symbol
-              $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key)
-              build_accordion()
-            
-            }
+            build_accordion()
           }
         })
       }
@@ -365,8 +306,6 @@ export class SearchComponent implements OnInit {
       }
       $('#node_data').text(JSON.stringify(ordered_data))
 
-      /* plot expression data for nodes */
-      //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
       return nodes
     }
 
@@ -417,7 +356,6 @@ export class SearchComponent implements OnInit {
       })
     }
 
-    //
     function build_accordion() {
       $('#loading_spinner').removeClass('hidden')
 
@@ -470,24 +408,87 @@ export class SearchComponent implements OnInit {
         let disease = $(this).text()
         let table_id = $(this).val()
 
-        // check if table already exists
-        if ($('#'+table_id).length) return 
+        // check if table already exists OR loading spinner is there, which means we are already loading the table
+        if ($('#'+table_id).length || $(this).closest('.card-header').next().find('.card-body-table').html().length) return 
 
         // start local loading animation, gets removed in the parse function
         $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border"></div></div>')
 
-        controller.get_ceRNA_interactions_all({
-          gene_symbol: [search_key],
-          limit: limit,
-          disease_name: disease,
-          pValue: 1,
-          callback: (response) => {
-            parse_cerna_response_to_table(response, table_id)
-          },
-          error: (response) => {
-            helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
+        // check if key is ENSG number
+        if (search_key.startsWith('ENSG')) {
+          if(!$('#options_mirna').hasClass('hidden')){
+            $('#options_mirna').addClass('hidden')
           }
-        })
+          $('#options_gene').removeClass('hidden')
+          $('#gene_search_keys').val(search_key)
+          controller.get_ceRNA_interactions_all({
+            ensg_number: [search_key],
+            limit: limit,
+            disease_name: disease,
+            pValue: 1,
+            callback: (response) => {
+              parse_cerna_response_to_table(response, table_id)
+            },
+            error: (response) => {
+              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
+            }
+          })
+        } else if (search_key.startsWith('MIMAT')) {
+          if(!$('#options_gene').hasClass('hidden')){
+            $('#options_gene').addClass('hidden')
+          }
+          // key is MIMAT number
+          $('#options_mirna').removeClass('hidden')
+          $('#mirna_search_keys').val(search_key)
+          controller.get_miRNA_interactions_all({
+            limit: limit,
+            mimat_number: [search_key],
+            disease_name: disease_name,
+            callback: (response) => {
+              parse_mirna_response(response)
+            },
+            error: (response) => {
+              helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
+            }
+          })
+        } else if (search_key.startsWith('hsa-')) {
+          if(!$('#options_gene').hasClass('hidden')){
+            $('#options_gene').addClass('hidden')
+          }
+          // key is hsa number
+          $('#options_mirna').removeClass('hidden')
+          $('#mirna_search_keys').val(search_key)
+          controller.get_miRNA_interactions_all({
+            limit: limit,
+            hs_number: [search_key],
+            disease_name: disease_name,
+            callback: (response) => {
+              parse_mirna_response(response)
+            },
+            error: (response) => {
+              helper.msg("We could not find any matches your hsa number and your cancer type.", false)
+            }
+          })
+        } else {
+          if(!$('#options_mirna').hasClass('hidden')){
+            $('#options_mirna').addClass('hidden')
+          }
+          // key is gene symbol
+          $('#options_gene').removeClass('hidden')
+          $('#gene_search_keys').val(search_key)
+          controller.get_ceRNA_interactions_all({
+            gene_symbol: [search_key],
+            limit: limit,
+            disease_name: disease,
+            pValue: 1,
+            callback: (response) => {
+              parse_cerna_response_to_table(response, table_id)
+            },
+            error: (response) => {
+              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
+            }
+          })
+        }  
       })
 
       $('#loading_spinner').addClass('hidden');  
