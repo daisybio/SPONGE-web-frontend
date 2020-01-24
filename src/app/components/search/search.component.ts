@@ -11,7 +11,7 @@ declare var $;
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.less']
+  styleUrls: ['search.component.less']
 })
 export class SearchComponent implements OnInit {
 
@@ -581,7 +581,7 @@ export class SearchComponent implements OnInit {
           $(this).toggleClass('selected');
         })
 
-      $(".export_nodes").last().click( function() {
+      $(document).on('click', ".export_nodes", function() {
         /* export data to browse page, where a graph will be shown */ 
 
         let table = $('#'+$(this).val()).DataTable()
@@ -590,16 +590,14 @@ export class SearchComponent implements OnInit {
 
         // get data
         let nodes = parse_node_data(table.rows().data(), params_genes_keys)
-        // let nodes_to_mark = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys)
         let ensg_numbers = nodes.map(function(node) {return node.id})
-        // let ensg_numbers_to_mark = nodes_to_mark.map(function(node) {return node.id})
 
         $this.shared_service.setData({
           'nodes': ensg_numbers,
           'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
           'cancer_type': active_cancer_name
         })
-
+        console.log($this.shared_service.getData())
         // navigate to browse
         $this.router.navigateByUrl('browse');
       })
