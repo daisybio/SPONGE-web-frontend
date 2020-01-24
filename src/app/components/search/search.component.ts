@@ -496,6 +496,27 @@ export class SearchComponent implements OnInit {
         }  
       })
 
+      $('.export_nodes').click(function() {
+        /* export data to browse page, where a graph will be shown */ 
+
+        let table = $('#'+$(this).val()).DataTable()
+        active_cancer_name = $(this).closest('.card').find('button').first().text()
+        let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+
+        // get data
+        let nodes = parse_node_data(table.rows().data(), params_genes_keys)
+        let ensg_numbers = nodes.map(function(node) {return node.id})
+
+        $this.shared_service.setData({
+          'nodes': ensg_numbers,
+          'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
+          'cancer_type': active_cancer_name
+        })
+        console.log($this.shared_service.getData())
+        // navigate to browse
+        $this.router.navigateByUrl('browse');
+      })
+
       $('#loading_spinner').addClass('hidden');  
     }
 
@@ -564,42 +585,21 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
-        // this line also removes the loading spinner
-        $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
+      // this line also removes the loading spinner
+      $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
-        push_interaction_filters(table_id)
-        var table = $("#" + table_id).DataTable({
-          orderCellsTop: true,
-        })
-        helper.colSearch(table_id, table)
+      push_interaction_filters(table_id)
+      var table = $("#" + table_id).DataTable({
+        orderCellsTop: true,
+      })
+      helper.colSearch(table_id, table)
 
-        $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
-          table.draw()
-        })
-        // make rows selectable
-        $('#' + table_id + ' tbody').on('click', 'tr', function () {
-          $(this).toggleClass('selected');
-        })
-
-      $(document).on('click', ".export_nodes", function() {
-        /* export data to browse page, where a graph will be shown */ 
-
-        let table = $('#'+$(this).val()).DataTable()
-        active_cancer_name = $(this).closest('.card').find('button').first().text()
-        let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
-
-        // get data
-        let nodes = parse_node_data(table.rows().data(), params_genes_keys)
-        let ensg_numbers = nodes.map(function(node) {return node.id})
-
-        $this.shared_service.setData({
-          'nodes': ensg_numbers,
-          'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
-          'cancer_type': active_cancer_name
-        })
-        console.log($this.shared_service.getData())
-        // navigate to browse
-        $this.router.navigateByUrl('browse');
+      $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
+        table.draw()
+      })
+      // make rows selectable
+      $('#' + table_id + ' tbody').on('click', 'tr', function () {
+        $(this).toggleClass('selected');
       })
 
       // mark rows in datatable (and thus later in network) if we restore old session
