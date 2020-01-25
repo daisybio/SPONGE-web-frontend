@@ -29,7 +29,7 @@ export class SearchComponent implements OnInit {
 
     var search_key: string;
     var search_key_ensg:string;
-    var limit: number = 20;
+    var limit: number = 300;
     var parsed_search_result: any;
     var url_storage;
     let session = null
@@ -52,7 +52,6 @@ export class SearchComponent implements OnInit {
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
-        limit = $('#gene_input_limit').val()
         //helper.check_gene_interaction()
         search(limit)
       }    
@@ -63,7 +62,6 @@ export class SearchComponent implements OnInit {
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
-        limit = $('#mirna_input_limit').val()
         search(limit)
       }
     })
@@ -96,6 +94,76 @@ export class SearchComponent implements OnInit {
       }
     }
 
+    function load_interactions(disease, table_id){
+      // check if key is ENSG number
+      if (search_key.startsWith('ENSG')) {
+        controller.get_ceRNA_interactions_all({
+          ensg_number: [search_key],
+          limit: limit,
+          disease_name: disease,
+          pValue: 1,
+          callback: (response) => {
+            parse_cerna_response_to_table(response, table_id)
+          },
+          error: (response) => {
+            helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
+          }
+        })
+      } else if (search_key.startsWith('MIMAT')) {
+        // key is MIMAT number
+        controller.get_miRNA_interactions_all({
+          limit: limit,
+          mimat_number: [search_key],
+          disease_name: disease,
+          callback: (response) => {
+            parse_mirna_response(response)
+          },
+          error: (response) => {
+            helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
+          }
+        })
+      } else if (search_key.startsWith('hsa-')) {
+        // key is hsa number
+        controller.get_miRNA_interactions_all({
+          limit: limit,
+          hs_number: [search_key],
+          disease_name: disease,
+          callback: (response) => {
+            parse_mirna_response(response)
+          },
+          error: (response) => {
+            helper.msg("We could not find any matches your hsa number and your cancer type.", false)
+          }
+        })
+      } else {
+        // key is gene symbol
+        controller.get_ceRNA_interactions_all({
+          gene_symbol: [search_key],
+          limit: limit,
+          disease_name: disease,
+          pValue: 1,
+          callback: (response) => {
+            parse_cerna_response_to_table(response, table_id)
+          },
+          error: (response) => {
+            helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
+          }
+        })
+      }  
+    }
+
+    function classify_searchKey(search_key:string){
+      if (search_key.startsWith('ENSG')) {
+        return "ENSG"
+      } else if (search_key.startsWith('MIMAT')) {
+        return "MIMAT"
+      } else if (search_key.startsWith('hsa-')) {
+        return "HSA"
+      } else {
+        return "GENE"
+      }
+    }
+
     function search(limit) {
       // start loading
       $('#loading_spinner').removeClass('hidden')
@@ -113,9 +181,9 @@ export class SearchComponent implements OnInit {
         parsed_search_result['key'] = undefined
 
         // load pie chart for gene
-        limit = $('#gene_input_limit').val()
         controller.gene_count({
-          gene_symbol: [search_key],
+          gene_symbol: classify_searchKey(search_key) == "GENE" ? [search_key] : [''],
+          ensg_number: classify_searchKey(search_key) == "ENSG" ? [search_key] : [''],
           callback: (data) => {
             count_object = data
             let values = data.map(function(node) {return node.count_all})
@@ -133,7 +201,7 @@ export class SearchComponent implements OnInit {
             var layout = {
               height: 600,
               width: 1000,
-              title: 'Interactions',
+              title: 'Interactions of ' + search_key,
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
@@ -375,7 +443,6 @@ export class SearchComponent implements OnInit {
           return callback(edges)
         },
         error: (response) => {
-          console.log(response)
           helper.msg("Something went wrong while loading the interactions.", true)
         }
       })
@@ -439,61 +506,7 @@ export class SearchComponent implements OnInit {
         // start local loading animation, gets removed in the parse function
         $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border"></div></div>')
 
-        // check if key is ENSG number
-        if (search_key.startsWith('ENSG')) {
-          controller.get_ceRNA_interactions_all({
-            ensg_number: [search_key],
-            limit: limit,
-            disease_name: disease,
-            pValue: 1,
-            callback: (response) => {
-              parse_cerna_response_to_table(response, table_id)
-            },
-            error: (response) => {
-              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
-            }
-          })
-        } else if (search_key.startsWith('MIMAT')) {
-          // key is MIMAT number
-          controller.get_miRNA_interactions_all({
-            limit: limit,
-            mimat_number: [search_key],
-            disease_name: disease,
-            callback: (response) => {
-              parse_mirna_response(response)
-            },
-            error: (response) => {
-              helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
-            }
-          })
-        } else if (search_key.startsWith('hsa-')) {
-          // key is hsa number
-          controller.get_miRNA_interactions_all({
-            limit: limit,
-            hs_number: [search_key],
-            disease_name: disease,
-            callback: (response) => {
-              parse_mirna_response(response)
-            },
-            error: (response) => {
-              helper.msg("We could not find any matches your hsa number and your cancer type.", false)
-            }
-          })
-        } else {
-          // key is gene symbol
-          controller.get_ceRNA_interactions_all({
-            gene_symbol: [search_key],
-            limit: limit,
-            disease_name: disease,
-            pValue: 1,
-            callback: (response) => {
-              parse_cerna_response_to_table(response, table_id)
-            },
-            error: (response) => {
-              helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
-            }
-          })
-        }  
+        load_interactions(disease, table_id)
       })
 
       $('.export_nodes').click(function() {
@@ -512,7 +525,6 @@ export class SearchComponent implements OnInit {
           'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
           'cancer_type': active_cancer_name
         })
-        console.log($this.shared_service.getData())
         // navigate to browse
         $this.router.navigateByUrl('browse');
       })
@@ -524,11 +536,15 @@ export class SearchComponent implements OnInit {
 
       let disease = response[0]["run"]["dataset"]["disease_name"]
       let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
+      parsed_search_result = {}
+      parsed_search_result['diseases'] = {}
+      parsed_search_result['key'] = undefined
 
       response.forEach(interaction => {
         let interaction_info = {};
         let gene_to_extract;
         let disease = interaction['run']['dataset']['disease_name']
+
         // parse the information
         let correlation = interaction['correlation']
         // usually get information for other gene, extract information for key gene only once
@@ -565,46 +581,69 @@ export class SearchComponent implements OnInit {
 
       }); // end for each
 
-      // Set key-gene information
-      let key_information = {
-        gene: parsed_search_result['key']['ensg_number'],
-        gene_symbol: parsed_search_result['key']['gene_symbol'],
-        chromosome: parsed_search_result['key']['chromosome_name']
-      }
-      let key_information_sentence = "For gene " + key_information['gene']
-      ensg4KMP=key_information['gene']
-      if (key_information['gene_symbol'] != '') {
-        key_information_sentence += " (" + key_information['gene_symbol'] + ")"
-      }
-      key_information_sentence += " on chromosome " + key_information['chromosome']
+      /*********** check if table for this disease already exists, if so append, else create new **********/
+      if ($('#'+table_id).length) {
+        /************* TABLE EXISTS ALREADY, JUST APPEND ROWS ****************/
+        let rowse_to_append = []
+        parsed_search_result['diseases'][disease].forEach(obj => {
+          rowse_to_append.push(Object.values(obj))
+        });
+        $('#'+table_id).DataTable().rows.add(rowse_to_append).draw(false)
+      } else {
+        /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
 
-      $('#key_information').html(key_information_sentence)
+        // Set key-gene information
+        let key_information = {
+          gene: parsed_search_result['key']['ensg_number'],
+          gene_symbol: parsed_search_result['key']['gene_symbol'],
+          chromosome: parsed_search_result['key']['chromosome_name']
+        }
+        
+        let key_information_sentence = "For gene " + key_information['gene']
+        ensg4KMP=key_information['gene']
+        if (key_information['gene_symbol'] != '') {
+          key_information_sentence += " (" + key_information['gene_symbol'] + ")"
+        }
+        key_information_sentence += " on chromosome " + key_information['chromosome']
+  
+        $('#key_information').html(key_information_sentence)
+  
+        let html_table = helper.buildTable(
+            parsed_search_result['diseases'][disease],
+            table_id,
+            Object.keys(parsed_search_result['diseases'][disease][0])
+          )
+        // this line also removes the loading spinner
+        $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
+  
+        push_interaction_filters(table_id)
+        var table = $("#" + table_id).DataTable({
+          orderCellsTop: true,
+        })
+        helper.colSearch(table_id, table)
+  
+        $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
+          table.draw()
+        })
+  
+        // make rows selectable
+        $('#' + table_id + ' tbody').on('click', 'tr', function () {
+          $(this).toggleClass('selected');
+        })
 
-      let html_table = helper.buildTable(
-          parsed_search_result['diseases'][disease],
-          table_id,
-          Object.keys(parsed_search_result['diseases'][disease][0])
-        )
-      // this line also removes the loading spinner
-      $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
-
-      push_interaction_filters(table_id)
-      var table = $("#" + table_id).DataTable({
-        orderCellsTop: true,
-      })
-      helper.colSearch(table_id, table)
-
-      $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
-        table.draw()
-      })
-      // make rows selectable
-      $('#' + table_id + ' tbody').on('click', 'tr', function () {
-        $(this).toggleClass('selected');
-      })
-
-      // mark rows in datatable (and thus later in network) if we restore old session
-      if (url_storage) {
-        helper.mark_nodes_table(table, url_storage['nodes'])
+        // automatically load new entries over API when last+1 page is reached
+        $(document).on('click', "#" + table_id + '_next', function () {
+          let info = table.page.info()
+          // we reached the last page and want to load the next page
+          if (info.pages-1 == info.page) {
+            load_interactions(disease, table_id)
+          }
+        } );
+  
+        // mark rows in datatable (and thus later in network) if we restore old session
+        if (url_storage) {
+          helper.mark_nodes_table(table, url_storage['nodes'])
+        }
       }
     }
 

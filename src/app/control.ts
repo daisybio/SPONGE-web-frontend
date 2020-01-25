@@ -204,6 +204,7 @@ export class Controller {
             pValue?: number,
             ensg_number?: string[],
             gene_symbol?: string[],
+            offset?: number,
             callback: (response) => any,
             error?: (response) => any
         }) 
@@ -229,6 +230,9 @@ export class Controller {
             }
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
+            }
+            if (config.offset != undefined) {
+                request += "&offset="+config.offset
             }
             console.log(request)
             $.getJSON(request,
