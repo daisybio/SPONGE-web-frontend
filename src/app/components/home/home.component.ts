@@ -161,8 +161,10 @@ export class HomeComponent implements OnInit {
         color: '#0c253d'
       },
       xaxis: {
-        tickangle: -45
+        tickangle: -45,
+        hoverformat: '.3f'
       },  
+      yaxis:{hoverformat: '.3f'},
       barmode: 'group',
       autosize: false,
       width: 800,
@@ -181,7 +183,9 @@ export class HomeComponent implements OnInit {
         "orientation": "h"},
       hoverlabel:{
         namelength:50
-      }
+      },
+      
+        
     };
 
     Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});

@@ -101,7 +101,7 @@ export class SearchComponent implements OnInit {
     function search(limit) {
       // start loading
       $('#loading_spinner').removeClass('hidden')
-
+      
       // clear older search-results
       $('#key_information').empty()
       $('#disease_accordion').empty()
@@ -385,7 +385,8 @@ export class SearchComponent implements OnInit {
 
     function build_accordion() {
       $('#loading_spinner').removeClass('hidden')
-
+      
+      
       // build table out of parsed result for each disease
       for (let disease of count_object.map(function(disease) {return disease.run.dataset.disease_name})) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
@@ -406,7 +407,7 @@ export class SearchComponent implements OnInit {
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Options" +
           "</button>" +
-          "<button class='export_nodes btn btn-primary button-margin' value="+table_id+">Show as Network</button>"+
+          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
@@ -430,6 +431,7 @@ export class SearchComponent implements OnInit {
         $('#disease_accordion').append(accordion_card)
       }
 
+      
       // load table when accordion tab is opened and table has not been loaded already
       $(document).on('click', '.btn.btn-link.collapsed', function() {
         let disease = $(this).text()
@@ -497,31 +499,34 @@ export class SearchComponent implements OnInit {
           })
         }  
       })
-
+      
       $('.export_nodes').click(function() {
         /* export data to browse page, where a graph will be shown */ 
-
+        
         let table = $('#'+$(this).val()).DataTable()
         active_cancer_name = $(this).closest('.card').find('button').first().text()
         let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
-
+  
         // get data
         let nodes = parse_node_data(table.rows().data(), params_genes_keys)
         let ensg_numbers = nodes.map(function(node) {return node.id})
-
+  
         $this.shared_service.setData({
           'nodes': ensg_numbers,
           'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
           'cancer_type': active_cancer_name
         })
         console.log($this.shared_service.getData())
+        
         // navigate to browse
         $this.router.navigateByUrl('browse');
-      })
-
+        
+      }) 
+      
       $('#loading_spinner').addClass('hidden');  
+     
     }
-
+    
     function parse_cerna_response_to_table(response, table_id) {
 
       let disease = response[0]["run"]["dataset"]["disease_name"]
