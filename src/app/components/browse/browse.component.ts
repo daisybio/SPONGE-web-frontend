@@ -3,6 +3,7 @@ import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { Session } from "../../session";
 import {Router, ActivatedRoute, Params} from '@angular/router';
+import { SharedService } from "../../shared.service"
 
 import sigma from 'sigma';
 
@@ -10,7 +11,6 @@ import sigma from 'sigma';
 declare const sigma: any;
 declare var Plotly: any;
 declare var $;
-
 
 @Component({
   selector: 'app-browse',
@@ -22,7 +22,10 @@ export class BrowseComponent implements OnInit {
   disease_trimmed = ''
   selected_disease = ''
 
-  constructor(private activatedRoute: ActivatedRoute) {
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private shared_service: SharedService
+    ) {
 
   }
 
@@ -30,8 +33,15 @@ export class BrowseComponent implements OnInit {
 
     const controller = new Controller()
     const helper = new Helper()
+    const $this = this
+    const shared_data = $this.shared_service.getData()
+
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
+
+    //##################################################################################
+    // Here we check if there is information (e.g. from session or from search) to load
+    /* In case we restore an old session */
     this.activatedRoute.queryParams.subscribe(params => {
       if (Object.keys(params).length > 0) {
         // there are url params, load previous session
@@ -39,9 +49,14 @@ export class BrowseComponent implements OnInit {
       }
     });
 
+    /* In case we passed data from search to browse (shared service), set cancer type */
+    if (shared_data != undefined) {
+      $('#disease_selectpicker').val(shared_data['cancer_type'])
+    }
+    //##################################################################################
 
-    var node_table
-    var edge_table
+    let node_table
+    let edge_table
     
 
     let session = null
@@ -158,8 +173,9 @@ export class BrowseComponent implements OnInit {
     })
 
     function load_nodes(disease_trimmed, callback?) {
+      // load data if nothing was loaded in search page
       let sort_by = $('#run-info-select').val().toLowerCase()
-    
+
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       let cutoff_betweenness = $('#input_cutoff_betweenness').val()
       let cutoff_degree = $('#input_cutoff_degree').val()
@@ -172,24 +188,41 @@ export class BrowseComponent implements OnInit {
       }
       let limit = $('#input_limit').val()
       let descending = true
-      controller.get_ceRNA({
-        'disease_name':disease_trimmed,
-        'sorting':sort_by,
-        'limit':limit,
-        'minBetweenness':cutoff_betweenness,
-        'minNodeDegree': cutoff_degree,
-        'minEigenvector': cutoff_eigenvector,
-        'descending': descending,
-        'callback': data => {
-          let nodes = parse_node_data(data)
 
-          return callback(nodes)
-          },
-          error: (response) => {
-            $('#loading_spinner').addClass('hidden')
-            helper.msg("Something went wrong while loading the ceRNAs.", true)
+      if (shared_data == undefined) {
+        controller.get_ceRNA({
+          'disease_name':disease_trimmed,
+          'sorting':sort_by,
+          'limit':limit,
+          'minBetweenness':cutoff_betweenness,
+          'minNodeDegree': cutoff_degree,
+          'minEigenvector': cutoff_eigenvector,
+          'descending': descending,
+          'callback': data => {
+            let nodes = parse_node_data(data)
+            return callback(nodes)
+            },
+            error: (response) => {
+              $('#loading_spinner').addClass('hidden')
+              helper.msg("Something went wrong while loading the ceRNAs.", true)
+            }
           }
-      })
+        )
+      } else {
+        controller.get_ceRNA({
+          'disease_name': shared_data['cancer_type'],
+          'ensg_number': shared_data['nodes'],
+          'callback': data => {
+            let nodes = parse_node_data(data)
+            return callback(nodes)
+            },
+            error: (response) => {
+              $('#loading_spinner').addClass('hidden')
+              helper.msg("Something went wrong while loading the ceRNAs.", true)
+            }
+          }
+        )
+      }
     }
 
     function load_edges(disease_trimmed, nodes, callback?) {
@@ -406,8 +439,18 @@ export class BrowseComponent implements OnInit {
               }, 500)
             })
 
+            //##################################################################################
+            // Here we check if there is data to be marked in the network/tables (e.g. from old session of search)
+            // check if there is data in the shared_service, meaning we came from search and want to load specific data
+            if (shared_data != undefined) {
+              if ('nodes_marked' in shared_data) {
+                helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
+                $('#export_selected_nodes').click()
+              }
+            }
+
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
-            if (url_storage && Object.keys(url_storage)) {
+            else if (url_storage && Object.keys(url_storage)) {
               if ('nodes' in url_storage && url_storage['nodes'].length) {
                 // mark nodes in nodes table
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
@@ -415,11 +458,14 @@ export class BrowseComponent implements OnInit {
                 $('#export_selected_nodes').click()
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
+              /*
+              // TODO:  we currently cant restore edges bc of missing ids
               if ('edges' in url_storage && url_storage['edges'].length) {
                 helper.mark_edges_table(edge_table, url_storage['edges'])
                 // mark edges in graph
                 $('#export_selected_edges').click()
-              }
+              }*/
+              //##################################################################################
             }
 
             // load expression data

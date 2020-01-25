@@ -14,58 +14,8 @@
                     <h3 class="card-header text-center" id="card-header">Search Options</h3>
                     <div class="card-body">
 
-                        <span class="cancer-type">Cancer Type:</span>&nbsp;
-                        <div class="col-md-auto select-field">
-                            
-                            <select class="selectpicker diseases" show-subtext="true" data-live-search="true" id="disease_selectpicker">
-                                    <option>All</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-HNSC">Head and neck squamous
-                                        cell carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-BRCA">Breast invasive carcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-CCSK">Kidney clear cell
-                                        carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-SARC">Sarcoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-OV">Ovarian serous
-                                        cystadenocarcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-THYM">Thymoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-LGG">Brain lower grade glioma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-PCPG">Pheochromocytoma &amp;
-                                        paraganglioma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-LIHC">Liver hepatocellular
-                                        carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-PAAD">Pancreatic adenocarcinoma
-                                    </option>
-                                    <option data-value="None">Pancancer</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-COAD">Colon adenocarcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-KIRP">Kidney papillary cell
-                                        carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-LUAD">Lung adenocarcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-UCEC">Uterine corpus
-                                        endometrioid carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-THCA">Thyroid carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-BLCA">Bladder urothelial
-                                        carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-PRAD">Prostate adenocarcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-TGCT">Testicular germ cell tumor
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-STAD">Stomach adenocarcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-LUSC">Lung squamous cell
-                                        carcinoma</option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-ESCA">Esophageal carcinoma
-                                    </option>
-                                    <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-CESC">Cervical &amp;
-                                        endocervical cancer</option>
-                            </select>
-                         </div>
-
                         <div id="options_gene" class="hidden col">
-                            <p class="note"> You are currently searching for a gene</p>
+                            <!-- <p class="note"> You are currently searching for a gene</p> -->
                             <table> 
                                 <td class="td-dim">
                                     <tr>
@@ -85,7 +35,7 @@
                              </div>
                          </div>
                       <div id="options_mirna" class="hidden">
-                            <p class="note">You are currently searching for miRNA</p>
+                            <!-- <p class="note">You are currently searching for miRNA</p> -->
                             <table>
                                 <td class="td-dim"> 
                                     <tr>
@@ -110,67 +60,10 @@
             <!-- End search information -->
 
 
-            <div class="container-fluid hidden col" id="network">
-                <div class="row">
-                    <div class="col-md-auto">
-                        <div id='network-plot-container-parent'>
-                            <div id='network-plot-container'></div>
-                        </div>
-                        <div class="form-inline mr-auto network-control" id="network-search">
-                            <select id='network_search_node' class="form-control mr-sm-2"
-                                data-live-search="true" show-subtext="true">
-                            </select>
-                            <button id='network_search_node_button'
-                                class="btn btn-secondary button-margin">Search</button>
-                            <div id='network_search_node_error' class='error-div hidden'></div>
-                        </div>
-                        <div class="network-control">
-                            <span class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle button-margin" type="button"
-                                    id="dropdownMenuButton" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                    Save as...
-                                </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                    <a class="dropdown-item" id="network_snapshot_png">png</a>
-                                    <a class="dropdown-item" id="network_snapshot_jpg">jpg</a>
-                                    <a class="dropdown-item" id="network_snapshot_svg">svg</a>
-                                </div>
-                            </span>
-                            <button type="button button-margin" class="btn btn-secondary button-margin"
-                                id="restart_camera">Reset camera</button>
-                            <button type="button button-margin" class="btn btn-secondary button-margin"
-                                id="toggle_layout">Force Atlas 2</button>
-                            <button type="button button-margin" class="btn btn-secondary button-margin"
-                                id="reset_graph">Reset graph</button>
-                        </div>
-                        <div id='expression_heatmap'>
-                        </div>
-                    </div>
-                    <div class="col-md-auto">
-                        <span class="hidden" id='node_data'></span>
-                        <span class="hidden" id="edge_data"></span>
-            
-                        <div id="node_information"  class="hidden">
-                            <div class="card card-cascade narrower" id="node-card">
-                                <div class="card-body text-center graph-information-title"> Node Information</div>
-                                <div id="node_information_content"></div>
-                            </div>
-                        </div>      
-                        <div id="edge_information"  class="hidden">
-                            <div class="card card-cascade narrower" id="node-card">
-                                <div class="card-body text-center graph-information-title"> Edge Information</div>
-                                <div id="edge_information_content"></div>
-                            </div>
-                        </div>  
-                     </div>
-                </div>
-             </div>
-
-            
-             </div>
-             
-             <p></p>
+            <div class="container-fluid col" >
+                <div id='pie_chart_container'></div>
+            </div>
+        </div>
 
              <div class="row d-flex justify-content-center" id='KMP-plot-container-parent'>
                     <div class="text-center hidden" id="loading_spinner_KMP" >

@@ -10,6 +10,7 @@ export class Controller {
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static CHECKGENEINTERACTION = "/ceRNAInteraction/checkGeneInteraction"
     static FIND_CERNA = "/findceRNA"
+    static GENE_COUNT = "/getGeneCount"
 
     static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
     // static MIRNA_INTERACTION_FIND_CERNA = "/miRNAInteraction/findceRNA"
@@ -40,6 +41,47 @@ export class Controller {
                 request += '?'
             }
             request += "searchString="+config.searchString
+            console.log(request)
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
+
+    public gene_count(
+        config: {
+            disease_name?: string,
+            ensg_number?: string[],
+            gene_symbol?: string[], 
+            minCountAll?: number,
+            minCountSign?: number,
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.GENE_COUNT
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            if (config.disease_name != undefined) {
+                request += "&disease_name="+config.disease_name
+            }
+            if (config.ensg_number != undefined) {
+                request += "&ensg_number="+config.ensg_number
+            }
+            if (config.gene_symbol != undefined) {
+                request += "&gene_symbol="+config.gene_symbol
+            }
+            if (config.minCountAll != undefined) {
+                request += "&minCountAll="+config.minCountAll
+            }
+            if (config.minCountSign != undefined) {
+                request += "&minCountSign="+config.minCountSign
+            }
             console.log(request)
             $.getJSON(request,
                 response => {
@@ -159,6 +201,7 @@ export class Controller {
             descending?: boolean, 
             information?: boolean,
             limit?: number, 
+            pValue?: number,
             ensg_number?: string[],
             gene_symbol?: string[],
             callback: (response) => any,
@@ -177,6 +220,9 @@ export class Controller {
             }
             if (config.limit != undefined) {
                 request += "&limit="+config.limit
+            }
+            if (config.pValue != undefined) {
+                request += "&pValue="+config.pValue
             }
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
@@ -235,6 +281,8 @@ export class Controller {
     public get_ceRNA(
         config: {
             disease_name : string,
+            ensg_number?: string[],
+            gene_symbol?: string[],
             gene_type?: string,
             minBetweenness?: number,
             minNodeDegree?: number,
@@ -253,6 +301,12 @@ export class Controller {
         }
         if (config.disease_name != undefined) {
             request += "&disease_name="+config.disease_name
+        }
+        if (config.ensg_number != undefined) {
+            request += "&ensg_number="+config.ensg_number
+        }
+        if (config.gene_symbol != undefined) {
+            request += "&gene_symbol="+config.gene_symbol
         }
         if (config.gene_type != undefined) {
             request += "&gene_type="+config.gene_type

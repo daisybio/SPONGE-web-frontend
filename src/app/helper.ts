@@ -43,13 +43,12 @@ export class Helper {
     subgraph_node_color = '#920518'
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
-    select_color= 'rgba(13, 73, 189, 0.67)'
     edge_color_pvalues_bins = {
-      0.0 : '#fdbe85',
-      0.2 : '#fd9f55',
-      0.4 : '#f87f2c',
-      0.6 : '#e85e0f',
-      0.8 : '#c94503'
+      0.95 : '#fdbe85',
+      0.8 : '#fd9f55',
+      0.7 : '#f87f2c',
+      0.5 : '#e85e0f',
+      0.0 : '#c94503'
     }
 
     controller = new Controller()
@@ -239,7 +238,6 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
-          console.log(response[0].gene.gene_symbol)
           let add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
       
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
@@ -898,6 +896,7 @@ export class Helper {
             $('#gene_search_keys').val(val)
             break
           }
+          // needed for search
           case 'active_cancer': {
             active_cancer = val
             break
