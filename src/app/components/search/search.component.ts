@@ -94,7 +94,7 @@ export class SearchComponent implements OnInit {
       }
     }
 
-    function load_interactions(disease, table_id){
+    function load_interactions(disease, table_id, offset=0){
       // check if key is ENSG number
       if (search_key.startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
@@ -102,6 +102,7 @@ export class SearchComponent implements OnInit {
           limit: limit,
           disease_name: disease,
           pValue: 1,
+          offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
           },
@@ -115,6 +116,7 @@ export class SearchComponent implements OnInit {
           limit: limit,
           mimat_number: [search_key],
           disease_name: disease,
+          offset: offset,
           callback: (response) => {
             parse_mirna_response(response)
           },
@@ -128,6 +130,7 @@ export class SearchComponent implements OnInit {
           limit: limit,
           hs_number: [search_key],
           disease_name: disease,
+          offset: offset,
           callback: (response) => {
             parse_mirna_response(response)
           },
@@ -142,6 +145,7 @@ export class SearchComponent implements OnInit {
           limit: limit,
           disease_name: disease,
           pValue: 1,
+          offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
           },
@@ -636,7 +640,7 @@ export class SearchComponent implements OnInit {
           let info = table.page.info()
           // we reached the last page and want to load the next page
           if (info.pages-1 == info.page) {
-            load_interactions(disease, table_id)
+            load_interactions(disease, table_id, info.recordsTotal)
           }
         } );
   
