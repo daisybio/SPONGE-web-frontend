@@ -44,15 +44,16 @@ export class SearchComponent implements OnInit {
           // there are url params, load previous session
           url_storage = helper.load_session_url(params)
         }
-        search_key = decodeURIComponent(params.search_key);
+        
+        search_key = decodeURIComponent(params.search_key).split(" (")[0];
       });
     
     $('#options_gene_go').click( () => {
-      search_key = $('#gene_search_keys').val()
+      search_key = $('#gene_search_keys').val().split(" (")[0]
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
-        limit = $('#gene_input_limit').val()
+        limit = $('#gene_input_limit').val().split(" (")[0]
         //helper.check_gene_interaction()
         search(limit)
       }    
@@ -63,6 +64,7 @@ export class SearchComponent implements OnInit {
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
+        
         limit = $('#mirna_input_limit').val()
         search(limit)
       }

@@ -192,7 +192,11 @@ export class HomeComponent implements OnInit {
 
     /* Search function for home component */
     $('#home_search_button').click(() => {
-      let search_key = $('#home_search').val()
+      var res = $('#home_search').val().split(" (");
+      var end = res[1].substring(0,res[1].length-1);
+      
+     // let search_key = $('#home_search').val()
+     let search_key = res[0]
       // replace possible empty spaces
       search_key = search_key.replace(' ', '')
       window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
@@ -207,14 +211,17 @@ export class HomeComponent implements OnInit {
               // put all values in a list
               console.log(data)
               let values = []
+              let values2=[]
               for (let entry in data) {
                 if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
                   values.push(data[entry]['gene_symbol'])
                 } else {
                   values.push(data[entry]['ensg_number'])
-                }             
+                }
+                values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")             
               }
-              response(values)
+             response(values2)
+             
             },
             error: () => {
               console.log(request)

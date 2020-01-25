@@ -1,4 +1,5 @@
 import * as $ from "jquery";
+import { ConditionalExpr } from '@angular/compiler';
 
 export class Controller {
 
@@ -40,6 +41,7 @@ export class Controller {
             if (Object.keys(config).length > 1) {
                 request += '?'
             }
+            
             request += "searchString="+config.searchString
             console.log(request)
             $.getJSON(request,
