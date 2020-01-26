@@ -651,16 +651,23 @@ export class SearchComponent implements OnInit {
       }
     }
 
-    $(function() {  
+    $(function() { 
+      function split( val ) {
+        return val.split( /,\s*/ );
+      } 
       $( ".autocomplete" ).autocomplete({
         source: ( request, response ) => {
           controller.search_string({
-            searchString: request.term,
+            searchString: split(request.term).pop(), // only the last item in list
             callback: (data) => {
               // put all values in a list
               let values = []
               for (let entry in data) {
-                values.push(Object.values(data[entry])[1]+" ("+Object.values(data[entry])[0]+")")
+                if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
+                  values.push(data[entry]['gene_symbol'])
+                } else {
+                  values.push(data[entry]['ensg_number'])
+                }             
               }
               response(values)
             },
@@ -675,8 +682,23 @@ export class SearchComponent implements OnInit {
         },
         response: function() {
           $( this ).removeClass( "loading" );
+        },
+        focus: function() {
+          return false;
+        },
+        select: function( event, ui ) {
+          var terms = split( this.value );
+          // remove the current input
+          terms.pop();
+          // add the selected item
+          terms.push( ui.item.value );
+          // add placeholder to get the comma-and-space at the end
+          terms.push( "" );
+          this.value = terms.join( ", " );
+          return false;
         }
       });
-    }); 
+    });
+
   }
 }
