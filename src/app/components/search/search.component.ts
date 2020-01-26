@@ -185,9 +185,9 @@ export class SearchComponent implements OnInit {
         parsed_search_result['key'] = undefined
 
         // load pie chart for gene
+        let type = classify_searchKey(search_key) == "GENE" ? "gene_symbol" : "ensg_number"
         controller.gene_count({
-          gene_symbol: classify_searchKey(search_key) == "GENE" ? [search_key] : [''],
-          ensg_number: classify_searchKey(search_key) == "ENSG" ? [search_key] : [''],
+          [type]: [search_key],
           callback: (data) => {
             count_object = data
             let values = data.map(function(node) {return node.count_all})
