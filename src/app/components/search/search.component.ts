@@ -112,7 +112,6 @@ export class SearchComponent implements OnInit {
             parse_cerna_response_to_table(response, table_id)
           },
           error: (response) => {
-            helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
           }
         })
       } else if (search_key.startsWith('MIMAT')) {
@@ -126,7 +125,6 @@ export class SearchComponent implements OnInit {
             parse_mirna_response(response)
           },
           error: (response) => {
-            helper.msg("We could not find any matches your MIMAT number and your cancer type.", false)
           }
         })
       } else if (search_key.startsWith('hsa-')) {
@@ -140,7 +138,6 @@ export class SearchComponent implements OnInit {
             parse_mirna_response(response)
           },
           error: (response) => {
-            helper.msg("We could not find any matches your hsa number and your cancer type.", false)
           }
         })
       } else {
@@ -155,7 +152,6 @@ export class SearchComponent implements OnInit {
             parse_cerna_response_to_table(response, table_id)
           },
           error: (response) => {
-            helper.msg("The database does not contain any matches for your gene and your cancer type.", false)
           }
         })
       }  
@@ -629,6 +625,15 @@ export class SearchComponent implements OnInit {
         push_interaction_filters(table_id)
         var table = $("#" + table_id).DataTable({
           orderCellsTop: true,
+          drawCallback: function( settings ) {
+            var api = this.api();
+            // enable last button always if there are more interactions to load
+            if (api.data().length % limit == 0) {
+              if ($("#" + table_id + '_next').hasClass('disabled')) {
+                $("#" + table_id + '_next').removeClass('disabled')
+              }
+            }
+          }
         })
         helper.colSearch(table_id, table)
   
@@ -643,12 +648,12 @@ export class SearchComponent implements OnInit {
 
         // automatically load new entries over API when last+1 page is reached
         $(document).on('click', "#" + table_id + '_next', function () {
-          let info = table.page.info()
-          // we reached the last page and want to load the next page
-          if (info.pages-1 == info.page) {
+          let info = $("#" + table_id).DataTable().page.info()
+          // we reached the last page and want to load the next page IF there is still more to load
+          if ((info.pages-1 == info.page) && (info.recordsTotal % limit == 0)) {
             load_interactions(disease, table_id, info.recordsTotal)
           }
-        } );
+        });
   
         // mark rows in datatable (and thus later in network) if we restore old session
         if (url_storage) {
