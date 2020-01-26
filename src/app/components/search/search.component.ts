@@ -48,7 +48,9 @@ export class SearchComponent implements OnInit {
       });
     
     $('#options_gene_go').click( () => {
-      search_key = $('#gene_search_keys').val()
+      search_key = $('#gene_search_keys').val().split(' ').join('')
+      // remove last char if it is ','
+      search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -58,7 +60,9 @@ export class SearchComponent implements OnInit {
     })
 
     $('#options_mirna_go').click( () => {
-      search_key = $('#mirna_search_keys').val()
+      search_key = $('#mirna_search_keys').val().split(' ').join('')
+      // remove last char if it is ','
+      search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -205,7 +209,7 @@ export class SearchComponent implements OnInit {
             var layout = {
               height: 600,
               width: 1000,
-              title: 'Interactions of ' + search_key,
+              title: 'Interactions of ' + search_key.split(',').join(', '),
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
@@ -228,7 +232,7 @@ export class SearchComponent implements OnInit {
             $('#options_mirna').addClass('hidden')
           }
           $('#options_gene').removeClass('hidden')
-          $('#gene_search_keys').val(search_key)
+          $('#gene_search_keys').val(search_key.split(',').join(', '))
         
         } else if (search_key.startsWith('MIMAT')) {
           if(!$('#options_gene').hasClass('hidden')){
@@ -236,7 +240,7 @@ export class SearchComponent implements OnInit {
           }
           // key is MIMAT number
           $('#options_mirna').removeClass('hidden')
-          $('#mirna_search_keys').val(search_key)
+          $('#mirna_search_keys').val(search_key.split(',').join(', '))
           
         } else if (search_key.startsWith('hsa-')) {
           if(!$('#options_gene').hasClass('hidden')){
@@ -244,7 +248,7 @@ export class SearchComponent implements OnInit {
           }
           // key is hsa number
           $('#options_mirna').removeClass('hidden')
-          $('#mirna_search_keys').val(search_key)
+          $('#mirna_search_keys').val(search_key.split(',').join(', '))
           
         } else {
           if(!$('#options_mirna').hasClass('hidden')){
@@ -252,7 +256,7 @@ export class SearchComponent implements OnInit {
           }
           // key is gene symbol
           $('#options_gene').removeClass('hidden')
-          $('#gene_search_keys').val(search_key)
+          $('#gene_search_keys').val(search_key.split(',').join(', '))
         }  
 
             build_accordion()
@@ -677,12 +681,6 @@ export class SearchComponent implements OnInit {
           })
         },
         minLength: 3,
-        search: function() {
-          $( this ).addClass( "loading" );
-        },
-        response: function() {
-          $( this ).removeClass( "loading" );
-        },
         focus: function() {
           return false;
         },

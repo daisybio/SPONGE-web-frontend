@@ -194,7 +194,7 @@ export class HomeComponent implements OnInit {
     $('#home_search_button').click(() => {
       let search_key = $('#home_search').val()
       // replace possible empty spaces
-      search_key = search_key.replace(' ', '') 
+      search_key = search_key.split(' ').join('')
       search_key = search_key.slice(0, -1)  // remove last ','
       window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
     })
