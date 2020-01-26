@@ -26,6 +26,7 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
+    const pValue = 0.05
 
     var search_key: string;
     var search_key_ensg:string;
@@ -105,7 +106,7 @@ export class SearchComponent implements OnInit {
           ensg_number: [search_key],
           limit: limit,
           disease_name: disease,
-          pValue: 1,
+           pValue: pValue,
           offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
@@ -148,7 +149,7 @@ export class SearchComponent implements OnInit {
           gene_symbol: [search_key],
           limit: limit,
           disease_name: disease,
-          pValue: 1,
+          pValue: pValue,
           offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
@@ -192,9 +193,10 @@ export class SearchComponent implements OnInit {
         let type = classify_searchKey(search_key) == "GENE" ? "gene_symbol" : "ensg_number"
         controller.gene_count({
           [type]: [search_key],
+          minCountSign: 1,
           callback: (data) => {
             count_object = data
-            let values = data.map(function(node) {return node.count_all})
+            let values = data.map(function(node) {return node.count_sign})
             let labels = data.map(function(node) {
               // first letter uppercase
               return node.run.dataset.disease_name.charAt(0).toUpperCase() + node.run.dataset.disease_name.substring(1);
