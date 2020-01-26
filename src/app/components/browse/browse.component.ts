@@ -34,7 +34,7 @@ export class BrowseComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const shared_data = $this.shared_service.getData()
+    const shared_data: Object = $this.shared_service.getData()
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
@@ -422,7 +422,8 @@ export class BrowseComponent implements OnInit {
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
               if (selected_nodes_data.length === 0) {
-                selected_nodes_data = node_table.rows({ filter : 'applied'}).data()
+                helper.msg("Please select genes in the table.", false)
+                return
               }
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
@@ -443,7 +444,7 @@ export class BrowseComponent implements OnInit {
             // Here we check if there is data to be marked in the network/tables (e.g. from old session of search)
             // check if there is data in the shared_service, meaning we came from search and want to load specific data
             if (shared_data != undefined) {
-              if ('nodes_marked' in shared_data) {
+              if (shared_data['nodes_marked'].length) {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                 $('#export_selected_nodes').click()
               }

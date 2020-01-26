@@ -750,11 +750,6 @@ export class Helper {
         }
       });  
       
-      document.getElementById('toggle_layout').innerHTML = 'Start layout';
-      setTimeout(function () {
-        document.getElementById('toggle_layout').innerHTML = 'Stop layout';
-      }, 1000)
-      
       $('#reset_graph').click( () => {
         this.clear_colors(network);
         if (node_table) this.clear_table(node_table)  // no node table in search

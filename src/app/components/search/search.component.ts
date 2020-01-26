@@ -524,11 +524,13 @@ export class SearchComponent implements OnInit {
 
         // get data
         let nodes = parse_node_data(table.rows().data(), params_genes_keys)
-        let ensg_numbers = nodes.map(function(node) {return node.id})
+        let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
+        console.log(nodes_marked)
+        let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
         $this.shared_service.setData({
           'nodes': ensg_numbers,
-          'nodes_marked': parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id}),
+          'nodes_marked': nodes_marked,
           'cancer_type': active_cancer_name
         })
         // navigate to browse
