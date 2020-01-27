@@ -46,6 +46,7 @@ export class SearchComponent implements OnInit {
           url_storage = helper.load_session_url(params)
         }
         search_key = decodeURIComponent(params.search_key);
+        console.log(search_key)
       });
     
     $('#options_gene_go').click( () => {
