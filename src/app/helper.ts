@@ -340,7 +340,13 @@ export class Helper {
      {       
        
        // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
-        var ensg = 'Survival Analysis of gene ' + response.gene.gene_symbol + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
+       var genename
+       if(response.gene.gene_symbol == "null"){
+          genename="Unknown"
+       }else{
+         genename= response.gene.gene_symbol 
+       }
+        var ensg = 'Survival Analysis of gene ' + genename + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
         
         var sestimateGesamt = [];
       
