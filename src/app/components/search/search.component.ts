@@ -4,6 +4,7 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
+import { preserveWhitespacesDefault } from '@angular/compiler'
 
 declare var Plotly: any;
 declare var $;
@@ -37,6 +38,7 @@ export class SearchComponent implements OnInit {
     let active_cancer_name:string   // name of the currently displayed cancer type in the network
     let ensg4KMP:string
     let count_object
+    var preSearchKey
   
     this.activatedRoute.queryParams
       .subscribe(params => {
@@ -46,16 +48,36 @@ export class SearchComponent implements OnInit {
           url_storage = helper.load_session_url(params)
         }
         search_key = decodeURIComponent(params.search_key);
-        console.log(search_key)
+        
       });
     
     $('#options_gene_go').click( () => {
+ 
       search_key = $('#gene_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
+     
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
+        console.log(search_key)
+        var tmpString=""
+        search_key = search_key.slice(0,-1)
+        if(search_key.includes(",")){
+          search_key=search_key.slice(0,-1)
+          preSearchKey= search_key.split(",")
+          console.log(preSearchKey)
+          preSearchKey.forEach(geneName => {
+            tmpString += geneName.split("(")[0]+","
+          });
+          console.log(tmpString)
+          preSearchKey= tmpString
+         }else{
+           preSearchKey= search_key.split("(")[0]
+           
+         }
+         search_key=preSearchKey
+         console.log("new "+search_key)
         //helper.check_gene_interaction()
         search(limit)
       }    
@@ -679,14 +701,16 @@ export class SearchComponent implements OnInit {
             callback: (data) => {
               // put all values in a list
               let values = []
+              let values2=[]
               for (let entry in data) {
                 if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
                   values.push(data[entry]['gene_symbol'])
                 } else {
                   values.push(data[entry]['ensg_number'])
-                }             
+                }    
+                values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")              
               }
-              response(values)
+              response(values2)
             },
             error: () => {
               console.log(request)
