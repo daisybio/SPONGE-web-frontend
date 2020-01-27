@@ -240,7 +240,7 @@
 .center {
     margin: auto;
     width: 50%;
-    border: 3px solid green;
+    
     padding: 10px;
   }
 
@@ -280,5 +280,28 @@
       width: 100%;
       z-index: -10;
   }
+
+  .cookie-popup{
+    position: relative;
+    background-color: #fdf2e6;
+    height: 20vh;
+    width: 50vw;
+    top: 50px;
+    z-index: 1;
+    border-radius: 20px;
+  }
+
+  .full-overlay{
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0, 0.9);
+    overflow-x: hidden;
+    transition: 0.5s;
+}
   
  
