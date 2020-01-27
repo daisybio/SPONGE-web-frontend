@@ -196,36 +196,27 @@ export class HomeComponent implements OnInit {
 
     /* Search function for home component */
     $('#home_search_button').click(() => {
-    //  var res = $('#home_search').val().split(" (");
-     // var end = res[1].substring(0,res[1].length-1); ensg
-      
       let search_key = $('#home_search').val()
-   //  let search_key = res[0]
-      // replace possible empty spaces
+       // replace possible empty spaces
       search_key = search_key.split(' ').join('')
      // search_key = search_key.slice(0,-1)  // remove last ','
-
       var preSearchKey
-      console.log(search_key)
-        var tmpString=""
-       
+      var tmpString=""
+      
         if(search_key.includes(",")){
           search_key=search_key.slice(0,-1)
           preSearchKey= search_key.split(",")
-          console.log(preSearchKey)
+          
           preSearchKey.forEach(geneName => {
             tmpString += geneName.split("(")[0]+","
           });
-          console.log(tmpString)
+          
           preSearchKey= tmpString.slice(0,-1)
          }else{
            preSearchKey= search_key.split("(")[0]
-           
-         }
+          }
          search_key=preSearchKey
-         console.log("new "+search_key)
-          
-  //    window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
+        window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
     $(function() { 
