@@ -758,7 +758,7 @@ export class Helper {
           network.startForceAtlas2({worker: true, slowDown: 100});
           document.getElementById('toggle_layout').innerHTML = 'Stop layout';
         }
-      });      
+      });  
       
       $('#reset_graph').click( () => {
         this.clear_colors(network);

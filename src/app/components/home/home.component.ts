@@ -202,18 +202,21 @@ export class HomeComponent implements OnInit {
      // let search_key = $('#home_search').val()
      let search_key = res[0]
       // replace possible empty spaces
-      search_key = search_key.replace(' ', '')
+      search_key = search_key.split(' ').join('')
+      search_key = search_key.slice(0, -1)  // remove last ','
       window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
-    $(function() {  
+    $(function() { 
+      function split( val ) {
+        return val.split( /,\s*/ );
+      } 
       $( "#home_search" ).autocomplete({
         source: ( request, response ) => {
           controller.search_string({
-            searchString: request.term,
+            searchString: split(request.term).pop(), // only the last item in list
             callback: (data) => {
               // put all values in a list
-              console.log(data)
               let values = []
               let values2=[]
               for (let entry in data) {
@@ -238,6 +241,20 @@ export class HomeComponent implements OnInit {
         },
         response: function() {
           $( this ).removeClass( "loading" );
+        },
+        focus: function() {
+          return false;
+        },
+        select: function( event, ui ) {
+          var terms = split( this.value );
+          // remove the current input
+          terms.pop();
+          // add the selected item
+          terms.push( ui.item.value );
+          // add placeholder to get the comma-and-space at the end
+          terms.push( "" );
+          this.value = terms.join( ", " );
+          return false;
         }
       });
     });
