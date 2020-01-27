@@ -39,15 +39,13 @@ export class Helper {
 
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
-    subgraph_edge_color = '#FF6347'
+    subgraph_edge_color = '#013220'
     subgraph_node_color = '#920518'
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
     edge_color_pvalues_bins = {
       0.95 : '#fdbe85',
-      0.8 : '#fd9f55',
       0.7 : '#f87f2c',
-      0.5 : '#e85e0f',
       0.0 : '#c94503'
     }
 
@@ -557,7 +555,24 @@ export class Helper {
       // })
 
       network.bind('doubleClickNode', (e) => {
-        this.clear_colors(network)
+        nodeDoubleClick(e)
+      })
+
+      let clickNode_clicked = false
+      network.bind('clickNode', (e) => {
+        if (clickNode_clicked == false) {
+          nodeSingleClick(e);
+          clickNode_clicked = true
+          console.log("here")
+          setTimeout( () => {
+            clickNode_clicked = false
+          }, 500)
+        }
+
+      })
+
+      function nodeDoubleClick(e) {
+        $this.clear_colors(network)
 
         var nodeId = e.data.node.id;
         network.graph.adjacentEdges(nodeId).forEach( (ee) => {
@@ -581,32 +596,34 @@ export class Helper {
         // network was altered, update url
         session.update_url()
 
-      })
+      }
 
-
-      network.bind('clickNode', (e) => {
+      function nodeSingleClick(e) {
         /*
         removes everything but neighborhood
         this function alters the network, hence triggers url update
         */
-        var nodeId = e.data.node.id;
+       var nodeId = e.data.node.id;
 
-        // set node color to clicked
-        e.data.node.color = $this.subgraph_node_color
-        network.refresh()
-        
+       // set node color
+       if (e.data.node.color != $this.subgraph_node_color) {
+         e.data.node.color = $this.subgraph_node_color
+       } else {
+         e.data.node.color = $this.default_node_color
+       }
+       network.refresh()    
 
-        $this.node_is_clicked(nodeId)
-        
-        // network was altered, update url
-        session.update_url()
+       $this.node_is_clicked(nodeId)
+       
+       // network was altered, update url
+       session.update_url()
 
-        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
+       $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
 
-        if($('#plots').hasClass('hidden')){
-          $('#plots').removeClass('hidden') 
-        }
-      })
+       if($('#plots').hasClass('hidden')){
+         $('#plots').removeClass('hidden') 
+       }
+      }
 
 
       function searchNode(node_as_string) {
@@ -784,11 +801,15 @@ export class Helper {
     public node_clicked(){
       return this.nodeIDclicked
     }
+
     public clear_colors(network) {
+      // load edge elements to find out p value, color edges based on p value
+      let data = JSON.parse($('#edge_data').text())
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = this.default_edge_color
-        })
+          ee.color = this.choose_edge_color(data[ee.id]['p-value'])
+        }
+      )
       network.graph.nodes().forEach(
         (node) => {
           node.color = this.default_node_color
