@@ -238,17 +238,22 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
-          let add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
-      
-          //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
+          let add_KMP_Plot
+          if(response[0].gene.gene_symbol != 'null'){
+           add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
+          }else{
+           add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.ensg_number +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
 
+          }
+          //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
+         if(!!$('myDiv_'+response[0].gene.gene_symbol)){console.log("MIAUUU")}
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
             }
                     
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0,response[0].gene.gene_symbol, dn)
-         
+          
           // end loading
            $('#loading_spinner_KMP').addClass('hidden')
       

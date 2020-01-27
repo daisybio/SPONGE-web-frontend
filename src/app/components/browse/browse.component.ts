@@ -446,6 +446,7 @@ export class BrowseComponent implements OnInit {
               if ('nodes_marked' in shared_data) {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                 $('#export_selected_nodes').click()
+                helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
             }
 
