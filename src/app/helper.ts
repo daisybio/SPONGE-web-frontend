@@ -591,10 +591,13 @@ export class Helper {
         */
         var nodeId = e.data.node.id;
 
-        // set node color to clicked
-        e.data.node.color = $this.subgraph_node_color
-        network.refresh()
-        
+        // set node color
+        if (e.data.node.color != $this.subgraph_node_color) {
+          e.data.node.color = $this.subgraph_node_color
+        } else {
+          e.data.node.color = $this.default_node_color
+        }
+        network.refresh()    
 
         $this.node_is_clicked(nodeId)
         
