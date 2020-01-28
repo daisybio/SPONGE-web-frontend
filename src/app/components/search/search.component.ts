@@ -52,32 +52,12 @@ export class SearchComponent implements OnInit {
       });
     
     $('#options_gene_go').click( () => {
- 
       search_key = $('#gene_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-     
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
-        console.log(search_key)
-        var tmpString=""
-        search_key = search_key.slice(0,-1)
-        if(search_key.includes(",")){
-          search_key=search_key.slice(0,-1)
-          preSearchKey= search_key.split(",")
-          console.log(preSearchKey)
-          preSearchKey.forEach(geneName => {
-            tmpString += geneName.split("(")[0]+","
-          });
-          console.log(tmpString)
-          preSearchKey= tmpString
-         }else{
-           preSearchKey= search_key.split("(")[0]
-           
-         }
-         search_key=preSearchKey
-         console.log("new "+search_key)
         //helper.check_gene_interaction()
         search(limit)
       }    
