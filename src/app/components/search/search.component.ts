@@ -27,11 +27,11 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const pValue = 0.05
+    const pValue = 1
 
     var search_key: string;
     var search_key_ensg:string;
-    var limit: number = 300;
+    var limit: number = 100;
     var parsed_search_result: any;
     var url_storage;
     let session = null
