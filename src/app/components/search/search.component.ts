@@ -27,11 +27,11 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const pValue = 0.05
+    const pValue = 1
 
     var search_key: string;
     var search_key_ensg:string;
-    var limit: number = 300;
+    var limit: number = 100;
     var parsed_search_result: any;
     var url_storage;
     let session = null
@@ -52,32 +52,12 @@ export class SearchComponent implements OnInit {
       });
     
     $('#options_gene_go').click( () => {
- 
       search_key = $('#gene_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-     
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
-        console.log(search_key)
-        var tmpString=""
-        search_key = search_key.slice(0,-1)
-        if(search_key.includes(",")){
-          search_key=search_key.slice(0,-1)
-          preSearchKey= search_key.split(",")
-          console.log(preSearchKey)
-          preSearchKey.forEach(geneName => {
-            tmpString += geneName.split("(")[0]+","
-          });
-          console.log(tmpString)
-          preSearchKey= tmpString
-         }else{
-           preSearchKey= search_key.split("(")[0]
-           
-         }
-         search_key=preSearchKey
-         console.log("new "+search_key)
         //helper.check_gene_interaction()
         search(limit)
       }    
@@ -213,6 +193,10 @@ export class SearchComponent implements OnInit {
         controller.gene_count({
           [type]: [search_key],
           minCountSign: 1,
+          // error: (data) => {
+          //   helper.msg("No significant interactions found.", false)
+          //   $('#loading_spinner').removeClass('hidden')
+          // },
           callback: (data) => {
             count_object = data
             let values = data.map(function(node) {return node.count_sign})
@@ -244,41 +228,41 @@ export class SearchComponent implements OnInit {
               // scroll down to opened accordion tab
               $([document.documentElement, document.body]).animate({
                 scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
-            }, 1000);
+              }, 1000)
             });
 
             // check if key is ENSG number
-        if (search_key.startsWith('ENSG')) {
-          if(!$('#options_mirna').hasClass('hidden')){
-            $('#options_mirna').addClass('hidden')
-          }
-          $('#options_gene').removeClass('hidden')
-          $('#gene_search_keys').val(search_key.split(',').join(', '))
-        
-        } else if (search_key.startsWith('MIMAT')) {
-          if(!$('#options_gene').hasClass('hidden')){
-            $('#options_gene').addClass('hidden')
-          }
-          // key is MIMAT number
-          $('#options_mirna').removeClass('hidden')
-          $('#mirna_search_keys').val(search_key.split(',').join(', '))
-          
-        } else if (search_key.startsWith('hsa-')) {
-          if(!$('#options_gene').hasClass('hidden')){
-            $('#options_gene').addClass('hidden')
-          }
-          // key is hsa number
-          $('#options_mirna').removeClass('hidden')
-          $('#mirna_search_keys').val(search_key.split(',').join(', '))
-          
-        } else {
-          if(!$('#options_mirna').hasClass('hidden')){
-            $('#options_mirna').addClass('hidden')
-          }
-          // key is gene symbol
-          $('#options_gene').removeClass('hidden')
-          $('#gene_search_keys').val(search_key.split(',').join(', '))
-        }  
+            if (search_key.startsWith('ENSG')) {
+              if(!$('#options_mirna').hasClass('hidden')){
+                $('#options_mirna').addClass('hidden')
+              }
+              $('#options_gene').removeClass('hidden')
+              $('#gene_search_keys').val(search_key.split(',').join(', '))
+            
+            } else if (search_key.startsWith('MIMAT')) {
+              if(!$('#options_gene').hasClass('hidden')){
+                $('#options_gene').addClass('hidden')
+              }
+              // key is MIMAT number
+              $('#options_mirna').removeClass('hidden')
+              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              
+            } else if (search_key.startsWith('hsa-')) {
+              if(!$('#options_gene').hasClass('hidden')){
+                $('#options_gene').addClass('hidden')
+              }
+              // key is hsa number
+              $('#options_mirna').removeClass('hidden')
+              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              
+            } else {
+              if(!$('#options_mirna').hasClass('hidden')){
+                $('#options_mirna').addClass('hidden')
+              }
+              // key is gene symbol
+              $('#options_gene').removeClass('hidden')
+              $('#gene_search_keys').val(search_key.split(',').join(', '))
+            }  
 
             build_accordion()
           }
@@ -696,26 +680,29 @@ export class SearchComponent implements OnInit {
       } 
       $( ".autocomplete" ).autocomplete({
         source: ( request, response ) => {
-          controller.search_string({
-            searchString: split(request.term).pop(), // only the last item in list
-            callback: (data) => {
-              // put all values in a list
-              let values = []
-              let values2=[]
-              for (let entry in data) {
-                if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
-                  values.push(data[entry]['gene_symbol'])
-                } else {
-                  values.push(data[entry]['ensg_number'])
-                }    
-                values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")              
+          let searchString = split(request.term).pop() // only the last item in list
+          if (searchString.length > 2) {
+            controller.search_string({
+              searchString: split(request.term).pop(), // only the last item in list
+              callback: (data) => {
+                // put all values in a list
+                let values = []
+                let values2=[]
+                for (let entry in data) {
+                  if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
+                    values.push(data[entry]['gene_symbol'])
+                  } else {
+                    values.push(data[entry]['ensg_number'])
+                  }    
+                  values2.push(data[entry]['gene_symbol'])              
+                }
+                response(values2)
+              },
+              error: () => {
+                console.log(request)
               }
-              response(values2)
-            },
-            error: () => {
-              console.log(request)
-            }
-          })
+            })
+          }
         },
         minLength: 3,
         focus: function() {

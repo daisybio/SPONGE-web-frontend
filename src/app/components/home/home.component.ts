@@ -225,34 +225,37 @@ export class HomeComponent implements OnInit {
       } 
       $( "#home_search" ).autocomplete({
         source: ( request, response ) => {
-          controller.search_string({
-            searchString: split(request.term).pop(), // only the last item in list
-            callback: (data) => {
-              // put all values in a list
-              let values = []
-              let values2=[]
-              for (let entry in data) {
-                if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
-                  values.push(data[entry]['gene_symbol'])
-                } else {
-                  values.push(data[entry]['ensg_number'])
+          let searchString = split(request.term).pop() // only the last item in list
+          if (searchString.length > 2) {
+            controller.search_string({
+              searchString: searchString,
+              callback: (data) => {
+                // put all values in a list
+                let values = []
+                let values2=[]
+                for (let entry in data) {
+                  if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
+                    values.push(data[entry]['gene_symbol'])
+                  } else {
+                    values.push(data[entry]['ensg_number'])
+                  }
+                  values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")             
                 }
-                values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")             
+               response(values2)
+               
+              },
+              error: () => {
+                console.log(request)
               }
-             response(values2)
-             
-            },
-            error: () => {
-              console.log(request)
-            }
-          })
+            })
+          }
         },
         minLength: 3,
         search: function() {
-          $( this ).addClass( "loading" );
+          //$( this ).addClass( "loading" );
         },
         response: function() {
-          $( this ).removeClass( "loading" );
+          //$( this ).removeClass( "loading" );
         },
         focus: function() {
           return false;
