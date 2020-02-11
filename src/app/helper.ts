@@ -4,6 +4,7 @@ import sigma from 'sigma';
 import { enableDebugTools } from '@angular/platform-browser';
 import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
 import { ExpressionStatement } from '@angular/compiler';
+import { config } from 'rxjs';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -204,6 +205,10 @@ export class Helper {
         $('#myDiv_'+clicked_Node).remove()
         $('#loading_spinner_KMP').addClass('hidden')
       }
+
+      
+
+
       
     for(let $o=0; $o<ensgList.length;$o++){
           
@@ -349,7 +354,15 @@ export class Helper {
         var ensg = 'Survival Analysis of gene ' + genename + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
         
         var sestimateGesamt = [];
-      
+        var pvalue;
+        this.controller.get_survival_pvalue({
+          disease_name: disease_name,
+          ensg_number: response.gene.ensg_number,
+          callback: (responsePval) => {
+            pvalue = JSON.stringify(responsePval[0].pValue)
+          
+         
+        console.log(pvalue)
         //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
         //Im beispiel fall nur y estimate gegen time x
         var mean = {
@@ -383,6 +396,22 @@ export class Helper {
             orientation:"h",
             y: -0.35,
           },
+          annotations: [
+           {
+            xref: 'paper',
+            yref: 'paper',
+            x: 1,
+            xanchor: 'left',
+            y: 0.5,
+            yanchor: 'top',
+            text: 'P-Value: '+pvalue,
+            showarrow: false,
+            font: {
+              family: 'Arial, bold',
+              size: 10,
+              color: "cc0066"
+            }
+          }],
           title: {
             text:ensg ,
             font: {
@@ -406,6 +435,8 @@ export class Helper {
           }
         };
         Plotly.plot('myDiv_'+response.gene.ensg_number ,data, layout, {showSendToCloud: true});
+      }
+    })
      };
 
     public choose_edge_color(value){

@@ -353,7 +353,7 @@ export class Controller {
             config: {
                 disease_name : string,
                 ensg_number: string[],
-                gene_symbol: string[],
+                gene_symbol?: string[],
                 limit?: number,
                 offset?: number
                 callback: (response) => any,
