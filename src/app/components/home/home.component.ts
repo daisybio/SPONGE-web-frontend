@@ -20,11 +20,9 @@ export class HomeComponent implements OnInit {
     const helper = new Helper()
 
     // TODO: new popover function
-   // $('[data-toggle="popover_search_info"]').popover({
-   //   trigger: 'hover', sanitize: false, sanitizeFn: content => content
-   // });
-
-  
+    $('[data-toggle="popover_search_info"]').popover({
+      trigger: 'hover', sanitize: false, sanitizeFn: content => content
+    });
 
     $('#cookie-accept').click( () => {
      $('.bottom-cookie').addClass('hidden')
