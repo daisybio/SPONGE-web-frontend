@@ -265,17 +265,17 @@ export class HomeComponent implements OnInit {
         focus: function() {
           return false;
         },
-        select: function( event, ui ) {
-          var terms = split( this.value );
-          // remove the current input
-          terms.pop();
-          // add the selected item
-          terms.push( ui.item.value );
-          // add placeholder to get the comma-and-space at the end
-          terms.push( "" );
-          this.value = terms.join( ", " );
-          return false;
-        }
+        // select: function( event, ui ) {
+        //   var terms = split( this.value );
+        //   // remove the current input
+        //   terms.pop();
+        //   // add the selected item
+        //   terms.push( ui.item.value );
+        //   // add placeholder to get the comma-and-space at the end
+        //   terms.push( "" );
+        //   this.value = terms.join( ", " );
+        //   return false;
+        // }
       });
     });
 
