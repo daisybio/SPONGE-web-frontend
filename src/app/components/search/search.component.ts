@@ -27,7 +27,7 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const pValue = .1
+    const pValue = .05
 
     var search_key: string;
     var search_key_ensg:string;
@@ -47,7 +47,7 @@ export class SearchComponent implements OnInit {
           // there are url params, load previous session
           url_storage = helper.load_session_url(params)
         }
-        search_key = decodeURIComponent(params.search_key);        
+        search_key = decodeURIComponent(params.search_key);
       });
     
     $('#options_gene_go').click( () => {
@@ -264,6 +264,10 @@ export class SearchComponent implements OnInit {
             }  
 
             build_accordion()
+          },
+          error: function(response) {
+            helper.msg("No significant interaction found", false, function() {$this.router.navigateByUrl('home');})
+            $('#loading_spinner').addClass('hidden')
           }
         })
       }
@@ -567,12 +571,12 @@ export class SearchComponent implements OnInit {
       parsed_search_result['key'] = undefined
 
       response.forEach(interaction => {
+        
+        // parse the information
         let interaction_info = {};
         let gene_to_extract;
         let disease = interaction['run']['dataset']['disease_name']
 
-        // parse the information
-        let correlation = interaction['correlation']
         // usually get information for other gene, extract information for key gene only once
         if (interaction['gene1']['ensg_number'] == search_key || interaction['gene1']['gene_symbol'] == search_key) {
           // gene1 is search gene, gene2 is not 

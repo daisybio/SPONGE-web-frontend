@@ -91,6 +91,7 @@ export class Controller {
                 }
             ).fail(
                 response => {
+                    console.log(response)
                     return config.error(response)
                 })
             }
@@ -253,6 +254,7 @@ export class Controller {
             gene_symbol?: string[],
             offset?: number,
             ensg_number?: string[],
+            limit?: number,
             callback: (response) => any,
             error?: (response) => any
         })
@@ -272,6 +274,9 @@ export class Controller {
             }
             if (config.ensg_number != undefined) {
                 request += "&ensg_number="+config.ensg_number
+            }
+            if (config.limit != undefined) {
+                request += "&limit="+config.limit
             }
             console.log(request)
             $.getJSON(request,

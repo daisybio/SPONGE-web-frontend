@@ -1,10 +1,6 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
-import { enableDebugTools } from '@angular/platform-browser';
-import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
-import { ExpressionStatement } from '@angular/compiler';
-import { config } from 'rxjs';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -37,7 +33,7 @@ export class Helper {
       }
 
     }
-
+    
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
     subgraph_edge_color = '#013220'
@@ -98,7 +94,7 @@ export class Helper {
       } );
     }
 
-    public msg(msg, error=false) {
+    public msg(msg, error=false, close_callback=undefined) {
       let overlay;
       if (error) {
         overlay = $('#error_overlay')
@@ -111,6 +107,9 @@ export class Helper {
       overlay.find('.close').unbind()
       overlay.find('.close').click( () => {
         overlay.modal('hide')
+        if (close_callback != undefined) {
+          close_callback()
+        }
       })
     }
 
