@@ -27,7 +27,7 @@ export class SearchComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const pValue = 1
+    const pValue = .1
 
     var search_key: string;
     var search_key_ensg:string;
@@ -47,14 +47,13 @@ export class SearchComponent implements OnInit {
           // there are url params, load previous session
           url_storage = helper.load_session_url(params)
         }
-        search_key = decodeURIComponent(params.search_key);
-        
+        search_key = decodeURIComponent(params.search_key);        
       });
     
     $('#options_gene_go').click( () => {
       search_key = $('#gene_search_keys').val().split(' ').join('')
       // remove last char if it is ','
-      search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
+      //search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
       if (search_key == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -109,7 +108,7 @@ export class SearchComponent implements OnInit {
           ensg_number: [search_key],
           limit: limit,
           disease_name: disease,
-           pValue: pValue,
+          pValue: pValue,
           offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
@@ -534,20 +533,29 @@ export class SearchComponent implements OnInit {
         // get data
         let nodes = parse_node_data(table.rows().data(), params_genes_keys)
         let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
-        console.log(nodes_marked)
+
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
-        $this.shared_service.setData({
-          'nodes': ensg_numbers,
-          'nodes_marked': nodes_marked,
-          'cancer_type': active_cancer_name
-        })
-        // navigate to browse
-        $this.router.navigateByUrl('browse');
+        // append search note to network
+        controller.search_string(
+          {
+            searchString: search_key,
+            callback: function(response) {
+              // get ensg number of search key
+              ensg_numbers.push(response[0].ensg_number)
+              $this.shared_service.setData({
+                'nodes': ensg_numbers,
+                'nodes_marked': nodes_marked,
+                'cancer_type': active_cancer_name
+              })
+              // navigate to browse
+              $this.router.navigateByUrl('browse');
+            }
+          }
+        )
       })
 
       $('#loading_spinner').addClass('hidden');  
-     
     }
 
     function parse_cerna_response_to_table(response, table_id) {
@@ -587,7 +595,7 @@ export class SearchComponent implements OnInit {
         }
 
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
-        interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol']
+        interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
         interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
         interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
         interaction_info['Correlation'] = interaction['correlation']
