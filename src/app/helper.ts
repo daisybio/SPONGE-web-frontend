@@ -176,6 +176,7 @@ export class Helper {
               automargin: true,
               showticklabels: false,
               ticks: '',
+              title: 'Samples'
             },
           };
           Plotly.newPlot('expression_heatmap', data, layout);

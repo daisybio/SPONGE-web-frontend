@@ -492,8 +492,8 @@ export class BrowseComponent implements OnInit {
               //##################################################################################
             }
 
-            // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (radability + loading time)
-            if (ensg_numbers.length < 100){
+            // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (readability + loading time)
+            if (ensg_numbers.length < 51){
               // load expression data
               helper.load_heatmap(this.disease_trimmed, ensg_numbers)
             }
