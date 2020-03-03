@@ -371,6 +371,7 @@ button.export_nodes {
   height: 120px;
   background-color: rgba(0, 0, 0, 0.781);
   z-index: 20;
+  right: 0;
 
   #cookie-content{
       height: inherit;
@@ -378,12 +379,19 @@ button.export_nodes {
       padding: 10px;
       text-align: center;
       color: rgb(17, 131, 238);
+      margin: 0 auto;
 
       .cookie-btn{
           position: relative;
           padding: 5px;
           margin-right: 10px;
-          
+
+          a:not([href]):not([tabindex]):hover, a:not([href]):not([tabindex]):focus {
+            color: #04feff;
+            text-decoration: none;
+            background: transparent;
+            border-color: #04feff;
+        }
       }
 
       #cookie-text{
@@ -398,6 +406,30 @@ button.export_nodes {
           margin-top: 20px;
           color: rgb(51, 83, 112);
 
+      }
+
+      #cookie-cat{
+        height: 13vh; 
+        width: 10vw; 
+        top: -10px;
+
+        @media (width: 1024px){
+          height: 144px; 
+          width: 150px;
+          top: -22px;
+        }
+
+        @media (width: 1440px){
+          height: 144px; 
+          width: 150px;
+          top: -22px;
+        }
+
+        @media (width: 2560px){
+          height: 144px; 
+          width:   160px;
+          top: -20px;
+        }
       }
   }
 }
