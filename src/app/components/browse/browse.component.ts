@@ -6,6 +6,7 @@ import {Router, ActivatedRoute, Params} from '@angular/router';
 import { SharedService } from "../../shared.service"
 
 import sigma from 'sigma';
+import { of } from 'rxjs';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -173,6 +174,7 @@ export class BrowseComponent implements OnInit {
     })
 
     function load_nodes(disease_trimmed, callback?) {
+
       // load data if nothing was loaded in search page
       let sort_by = $('#run-info-select').val().toLowerCase()
 
@@ -188,7 +190,7 @@ export class BrowseComponent implements OnInit {
       }
       let limit = $('#input_limit').val()
       let descending = true
-
+      
       if (shared_data == undefined) {
         controller.get_ceRNA({
           'disease_name':disease_trimmed,
@@ -209,6 +211,7 @@ export class BrowseComponent implements OnInit {
           }
         )
       } else {
+        // check if there are stored nodes, if so, return them
         controller.get_ceRNA({
           'disease_name': shared_data['cancer_type'],
           'ensg_number': shared_data['nodes'],
@@ -226,77 +229,101 @@ export class BrowseComponent implements OnInit {
     }
 
     function load_edges(disease_trimmed, nodes, callback?) {
-      controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes,
+      // API batch limit is 1000 interactions, iterating until we got all batches
+      const limit = 1000
+      let all_data = []
+      __get_batches_recursive()
+
+      function __get_batches_recursive(offset=0) {
+        console.log(offset)
+        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset,
         'callback':data => {
-          // remove "run"
-          let ordered_data = []
-          for (let i=0; i < Object.keys(data).length; i++) {
-            let entry = data[i]
-            // change order of columns alredy in object
-            let ordered_entry = {}
-            ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
-            ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
-            ordered_entry['Correlation'] = entry['correlation']
-            ordered_entry['MScor'] = entry['mscor']
-            ordered_entry['p-value'] = entry['p_value']
-            ordered_entry['ID'] = i
-            ordered_data.push(ordered_entry)
+          all_data = all_data.concat(data)
+          console.log(all_data.length)
+          if (data.length == limit) {
+
+            // there are more interactions to load, call function again
+            __get_batches_recursive(offset + limit)
+
+          } else {
+            // all batches are loaded, continue processing the all_data
+            console.log(all_data)
+            let ordered_data = []
+            // remove "run"
+            for (let i=0; i < Object.keys(all_data).length; i++) {
+              let entry = all_data[i]
+              // change order of columns alredy in object
+              let ordered_entry = {}
+              if (entry['gene1'] == undefined) {
+                // console.log(i)
+                // console.log(entry)
+                continue
+              }
+              ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
+              ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
+              ordered_entry['Correlation'] = entry['correlation']
+              ordered_entry['MScor'] = entry['mscor']
+              ordered_entry['p-value'] = entry['p_value']
+              ordered_entry['ID'] = i
+              ordered_data.push(ordered_entry)
+            }
+            console.log("here")
+            let column_names = Object.keys(ordered_data[0]);
+            $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
+            // find index positions from columns to round
+            var index_correlation = column_names.indexOf('Correlation');
+            var index_mscor = column_names.indexOf('MScor');
+            var index_p_value = column_names.indexOf('p-value');
+  
+            edge_table = $('#interactions-edges-table').DataTable({
+              columnDefs: [
+                { render: function ( ordered_data, type, row ) {
+                        return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
+                         },
+                    targets: [ index_correlation, index_mscor, index_p_value ] }
+              ],
+              dom: '<"top"Bf>rt<"bottom"lip>',
+              buttons: [
+                  'copy', 'csv', 'excel', 'pdf', 'print'
+              ],
+              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+            }); 
+            $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
+              $(this).toggleClass('selected');
+            } ); 
+            $('#filter_edges :input').keyup( function() {
+              edge_table.draw();
+            } );
+            // colsearch for table
+            helper.colSearch('interactions-edges-table', edge_table)
+  
+            let edges = [];
+            for (let interaction in ordered_data) {
+              let id = ordered_data[interaction]['ID']
+              let source = ordered_data[interaction]['Gene 1']
+              let target = ordered_data[interaction]['Gene 2']
+              let size = 100*ordered_data[interaction]['MScor']
+              let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
+              //let type = 'line'//, curve
+              edges.push({
+                id: id, 
+                source: source, 
+                target: target, 
+                size: size, 
+                color: color, 
+              })
+              
+            }
+  
+            $('#edge_data').text(JSON.stringify(ordered_data))
+            return callback(edges)
           }
-
-          let column_names = Object.keys(ordered_data[0]);
-          $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
-          // find index positions from columns to round
-          var index_correlation = column_names.indexOf('Correlation');
-          var index_mscor = column_names.indexOf('MScor');
-          var index_p_value = column_names.indexOf('p-value');
-
-          edge_table = $('#interactions-edges-table').DataTable({
-            columnDefs: [
-              { render: function ( ordered_data, type, row ) {
-                      return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-                       },
-                  targets: [ index_correlation, index_mscor, index_p_value ] }
-            ],
-            dom: '<"top"Bf>rt<"bottom"lip>',
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
-          }); 
-          $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
-            $(this).toggleClass('selected');
-          } ); 
-          $('#filter_edges :input').keyup( function() {
-            edge_table.draw();
-          } );
-          // colsearch for table
-          helper.colSearch('interactions-edges-table', edge_table)
-
-          let edges = [];
-          for (let interaction in ordered_data) {
-            let id = ordered_data[interaction]['ID']
-            let source = ordered_data[interaction]['Gene 1']
-            let target = ordered_data[interaction]['Gene 2']
-            let size = 100*ordered_data[interaction]['MScor']
-            let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
-            //let type = 'line'//, curve
-            edges.push({
-              id: id, 
-              source: source, 
-              target: target, 
-              size: size, 
-              color: color, 
-            })
-            
-          }
-
-          $('#edge_data').text(JSON.stringify(ordered_data))
-          return callback(edges)
         },
         error: (response) => {
           helper.msg("Something went wrong while loading the interactions.", true)
         }
-      })
+      })  
+      }
     }
 
     function run_information() {
@@ -447,7 +474,7 @@ export class BrowseComponent implements OnInit {
               if (shared_data['nodes_marked'].length) {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                 $('#export_selected_nodes').click()
-                network.click()
+                //network.click()
                 console.log(shared_data['nodes_marked'])
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
