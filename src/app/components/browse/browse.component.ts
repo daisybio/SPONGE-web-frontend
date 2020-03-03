@@ -235,11 +235,11 @@ export class BrowseComponent implements OnInit {
       __get_batches_recursive()
 
       function __get_batches_recursive(offset=0) {
-        console.log(offset)
+
         controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset,
         'callback':data => {
           all_data = all_data.concat(data)
-          console.log(all_data.length)
+
           if (data.length == limit) {
 
             // there are more interactions to load, call function again
@@ -247,18 +247,12 @@ export class BrowseComponent implements OnInit {
 
           } else {
             // all batches are loaded, continue processing the all_data
-            console.log(all_data)
             let ordered_data = []
             // remove "run"
             for (let i=0; i < Object.keys(all_data).length; i++) {
               let entry = all_data[i]
               // change order of columns alredy in object
               let ordered_entry = {}
-              if (entry['gene1'] == undefined) {
-                // console.log(i)
-                // console.log(entry)
-                continue
-              }
               ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
               ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
               ordered_entry['Correlation'] = entry['correlation']
@@ -267,7 +261,7 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-            console.log("here")
+
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
@@ -475,7 +469,6 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                 $('#export_selected_nodes').click()
                 //network.click()
-                console.log(shared_data['nodes_marked'])
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
             }
@@ -499,9 +492,12 @@ export class BrowseComponent implements OnInit {
               //##################################################################################
             }
 
-            // load expression data
-            helper.load_heatmap(this.disease_trimmed, ensg_numbers)
-           
+            // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (radability + loading time)
+            if (ensg_numbers.length < 100){
+              // load expression data
+              helper.load_heatmap(this.disease_trimmed, ensg_numbers)
+            }
+            
             // stop loading screen
             disease_selector.attr('disabled', false)
             $('#loading_spinner').addClass('hidden') 
