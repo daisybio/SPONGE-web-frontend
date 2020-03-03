@@ -521,7 +521,7 @@ export class BrowseComponent implements OnInit {
           entry[x] = entry['gene'][x] 
         }
         ordered_entry['ENSG Number'] = entry['ensg_number']
-        ordered_entry['Gene Symbol'] = entry['gene_symbol']
+        ordered_entry['Gene Symbol'] = entry['gene_symbol']  == null ? '-' : entry['gene_symbol']
         ordered_entry['Betweeness'] = entry['betweeness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['Node Degree'] = entry['node_degree']

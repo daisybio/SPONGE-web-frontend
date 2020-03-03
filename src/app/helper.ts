@@ -182,7 +182,7 @@ export class Helper {
           Plotly.newPlot('expression_heatmap', data, layout);
         },
         error: () => {
-          this.msg("Something went wrong loading the expression data.", true)
+          //this.msg("Something went wrong loading the expression data.", true)
         }
       })
     }
