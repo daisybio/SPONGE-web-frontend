@@ -204,7 +204,6 @@ export class SearchComponent implements OnInit {
             search(limit)
           },
           callback: (data) => {
-            console.log(data)
             count_object = data
             let values = data.map(function(node) { return minCountSign ? node.count_sign : node.count_all})
             let labels = data.map(function(node) {
