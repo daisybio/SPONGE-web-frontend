@@ -546,7 +546,13 @@ export class SearchComponent implements OnInit {
             searchString: search_key,
             callback: function(response) {
               // get ensg number of search key
-              ensg_numbers.push(response[0].ensg_number)
+              for (let elem of response) {
+                if (elem.gene_symbol == search_key || elem.ensg_number == search_key) {
+                  ensg_numbers.push(elem.ensg_number)
+                  break
+                }
+              }
+              
               $this.shared_service.setData({
                 'nodes': ensg_numbers,
                 'nodes_marked': nodes_marked,
