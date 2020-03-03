@@ -73,6 +73,9 @@ export class SearchComponent implements OnInit {
       }
     })
     
+    // set significant result checkbox to true by default
+    $('#significant_results').prop('checked', true)
+
     search(limit)
 
 
@@ -102,13 +105,15 @@ export class SearchComponent implements OnInit {
     }
 
     function load_interactions(disease, table_id, offset=0){
+      const pValue_current = $('#significant_results').is(':checked') ? pValue : 1
+
       // check if key is ENSG number
       if (search_key.startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
           ensg_number: [search_key],
           limit: limit,
           disease_name: disease,
-          pValue: pValue,
+          pValue: pValue_current,
           offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
@@ -148,7 +153,7 @@ export class SearchComponent implements OnInit {
           gene_symbol: [search_key],
           limit: limit,
           disease_name: disease,
-          pValue: pValue,
+          pValue: pValue_current,
           offset: offset,
           callback: (response) => {
             parse_cerna_response_to_table(response, table_id)
@@ -189,16 +194,19 @@ export class SearchComponent implements OnInit {
 
         // load pie chart for gene
         let type = classify_searchKey(search_key) == "GENE" ? "gene_symbol" : "ensg_number"
+        const minCountSign = $('#significant_results').is(':checked') ? 1 : 0
         controller.gene_count({
           [type]: [search_key],
-          minCountSign: 1,
-          // error: (data) => {
-          //   helper.msg("No significant interactions found.", false)
-          //   $('#loading_spinner').removeClass('hidden')
-          // },
+          minCountSign: minCountSign,
+          error: (data) => {
+            // no significant interactions found, try again for all interactions
+            $('#significant_results').prop('checked', false)
+            search(limit)
+          },
           callback: (data) => {
+            console.log(data)
             count_object = data
-            let values = data.map(function(node) {return node.count_sign})
+            let values = data.map(function(node) { return minCountSign ? node.count_sign : node.count_all})
             let labels = data.map(function(node) {
               // first letter uppercase
               return node.run.dataset.disease_name.charAt(0).toUpperCase() + node.run.dataset.disease_name.substring(1);
@@ -264,10 +272,6 @@ export class SearchComponent implements OnInit {
             }  
 
             build_accordion()
-          },
-          error: function(response) {
-            helper.msg("No significant interaction found", false, function() {$this.router.navigateByUrl('home');})
-            $('#loading_spinner').addClass('hidden')
           }
         })
       }
