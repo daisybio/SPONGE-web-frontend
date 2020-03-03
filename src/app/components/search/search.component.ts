@@ -535,7 +535,7 @@ export class SearchComponent implements OnInit {
         let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
   
         // get data
-        let nodes = parse_node_data(table.rows().data(), params_genes_keys)
+        let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys)
         let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
@@ -545,6 +545,8 @@ export class SearchComponent implements OnInit {
           {
             searchString: search_key,
             callback: function(response) {
+              console.log(ensg_numbers.length)
+              
               // get ensg number of search key
               for (let elem of response) {
                 if (elem.gene_symbol == search_key || elem.ensg_number == search_key) {
@@ -552,7 +554,7 @@ export class SearchComponent implements OnInit {
                   break
                 }
               }
-              
+              console.log(ensg_numbers.length)
               $this.shared_service.setData({
                 'nodes': ensg_numbers,
                 'nodes_marked': nodes_marked,
