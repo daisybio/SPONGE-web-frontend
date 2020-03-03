@@ -174,6 +174,7 @@ export class BrowseComponent implements OnInit {
     })
 
     function load_nodes(disease_trimmed, callback?) {
+
       // load data if nothing was loaded in search page
       let sort_by = $('#run-info-select').val().toLowerCase()
 
@@ -189,7 +190,7 @@ export class BrowseComponent implements OnInit {
       }
       let limit = $('#input_limit').val()
       let descending = true
-
+      
       if (shared_data == undefined) {
         controller.get_ceRNA({
           'disease_name':disease_trimmed,
@@ -210,6 +211,7 @@ export class BrowseComponent implements OnInit {
           }
         )
       } else {
+        // check if there are stored nodes, if so, return them
         controller.get_ceRNA({
           'disease_name': shared_data['cancer_type'],
           'ensg_number': shared_data['nodes'],
