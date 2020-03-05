@@ -236,7 +236,7 @@ export class BrowseComponent implements OnInit {
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset,
+        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, pValue: 1,
         'callback':data => {
           all_data = all_data.concat(data)
 
@@ -296,7 +296,7 @@ export class BrowseComponent implements OnInit {
               let id = ordered_data[interaction]['ID']
               let source = ordered_data[interaction]['Gene 1']
               let target = ordered_data[interaction]['Gene 2']
-              let size = 100*ordered_data[interaction]['MScor']
+              let size = 30*ordered_data[interaction]['MScor']
               let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
               //let type = 'line'//, curve
               edges.push({
@@ -537,7 +537,7 @@ export class BrowseComponent implements OnInit {
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
-        let size = ordered_data[gene]['Eigenvector'];
+        let size = 20*ordered_data[gene]['Eigenvector'];
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
       }

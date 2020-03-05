@@ -201,9 +201,9 @@ export class Controller {
     public get_ceRNA_interactions_all(
         config: {
             disease_name?: string,
-            descending?: boolean, 
+            descending?: boolean,
             information?: boolean,
-            limit?: number, 
+            limit?: number,
             pValue?: number,
             ensg_number?: string[],
             gene_symbol?: string[],
@@ -255,6 +255,7 @@ export class Controller {
             offset?: number,
             ensg_number?: string[],
             limit?: number,
+            pValue?: number,
             callback: (response) => any,
             error?: (response) => any
         })
@@ -277,6 +278,9 @@ export class Controller {
             }
             if (config.limit != undefined) {
                 request += "&limit="+config.limit
+            }
+            if (config.pValue != undefined) {
+                request += "&pValue="+config.pValue
             }
             console.log(request)
             $.getJSON(request,

@@ -41,9 +41,9 @@ export class Helper {
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
     edge_color_pvalues_bins = {
-      0.95 : '#fdbe85',
-      0.7 : '#f87f2c',
-      0.0 : '#c94503'
+      0.8 : '#fdbe85',
+      0.4 : '#f87f2c',
+      0.05 : '#c94503'
     }
 
     controller = new Controller()
@@ -442,7 +442,7 @@ export class Helper {
     public choose_edge_color(value){
       let color = this.default_edge_color
       for (let step in this.edge_color_pvalues_bins) {
-        if (value >= step) {
+        if (value <= step) {
           color = this.edge_color_pvalues_bins[step]
         }
       }
@@ -497,18 +497,19 @@ export class Helper {
             // minNodeSize: 1,
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
-            autoRescale: ['nodePosition', 'nodeSize', 'edgeSize'],
+            autoRescale: ['nodePosition'],  //'edgeSize', nodeSize, nodePosition
             animationsTime: 1000,
-            borderSize: 2,  
-            outerBorderSize: 3,
+            borderSize: 1.5,  
+            outerBorderSize: 1.5,
             enableEdgeHovering: true,
             edgeHoverColor: '#2ecc71',
             defaultEdgeHoverColor: '#2ecc71',
-            edgeHoverSizeRatio: 2,
-            nodeHoverSizeRatio: 2,
+            edgeHoverSizeRatio: 1.5,
+            nodeHoverSizeRatio: 1.5,
             edgeHoverExtremities: true,
             scalingMode: 'outside',
-            doubleClickEnabled: true
+            doubleClickEnabled: true,
+            labelThreshold: 0,
           }
         }
       )
@@ -780,6 +781,7 @@ export class Helper {
           filename: 'SPONGE_'+selected_disease+'_graph.jpg',
           labels: true,
           download: true,
+          data: true
         });
       })
 
@@ -788,8 +790,11 @@ export class Helper {
           download: true, 
           filename: 'SPONGE_'+selected_disease+'_graph.svg',
           labels: true,
-          size: 1000
-        });
+          size: 1000,
+          width: 1000, 
+          height: 1000,
+          data: true
+        })
       })
 
       /* restart camera */
