@@ -11,6 +11,7 @@ import { BrowseComponent } from './components/browse/browse.component';
 import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
+import { AutosizeModule } from 'ngx-autosize';
 
 @NgModule({
   declarations: [
@@ -22,11 +23,12 @@ import { TutorialComponent } from './components/tutorial/tutorial.component';
     BrowseComponent,
     MoreComponent,
     CreditsComponent,
-    TutorialComponent,
+    TutorialComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    AutosizeModule
   ],
   providers: [],
   bootstrap: [AppComponent]

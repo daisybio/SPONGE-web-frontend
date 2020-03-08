@@ -35,6 +35,7 @@
     "jquery": "^3.4.1",
     "jquery-ui-dist": "^1.12.1",
     "jszip": "^3.2.2",
+    "ngx-autosize": "^1.7.5",
     "pdfmake": "^0.1.59",
     "puppeteer": "^2.0.0",
     "rxjs": "~6.5.4",

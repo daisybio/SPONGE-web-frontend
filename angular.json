@@ -155,6 +155,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "SPONGE-web-frontend"
+    }
+  },
+  "defaultProject": "SPONGE-web-frontend",
+  "cli": {
+    "analytics": false
+  }
 }

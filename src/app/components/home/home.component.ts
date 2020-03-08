@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { Controller } from 'src/app/control';
 import { Helper } from 'src/app/helper';
 declare var Plotly: any;
 declare var $: any;
-
 
 @Component({
   selector: 'app-home',
@@ -199,7 +198,7 @@ export class HomeComponent implements OnInit {
       let search_key = $('#home_search').val()
        // replace possible empty spaces
       search_key = search_key.split(' ').join('')
-     // search_key = search_key.slice(0,-1)  // remove last ','
+      search_key = search_key.slice(0,-1)  // remove last ','
       var preSearchKey
       var tmpString=""
       
@@ -260,17 +259,17 @@ export class HomeComponent implements OnInit {
         focus: function() {
           return false;
         },
-        // select: function( event, ui ) {
-        //   var terms = split( this.value );
-        //   // remove the current input
-        //   terms.pop();
-        //   // add the selected item
-        //   terms.push( ui.item.value );
-        //   // add placeholder to get the comma-and-space at the end
-        //   terms.push( "" );
-        //   this.value = terms.join( ", " );
-        //   return false;
-        // }
+         select: function( event, ui ) {
+           var terms = split( this.value );
+           // remove the current input
+           terms.pop();
+           // add the selected item
+           terms.push( ui.item.value );
+           // add placeholder to get the comma-and-space at the end
+           terms.push( "" );
+           this.value = terms.join( ", " );
+           return false;
+         }
       });
     });
 

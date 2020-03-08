@@ -548,8 +548,6 @@ export class SearchComponent implements OnInit {
           {
             searchString: search_key,
             callback: function(response) {
-              console.log(ensg_numbers.length)
-              
               // get ensg number of search key
               for (let elem of response) {
                 if (elem.gene_symbol == search_key || elem.ensg_number == search_key) {
@@ -557,7 +555,7 @@ export class SearchComponent implements OnInit {
                   break
                 }
               }
-              console.log(ensg_numbers.length)
+
               $this.shared_service.setData({
                 'nodes': ensg_numbers,
                 'nodes_marked': nodes_marked,
@@ -731,19 +729,21 @@ export class SearchComponent implements OnInit {
         focus: function() {
           return false;
         },
-        // select: function( event, ui ) {
-        //   var terms = split( this.value );
-        //   // remove the current input
-        //   terms.pop();
-        //   // add the selected item
-        //   terms.push( ui.item.value );
-        //   // add placeholder to get the comma-and-space at the end
-        //   terms.push( "" );
-        //   this.value = terms.join( ", " );
-        //   return false;
-        // }
+        select: function( event, ui ) {
+          var terms = split( this.value );
+          // remove the current input
+          terms.pop();
+          // add the selected item
+          terms.push( ui.item.value );
+          // add placeholder to get the comma-and-space at the end
+          terms.push( "" );
+          this.value = terms.join( ", " );
+          return false;
+        }
       });
     });
+
+
 
   }
 }
