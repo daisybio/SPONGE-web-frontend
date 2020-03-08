@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --base-href /sponge",
+    "build": "ng build",
     "test": "ng test",
     "test-headless": "ng test --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox",
     "lint": "ng lint",
