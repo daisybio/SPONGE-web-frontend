@@ -11,6 +11,7 @@ import { BrowseComponent } from './components/browse/browse.component';
 import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
+import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,13 @@ import { TutorialComponent } from './components/tutorial/tutorial.component';
     BrowserModule,
     AppRoutingModule
   ],
-  providers: [],
+  
+  providers: [
+    {
+      provide: APP_BASE_HREF,
+      useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),
+      deps: [PlatformLocation]
+    }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
