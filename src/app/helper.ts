@@ -442,7 +442,7 @@ export class Helper {
     public choose_edge_color(value){
       let color = this.default_edge_color
       for (let step in this.edge_color_pvalues_bins) {
-        if (value >= step) {
+        if (value > step) {
           color = this.edge_color_pvalues_bins[step]
         }
       }
