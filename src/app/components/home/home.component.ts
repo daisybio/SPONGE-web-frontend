@@ -37,16 +37,16 @@ export class HomeComponent implements OnInit {
           var shared_mirnas=[]
           for (let e in response) {
             let disease = response[e]
-            let disease_name = disease['disease_name']
+            let disease_name = disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1)
             
             let count_interactions = disease['count_interactions']
             let count_interactions_sign = disease['count_interactions_sign']
             let count_shared_miRNAs = disease['count_shared_miRNAs']
           
-            dnl.push(disease_name)
-            interactions.push(count_interactions)
-            interactions_sig.push(count_interactions_sign)
-            shared_mirnas.push(count_shared_miRNAs)
+            dnl.push(disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1))
+            interactions.push(disease['count_interactions'])
+            interactions_sig.push(disease['count_interactions_sign'])
+            shared_mirnas.push(disease['count_shared_miRNAs'])
 
           }
 
@@ -99,16 +99,16 @@ export class HomeComponent implements OnInit {
       },
       xaxis: {
         tickangle: -45,
-        hoverformat: '.3f'
+        //hoverformat: '.3f'
       },  
-      yaxis:{hoverformat: '.3f'},
+     // yaxis:{hoverformat: '.3f'},
       barmode: 'group',
       autosize: false,
-      width: 800,
+      width: 900,
       height: 800,
       margin: {
-        l: 110,
-        r: 70,
+        l: 150,
+        r: 100,
         b: 200,
         t: 100,
       
@@ -126,12 +126,14 @@ export class HomeComponent implements OnInit {
     };
 
     Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
+   
+    
         },
         error: () => {
           //this.msg("Something went wrong loading the expression data.", true)
         }
       })
-      
+       
       var xmRNA=[]; var ymRNA=[]; var xCorr=[]; var yCorr=[];
 
       for (var i=0; i<mRNAcsv.length; i++) {
@@ -289,7 +291,7 @@ export class HomeComponent implements OnInit {
       hoverlabel:{
         namelength:50
       },
-      
+
         
     };
 
@@ -298,6 +300,8 @@ export class HomeComponent implements OnInit {
     }
 
     processData(mRNAcsv,Coorelationcsv);
+
+  
 
     /* Search function for home component */
     $('#home_search_button').click(() => {
