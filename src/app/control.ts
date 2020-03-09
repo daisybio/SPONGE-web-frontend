@@ -29,6 +29,7 @@ export class Controller {
     static SURVIVAL_ANALYSIS_RATES  = "/survivalAnalysis/getRates"
     static SURVIVAL_ANALYSIS_SAMPLEINFO  = "/survivalAnalysis/sampleInformation"
 
+    static OVERALL_COUNTS = "/getOverallCounts"
 
     public search_string(
         config: {
@@ -505,5 +506,21 @@ export class Controller {
            })
     }
     
-    
+    public get_overall_counts(
+        config: {
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.OVERALL_COUNTS
+           
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
 }
