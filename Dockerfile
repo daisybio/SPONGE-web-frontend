@@ -17,7 +17,7 @@ COPY . .
 ## Build the angular app in production mode and store the artifacts in dist folder
 
 RUN npm run ng build -- --prod --output-path=dist --base-href /sponge
-
+RUN npm run ng serve --base-href= https://exbio.wzw.tum.de/sponge/ --publicHost= https://exbio.wzw.tum.de/sponge/
 
 ### STAGE 2: Setup ###
 
@@ -34,4 +34,4 @@ COPY --from=builder /ng-app/dist /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]
 
-RUN ng serve --base-href= https://exbio.wzw.tum.de/sponge/ --publicHost= https://exbio.wzw.tum.de/sponge/
+
