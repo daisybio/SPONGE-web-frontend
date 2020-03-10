@@ -34,3 +34,4 @@ COPY --from=builder /ng-app/dist /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]
 
+RUN ng serve --base-href= https://exbio.wzw.tum.de/sponge/ --publicHost= https://exbio.wzw.tum.de/sponge/
