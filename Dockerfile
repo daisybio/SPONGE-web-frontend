@@ -16,7 +16,7 @@ COPY . .
 
 ## Build the angular app in production mode and store the artifacts in dist folder
 
-RUN npm run ng build -- --prod --output-path=dist --base-href=https://exbio.wzw.tum.de/sponge/ --no-aot
+RUN npm run ng build -- --prod --output-path=dist --base-href=https://exbio.wzw.tum.de/sponge/
 
 
 ### STAGE 2: Setup ###
