@@ -3,7 +3,7 @@
 
 # We label our stage as ‘builder’
 FROM node:10-alpine as builder
-
+ENV base_url=/
 COPY package.json package-lock.json ./
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
@@ -16,7 +16,7 @@ COPY . .
 
 ## Build the angular app in production mode and store the artifacts in dist folder
 
-RUN npm run ng build -- --prod --output-path=dist --base-href ${BASE_URL}
+RUN npm run ng build -- --prod --output-path=dist --base-href=${base_url}
 
 
 ### STAGE 2: Setup ###
