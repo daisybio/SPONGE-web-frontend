@@ -3,6 +3,8 @@
 
 # We label our stage as ‘builder’
 FROM node:10-alpine as builder
+
+#default base url for the website
 ENV base_url=/
 COPY package.json package-lock.json ./
 
@@ -14,6 +16,7 @@ WORKDIR /ng-app
 
 COPY . .
 
+RUN -e "base_url=https://exbio.wzw.tum.de/sponge/"
 ## Build the angular app in production mode and store the artifacts in dist folder
 
 RUN npm run ng build -- --prod --output-path=dist --base-href=${base_url}
