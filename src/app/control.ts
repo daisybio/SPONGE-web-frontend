@@ -6,7 +6,8 @@ export class Controller {
     constructor() {
     }
 
-    static API_ENDPOINT = "http://10.162.163.20:5000"
+    //static API_ENDPOINT = "http://10.162.163.20:5000"
+    static API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api/ui"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static CHECKGENEINTERACTION = "/ceRNAInteraction/checkGeneInteraction"
