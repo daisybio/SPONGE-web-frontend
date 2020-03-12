@@ -5,7 +5,7 @@
 FROM node:10-alpine as builder
 
 #default base url for the website
-ENV base_url=/
+ENV base_url=https://exbio.wzw.tum.de/sponge/
 COPY package.json package-lock.json ./
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
