@@ -4,7 +4,7 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
-import { preserveWhitespacesDefault } from '@angular/compiler'
+import { of } from 'rxjs'
 
 declare var Plotly: any;
 declare var $;
@@ -28,6 +28,17 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
     const $this = this
     const pValue = .05
+    let pValue_current
+
+    const gene_table_columns = {
+      'ENSG Number': 'ensg_number',
+      'Gene Symbol': 'gene_symbol',
+      'Betweeness': 'betweeness',
+      'Eigenvector': 'eigenvector',
+      'Node Degree': 'node_degree',
+      'Gene ID': 'gene_ID',
+      'Network Analysis ID': 'network_analysis_ID'
+  }
 
     var search_key: string;
     var search_key_ensg:string;
@@ -51,6 +62,8 @@ export class SearchComponent implements OnInit {
       });
     
     $('#options_gene_go').click( () => {
+      pValue_current = $('#significant_results').is(':checked') ? pValue : 1
+
       search_key = $('#gene_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       //search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
@@ -105,8 +118,7 @@ export class SearchComponent implements OnInit {
     }
 
     function load_interactions(disease, table_id, offset=0){
-      const pValue_current = $('#significant_results').is(':checked') ? pValue : 1
-
+      
       // check if key is ENSG number
       if (search_key.startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
@@ -149,19 +161,32 @@ export class SearchComponent implements OnInit {
         })
       } else {
         // key is gene symbol
-        controller.get_ceRNA_interactions_all({
-          gene_symbol: [search_key],
-          limit: limit,
-          disease_name: disease,
-          pValue: pValue_current,
-          offset: offset,
-          callback: (response) => {
-            parse_cerna_response_to_table(response, table_id)
-          },
-          error: (response) => {
+        // API batch limit is 1000 interactions, iterating until we got all batches
+        const limit = 1000
+        let all_data = []
+        __get_batches_recursive() // try out recursive
+
+        function __get_batches_recursive(offset=0) {
+
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':[search_key], 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+          'callback':data => {
+            all_data = all_data.concat(data)
+            console.log(data.length)
+            //console.log(limit + offset)
+            if (data.length == limit) {
+
+              // there are more interactions to load, call function again
+              __get_batches_recursive(offset + limit)
+
+            } else {
+
+              parse_cerna_response_to_table(all_data, table_id) 
+
+            }  
           }
         })
-      }  
+      }
+      }
     }
 
     function classify_searchKey(search_key:string){
@@ -406,14 +431,9 @@ export class SearchComponent implements OnInit {
         for (let x in entry['gene']) {
           entry[x] = entry['gene'][x]
         }
-        // ensg_numbers.push(entry['ensg_number'])
-        ordered_entry['ENSG Number'] = entry['ensg_number']
-        ordered_entry['Gene Symbol'] = entry['gene_symbol']
-        ordered_entry['Betweeness'] = entry['betweeness']
-        ordered_entry['Eigenvector'] = entry['eigenvector']
-        ordered_entry['Node Degree'] = entry['node_degree']
-        ordered_entry['Gene ID'] = entry['gene_ID']
-        ordered_entry['Network Analysis ID'] = entry['network_analysis_ID']
+        for (const [key, value] of Object.entries(gene_table_columns)) {
+          ordered_entry[key] = entry[value]
+        }
         ordered_data.push(ordered_entry)
       }
       $('#node_data').text(JSON.stringify(ordered_data))
@@ -526,13 +546,13 @@ export class SearchComponent implements OnInit {
 
         // start local loading animation, gets removed in the parse function
         $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border"></div></div>')
-
+        
         load_interactions(disease, table_id)
       })
 
       $('.export_nodes').click(function() {
         /* export data to browse page, where a graph will be shown */ 
-        
+                
         let table = $('#'+$(this).val()).DataTable()
         active_cancer_name = $(this).closest('.card').find('button').first().text()
         let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
@@ -555,7 +575,7 @@ export class SearchComponent implements OnInit {
                   break
                 }
               }
-
+              console.log(active_cancer_name)
               $this.shared_service.setData({
                 'nodes': ensg_numbers,
                 'nodes_marked': nodes_marked,
@@ -652,6 +672,10 @@ export class SearchComponent implements OnInit {
             table_id,
             Object.keys(parsed_search_result['diseases'][disease][0])
           )
+
+        // special search when searched for gene_symbol or ensg_number
+        //$("#" + table_id). TODO
+
         // this line also removes the loading spinner
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
   

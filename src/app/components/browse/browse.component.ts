@@ -236,7 +236,7 @@ export class BrowseComponent implements OnInit {
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, pValue: 1,
+        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': 1,
         'callback':data => {
           all_data = all_data.concat(data)
 

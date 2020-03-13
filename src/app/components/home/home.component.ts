@@ -196,9 +196,16 @@ export class HomeComponent implements OnInit {
     /* Search function for home component */
     $('#home_search_button').click(() => {
       let search_key = $('#home_search').val()
-       // replace possible empty spaces
+      // replace possible empty spaces
       search_key = search_key.split(' ').join('')
       search_key = search_key.slice(0,-1)  // remove last ','
+
+      // check if search_key is non-empty after removing empty chars
+      if (search_key.length == 0) {
+        helper.msg("Please select genes in the search field.", true)
+        return
+      }
+
       var preSearchKey
       var tmpString=""
       
@@ -268,6 +275,7 @@ export class HomeComponent implements OnInit {
            // add placeholder to get the comma-and-space at the end
            terms.push( "" );
            this.value = terms.join( ", " );
+
            return false;
          }
       });
