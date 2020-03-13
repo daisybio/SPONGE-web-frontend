@@ -35,7 +35,7 @@ import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
   providers: [
     {
       provide: APP_BASE_HREF,
-      useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),
+      useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM() || '',
       deps: [PlatformLocation]
     }],
   bootstrap: [AppComponent]
