@@ -10,7 +10,7 @@ export class Controller {
         if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
             Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
         } else {
-            Controller.API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api"
+            Controller.API_ENDPOINT = window.location.origin+"/sponge-api"
         }
     }
 
