@@ -72,7 +72,8 @@ export class HomeComponent implements OnInit {
             type: 'bar',
             name: 'Count of significant interactions',
             marker: {
-              color: 'rgb(94, 48, 201)',
+             // color: 'rgb(94, 48, 201)',
+              color:  'rgb(172, 27, 99)',
               opacity: 1
             }
           };
