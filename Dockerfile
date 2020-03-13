@@ -6,6 +6,7 @@ FROM node:10-alpine as builder
 
 #default base url for the website
 ENV base_url=https://exbio.wzw.tum.de/sponge/
+
 COPY package.json package-lock.json ./
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
@@ -16,11 +17,10 @@ WORKDIR /ng-app
 
 COPY . .
 
-
+RUN docker run -e base_url=/
 ## Build the angular app in production mode and store the artifacts in dist folder
 
 RUN npm run ng build -- --prod --output-path=dist --base-href=${base_url}
-
 
 ### STAGE 2: Setup ###
 
