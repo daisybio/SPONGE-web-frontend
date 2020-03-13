@@ -3,10 +3,18 @@ import { ConditionalExpr } from '@angular/compiler';
 
 export class Controller {
 
+    static API_ENDPOINT: string;
+
     constructor() {
+
+        if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+            Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
+        } else {
+            Controller.API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api/ui"
+        }
     }
 
-    static API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
+    // static API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
     // static API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api/ui"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
