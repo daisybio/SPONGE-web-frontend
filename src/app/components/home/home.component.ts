@@ -27,6 +27,7 @@ export class HomeComponent implements OnInit {
     var Coorelationcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
 
     function processData(mRNAcsv, Coorelationcsv) {
+      $('#spinner').removeClass('hidden')
       controller.get_overall_counts({
        
         callback: response => {
@@ -35,24 +36,13 @@ export class HomeComponent implements OnInit {
           var interactions_sig=[]
           var shared_mirnas=[]
           for (let e in response) {
-            let disease = response[e]
-            let disease_name = disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1)
-            
-            let count_interactions = disease['count_interactions']
-            let count_interactions_sign = disease['count_interactions_sign']
-            let count_shared_miRNAs = disease['count_shared_miRNAs']
-          
+            let disease = response[e]          
             dnl.push(disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1))
             interactions.push(disease['count_interactions'])
             interactions_sig.push(disease['count_interactions_sign'])
             shared_mirnas.push(disease['count_shared_miRNAs'])
 
           }
-
-          console.log(dnl)
-          console.log(interactions) //predicted interactions
-          console.log(interactions_sig)
-          console.log(shared_mirnas)
 
           var miRNAs2=  {
             x: dnl,
@@ -123,7 +113,7 @@ export class HomeComponent implements OnInit {
       
         
     };
-
+    $('#spinner').addClass('hidden')
     Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
    
     
