@@ -3,6 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { APP_BASE_HREF } from '@angular/common';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -15,6 +16,10 @@ describe('AppComponent', () => {
         HeaderComponent,
         FooterComponent
       ],
+      providers: [{
+        provide: APP_BASE_HREF,
+        useValue: "/", 
+    }],
     }).compileComponents();
   }));
 

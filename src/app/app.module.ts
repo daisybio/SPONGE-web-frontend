@@ -12,6 +12,7 @@ import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
 import { AutosizeModule } from 'ngx-autosize';
+import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,13 @@ import { AutosizeModule } from 'ngx-autosize';
     AppRoutingModule,
     AutosizeModule
   ],
-  providers: [],
+  
+  providers: [
+    {
+      provide: APP_BASE_HREF,
+      useFactory: (s: PlatformLocation) => s.getBaseHrefFromDOM(),
+      deps: [PlatformLocation]
+    }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

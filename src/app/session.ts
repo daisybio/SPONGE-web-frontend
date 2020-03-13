@@ -30,6 +30,9 @@ export class Session {
 
   helper = new Helper()
 
+  public  getBaseUrl() {
+    return document.getElementsByTagName('base')[0].href;
+  }
   public update_url() {
     let cancer:string
     // ALL

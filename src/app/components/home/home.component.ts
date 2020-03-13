@@ -27,6 +27,112 @@ export class HomeComponent implements OnInit {
     var Coorelationcsv=Plotly.d3.csv("src/assets/plotData/sponge_result_mRNA_count.csv");
 
     function processData(mRNAcsv, Coorelationcsv) {
+      controller.get_overall_counts({
+       
+        callback: response => {
+          var dnl=[]
+          var interactions=[]
+          var interactions_sig=[]
+          var shared_mirnas=[]
+          for (let e in response) {
+            let disease = response[e]
+            let disease_name = disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1)
+            
+            let count_interactions = disease['count_interactions']
+            let count_interactions_sign = disease['count_interactions_sign']
+            let count_shared_miRNAs = disease['count_shared_miRNAs']
+          
+            dnl.push(disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1))
+            interactions.push(disease['count_interactions'])
+            interactions_sig.push(disease['count_interactions_sign'])
+            shared_mirnas.push(disease['count_shared_miRNAs'])
+
+          }
+
+          console.log(dnl)
+          console.log(interactions) //predicted interactions
+          console.log(interactions_sig)
+          console.log(shared_mirnas)
+
+          var miRNAs2=  {
+            x: dnl,
+            y: shared_mirnas,
+            type: 'bar',
+            name: 'Count of shared miRNAs',
+            marker: {
+              color: 'rgb(19,63,103)',
+              opacity: 1
+            }
+          };
+
+          var correlations_pred=  {
+            x: dnl,
+            y: interactions,
+            type: 'bar',
+            name: 'Count of predicted interactions',
+            marker: {
+              color: 'rgb(7,117,218)',
+              opacity: 1
+            }
+          };
+
+          var correlations_sig=  {
+            x: dnl,
+            y: interactions_sig,
+            type: 'bar',
+            name: 'Count of significant interactions',
+            marker: {
+              color: 'rgb(94, 48, 201)',
+              opacity: 1
+            }
+          };
+         
+
+    var data = [miRNAs2, correlations_pred,correlations_sig];
+    var layout = {
+      title: 'SPONGE results for each pair of genes',
+      titlefont: {
+        family: 'Arial, bold',
+        size: 22,
+        color: '#0c253d'
+      },
+      xaxis: {
+        tickangle: -45,
+        //hoverformat: '.3f'
+      },  
+     // yaxis:{hoverformat: '.3f'},
+      barmode: 'group',
+      autosize: false,
+      width: 900,
+      height: 800,
+      margin: {
+        l: 150,
+        r: 100,
+        b: 200,
+        t: 100,
+      
+      },
+      showlegend: true,
+      legend: {
+        x:0,
+        y:1,
+        "orientation": "h"},
+      hoverlabel:{
+        namelength:50
+      },
+      
+        
+    };
+
+    Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
+   
+    
+        },
+        error: () => {
+          //this.msg("Something went wrong loading the expression data.", true)
+        }
+      })
+       
       var xmRNA=[]; var ymRNA=[]; var xCorr=[]; var yCorr=[];
 
       for (var i=0; i<mRNAcsv.length; i++) {
@@ -41,6 +147,7 @@ export class HomeComponent implements OnInit {
         yCorr.push( row2['Count of Correlations'] );
       }
 
+     
     //	makePlotly( xmRNA, ymRNA );
     var miRNAs=  {
       x: ['Testicular germ cell tumor',
@@ -183,15 +290,17 @@ export class HomeComponent implements OnInit {
       hoverlabel:{
         namelength:50
       },
-      
+
         
     };
 
-    Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
+   // Plotly.newPlot('Plot', data, layout, {showSendToCloud:true});
 
     }
 
     processData(mRNAcsv,Coorelationcsv);
+
+  
 
     /* Search function for home component */
     $('#home_search_button').click(() => {

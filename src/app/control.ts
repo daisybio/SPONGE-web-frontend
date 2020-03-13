@@ -6,7 +6,8 @@ export class Controller {
     constructor() {
     }
 
-    static API_ENDPOINT = "http://10.162.163.20:5000"
+    //static API_ENDPOINT = "http://10.162.163.20:5000"
+    static API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api/ui"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static CHECKGENEINTERACTION = "/ceRNAInteraction/checkGeneInteraction"
@@ -29,6 +30,7 @@ export class Controller {
     static SURVIVAL_ANALYSIS_RATES  = "/survivalAnalysis/getRates"
     static SURVIVAL_ANALYSIS_SAMPLEINFO  = "/survivalAnalysis/sampleInformation"
 
+    static OVERALL_COUNTS = "/getOverallCounts"
 
     public search_string(
         config: {
@@ -509,5 +511,21 @@ export class Controller {
            })
     }
     
-    
+    public get_overall_counts(
+        config: {
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.OVERALL_COUNTS
+           
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
 }

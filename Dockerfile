@@ -4,6 +4,8 @@
 # We label our stage as ‘builder’
 FROM node:10-alpine as builder
 
+#default base url for the website
+ENV base_url=https://exbio.wzw.tum.de/sponge/
 COPY package.json package-lock.json ./
 
 ## Storing node modules on a separate layer will prevent unnecessary npm installs at each build
@@ -14,9 +16,10 @@ WORKDIR /ng-app
 
 COPY . .
 
+
 ## Build the angular app in production mode and store the artifacts in dist folder
 
-RUN npm run ng build -- --prod --output-path=dist
+RUN npm run ng build -- --prod --output-path=dist --base-href=${base_url}
 
 
 ### STAGE 2: Setup ###
@@ -33,4 +36,5 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /ng-app/dist /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]
+
 
