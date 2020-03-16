@@ -641,7 +641,7 @@ export class SearchComponent implements OnInit {
         let interaction_info = {};
         let gene_to_extract, gene_as_key;
         let disease = interaction['run']['dataset']['disease_name']
-        console.log(search_key)
+
         // usually get information for other gene, extract information for key gene only once
         if (search_key.includes(interaction['gene1']['ensg_number']) || search_key.includes(interaction['gene1']['gene_symbol'])) {
           // gene1 is search gene, gene2 is not 
@@ -695,21 +695,21 @@ export class SearchComponent implements OnInit {
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
 
-        // Set key-gene information
-        let key_information = {
-          gene: parsed_search_result['key']['ensg_number'],
-          gene_symbol: parsed_search_result['key']['gene_symbol'],
-          chromosome: parsed_search_result['key']['chromosome_name']
-        }
+        // // Set key-gene information, TODO PROBLEM WITH MULTIPLE SEARCH KEYS
+        // let key_information = {
+        //   gene: parsed_search_result['key']['ensg_number'],
+        //   gene_symbol: parsed_search_result['key']['gene_symbol'],
+        //   chromosome: parsed_search_result['key']['chromosome_name']
+        // }
         
-        let key_information_sentence = "For gene " + key_information['gene']
-        ensg4KMP=key_information['gene']
-        if (key_information['gene_symbol'] != '') {
-          key_information_sentence += " (" + key_information['gene_symbol'] + ")"
-        }
-        key_information_sentence += " on chromosome " + key_information['chromosome']
+        // let key_information_sentence = "For gene " + key_information['gene']
+        // ensg4KMP=key_information['gene']
+        // if (key_information['gene_symbol'] != '') {
+        //   key_information_sentence += " (" + key_information['gene_symbol'] + ")"
+        // }
+        // key_information_sentence += " on chromosome " + key_information['chromosome']
   
-        $('#key_information').html(key_information_sentence)
+        // $('#key_information').html(key_information_sentence)
   
         let html_table = helper.buildTable(
             parsed_search_result['diseases'][disease],
