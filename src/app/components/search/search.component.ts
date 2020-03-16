@@ -40,7 +40,7 @@ export class SearchComponent implements OnInit {
       'Network Analysis ID': 'network_analysis_ID'
   }
 
-    var search_key: string;
+    var search_key: string[];
     var search_key_ensg:string;
     var limit: number = 100;
     var parsed_search_result: any;
@@ -58,16 +58,16 @@ export class SearchComponent implements OnInit {
           // there are url params, load previous session
           url_storage = helper.load_session_url(params)
         }
-        search_key = decodeURIComponent(params.search_key);
+        search_key = decodeURIComponent(params.search_key).split(',');
       });
     
     $('#options_gene_go').click( () => {
       pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
-      search_key = $('#gene_search_keys').val().split(' ').join('')
-      // remove last char if it is ','
-      //search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-      if (search_key == '') {
+      search_key = $('#gene_search_keys').val().replace(',', '').split(' ')
+      // remove possible ''
+      search_key = search_key.filter(item => item);
+      if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
         //helper.check_gene_interaction()
@@ -79,7 +79,7 @@ export class SearchComponent implements OnInit {
       search_key = $('#mirna_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-      if (search_key == '') {
+      if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
         search(limit)
@@ -120,9 +120,9 @@ export class SearchComponent implements OnInit {
     function load_interactions(disease, table_id, offset=0){
       
       // check if key is ENSG number
-      if (search_key.startsWith('ENSG')) {
+      if (search_key[0].startsWith('ENSG')) {
         controller.get_ceRNA_interactions_all({
-          ensg_number: [search_key],
+          ensg_number: search_key,
           limit: limit,
           disease_name: disease,
           pValue: pValue_current,
@@ -133,11 +133,11 @@ export class SearchComponent implements OnInit {
           error: (response) => {
           }
         })
-      } else if (search_key.startsWith('MIMAT')) {
+      } else if (search_key[0].startsWith('MIMAT')) {
         // key is MIMAT number
         controller.get_miRNA_interactions_all({
           limit: limit,
-          mimat_number: [search_key],
+          mimat_number: search_key,
           disease_name: disease,
           offset: offset,
           callback: (response) => {
@@ -146,11 +146,11 @@ export class SearchComponent implements OnInit {
           error: (response) => {
           }
         })
-      } else if (search_key.startsWith('hsa-')) {
+      } else if (search_key[0].startsWith('hsa-')) {
         // key is hsa number
         controller.get_miRNA_interactions_all({
           limit: limit,
-          hs_number: [search_key],
+          hs_number: search_key,
           disease_name: disease,
           offset: offset,
           callback: (response) => {
@@ -168,7 +168,7 @@ export class SearchComponent implements OnInit {
 
         function __get_batches_recursive(offset=0) {
 
-          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':[search_key], 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
           'callback':data => {
             all_data = all_data.concat(data)
             console.log(data.length)
@@ -218,10 +218,10 @@ export class SearchComponent implements OnInit {
         parsed_search_result['key'] = undefined
 
         // load pie chart for gene
-        let type = classify_searchKey(search_key) == "GENE" ? "gene_symbol" : "ensg_number"
+        let type = classify_searchKey(search_key[0]) == "GENE" ? "gene_symbol" : "ensg_number"
         const minCountSign = $('#significant_results').is(':checked') ? 1 : 0
         controller.gene_count({
-          [type]: [search_key],
+          [type]: search_key,
           minCountSign: minCountSign,
           error: (data) => {
             // no significant interactions found, try again for all interactions
@@ -241,11 +241,11 @@ export class SearchComponent implements OnInit {
               type: 'pie',
               textinfo: "value"
             }];
-            
+            console.log(search_key)
             var layout = {
               height: 600,
               width: 1000,
-              title: 'Interactions of ' + search_key.split(',').join(', '),
+              title: 'Interactions of ' + search_key.join(', '),
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
@@ -263,28 +263,28 @@ export class SearchComponent implements OnInit {
             });
 
             // check if key is ENSG number
-            if (search_key.startsWith('ENSG')) {
+            if (search_key[0].startsWith('ENSG')) {
               if(!$('#options_mirna').hasClass('hidden')){
                 $('#options_mirna').addClass('hidden')
               }
               $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key.split(',').join(', '))
+              $('#gene_search_keys').val(search_key.join(', '))
             
-            } else if (search_key.startsWith('MIMAT')) {
+            } else if (search_key[0].startsWith('MIMAT')) {
               if(!$('#options_gene').hasClass('hidden')){
                 $('#options_gene').addClass('hidden')
               }
               // key is MIMAT number
               $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              $('#mirna_search_keys').val(search_key.join(', '))
               
-            } else if (search_key.startsWith('hsa-')) {
+            } else if (search_key[0].startsWith('hsa-')) {
               if(!$('#options_gene').hasClass('hidden')){
                 $('#options_gene').addClass('hidden')
               }
               // key is hsa number
               $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              $('#mirna_search_keys').val(search_key.join(', '))
               
             } else {
               if(!$('#options_mirna').hasClass('hidden')){
@@ -292,7 +292,7 @@ export class SearchComponent implements OnInit {
               }
               // key is gene symbol
               $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key.split(',').join(', '))
+              $('#gene_search_keys').val(search_key.join(', '))
             }  
 
             build_accordion()
@@ -564,28 +564,34 @@ export class SearchComponent implements OnInit {
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
         // append search note to network
-        controller.search_string(
-          {
-            searchString: search_key,
-            callback: function(response) {
-              // get ensg number of search key
-              for (let elem of response) {
-                if (elem.gene_symbol == search_key || elem.ensg_number == search_key) {
-                  ensg_numbers.push(elem.ensg_number)
-                  break
+        for (const [index, key] of search_key.entries()) {
+          controller.search_string(
+            {
+              searchString: key,
+              callback: function(response) {
+                // get ensg number of search key
+                for (let elem of response) {
+                  if (elem.gene_symbol == key || elem.ensg_number == key) {
+                    ensg_numbers.push(elem.ensg_number)
+                    break
+                  }
                 }
+                if (index == search_key.length-1) {
+                  // last key has been added
+                  $this.shared_service.setData({
+                    'nodes': ensg_numbers,
+                    'nodes_marked': nodes_marked,
+                    'cancer_type': active_cancer_name
+                  })
+                  // navigate to browse
+                  $this.router.navigateByUrl('browse');
+                }
+                
               }
-              console.log(active_cancer_name)
-              $this.shared_service.setData({
-                'nodes': ensg_numbers,
-                'nodes_marked': nodes_marked,
-                'cancer_type': active_cancer_name
-              })
-              // navigate to browse
-              $this.router.navigateByUrl('browse');
             }
-          }
-        )
+          )
+        }
+       
       })
 
       $('#loading_spinner').addClass('hidden');  
