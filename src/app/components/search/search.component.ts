@@ -123,21 +123,33 @@ export class SearchComponent implements OnInit {
     }
 
     function load_interactions(disease, table_id, offset=0, table_complete=false){
-      
+
       // check if key is ENSG number
       if (search_key[0].startsWith('ENSG')) {
-        controller.get_ceRNA_interactions_all({
-          ensg_number: search_key,
-          limit: limit,
-          disease_name: disease,
-          pValue: pValue_current,
-          offset: offset,
-          callback: (response) => {
-            parse_cerna_response_to_table(response, table_id, table_complete)
-          },
-          error: (response) => {
-          }
-        })
+        // API batch limit is 1000 interactions, iterating until we got all batches
+        const limit = 1000
+        let all_data = []
+        __get_batches_recursive() // try out recursive
+
+        function __get_batches_recursive(offset=0) {
+
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'ensg_number':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+            'callback':data => {
+              all_data = all_data.concat(data)
+
+              if (data.length == limit) {
+
+                // there are more interactions to load, call function again
+                __get_batches_recursive(offset + limit)
+                parse_cerna_response_to_table(all_data, table_id, table_complete=false) 
+
+              } else {
+                // just append data to table
+                parse_cerna_response_to_table(all_data, table_id, table_complete=true) 
+              }  
+            }
+          })
+        }
       } else if (search_key[0].startsWith('MIMAT')) {
         // key is MIMAT number
         controller.get_miRNA_interactions_all({
@@ -627,13 +639,14 @@ export class SearchComponent implements OnInit {
         
         // parse the information
         let interaction_info = {};
-        let gene_to_extract;
+        let gene_to_extract, gene_as_key;
         let disease = interaction['run']['dataset']['disease_name']
-
+        console.log(search_key)
         // usually get information for other gene, extract information for key gene only once
-        if (interaction['gene1']['ensg_number'] == search_key || interaction['gene1']['gene_symbol'] == search_key) {
+        if (search_key.includes(interaction['gene1']['ensg_number']) || search_key.includes(interaction['gene1']['gene_symbol'])) {
           // gene1 is search gene, gene2 is not 
           gene_to_extract = 'gene2'
+          gene_as_key = 'gene1'
           // get search gene info if still undefined
           if (parsed_search_result['key'] == undefined) {
             parsed_search_result['key'] = interaction['gene1']
@@ -641,6 +654,7 @@ export class SearchComponent implements OnInit {
         } else {
           // gene1 is not search gene, gene2 is
           gene_to_extract = 'gene1'
+          gene_as_key = 'gene1'
           // get search gene info if still undefined
           if (parsed_search_result['key'] == undefined) {
             parsed_search_result['key'] = interaction['gene2']
@@ -651,14 +665,15 @@ export class SearchComponent implements OnInit {
           parsed_search_result['diseases'][disease] = []
         }
 
+        // KEEP ORDER OF THESE INTERACTIONS as it is how it is displayed in webpage
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
         interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
         interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
         interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
         interaction_info['Correlation'] = interaction['correlation']
-        //interaction_info['gene'] = interaction[gene_to_extract]['gene_ID']
         interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
+        interaction_info['Key'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
 
         parsed_search_result['diseases'][disease].push(interaction_info)
 
