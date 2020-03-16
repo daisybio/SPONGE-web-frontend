@@ -41,7 +41,6 @@ export class SearchComponent implements OnInit {
   }
 
     var search_key: string[];
-    var search_key_ensg:string;
     var limit: number = 100;
     var parsed_search_result: any;
     var url_storage;
@@ -117,7 +116,7 @@ export class SearchComponent implements OnInit {
       }
     }
 
-    function load_interactions(disease, table_id, offset=0){
+    function load_interactions(disease, table_id, offset=0, table_complete=false){
       
       // check if key is ENSG number
       if (search_key[0].startsWith('ENSG')) {
@@ -128,7 +127,7 @@ export class SearchComponent implements OnInit {
           pValue: pValue_current,
           offset: offset,
           callback: (response) => {
-            parse_cerna_response_to_table(response, table_id)
+            parse_cerna_response_to_table(response, table_id, table_complete)
           },
           error: (response) => {
           }
@@ -171,16 +170,16 @@ export class SearchComponent implements OnInit {
           controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
           'callback':data => {
             all_data = all_data.concat(data)
-            console.log(data.length)
-            //console.log(limit + offset)
+
             if (data.length == limit) {
 
               // there are more interactions to load, call function again
               __get_batches_recursive(offset + limit)
+              parse_cerna_response_to_table(all_data, table_id, table_complete=false) 
 
             } else {
-
-              parse_cerna_response_to_table(all_data, table_id) 
+              // just append data to table
+              parse_cerna_response_to_table(all_data, table_id, table_complete=true) 
 
             }  
           }
@@ -209,6 +208,7 @@ export class SearchComponent implements OnInit {
       $('#key_information').empty()
       $('#disease_accordion').empty()
       $('#network-container').empty()
+
       $('#plots').empty()
 
       /* search_key is defined */
@@ -241,7 +241,7 @@ export class SearchComponent implements OnInit {
               type: 'pie',
               textinfo: "value"
             }];
-            console.log(search_key)
+
             var layout = {
               height: 600,
               width: 1000,
@@ -250,18 +250,21 @@ export class SearchComponent implements OnInit {
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
             
-            Plotly.newPlot('pie_chart_container', plot_data, layout);
+            // only show the pie chart if there is a single search key
+            if (search_key.length == 1) {
+              Plotly.newPlot('pie_chart_container', plot_data, layout);
 
-            // handle click function on pie chart
-            $('#pie_chart_container').on('plotly_click', function(_, data){
-              // open accordion tab and start loading
-              $( "button:contains('"+data.points[0].label+"')" ).click()
-              // scroll down to opened accordion tab
-              $([document.documentElement, document.body]).animate({
-                scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
-              }, 1000)
-            });
-
+              // handle click function on pie chart
+              $('#pie_chart_container').on('plotly_click', function(_, data){
+                // open accordion tab and start loading
+                $( "button:contains('"+data.points[0].label+"')" ).click()
+                // scroll down to opened accordion tab
+                $([document.documentElement, document.body]).animate({
+                  scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
+                }, 1000)
+              });
+            }
+            
             // check if key is ENSG number
             if (search_key[0].startsWith('ENSG')) {
               if(!$('#options_mirna').hasClass('hidden')){
@@ -597,7 +600,7 @@ export class SearchComponent implements OnInit {
       $('#loading_spinner').addClass('hidden');  
     }
 
-    function parse_cerna_response_to_table(response, table_id) {
+    function parse_cerna_response_to_table(response, table_id, table_complete=false) {
 
       let disease = response[0]["run"]["dataset"]["disease_name"]
       let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
@@ -654,6 +657,11 @@ export class SearchComponent implements OnInit {
           rowse_to_append.push(Object.values(obj))
         });
         $('#'+table_id).DataTable().rows.add(rowse_to_append).draw(false)
+
+        if (table_complete) {
+          // remove loading button for more interactions
+          $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
+        }
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
 
@@ -678,12 +686,19 @@ export class SearchComponent implements OnInit {
             table_id,
             Object.keys(parsed_search_result['diseases'][disease][0])
           )
-
-        // special search when searched for gene_symbol or ensg_number
-        //$("#" + table_id). TODO
-
+        
         // this line also removes the loading spinner
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
+        if (!table_complete) {
+          $('#collapse_' + disease_trimmed).find('.card-body-table').append(`
+          <div class="text-center spinner-more">
+            <button class="btn btn-primary" type="button" disabled>
+              <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+              Still loading more interactions...
+            </button>
+          </div>
+        `
+        )}
   
         push_interaction_filters(table_id)
         var table = $("#" + table_id).DataTable({
