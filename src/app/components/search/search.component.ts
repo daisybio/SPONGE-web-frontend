@@ -94,7 +94,13 @@ export class SearchComponent implements OnInit {
     function draw_cancer_type_accordion() {
 
       // build html for response_data
-      for (let disease of count_object.map(function(disease) {return disease.run.dataset.disease_name})) {
+      const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
+      let uniquelabels = [];
+      $.each(labels, function(i, el){
+          if($.inArray(el, uniquelabels) === -1) uniquelabels.push(el);
+      });
+
+      for (let disease of uniquelabels) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         // make first letter uppercase
@@ -235,6 +241,7 @@ export class SearchComponent implements OnInit {
               // first letter uppercase
               return node.run.dataset.disease_name.charAt(0).toUpperCase() + node.run.dataset.disease_name.substring(1);
             })
+
             var plot_data = [{
               values: values,
               labels: labels,
@@ -250,6 +257,9 @@ export class SearchComponent implements OnInit {
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
             
+            // remove possible old plot
+            $('#pie_chart_container').empty()
+
             // only show the pie chart if there is a single search key
             if (search_key.length == 1) {
               Plotly.newPlot('pie_chart_container', plot_data, layout);
@@ -493,9 +503,14 @@ export class SearchComponent implements OnInit {
     function build_accordion() {
       $('#loading_spinner').removeClass('hidden')
       
-      
       // build table out of parsed result for each disease
-      for (let disease of count_object.map(function(disease) {return disease.run.dataset.disease_name})) {
+      const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
+      let uniquelabels = [];
+      $.each(labels, function(i, el){
+          if($.inArray(el, uniquelabels) === -1) uniquelabels.push(el);
+      });
+
+      for (let disease of uniquelabels) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         // make first letter uppercase
