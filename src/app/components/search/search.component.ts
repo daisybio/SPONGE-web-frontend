@@ -40,8 +40,7 @@ export class SearchComponent implements OnInit {
       'Network Analysis ID': 'network_analysis_ID'
   }
 
-    var search_key: string;
-    var search_key_ensg:string;
+    var search_key: string[];
     var limit: number = 100;
     var parsed_search_result: any;
     var url_storage;
@@ -58,16 +57,16 @@ export class SearchComponent implements OnInit {
           // there are url params, load previous session
           url_storage = helper.load_session_url(params)
         }
-        search_key = decodeURIComponent(params.search_key);
+        search_key = decodeURIComponent(params.search_key).split(',');
       });
     
     $('#options_gene_go').click( () => {
       pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
-      search_key = $('#gene_search_keys').val().split(' ').join('')
-      // remove last char if it is ','
-      //search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-      if (search_key == '') {
+      search_key = $('#gene_search_keys').val().replace(',', '').split(' ')
+      // remove possible ''
+      search_key = search_key.filter(item => item);
+      if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
         //helper.check_gene_interaction()
@@ -79,7 +78,7 @@ export class SearchComponent implements OnInit {
       search_key = $('#mirna_search_keys').val().split(' ').join('')
       // remove last char if it is ','
       search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-      if (search_key == '') {
+      if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
         search(limit)
@@ -95,7 +94,13 @@ export class SearchComponent implements OnInit {
     function draw_cancer_type_accordion() {
 
       // build html for response_data
-      for (let disease of count_object.map(function(disease) {return disease.run.dataset.disease_name})) {
+      const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
+      let uniquelabels = [];
+      $.each(labels, function(i, el){
+          if($.inArray(el, uniquelabels) === -1) uniquelabels.push(el);
+      });
+
+      for (let disease of uniquelabels) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         // make first letter uppercase
@@ -117,27 +122,36 @@ export class SearchComponent implements OnInit {
       }
     }
 
-    function load_interactions(disease, table_id, offset=0){
-      
+    function load_interactions(disease, table_id, offset=0, table_complete=false){
+
       // check if key is ENSG number
-      if (search_key.startsWith('ENSG')) {
-        controller.get_ceRNA_interactions_all({
-          ensg_number: [search_key],
-          limit: limit,
-          disease_name: disease,
-          pValue: pValue_current,
-          offset: offset,
-          callback: (response) => {
-            parse_cerna_response_to_table(response, table_id)
-          },
-          error: (response) => {
-          }
-        })
-      } else if (search_key.startsWith('MIMAT')) {
+      if (search_key[0].startsWith('ENSG')) {
+        // API batch limit is 1000 interactions, iterating until we got all batches
+        const limit = 1000
+        __get_batches_recursive() // try out recursive
+
+        function __get_batches_recursive(offset=0) {
+
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'ensg_number':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+            'callback':data => {
+              if (data.length == limit) {
+
+                // there are more interactions to load, call function again
+                __get_batches_recursive(offset + limit)
+                parse_cerna_response_to_table(data, table_id, table_complete=false) 
+
+              } else {
+                // just append data to table
+                parse_cerna_response_to_table(data, table_id, table_complete=true) 
+              }  
+            }
+          })
+        }
+      } else if (search_key[0].startsWith('MIMAT')) {
         // key is MIMAT number
         controller.get_miRNA_interactions_all({
           limit: limit,
-          mimat_number: [search_key],
+          mimat_number: search_key,
           disease_name: disease,
           offset: offset,
           callback: (response) => {
@@ -146,11 +160,11 @@ export class SearchComponent implements OnInit {
           error: (response) => {
           }
         })
-      } else if (search_key.startsWith('hsa-')) {
+      } else if (search_key[0].startsWith('hsa-')) {
         // key is hsa number
         controller.get_miRNA_interactions_all({
           limit: limit,
-          hs_number: [search_key],
+          hs_number: search_key,
           disease_name: disease,
           offset: offset,
           callback: (response) => {
@@ -163,24 +177,22 @@ export class SearchComponent implements OnInit {
         // key is gene symbol
         // API batch limit is 1000 interactions, iterating until we got all batches
         const limit = 1000
-        let all_data = []
         __get_batches_recursive() // try out recursive
 
         function __get_batches_recursive(offset=0) {
 
-          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':[search_key], 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
           'callback':data => {
-            all_data = all_data.concat(data)
-            console.log(data.length)
-            //console.log(limit + offset)
+
             if (data.length == limit) {
 
               // there are more interactions to load, call function again
               __get_batches_recursive(offset + limit)
+              parse_cerna_response_to_table(data, table_id, table_complete=false) 
 
             } else {
-
-              parse_cerna_response_to_table(all_data, table_id) 
+              // just append data to table
+              parse_cerna_response_to_table(data, table_id, table_complete=true) 
 
             }  
           }
@@ -209,6 +221,7 @@ export class SearchComponent implements OnInit {
       $('#key_information').empty()
       $('#disease_accordion').empty()
       $('#network-container').empty()
+
       $('#plots').empty()
 
       /* search_key is defined */
@@ -218,10 +231,10 @@ export class SearchComponent implements OnInit {
         parsed_search_result['key'] = undefined
 
         // load pie chart for gene
-        let type = classify_searchKey(search_key) == "GENE" ? "gene_symbol" : "ensg_number"
+        let type = classify_searchKey(search_key[0]) == "GENE" ? "gene_symbol" : "ensg_number"
         const minCountSign = $('#significant_results').is(':checked') ? 1 : 0
         controller.gene_count({
-          [type]: [search_key],
+          [type]: search_key,
           minCountSign: minCountSign,
           error: (data) => {
             // no significant interactions found, try again for all interactions
@@ -235,56 +248,63 @@ export class SearchComponent implements OnInit {
               // first letter uppercase
               return node.run.dataset.disease_name.charAt(0).toUpperCase() + node.run.dataset.disease_name.substring(1);
             })
+
             var plot_data = [{
               values: values,
               labels: labels,
               type: 'pie',
               textinfo: "value"
             }];
-            
+
             var layout = {
               height: 600,
               width: 1000,
-              title: 'Interactions of ' + search_key.split(',').join(', '),
+              title: 'Interactions of ' + search_key.join(', '),
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
             };
             
-            Plotly.newPlot('pie_chart_container', plot_data, layout);
+            // remove possible old plot
+            $('#pie_chart_container').empty()
 
-            // handle click function on pie chart
-            $('#pie_chart_container').on('plotly_click', function(_, data){
-              // open accordion tab and start loading
-              $( "button:contains('"+data.points[0].label+"')" ).click()
-              // scroll down to opened accordion tab
-              $([document.documentElement, document.body]).animate({
-                scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
-              }, 1000)
-            });
+            // only show the pie chart if there is a single search key
+            if (search_key.length == 1) {
+              Plotly.newPlot('pie_chart_container', plot_data, layout);
 
+              // handle click function on pie chart
+              $('#pie_chart_container').on('plotly_click', function(_, data){
+                // open accordion tab and start loading
+                $( "button:contains('"+data.points[0].label+"')" ).click()
+                // scroll down to opened accordion tab
+                $([document.documentElement, document.body]).animate({
+                  scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
+                }, 1000)
+              });
+            }
+            
             // check if key is ENSG number
-            if (search_key.startsWith('ENSG')) {
+            if (search_key[0].startsWith('ENSG')) {
               if(!$('#options_mirna').hasClass('hidden')){
                 $('#options_mirna').addClass('hidden')
               }
               $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key.split(',').join(', '))
+              $('#gene_search_keys').val(search_key.join(', '))
             
-            } else if (search_key.startsWith('MIMAT')) {
+            } else if (search_key[0].startsWith('MIMAT')) {
               if(!$('#options_gene').hasClass('hidden')){
                 $('#options_gene').addClass('hidden')
               }
               // key is MIMAT number
               $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              $('#mirna_search_keys').val(search_key.join(', '))
               
-            } else if (search_key.startsWith('hsa-')) {
+            } else if (search_key[0].startsWith('hsa-')) {
               if(!$('#options_gene').hasClass('hidden')){
                 $('#options_gene').addClass('hidden')
               }
               // key is hsa number
               $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.split(',').join(', '))
+              $('#mirna_search_keys').val(search_key.join(', '))
               
             } else {
               if(!$('#options_mirna').hasClass('hidden')){
@@ -292,7 +312,7 @@ export class SearchComponent implements OnInit {
               }
               // key is gene symbol
               $('#options_gene').removeClass('hidden')
-              $('#gene_search_keys').val(search_key.split(',').join(', '))
+              $('#gene_search_keys').val(search_key.join(', '))
             }  
 
             build_accordion()
@@ -490,9 +510,14 @@ export class SearchComponent implements OnInit {
     function build_accordion() {
       $('#loading_spinner').removeClass('hidden')
       
-      
       // build table out of parsed result for each disease
-      for (let disease of count_object.map(function(disease) {return disease.run.dataset.disease_name})) {
+      const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
+      let uniquelabels = [];
+      $.each(labels, function(i, el){
+          if($.inArray(el, uniquelabels) === -1) uniquelabels.push(el);
+      });
+
+      for (let disease of uniquelabels) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         // make first letter uppercase
@@ -512,6 +537,12 @@ export class SearchComponent implements OnInit {
           "Options" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
+          `
+          <div class="form-check button-margin inline-block">
+            <input type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
+            <label class="form-check-label" for="interactions_to_all_search_keys_`+ table_id +`">Show only interactions to all search genes</label>
+          </div>
+          `+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
@@ -535,6 +566,66 @@ export class SearchComponent implements OnInit {
         $('#disease_accordion').append(accordion_card)
       }
 
+      // manage checkbox d´to just display intersection of gene interactions between all search keys
+      $(document).on('change', "input[id^='interactions_to_all_search_keys_']", function() {
+        // find datatable
+        const this_table_id = $(this).attr('id').split('interactions_to_all_search_keys_')[1]
+        const this_table = $('#'+this_table_id).DataTable()
+    
+        if(this.checked) {
+          // filter datatable to only get intersection of gene interactions between all search keys
+          const unique_keys = this_table.column(0).data().unique()
+          const unique_hits = this_table.column(1).data().unique()
+          const data = this_table.data()
+
+          // create object to check for each unique key per hit
+          let empty_hit_checklist = {}
+          unique_keys.each(key => empty_hit_checklist[key] = 0)
+
+          let hit_check_object = {}
+          unique_hits.each(hit => hit_check_object[hit] = JSON.parse(JSON.stringify(empty_hit_checklist)))  // deep copy
+
+          for (const index of [...Array(data.length).keys()]) {
+            const row = data[index]
+            // object {hit: {key: 1}}
+            hit_check_object[row[1]][row[0]] = 1
+          }
+
+          // get all intersecting objects
+          let hits_to_display = []
+          for (const [hit, keys] of Object.entries(hit_check_object)) {
+            if (Object.values(keys).every(x => x)) {
+              hits_to_display.push(hit)
+            }
+          }
+
+          // display only hits to display, that occur in all search genes
+          $.fn.dataTableExt.afnFiltering.push(
+            function (oSettings, aData, iDataIndex) {
+              
+              //console.log(this_table)
+              if (oSettings.nTable.id == this_table_id) {
+                console.log("oSettings", oSettings.nTable.id)
+                return hits_to_display.includes(aData[1]);
+              } else {
+                return true
+              }
+            }
+          );
+          this_table.draw()
+
+        } else {
+          // remove filter
+          while (true) {
+            if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+            else { break }
+          }
+          
+          
+          this_table.draw()
+        }
+      });
+
       
       // load table when accordion tab is opened and table has not been loaded already
       $(document).on('click', '.btn.btn-link.collapsed', function() {
@@ -555,7 +646,7 @@ export class SearchComponent implements OnInit {
                 
         let table = $('#'+$(this).val()).DataTable()
         active_cancer_name = $(this).closest('.card').find('button').first().text()
-        let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
   
         // get data
         let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys)
@@ -563,35 +654,48 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
+        console.log(table.data().length)
+        if (table.data().length > 50) {
+          helper.msg("Please apply further filtering to your data. Loading more than 50 interactions in the graph can lead to problems.")
+          return
+        }
         // append search note to network
-        controller.search_string(
-          {
-            searchString: search_key,
-            callback: function(response) {
-              // get ensg number of search key
-              for (let elem of response) {
-                if (elem.gene_symbol == search_key || elem.ensg_number == search_key) {
-                  ensg_numbers.push(elem.ensg_number)
-                  break
+        for (const [index, key] of search_key.entries()) {
+          controller.search_string(
+            {
+              searchString: key,
+              callback: function(response) {
+                // get ensg number of search key
+                for (let elem of response) {
+                  if (elem.gene_symbol == key || elem.ensg_number == key) {
+                    ensg_numbers.push(elem.ensg_number)
+                    break
+                  }
                 }
+                if (index == search_key.length-1) {
+                  // last key has been added
+                  $this.shared_service.setData({
+                    'nodes': ensg_numbers,
+                    'nodes_marked': nodes_marked,
+                    'cancer_type': active_cancer_name
+                  })
+                  // navigate to browse
+                  $this.router.navigateByUrl('browse');
+                }
+                
               }
-              console.log(active_cancer_name)
-              $this.shared_service.setData({
-                'nodes': ensg_numbers,
-                'nodes_marked': nodes_marked,
-                'cancer_type': active_cancer_name
-              })
-              // navigate to browse
-              $this.router.navigateByUrl('browse');
             }
-          }
-        )
+          )
+        }
+       
       })
 
       $('#loading_spinner').addClass('hidden');  
     }
 
-    function parse_cerna_response_to_table(response, table_id) {
+    function parse_cerna_response_to_table(response, table_id, table_complete=false) {
+
+      let table
 
       let disease = response[0]["run"]["dataset"]["disease_name"]
       let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
@@ -603,13 +707,14 @@ export class SearchComponent implements OnInit {
         
         // parse the information
         let interaction_info = {};
-        let gene_to_extract;
+        let gene_to_extract, gene_as_key;
         let disease = interaction['run']['dataset']['disease_name']
 
         // usually get information for other gene, extract information for key gene only once
-        if (interaction['gene1']['ensg_number'] == search_key || interaction['gene1']['gene_symbol'] == search_key) {
+        if (search_key.includes(interaction['gene1']['ensg_number']) || search_key.includes(interaction['gene1']['gene_symbol'])) {
           // gene1 is search gene, gene2 is not 
           gene_to_extract = 'gene2'
+          gene_as_key = 'gene1'
           // get search gene info if still undefined
           if (parsed_search_result['key'] == undefined) {
             parsed_search_result['key'] = interaction['gene1']
@@ -617,6 +722,7 @@ export class SearchComponent implements OnInit {
         } else {
           // gene1 is not search gene, gene2 is
           gene_to_extract = 'gene1'
+          gene_as_key = 'gene2'
           // get search gene info if still undefined
           if (parsed_search_result['key'] == undefined) {
             parsed_search_result['key'] = interaction['gene2']
@@ -627,12 +733,13 @@ export class SearchComponent implements OnInit {
           parsed_search_result['diseases'][disease] = []
         }
 
+        // KEEP ORDER OF THESE INTERACTIONS as it is how it is displayed in webpage
+        interaction_info['Key'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
         interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
         interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
         interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
         interaction_info['Correlation'] = interaction['correlation']
-        //interaction_info['gene'] = interaction[gene_to_extract]['gene_ID']
         interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
 
@@ -647,40 +754,50 @@ export class SearchComponent implements OnInit {
         parsed_search_result['diseases'][disease].forEach(obj => {
           rowse_to_append.push(Object.values(obj))
         });
-        $('#'+table_id).DataTable().rows.add(rowse_to_append).draw(false)
+        $('#'+table_id).DataTable().rows.add(rowse_to_append).draw()
+
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
 
-        // Set key-gene information
-        let key_information = {
-          gene: parsed_search_result['key']['ensg_number'],
-          gene_symbol: parsed_search_result['key']['gene_symbol'],
-          chromosome: parsed_search_result['key']['chromosome_name']
-        }
+        // // Set key-gene information, TODO PROBLEM WITH MULTIPLE SEARCH KEYS
+        // let key_information = {
+        //   gene: parsed_search_result['key']['ensg_number'],
+        //   gene_symbol: parsed_search_result['key']['gene_symbol'],
+        //   chromosome: parsed_search_result['key']['chromosome_name']
+        // }
         
-        let key_information_sentence = "For gene " + key_information['gene']
-        ensg4KMP=key_information['gene']
-        if (key_information['gene_symbol'] != '') {
-          key_information_sentence += " (" + key_information['gene_symbol'] + ")"
-        }
-        key_information_sentence += " on chromosome " + key_information['chromosome']
+        // let key_information_sentence = "For gene " + key_information['gene']
+        // ensg4KMP=key_information['gene']
+        // if (key_information['gene_symbol'] != '') {
+        //   key_information_sentence += " (" + key_information['gene_symbol'] + ")"
+        // }
+        // key_information_sentence += " on chromosome " + key_information['chromosome']
   
-        $('#key_information').html(key_information_sentence)
+        // $('#key_information').html(key_information_sentence)
   
         let html_table = helper.buildTable(
-            parsed_search_result['diseases'][disease],
-            table_id,
-            Object.keys(parsed_search_result['diseases'][disease][0])
-          )
-
-        // special search when searched for gene_symbol or ensg_number
-        //$("#" + table_id). TODO
+          parsed_search_result['diseases'][disease],
+          table_id,
+          Object.keys(parsed_search_result['diseases'][disease][0])
+        )
 
         // this line also removes the loading spinner
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
+
+        // if more data to load, display loading spinner with info message
+        if (!table_complete) {
+          $('#collapse_' + disease_trimmed).find('.card-body-table').append(`
+          <div class="text-center spinner-more">
+            <button class="btn btn-primary" type="button" disabled>
+              <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+              Still loading more interactions...
+            </button>
+          </div>
+        `
+        )}
   
         push_interaction_filters(table_id)
-        var table = $("#" + table_id).DataTable({
+        table = $("#" + table_id).DataTable({
           orderCellsTop: true,
           drawCallback: function( settings ) {
             var api = this.api();
@@ -690,7 +807,15 @@ export class SearchComponent implements OnInit {
                 $("#" + table_id + '_next').removeClass('disabled')
               }
             }
-          }
+          },
+          columnDefs: [
+              // hide "Key" Column
+              {
+                  "targets": [ 0 ],
+                  "visible": false,
+                  "searchable": true
+              }
+            ]
         })
         helper.colSearch(table_id, table)
   
@@ -716,6 +841,19 @@ export class SearchComponent implements OnInit {
         if (url_storage) {
           helper.mark_nodes_table(table, url_storage['nodes'])
         }
+      }
+
+      if (table_complete) {
+        // remove loading button for more interactions
+        $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
+
+        // only display entries that are related to all search genes
+        // for (let gene of parsed_search_result['diseases'][disease]) {
+        //   let gene_search_result = $('#'+table_id).DataTable().search(gene['ENSG Number'])
+        //   if (gene_search_result.length == 2) {
+        //     console.log(gene_search_result)
+        //   }
+        // }
       }
     }
 
