@@ -322,7 +322,7 @@ export class HomeComponent implements OnInit {
            preSearchKey= search_key.split("(")[0]
           }
          search_key=preSearchKey
-        window.open( '/search?search_key='+encodeURIComponent(search_key), '_top')
+        window.open( 'search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
     $(function() { 
