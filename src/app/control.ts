@@ -8,8 +8,9 @@ export class Controller {
     constructor() {
 
         if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-            //Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
-            Controller.API_ENDPOINT = "http://10.162.163.20:5000"
+          //  Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
+          //alfred api
+          Controller.API_ENDPOINT = "http://10.162.163.20:5000"
 
         } else {
             Controller.API_ENDPOINT = window.location.origin+"/sponge-api"
