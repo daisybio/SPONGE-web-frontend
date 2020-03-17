@@ -537,6 +537,12 @@ export class SearchComponent implements OnInit {
           "Options" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
+          `
+          <div class="form-check button-margin inline-block">
+            <input type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
+            <label class="form-check-label" for="interactions_to_all_search_keys_`+ table_id +`">Show only interactions to all search genes</label>
+          </div>
+          `+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
@@ -559,6 +565,66 @@ export class SearchComponent implements OnInit {
          
         $('#disease_accordion').append(accordion_card)
       }
+
+      // manage checkbox d´to just display intersection of gene interactions between all search keys
+      $(document).on('change', "input[id^='interactions_to_all_search_keys_']", function() {
+        // find datatable
+        const this_table_id = $(this).attr('id').split('interactions_to_all_search_keys_')[1]
+        const this_table = $('#'+this_table_id).DataTable()
+    
+        if(this.checked) {
+          // filter datatable to only get intersection of gene interactions between all search keys
+          const unique_keys = this_table.column(0).data().unique()
+          const unique_hits = this_table.column(1).data().unique()
+          const data = this_table.data()
+
+          // create object to check for each unique key per hit
+          let empty_hit_checklist = {}
+          unique_keys.each(key => empty_hit_checklist[key] = 0)
+
+          let hit_check_object = {}
+          unique_hits.each(hit => hit_check_object[hit] = JSON.parse(JSON.stringify(empty_hit_checklist)))  // deep copy
+
+          for (const index of [...Array(data.length).keys()]) {
+            const row = data[index]
+            // object {hit: {key: 1}}
+            hit_check_object[row[1]][row[0]] = 1
+          }
+
+          // get all intersecting objects
+          let hits_to_display = []
+          for (const [hit, keys] of Object.entries(hit_check_object)) {
+            if (Object.values(keys).every(x => x)) {
+              hits_to_display.push(hit)
+            }
+          }
+
+          // display only hits to display, that occur in all search genes
+          $.fn.dataTableExt.afnFiltering.push(
+            function (oSettings, aData, iDataIndex) {
+              
+              //console.log(this_table)
+              if (oSettings.nTable.id == this_table_id) {
+                console.log("oSettings", oSettings.nTable.id)
+                return hits_to_display.includes(aData[1]);
+              } else {
+                return true
+              }
+            }
+          );
+          this_table.draw()
+
+        } else {
+          // remove filter
+          while (true) {
+            if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+            else { break }
+          }
+          
+          
+          this_table.draw()
+        }
+      });
 
       
       // load table when accordion tab is opened and table has not been loaded already
@@ -663,7 +729,7 @@ export class SearchComponent implements OnInit {
         }
 
         // KEEP ORDER OF THESE INTERACTIONS as it is how it is displayed in webpage
-        // interaction_info['Key'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
+        interaction_info['Key'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
         interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
         interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
@@ -737,14 +803,14 @@ export class SearchComponent implements OnInit {
               }
             }
           },
-          // columnDefs: [
-          //     // hide "Key" Column
-          //     {
-          //         "targets": [ 0 ],
-          //         "visible": false,
-          //         "searchable": true
-          //     }
-          //   ]
+          columnDefs: [
+              // hide "Key" Column
+              {
+                  "targets": [ 0 ],
+                  "visible": false,
+                  "searchable": true
+              }
+            ]
         })
         helper.colSearch(table_id, table)
   
