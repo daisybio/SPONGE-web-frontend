@@ -646,7 +646,7 @@ export class SearchComponent implements OnInit {
                 
         let table = $('#'+$(this).val()).DataTable()
         active_cancer_name = $(this).closest('.card').find('button').first().text()
-        let params_genes_keys = ['ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
   
         // get data
         let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys)
