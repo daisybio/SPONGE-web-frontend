@@ -1,0 +1,2 @@
+environment:
+    - BASE_URL=${BASE_URL}
