@@ -656,7 +656,7 @@ export class SearchComponent implements OnInit {
 
         console.log(table.data().length)
         if (table.data().length > 50) {
-          helper.msg("Please apply further filtering to your data. Loading more than 100 interactions in the graph can lead to problems.")
+          helper.msg("Please apply further filtering to your data. Loading more than 50 interactions in the graph can lead to problems.")
           return
         }
         // append search note to network
