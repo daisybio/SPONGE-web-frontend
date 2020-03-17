@@ -654,6 +654,11 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
+        console.log(table.data().length)
+        if (table.data().length > 50) {
+          helper.msg("Please apply further filtering to your data. Loading more than 100 interactions in the graph can lead to problems.")
+          return
+        }
         // append search note to network
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
@@ -749,7 +754,7 @@ export class SearchComponent implements OnInit {
         parsed_search_result['diseases'][disease].forEach(obj => {
           rowse_to_append.push(Object.values(obj))
         });
-        $('#'+table_id).DataTable().rows.add(rowse_to_append).draw(false)
+        $('#'+table_id).DataTable().rows.add(rowse_to_append).draw()
 
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
