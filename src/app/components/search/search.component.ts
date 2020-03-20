@@ -653,8 +653,7 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
-        console.log(table.data().length)
-        if (table.data().length > 50) {
+        if (table.rows('.selected', { filter : 'applied'}).data().length > 50) {
           helper.msg("Please apply further filtering to your data. Loading more than 50 interactions in the graph can lead to problems.")
           return
         }
