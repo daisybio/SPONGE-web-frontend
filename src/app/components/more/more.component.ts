@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Controller } from '../../control';
+import { Helper } from '../../helper';
+
 
 @Component({
   selector: 'app-more',
@@ -13,6 +15,7 @@ export class MoreComponent implements OnInit {
   ngOnInit() {
 
     const controller = new Controller()
+    const helper = new Helper()
 
     // create the datasets download table
     controller.get_datasets(
@@ -22,7 +25,7 @@ export class MoreComponent implements OnInit {
           `
           <tr>
             <td class="">
-              <i class="folder icon"></i> ${dataset['disease_name']}
+              <i class="folder icon"></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
             </td>
             <td class="">
               <a href="ftp://exbiomeduser:nfef8guer@10.162.163.20/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
