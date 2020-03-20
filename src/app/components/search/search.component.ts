@@ -538,8 +538,8 @@ export class SearchComponent implements OnInit {
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
           `
-          <div class="form-check button-margin inline-block">
-            <input type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
+          <div class="form-check button-margin inline-block ${search_key.length>1?'': 'hidden'}">
+            <input disabled type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
             <label class="form-check-label" for="interactions_to_all_search_keys_`+ table_id +`">Show only interactions to all search genes</label>
           </div>
           `+
@@ -625,7 +625,6 @@ export class SearchComponent implements OnInit {
           this_table.draw()
         }
       });
-
       
       // load table when accordion tab is opened and table has not been loaded already
       $(document).on('click', '.btn.btn-link.collapsed', function() {
@@ -734,7 +733,7 @@ export class SearchComponent implements OnInit {
         }
 
         // KEEP ORDER OF THESE INTERACTIONS as it is how it is displayed in webpage
-        interaction_info['Key'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
+        interaction_info['Search Gene'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
         interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
         interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
@@ -797,7 +796,9 @@ export class SearchComponent implements OnInit {
         )}
   
         push_interaction_filters(table_id)
-        table = $("#" + table_id).DataTable({
+
+        // define table settings based on search key length
+        let datatable_settings = {
           orderCellsTop: true,
           drawCallback: function( settings ) {
             var api = this.api();
@@ -807,16 +808,25 @@ export class SearchComponent implements OnInit {
                 $("#" + table_id + '_next').removeClass('disabled')
               }
             }
-          },
-          columnDefs: [
-              // hide "Key" Column
-              {
-                  "targets": [ 0 ],
-                  "visible": false,
-                  "searchable": true
-              }
-            ]
-        })
+          }
+        }
+
+        if (search_key.length > 1) {
+          // grouping by search key
+          datatable_settings['rowGroup'] = {dataSrc: [ 0 ]}
+        } else {
+          // hide "Key" Column if we have just 1 search column
+          datatable_settings['columnDefs'] = [
+            {
+                "targets": [ 0 ],
+                "visible": false,
+                "searchable": true
+            }
+          ]
+        }
+
+        table = $("#" + table_id).DataTable(datatable_settings)
+
         helper.colSearch(table_id, table)
   
         $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
@@ -843,17 +853,18 @@ export class SearchComponent implements OnInit {
         }
       }
 
+      // enable intersection search if more than 1 gene key was found
+      if ($('#'+table_id).DataTable().column(0).data().unique().length > 1) {
+        $('#interactions_to_all_search_keys_'+table_id).prop("disabled", false)
+      } else {
+        // else show info that just one search key was found 
+        $('#interactions_to_all_search_keys_'+table_id).prop("title", "All the interactions belong to just one search gene.")
+      }
+
       if (table_complete) {
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
 
-        // only display entries that are related to all search genes
-        // for (let gene of parsed_search_result['diseases'][disease]) {
-        //   let gene_search_result = $('#'+table_id).DataTable().search(gene['ENSG Number'])
-        //   if (gene_search_result.length == 2) {
-        //     console.log(gene_search_result)
-        //   }
-        // }
       }
     }
 
