@@ -325,7 +325,6 @@ export class SearchComponent implements OnInit {
             {
               searchString: key,
               callback: function(data) {
-                console.log(data)
                 // display information table
                 $('#search_key_information tbody').append(
                   `
