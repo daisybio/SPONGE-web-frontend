@@ -318,6 +318,29 @@ export class SearchComponent implements OnInit {
             build_accordion()
           }
         })
+
+        // display gene key information like ENSG-numbers etc.
+        for (const key of search_key) {
+          controller.search_string(
+            {
+              searchString: key,
+              callback: function(data) {
+                console.log(data)
+                // display information table
+                $('#search_key_information tbody').append(
+                  `
+                  <tr>
+                    <td>${data[0]['ensg_number']}</td>
+                    <td>${data[0]['gene_symbol']}</td>
+                  </tr>
+                  `
+                )
+              }
+            }
+          )
+        }
+
+
       }
     }
 
