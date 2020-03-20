@@ -547,7 +547,7 @@ export class SearchComponent implements OnInit {
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
           "<div>" +
-          "<p>Set filter for mscor</p>" +
+          "<p>Set filter for MScor</p>" +
           "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_min_" + table_id + "' name='mscore_min'>&nbsp;" +
           "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_max_" + table_id + "' name='mscore_max'>" +
           "</div>" +
