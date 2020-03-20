@@ -736,7 +736,7 @@ export class SearchComponent implements OnInit {
         interaction_info['Search Gene'] = interaction[gene_as_key]['ensg_number'] // store information which gene was key to get intersection of all keys
         interaction_info['ENSG Number'] = interaction[gene_to_extract]['ensg_number']
         interaction_info['Gene Symbol'] = interaction[gene_to_extract]['gene_symbol'] !== null ? interaction[gene_to_extract]['gene_symbol'] : "-"
-        interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type']
+        interaction_info['Gene Type'] = interaction[gene_to_extract]['gene_type'].split('_').join(' ')
         interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
         interaction_info['Correlation'] = interaction['correlation']
         interaction_info['MScor'] = interaction['mscor']
@@ -813,7 +813,14 @@ export class SearchComponent implements OnInit {
 
         if (search_key.length > 1) {
           // grouping by search key
-          datatable_settings['rowGroup'] = {dataSrc: [ 0 ]}
+          datatable_settings['order'] =  [[0, 'asc']]
+          // datatable_settings['rowGroup'] = {
+          //     dataSrc: [0]
+          // }
+          // datatable_settings['columnDefs'] = [{
+          //   targets: [ 0 ],
+          //   visible: false
+          // }]
         } else {
           // hide "Key" Column if we have just 1 search column
           datatable_settings['columnDefs'] = [
