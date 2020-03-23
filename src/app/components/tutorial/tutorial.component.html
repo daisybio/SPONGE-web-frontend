@@ -57,8 +57,8 @@
                
                 <p class="card-text">You can enter a gene symbol, ENSG number or miRNA to search in the SPONGE database for all corresponding interactions.
                     <br> On the next side you will find tables of the found cancer sets. You can search those tables for other genes/miRNAs or create 
-                    a network from those table entries by clicking the "Show as Network" Button.  <br><br>
-                    Network-Features: <br>
+                    a network from those table entries by clicking the "Show as Network" Button.  You can also select some entries and export only those to the network.<br><br>
+                    Search Features: <br>
                     
                 </p>
 
@@ -73,15 +73,19 @@
                     <tbody>
                       <tr >
                         <th scope="row">Search Box</th>
-                        <td>Survival Analysis will be displaied for the Node</td>
-                     
-              
+                        <td>Search for a ENSG number or Gene Symbol. Check the box to only obtain significant results</td>
                       </tr>
                       <tr>
                         <th scope="row">Result Boxes</th>
-                        <td>Values such as mscor, pvalue and gene ids</td> <!--browser version-->
-                        
-                        
+                        <td>Lists the cancer datasets, which contain interactions with the searched value. The tables visualize values such as mscor, pvalue, correlation and ids</td> <!--browser version-->
+                      </tr>
+                      <tr>
+                        <th scope="row">Options Button</th>
+                        <td>Set a range for the Mscore or P-value</td> <!--browser version-->
+                      </tr>
+                      <tr>
+                        <th scope="row"> <nobreak>"Show as Network"</nobreak> Button</th>
+                        <td>Exports selected table entries or default ones to create a interaction network.</td>
                       </tr>
                       
                     </tbody>
