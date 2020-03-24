@@ -187,6 +187,10 @@ export class Helper {
       })
     }
 
+    public destroy_KMPs() {
+      $('#KMP-plot-container-parent #plots').empty()
+    }
+
     public load_KMP(ensgList,clicked_Node,disease_name) 
     {
       // start loading data
@@ -197,18 +201,12 @@ export class Helper {
       if(dn == "All"){
         dn = encodeURIComponent($('#network-plot-container').val().toString())
         }
-     
-      var test = ensgList[0]//['ENSG00000179915'];
-      
+           
       //Rauslöschen des KMP-Plots wenn Node deselected wird
       if($('#myDiv_'+clicked_Node).length >0){
         $('#myDiv_'+clicked_Node).remove()
         $('#loading_spinner_KMP').addClass('hidden')
       }
-
-      
-
-
       
     for(let $o=0; $o<ensgList.length;$o++){
           
@@ -858,6 +856,9 @@ export class Helper {
         }
       )
       network.refresh()
+
+      // also remove all KMP plots
+      this.destroy_KMPs()
     }
 
     public clear_table(table) {
