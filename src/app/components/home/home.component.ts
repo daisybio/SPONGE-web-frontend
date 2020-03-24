@@ -332,22 +332,28 @@ export class HomeComponent implements OnInit {
       $( "#home_search" ).autocomplete({
         source: ( request, response ) => {
           let searchString = split(request.term).pop() // only the last item in list
+          // search string has to have min. length of 3
           if (searchString.length > 2) {
+            // if search string is engs number, we want to wait with the search until we don't have to load ALL ensg number with sth like "ENSG00..."
+            if (searchString.startsWith('ENSG')) {
+              if (searchString.length < 12) {
+                return
+              }
+            }
+
             controller.search_string({
               searchString: searchString,
               callback: (data) => {
                 // put all values in a list
-                let values = []
-                let values2=[]
-                for (let entry in data) {
-                  if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
-                    values.push(data[entry]['gene_symbol'])
-                  } else {
-                    values.push(data[entry]['ensg_number'])
+                let values=[]
+                for (let entry of data) {
+                  //  we don't support seach for miRNAs
+                  if ('ensg_number' in entry) {
+                    const gene_symbol = entry['gene_symbol'] ? `(${entry['gene_symbol']})` : ''
+                    values.push(`${entry['ensg_number']} ${gene_symbol}`)
                   }
-                  values2.push(data[entry]['gene_symbol']+" ("+data[entry]['ensg_number']+")")             
                 }
-               response(values2)
+               response(values)
                
               },
               error: () => {
