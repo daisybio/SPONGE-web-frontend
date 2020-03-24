@@ -402,7 +402,7 @@ export class SearchComponent implements OnInit {
           }
           var mscore_min = parseFloat($('#mscore_min_' + table_id).val().toString());
           var mscore_max = parseFloat($('#mscore_max_' + table_id).val().toString());
-          var mscore = parseFloat(data[5]) || 0; // use data for the mscor column
+          var mscore = parseFloat(data[6]) || 0; // use data for the mscor column
           if ((isNaN(mscore_min) && isNaN(mscore_max)) ||
             (isNaN(mscore_min) && mscore <= mscore_max) ||
             (mscore_min <= mscore && isNaN(mscore_max)) ||
@@ -418,7 +418,7 @@ export class SearchComponent implements OnInit {
           }
           var pvalue_min = parseFloat($('#pvalue_min_' + table_id).val().toString());
           var pvalue_max = parseFloat($('#pvalue_max_' + table_id).val().toString());
-          var pvalue = parseFloat(data[6]) || 0; // use data for the pvalue column
+          var pvalue = parseFloat(data[7]) || 0; // use data for the pvalue column
           if ((isNaN(pvalue_min) && isNaN(pvalue_max)) ||
             (isNaN(pvalue_min) && pvalue <= pvalue_max) ||
             (pvalue_min <= pvalue && isNaN(pvalue_max)) ||
