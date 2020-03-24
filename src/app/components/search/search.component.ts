@@ -74,16 +74,16 @@ export class SearchComponent implements OnInit {
       }    
     })
 
-    $('#options_mirna_go').click( () => {
-      search_key = $('#mirna_search_keys').val().split(' ').join('')
-      // remove last char if it is ','
-      search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-      if (search_key[0] == '') {
-        helper.msg("Please select a search gene", false)
-      } else {
-        search(limit)
-      }
-    })
+    // $('#options_mirna_go').click( () => {
+    //   search_key = $('#mirna_search_keys').val().split(' ').join('')
+    //   // remove last char if it is ','
+    //   search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
+    //   if (search_key[0] == '') {
+    //     helper.msg("Please select a search gene", false)
+    //   } else {
+    //     search(limit)
+    //   }
+    // })
     
     // set significant result checkbox to true by default
     $('#significant_results').prop('checked', true)
@@ -221,7 +221,7 @@ export class SearchComponent implements OnInit {
       $('#key_information').empty()
       $('#disease_accordion').empty()
       $('#network-container').empty()
-
+      $('#search_key_information tbody').empty()
       $('#plots').empty()
 
       /* search_key is defined */
@@ -237,9 +237,16 @@ export class SearchComponent implements OnInit {
           [type]: search_key,
           minCountSign: minCountSign,
           error: (data) => {
-            // no significant interactions found, try again for all interactions
-            $('#significant_results').prop('checked', false)
-            search(limit)
+            
+            if ($('#significant_results').prop('checked')) {
+              // no significant interactions found, try again for all interactions
+              $('#significant_results').prop('checked', false)
+              search(limit)
+            } else {
+              helper.msg('No interactions were found for you search genes.')
+              $('#loading_spinner').addClass('hidden')
+            }
+
           },
           callback: (data) => {
             count_object = data
@@ -287,10 +294,9 @@ export class SearchComponent implements OnInit {
               if(!$('#options_mirna').hasClass('hidden')){
                 $('#options_mirna').addClass('hidden')
               }
-              $('#options_gene').removeClass('hidden')
               $('#gene_search_keys').val(search_key.join(', '))
             
-            } else if (search_key[0].startsWith('MIMAT')) {
+            } /*else if (search_key[0].startsWith('MIMAT')) {
               if(!$('#options_gene').hasClass('hidden')){
                 $('#options_gene').addClass('hidden')
               }
@@ -306,19 +312,18 @@ export class SearchComponent implements OnInit {
               $('#options_mirna').removeClass('hidden')
               $('#mirna_search_keys').val(search_key.join(', '))
               
-            } else {
+            }*/ else {
               if(!$('#options_mirna').hasClass('hidden')){
                 $('#options_mirna').addClass('hidden')
               }
               // key is gene symbol
-              $('#options_gene').removeClass('hidden')
               $('#gene_search_keys').val(search_key.join(', '))
             }  
 
             build_accordion()
           }
         })
-
+        console.log(search_key)
         // display gene key information like ENSG-numbers etc.
         for (const key of search_key) {
           controller.search_string(
@@ -685,7 +690,7 @@ export class SearchComponent implements OnInit {
           helper.msg("Please apply further filtering to your data (Max. 50 interactions are recommended for the network).")
           return
         }
-        
+
         // append search note to network
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
@@ -910,22 +915,29 @@ export class SearchComponent implements OnInit {
       $( ".autocomplete" ).autocomplete({
         source: ( request, response ) => {
           let searchString = split(request.term).pop() // only the last item in list
+
+          // search string has to have min. length of 3
           if (searchString.length > 2) {
+            // if search string is engs number, we want to wait with the search until we don't have to load ALL ensg number with sth like "ENSG00..."
+            if (searchString.startsWith('ENSG')) {
+              if (searchString.length < 12) {
+                return
+              }
+            }
+            
             controller.search_string({
               searchString: split(request.term).pop(), // only the last item in list
               callback: (data) => {
                 // put all values in a list
-                let values = []
-                let values2=[]
-                for (let entry in data) {
-                  if (data[entry]['gene_symbol'] != "" && data[entry]['gene_symbol'] != null) {
-                    values.push(data[entry]['gene_symbol'])
-                  } else {
-                    values.push(data[entry]['ensg_number'])
-                  }    
-                  values2.push(data[entry]['gene_symbol'])              
+                let values=[]
+                for (let entry of data) {
+                  //  we don't support seach for miRNAs
+                  if ('ensg_number' in entry) {
+                    const gene_symbol = entry['gene_symbol'] ? `(${entry['gene_symbol']})` : ''
+                    values.push(`${entry['ensg_number']} ${gene_symbol}`)
+                  }           
                 }
-                response(values2)
+                response(values)
               },
               error: () => {
                 console.log(request)
@@ -942,7 +954,7 @@ export class SearchComponent implements OnInit {
           // remove the current input
           terms.pop();
           // add the selected item
-          terms.push( ui.item.value );
+          terms.push( ui.item.value.split(' ')[0] );
           // add placeholder to get the comma-and-space at the end
           terms.push( "" );
           this.value = terms.join( ", " );
