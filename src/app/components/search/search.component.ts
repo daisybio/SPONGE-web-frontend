@@ -680,11 +680,12 @@ export class SearchComponent implements OnInit {
         let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
-
-        if (table.rows('.selected', { filter : 'applied'}).data().length > 50) {
-          helper.msg("Please apply further filtering to your data. Loading more than 50 interactions in the graph can lead to problems.")
+        
+        if (table.rows({ filter : 'applied'}).data().length > 50) {
+          helper.msg("Please apply further filtering to your data (Max. 50 interactions are recommended for the network).")
           return
         }
+        
         // append search note to network
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
