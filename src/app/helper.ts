@@ -261,7 +261,7 @@ export class Helper {
            $('#loading_spinner_KMP').addClass('hidden')
       
           },
-          error: (response2) => {
+          error: (repsonse) => {
           this.msg("Something went wrong creating the survival analysis.", true)
           $('#loading_spinner_KMP').addClass('hidden')
           }

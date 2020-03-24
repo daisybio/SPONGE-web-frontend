@@ -325,15 +325,21 @@ export class SearchComponent implements OnInit {
             {
               searchString: key,
               callback: function(data) {
-                // display information table
-                $('#search_key_information tbody').append(
-                  `
-                  <tr>
-                    <td>${data[0]['ensg_number']}</td>
-                    <td>${data[0]['gene_symbol']}</td>
-                  </tr>
-                  `
-                )
+                // find correct result
+                for (const result of data) {
+                  if (result['ensg_number'] === key || result['gene_symbol'] === key) {
+                    // display information table
+                    $('#search_key_information tbody').append(
+                      `
+                      <tr>
+                        <td>${result['ensg_number']}</td>
+                        <td>${result['gene_symbol']}</td>
+                      </tr>
+                      `
+                    )
+                    break
+                  }                  
+                }
               }
             }
           )
