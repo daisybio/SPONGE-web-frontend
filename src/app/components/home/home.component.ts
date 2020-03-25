@@ -299,7 +299,6 @@ export class HomeComponent implements OnInit {
       let search_key = ''
       const ensg_numbers = $('#home_search_key_table .ensg_number')
       for (const ensg_number of ensg_numbers) {
-        console.log(ensg_number)
         search_key += ensg_number.innerText +','
       }
       return search_key.slice(0,-1)  // remove last ','

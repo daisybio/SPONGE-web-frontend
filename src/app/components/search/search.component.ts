@@ -59,11 +59,23 @@ export class SearchComponent implements OnInit {
         }
         search_key = decodeURIComponent(params.search_key).split(',');
       });
+
+    function parse_search_key_table() {
+      let search_key = ''
+      const ensg_numbers = $('#search_key_information .ensg_number')
+      for (const ensg_number of ensg_numbers) {
+        search_key += ensg_number.innerText +','
+      }
+      search_key = search_key.slice(0,-1)
+      return  search_key.split(',') // remove last ','
+    }
     
     $('#options_gene_go').click( () => {
       pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
-      search_key = $('#gene_search_keys').val().replace(',', '').split(' ')
+      search_key = parse_search_key_table()
+      console.log("search ley")
+      console.log(search_key)
       // remove possible ''
       search_key = search_key.filter(item => item);
       if (search_key[0] == '') {
@@ -89,6 +101,10 @@ export class SearchComponent implements OnInit {
     $('#significant_results').prop('checked', true)
 
     search(limit)
+
+    $(document).on('click', '#search_key_information .close', function() {
+      $(this).closest('tr').remove()
+    })
 
 
     function draw_cancer_type_accordion() {
@@ -288,42 +304,11 @@ export class SearchComponent implements OnInit {
                 }, 1000)
               });
             }
-            
-            // check if key is ENSG number
-            if (search_key[0].startsWith('ENSG')) {
-              if(!$('#options_mirna').hasClass('hidden')){
-                $('#options_mirna').addClass('hidden')
-              }
-              $('#gene_search_keys').val(search_key.join(', '))
-            
-            } /*else if (search_key[0].startsWith('MIMAT')) {
-              if(!$('#options_gene').hasClass('hidden')){
-                $('#options_gene').addClass('hidden')
-              }
-              // key is MIMAT number
-              $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.join(', '))
-              
-            } else if (search_key[0].startsWith('hsa-')) {
-              if(!$('#options_gene').hasClass('hidden')){
-                $('#options_gene').addClass('hidden')
-              }
-              // key is hsa number
-              $('#options_mirna').removeClass('hidden')
-              $('#mirna_search_keys').val(search_key.join(', '))
-              
-            }*/ else {
-              if(!$('#options_mirna').hasClass('hidden')){
-                $('#options_mirna').addClass('hidden')
-              }
-              // key is gene symbol
-              $('#gene_search_keys').val(search_key.join(', '))
-            }  
 
             build_accordion()
           }
         })
-        console.log(search_key)
+        
         // display gene key information like ENSG-numbers etc.
         for (const key of search_key) {
           controller.search_string(
@@ -337,8 +322,9 @@ export class SearchComponent implements OnInit {
                     $('#search_key_information tbody').append(
                       `
                       <tr>
-                        <td>${result['ensg_number']}</td>
+                        <td class="ensg_number">${result['ensg_number']}</td>
                         <td>${result['gene_symbol']}</td>
+                        <td><button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button></td>
                       </tr>
                       `
                     )
@@ -950,15 +936,24 @@ export class SearchComponent implements OnInit {
           return false;
         },
         select: function( event, ui ) {
-          var terms = split( this.value );
-          // remove the current input
-          terms.pop();
-          // add the selected item
-          terms.push( ui.item.value.split(' ')[0] );
-          // add placeholder to get the comma-and-space at the end
-          terms.push( "" );
-          this.value = terms.join( ", " );
-          return false;
+          let terms = ui.item.value.split(' ');
+
+          if (terms[1].length && terms[1][0] == '(') {
+            terms[1] = terms[1].substring(1, terms[1].length-1);
+          }
+          // append searched key to table
+          $('#search_key_information tbody').append(
+            `
+            <tr>
+              <td class="ensg_number">${terms[0]}</td>
+              <td >${terms[1]}</td>
+              <td><button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button></td>
+            </tr>
+            `
+          )
+          // reset search field
+          this.value = ''
+          return false
         }
       });
     });
