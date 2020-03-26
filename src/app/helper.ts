@@ -36,7 +36,7 @@ export class Helper {
     
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
-    subgraph_edge_color = '#013220'
+    subgraph_edge_color = '#013220' //'#013220'
     subgraph_node_color = '#920518'
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
@@ -600,7 +600,6 @@ export class Helper {
         if (clickNode_clicked == false) {
           nodeSingleClick(e);
           clickNode_clicked = true
-          console.log("here")
           setTimeout( () => {
             clickNode_clicked = false
           }, 500)
@@ -608,17 +607,9 @@ export class Helper {
 
       })
 
-      function grey_edges() {
-        network.graph.edges().forEach(
-          (ee) => {
-            ee.color = '#cccac8'
-          }
-        )
-      }
-
       function nodeDoubleClick(e) {
         //$this.clear_colors(network)
-        grey_edges()
+        $this.grey_edges(network)
 
         var nodeId = e.data.node.id;
         network.graph.adjacentEdges(nodeId).forEach( (ee) => {
@@ -654,8 +645,16 @@ export class Helper {
        // set node color
        if (e.data.node.color != $this.subgraph_node_color) {
          e.data.node.color = $this.subgraph_node_color
+         // mark node in table
+         if (node_table) {
+          $this.mark_nodes_table(node_table, nodeId)
+         }
        } else {
          e.data.node.color = $this.default_node_color
+         // unmark node in table
+         if (node_table) {
+          $this.unmark_nodes_table(node_table, nodeId)
+         }
        }
        network.refresh()    
 
@@ -664,13 +663,14 @@ export class Helper {
        // network was altered, update url
        session.update_url()
 
+       // load KMP
        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
-
+       // show KMP
        if($('#plots').hasClass('hidden')){
          $('#plots').removeClass('hidden') 
        }
-      }
 
+      }
 
       function searchNode(node_as_string) {
         /*
@@ -847,7 +847,7 @@ export class Helper {
           setTimeout(function() {
             $('#toggle_layout').attr('disabled', false)
             $('#toggle_layout').click()
-          }, 3000)
+          }, 2000)
         }
       });  
       
@@ -874,6 +874,14 @@ export class Helper {
      } 
     public node_clicked(){
       return this.nodeIDclicked
+    }
+
+    public grey_edges(network) {
+      network.graph.edges().forEach(
+        (ee) => {
+          ee.color = '#e0dfde'
+        }
+      )
     }
 
     public clear_colors(network) {
@@ -906,7 +914,19 @@ export class Helper {
     public mark_nodes_table(table, nodes:string[]) {
       table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
         if (nodes.length && nodes.includes(this.data()[0])) {
-          $(this.node()).addClass('selected')
+          if (!$(this.node()).hasClass('selected')){
+            $(this.node()).addClass('selected')
+          }
+        }
+      });
+    }
+
+    public unmark_nodes_table(table, nodes:string[]) {
+      table.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+        if (nodes.length && nodes.includes(this.data()[0])) {
+          if ($(this.node()).hasClass('selected')) {
+            $(this.node()).removeClass('selected')
+          }
         }
       });
     }
@@ -930,6 +950,7 @@ export class Helper {
     }
 
     public mark_edges_network(network, edges:string[], based_on_id=false) {
+      this.grey_edges(network)
       // find selected edges in graph and mark them
       if (based_on_id) {
         network.graph.edges().forEach(
@@ -951,8 +972,6 @@ export class Helper {
               if (edge_nodes.includes(selected_edge[0]) && edge_nodes.includes(selected_edge[1])){
                 ee.color = this.subgraph_edge_color
                 break
-              } else {
-                ee.color = this.default_edge_color
               }
             }
           }

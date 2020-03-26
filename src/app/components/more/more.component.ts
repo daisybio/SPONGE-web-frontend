@@ -24,8 +24,8 @@ export class MoreComponent implements OnInit {
           $('#dataset_download_table').append(
           `
           <tr>
-            <td class="">
-              <i class="folder icon"></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
+            <td class="full-width">
+              <i class=""></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
             </td>
             <td class="">
               <a href="ftp://exbiomeduser:nfef8guer@10.162.163.20/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
