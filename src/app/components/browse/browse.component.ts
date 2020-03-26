@@ -404,7 +404,7 @@ export class BrowseComponent implements OnInit {
               
             }
            
-            table_keys.setAttribute("style","position:relative; top:38px;padding-right:25px")
+            table_keys.setAttribute("style","position:relative; top:38px;padding-right:15px")
             table_values.setAttribute("style","position:relative;top: 38px")
             table.setAttribute("style","position:absolute;margin-bottom:20px")
             run_table.appendChild(table)
