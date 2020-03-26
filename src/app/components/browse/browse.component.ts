@@ -385,7 +385,11 @@ export class BrowseComponent implements OnInit {
               if(value == null){
                 value = 'Not defined'
               }
-              
+              console.log(key)
+              if (key == 'ks') {
+                value = value.substring(4, value.length-1)
+              } 
+
               var table_entry = document.createElement("tr")
               table_entry.innerHTML = helper.uppercaseFirstLetter( key)
               table_entry.setAttribute("style","margin-right:2px")
