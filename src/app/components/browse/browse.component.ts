@@ -420,6 +420,12 @@ export class BrowseComponent implements OnInit {
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
               network = network_data['network']
               session = network_data['session']
+
+              // trigger force atlas 2 for 2 seconds
+              $('#toggle_layout').click()
+              setTimeout(function() {
+                $('#toggle_layout').click()
+              }, 3000)
             })
 
             $('#export_selected_edges').click(() => {
