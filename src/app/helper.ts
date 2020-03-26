@@ -820,7 +820,7 @@ export class Helper {
       $('#toggle_layout').click( () => {
         if ((network.supervisor || {}).running) {
           network.killForceAtlas2();
-          document.getElementById('toggle_layout').innerHTML = 'Start layout';
+          //document.getElementById('toggle_layout').innerHTML = 'Start layout';
         } else {
           const config = {
             // algorithm config
@@ -841,7 +841,13 @@ export class Helper {
             worker: true,
           }
           network.startForceAtlas2(config);
-          document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+          //document.getElementById('toggle_layout').innerHTML = 'Stop layout';
+          $('#toggle_layout').attr('disabled', true)
+
+          setTimeout(function() {
+            $('#toggle_layout').attr('disabled', false)
+            $('#toggle_layout').click()
+          }, 3000)
         }
       });  
       

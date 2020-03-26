@@ -421,11 +421,8 @@ export class BrowseComponent implements OnInit {
               network = network_data['network']
               session = network_data['session']
 
-              // trigger force atlas 2 for 2 seconds
+              // trigger force atlas 2 
               $('#toggle_layout').click()
-              setTimeout(function() {
-                $('#toggle_layout').click()
-              }, 3000)
             })
 
             $('#export_selected_edges').click(() => {
