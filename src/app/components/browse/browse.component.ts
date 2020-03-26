@@ -420,6 +420,9 @@ export class BrowseComponent implements OnInit {
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
               network = network_data['network']
               session = network_data['session']
+
+              // trigger force atlas 2 
+              $('#toggle_layout').click()
             })
 
             $('#export_selected_edges').click(() => {
