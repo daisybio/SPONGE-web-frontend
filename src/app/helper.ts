@@ -812,7 +812,25 @@ export class Helper {
           network.killForceAtlas2();
           document.getElementById('toggle_layout').innerHTML = 'Start layout';
         } else {
-          network.startForceAtlas2({worker: true, slowDown: 100});
+          const config = {
+            // algorithm config
+            linLogMode: false,
+            outboundAttractionDistribution: true,
+            adjustSizes: false,
+            edgeWeightInfluence: 1,
+            scalingRatio: 1,
+            strongGravityMode: false,
+            gravity: 3, // attracts nodes to the center. Prevents islands from drifting away
+            barnesHutOptimize: false,
+            barnesHutTheta: 0.5,
+            slowDown: 5,
+            startingIterations: 1,
+            iterationsPerRender: 1,
+
+            // Supervisor config
+            worker: true,
+          }
+          network.startForceAtlas2(config);
           document.getElementById('toggle_layout').innerHTML = 'Stop layout';
         }
       });  
