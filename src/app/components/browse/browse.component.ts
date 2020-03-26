@@ -577,7 +577,7 @@ export class BrowseComponent implements OnInit {
       } );
       // save data for later search
       $('#node_data').text(JSON.stringify(ordered_data))
-
+    
       /* plot expression data for nodes */
       //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
       return nodes
