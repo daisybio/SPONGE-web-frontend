@@ -29,7 +29,7 @@ export class Helper {
           return edges;
         });
       } catch {
-        console.log("adjacent_edges exists")
+        //console.log("adjacent_edges exists")
       }
 
     }
@@ -41,9 +41,10 @@ export class Helper {
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
     edge_color_pvalues_bins = {
-      0.8 : '#fdbe85',
-      0.4 : '#f87f2c',
-      0.05 : '#c94503'
+      1: '#fae4cf',
+      0.8: '#fdbe85',
+      0.4: '#f87f2c',
+      0.05: '#c94503'
     }
 
     controller = new Controller()
@@ -607,8 +608,17 @@ export class Helper {
 
       })
 
+      function grey_edges() {
+        network.graph.edges().forEach(
+          (ee) => {
+            ee.color = '#cccac8'
+          }
+        )
+      }
+
       function nodeDoubleClick(e) {
-        $this.clear_colors(network)
+        //$this.clear_colors(network)
+        grey_edges()
 
         var nodeId = e.data.node.id;
         network.graph.adjacentEdges(nodeId).forEach( (ee) => {
