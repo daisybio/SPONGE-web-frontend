@@ -231,12 +231,14 @@ export class BrowseComponent implements OnInit {
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
       const limit = 1000
+      const p_value = (shared_data != undefined && shared_data['p_value']) ? shared_data['p_value'] : 1
+      console.log(shared_data['p_value'])
       let all_data = []
       __get_batches_recursive()
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': 1,
+        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': p_value,
         'callback':data => {
           all_data = all_data.concat(data)
 
