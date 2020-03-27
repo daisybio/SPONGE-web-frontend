@@ -284,8 +284,13 @@ export class BrowseComponent implements OnInit {
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
                 { render: function ( ordered_data, type, row ) {
-                        return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-                         },
+                        let numb = parseFloat(ordered_data).toFixed(4)
+                        if (parseFloat(numb)===0 && numb.length > 1){
+                          // numb is sth like 0.00000001212, we set it to 0.0001 bc it is not 0
+                          numb = numb.substring(0, numb.length-2) + 1
+                        }
+                        return numb
+                        },
                     targets: [ index_correlation, index_mscor, index_p_value ] }
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
