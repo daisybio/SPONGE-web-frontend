@@ -16,10 +16,12 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
+  pValue_current: number
+
   constructor(
     private activatedRoute: ActivatedRoute, 
     private router: Router,
-    private shared_service: SharedService
+    private shared_service: SharedService,
     ) { }
 
   ngOnInit() {
@@ -28,7 +30,7 @@ export class SearchComponent implements OnInit {
     const helper = new Helper()
     const $this = this
     const pValue = .05
-    let pValue_current
+    this.pValue_current = 0.05  //default
 
     const gene_table_columns = {
       'ENSG Number': 'ensg_number',
@@ -71,7 +73,7 @@ export class SearchComponent implements OnInit {
     }
     
     $('#options_gene_go').click( () => {
-      pValue_current = $('#significant_results').is(':checked') ? pValue : 1
+      $this.pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
       search_key = parse_search_key_table()
       console.log("search ley")
@@ -148,7 +150,7 @@ export class SearchComponent implements OnInit {
 
         function __get_batches_recursive(offset=0) {
 
-          controller.get_ceRNA_interactions_all({'disease_name':disease, 'ensg_number':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'ensg_number':search_key, 'limit': limit, 'offset': offset, 'pValue': $this.pValue_current,
             'callback':data => {
               if (data.length == limit) {
 
@@ -197,7 +199,7 @@ export class SearchComponent implements OnInit {
 
         function __get_batches_recursive(offset=0) {
 
-          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':search_key, 'limit': limit, 'offset': offset, 'pValue': pValue_current,
+          controller.get_ceRNA_interactions_all({'disease_name':disease, 'gene_symbol':search_key, 'limit': limit, 'offset': offset, 'pValue': $this.pValue_current,
           'callback':data => {
 
             if (data.length == limit) {
@@ -624,7 +626,6 @@ export class SearchComponent implements OnInit {
               
               //console.log(this_table)
               if (oSettings.nTable.id == this_table_id) {
-                console.log("oSettings", oSettings.nTable.id)
                 return hits_to_display.includes(aData[1]);
               } else {
                 return true
@@ -678,6 +679,7 @@ export class SearchComponent implements OnInit {
         }
 
         // append search note to network
+        const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
             {
@@ -690,12 +692,14 @@ export class SearchComponent implements OnInit {
                     break
                   }
                 }
-                if (index == search_key.length-1) {
+
+                if (ensg_numbers.length == ensg_numbers_with_keys_length) {
                   // last key has been added
                   $this.shared_service.setData({
                     'nodes': ensg_numbers,
                     'nodes_marked': nodes_marked,
-                    'cancer_type': active_cancer_name
+                    'cancer_type': active_cancer_name,
+                    'p_value': $this.pValue_current
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
