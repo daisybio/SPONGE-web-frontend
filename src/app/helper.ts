@@ -40,6 +40,7 @@ export class Helper {
     subgraph_node_color = '#920518'
     hover_edge_color =  '#228B22'
     hover_node_color = '#228B22'
+    network_grey_edge_color = '#e0dfde'
     edge_color_pvalues_bins = {
       1: '#fae4cf',
       0.8: '#fdbe85',
@@ -879,7 +880,7 @@ export class Helper {
     public grey_edges(network) {
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = '#e0dfde'
+          ee.color = this.network_grey_edge_color
         }
       )
     }
