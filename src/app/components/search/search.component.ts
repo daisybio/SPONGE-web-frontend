@@ -679,6 +679,7 @@ export class SearchComponent implements OnInit {
         }
 
         // append search note to network
+        const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
             {
@@ -691,8 +692,8 @@ export class SearchComponent implements OnInit {
                     break
                   }
                 }
-                console.log($this.pValue_current)
-                if (index == search_key.length-1) {
+
+                if (ensg_numbers.length == ensg_numbers_with_keys_length) {
                   // last key has been added
                   $this.shared_service.setData({
                     'nodes': ensg_numbers,
