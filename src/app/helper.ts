@@ -864,8 +864,44 @@ export class Helper {
 
       // zoom out 
       $('#restart_camera').click()
-
       network.refresh()
+
+      // build legend
+      let legend = $('<table>').addClass('table table-striped text-center').attr('id', 'network-legend')
+      // append header
+      //legend.html(`<tr><th>Color</th><th>p-value</th></tr>`)
+      // append rows
+        
+      for (const [threshold, color] of Object.entries(this.edge_color_pvalues_bins)) {
+        let row = $('<tr>')
+        row.append($('<td>').append($('<span>').addClass('legend-line').css('background-color', color)))
+        row.append($('<td>').text('p-value <= '+threshold))
+        legend.append(row)
+      }
+
+      legend.append(`
+        <tr>
+          <td>
+            <span class='legend-dot-small'></span>
+          </td>
+          <td>
+            low Degree
+          </td>
+        </tr>
+      `)
+      legend.append(`
+        <tr>
+          <td>
+            <span class='legend-dot-big'></span>
+          </td>
+          <td>
+            high Degree
+          </td>
+        </tr>
+      `)
+      
+      $('#network_legend').html(legend)
+      
       return({'network': network, 'session': session})
     }
 
