@@ -308,7 +308,7 @@ export class BrowseComponent implements OnInit {
               let id = ordered_data[interaction]['ID']
               let source = ordered_data[interaction]['Gene 1']
               let target = ordered_data[interaction]['Gene 2']
-              let size = 30*ordered_data[interaction]['MScor']
+              let size = Math.abs(10*ordered_data[interaction]['MScor'])
               let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
               //let type = 'line'//, curve
               edges.push({
