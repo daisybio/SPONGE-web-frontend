@@ -16,7 +16,7 @@ declare var $;
 })
 export class SearchComponent implements OnInit {
 
-  pValue_current: numer
+  pValue_current: number
 
   constructor(
     private activatedRoute: ActivatedRoute, 
