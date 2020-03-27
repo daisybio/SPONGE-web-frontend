@@ -42,8 +42,8 @@ export class Helper {
     hover_node_color = '#228B22'
     network_grey_edge_color = '#e0dfde'
     edge_color_pvalues_bins = {
-      1: '#fae4cf',
-      0.8: '#fdbe85',
+      1: '#fdbe85', //#fae4cf
+      //0.8: '#fdbe85',
       0.4: '#f87f2c',
       0.05: '#c94503'
     }
