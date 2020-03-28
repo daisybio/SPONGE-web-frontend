@@ -866,7 +866,7 @@ export class Helper {
           setTimeout(function() {
             $('#toggle_layout').attr('disabled', false)
             $('#toggle_layout').click()
-          }, 2000)
+          }, 3000)
         }
       });  
       
@@ -1118,6 +1118,10 @@ export class Helper {
       $('#network_search_node').append(edge_options)
 
       $('#network_search_node').selectpicker()
+    }
+
+    public filter_nodes_by_degree(){
+      
     }
 
 

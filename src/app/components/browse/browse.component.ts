@@ -103,7 +103,24 @@ export class BrowseComponent implements OnInit {
             return true;
           }
         return false;
-        }
+        },
+        //  filter for correlation
+        function( settings, data, dataIndex ) {
+          if ( settings.nTable.id !== 'interactions-edges-table' ) {
+            return true;
+          }
+          var correlation_min = parseFloat( $('#correlation_min').val());
+          var correlation_max = parseFloat( $('#correlation_max').val());
+          var correlation = parseFloat( data[2] ) || 0; // use data for the correlation column
+          if (( isNaN( correlation_min ) && isNaN( correlation_max ) ) ||
+            ( isNaN( correlation_min ) && correlation <= correlation_max ) ||
+            ( correlation_min <= correlation && isNaN( correlation_max ) ) ||
+            ( correlation_min <= correlation && correlation <= correlation_max ) )
+            {
+              return true;
+            }
+          return false;
+          }
     );
     /* end of configurations */
     
@@ -197,7 +214,7 @@ export class BrowseComponent implements OnInit {
           'sorting':sort_by,
           'limit':limit,
           'minBetweenness':cutoff_betweenness,
-          'minNodeDegree': cutoff_degree,
+          //'minNodeDegree': cutoff_degree,
           'minEigenvector': cutoff_eigenvector,
           'descending': descending,
           'callback': data => {
@@ -230,7 +247,14 @@ export class BrowseComponent implements OnInit {
 
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
-      const limit = 1000
+      let limit = 1000
+      let user_limit = undefined
+      
+      // check if limit is set by user and is acutally a number
+      if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
+        user_limit = +$('#input_limit_interactions').val()
+      }
+
       let p_value
       if (shared_data != undefined) {
         p_value = shared_data['p_value']
@@ -243,11 +267,18 @@ export class BrowseComponent implements OnInit {
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': p_value,
+        controller.get_ceRNA_interactions_specific({
+          'disease_name':disease_trimmed, 
+          'ensg_number':nodes, 
+          'limit': limit, 
+          'offset': offset, 
+          'pValue': p_value,
+          'pValueDirection': '<',
         'callback':data => {
           all_data = all_data.concat(data)
 
-          if (data.length == limit) {
+          // limit !== 1000 checks if limit is set by user
+          if (limit === 1000 && data.length == limit) {
 
             // there are more interactions to load, call function again
             __get_batches_recursive(offset + limit)
@@ -273,7 +304,6 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-            console.log(ordered_data.length)
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
@@ -297,7 +327,8 @@ export class BrowseComponent implements OnInit {
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
-              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+              "order": [[ 4, "asc" ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
@@ -307,15 +338,19 @@ export class BrowseComponent implements OnInit {
             } );
             // colsearch for table
             helper.colSearch('interactions-edges-table', edge_table)
+
+            const edges_raw = edge_table.data()
+            
+            const number_edges = user_limit || edges_raw.length
   
             let edges = [];
-            for (let interaction in ordered_data) {
-              let id = ordered_data[interaction]['ID']
-              let source = ordered_data[interaction]['Gene 1']
-              let target = ordered_data[interaction]['Gene 2']
-              let size = Math.abs(10*ordered_data[interaction]['MScor'])
-              let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
-              //let type = 'line'//, curve
+            for (let i=0; i < number_edges; i++) {
+              const interaction = edges_raw[i]
+              const id = interaction[5]  // ID
+              const source = interaction[0] // Gene 1
+              const target = interaction[1] // Gene 2
+              const size = Math.abs(10*interaction[3])  // MScor
+              const color = helper.choose_edge_color(interaction[4])  // p-value
               edges.push({
                 id: id, 
                 source: source, 
@@ -403,7 +438,6 @@ export class BrowseComponent implements OnInit {
               if(value == null){
                 value = 'Not defined'
               }
-              console.log(key)
               if (key == 'ks') {
                 value = value.substring(4, value.length-1)
               } 

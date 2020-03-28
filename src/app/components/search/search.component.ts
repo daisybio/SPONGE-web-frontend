@@ -76,8 +76,6 @@ export class SearchComponent implements OnInit {
       $this.pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
       search_key = parse_search_key_table()
-      console.log("search ley")
-      console.log(search_key)
       // remove possible ''
       search_key = search_key.filter(item => item);
       if (search_key[0] == '') {
@@ -624,7 +622,6 @@ export class SearchComponent implements OnInit {
           $.fn.dataTableExt.afnFiltering.push(
             function (oSettings, aData, iDataIndex) {
               
-              //console.log(this_table)
               if (oSettings.nTable.id == this_table_id) {
                 return hits_to_display.includes(aData[1]);
               } else {

@@ -45,36 +45,37 @@
                 <!--Run information tab in sidenav-->
                     <div class="container-fluid" id="run-info">
                         <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-                           
-                            <table class="table-content">
-                                <td id="table-text">
-                                    <tr class="tr-text">
-                                        <p>Select a value to sort by: </p>
-                                        <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
-                                        <p>Set a cutoff for degree (lower bound): </p>
-                                        <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
-                                        <p>Set a Limit for displayed data</p>
-                                        <p id="text">(the more the slower): </p>                          
-                                    </tr>
-                                </td>
+                            
+                            <div id="browse_sorting_value_container">
+                                <p>Sort by: </p>
+                                <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true">
+                                    <option data-value="">None</option>
+                                    <option data-value="betweenness">Betweenness</option>
+                                    <option data-value="degree">Degree</option>
+                                    <option data-value="eigenvector">Eigenvector</option>
+                                </select> 
+                            </div>
+                            <table id="browse_user_input">
+                               
+                                <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
+                                <tr class="">
+                                    <td><p>Cutoff for degree (lower bound): </p></td>
+                                    <td><input type="text" class="form-control" id="input_cutoff_degree" value=0></td>
+                                </tr>
+                                <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
+                                <tr class="">
+                                    <td><p>Limit for displayed genes (the more the slower)</p></td>
+                                    <td><input type="text" class="form-control" id="input_limit" value=10></td>
+                                </tr>
+                                <tr class="">
+                                    <td><p>Limit for displayed interactions (the more the slower): </p></td>
+                                    <td><input type="text" class="form-control" id="input_limit_interactions" placeholder="-"></td>
+                                </tr> 
+ 
+                                    <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
+                                    
+                                    <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
 
-                                <td id="table-input"> 
-                                 <tr id="selectpicker-select">
-
-                                        <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true">
-                                            <option data-value="">None</option>
-                                            <option data-value="betweenness">Betweenness</option>
-                                            <option data-value="degree">Degree</option>
-                                            <option data-value="eigenvector">Eigenvector</option>
-                                         </select>
-                                
-                                       <!--  <tr> -->
-                                        <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
-                                        <input type="text" class="form-control" id="input_cutoff_degree" value=0>
-                                        <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
-                                        <input type="text" class="form-control" id="input_limit" value=10>
-                                    </tr>
-                                </td>
                              </table>
                            
                                 
@@ -252,7 +253,7 @@
                             <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
                                 <div>  
                                     <button class="btn btn-secondary button-margin" type="button" data-toggle="collapse" data-target="#filter_edges" aria-expanded="false" aria-controls="collapseExample">
-                                        Options
+                                        Filter
                                     </button>
                                     <button class='float-right btn btn-primary button-margin' id='export_selected_edges'>
                                         Show in Network
@@ -261,15 +262,21 @@
                                 <div class="collapse" id='filter_edges'>
                                     <div class="card card-body"> 
                                         <div>
-                                            <p>Set filter for MScor</p>
+                                            <p>Filter for MScor</p>
                                             <span>Minimum: </span><input type="text" id="mscor_min" name="mscor_min">&nbsp;
                                             <span>Maximum: </span><input type="text" id="mscor_max" name="mscor_max">
                                         </div>
                                         <hr>
                                         <div>
-                                            <p>Set filter for p-value</p>
+                                            <p>Filter for p-value</p>
                                             <span>Minimum: </span><input type="text" id="pvalue_min" name="pvalue_min">&nbsp;
                                             <span>Maximum: </span><input type="text" id="pvalue_max" name="pvalue_max">
+                                        </div>
+                                        <hr>
+                                        <div>
+                                            <p>Filter for Correlation</p>
+                                            <span>Minimum: </span><input type="text" id="correlation_min" name="correlation_min">&nbsp;
+                                            <span>Maximum: </span><input type="text" id="correlation_max" name="correlation_max">
                                         </div>
                                         
                                     </div>
@@ -302,7 +309,9 @@
                                     <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
                                     <p>Set a cutoff for degree (lower bound): </p>
                                     <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
-                                    <p>Set a Limit for displayed data (the more the slower): </p>
+                                    <p>Set a Limit for displayed genes (the more the slower): </p>
+                                    <p>Set a Limit for displayed interactions (the more the slower): </p>
+
                                     
                                 </tr>
                             </td>
@@ -317,6 +326,8 @@
                                     <input type="text" class="form-control" id="input_cutoff_degree" value=0>
                                     <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
                                     <input type="text" class="form-control" id="input_limit" value=10> 
+                                    <input type="text" class="form-control" id="input_limit_interactions" value=-> 
+
                                 </tr>
                             </td>
                         </table>

@@ -269,6 +269,7 @@ export class Controller {
             ensg_number?: string[],
             limit?: number,
             pValue?: number,
+            pValueDirection?: string,
             callback: (response) => any,
             error?: (response) => any
         })
@@ -294,6 +295,9 @@ export class Controller {
             }
             if (config.pValue != undefined) {
                 request += "&pValue="+config.pValue
+            }
+            if (config.pValueDirection != undefined) {
+                request += "&pValueDirection="+config.pValueDirection
             }
             console.log(request)
             $.getJSON(request,
