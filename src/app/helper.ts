@@ -36,16 +36,16 @@ export class Helper {
     
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
-    subgraph_edge_color = '#013220' //'#013220'
-    subgraph_node_color = '#920518'
-    hover_edge_color =  '#228B22'
-    hover_node_color = '#228B22'
+    subgraph_edge_color = '#013220' //'#013220' //339FFF hellblau
+    subgraph_node_color = '#008cff'        //'#920518' rot
+    hover_edge_color =  '#a95aa1' //'#228B22' --> grüner hover
+    hover_node_color = '#a95aa1'
     network_grey_edge_color = '#e0dfde'
     edge_color_pvalues_bins = {
       1: '#fdbe85', //#fae4cf
       //0.8: '#fdbe85',
-      0.4: '#f87f2c',
-      0.05: '#c94503'
+      0.4: '#530096',//'#f87f2c',
+      0.05: '#530096' //'#c94503'
     }
 
     controller = new Controller()
