@@ -196,17 +196,17 @@ export class BrowseComponent implements OnInit {
       let sort_by = $('#run-info-select').val().toLowerCase()
 
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
-      let cutoff_betweenness = $('#input_cutoff_betweenness').val()
-      let cutoff_degree = $('#input_cutoff_degree').val()
-      let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+      const cutoff_betweenness = $('#input_cutoff_betweenness').val()
+      //const cutoff_degree = $('#input_cutoff_degree').val()
+      const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
         helper.msg("The eigenvector should be between 0 and 1.", true)
         $('#loading_spinner').addClass('hidden')
         return 
       }
-      let limit = $('#input_limit').val()
-      let descending = true
+      const limit = $('#input_limit').val()
+      const descending = true
       
       if (shared_data == undefined) {
         controller.get_ceRNA({
@@ -328,7 +328,7 @@ export class BrowseComponent implements OnInit {
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-              "order": [[ 4, "asc" ]]
+              order: [[ 4, "asc" ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
@@ -472,6 +472,36 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
+            // take the node degree cutoff into account
+            const cutoff_degree = $('#input_cutoff_degree').val()
+            console.log(cutoff_degree)
+            if (!isNaN(parseFloat(cutoff_degree)) && cutoff_degree.length > 0) {
+              // cutoff is set, filter nodes
+              console.log(nodes)
+              console.log(edges)
+              let node_degrees = {}
+              let filtered_nodes = []
+
+              for (const node of nodes) {
+                node_degrees[node.id] = 0
+                for (const edge of edges) {
+                  if (edge.source === node.id || edge.target === node.id) {
+                    node_degrees[node.id] += 1
+                  }
+                }
+                if (cutoff_degree < node_degrees[node.id]) {
+                  filtered_nodes.push(node)
+                }
+              }
+              // override nodes object
+              nodes = filtered_nodes
+
+              // we must remove the node entries from the datatable for consistency
+
+              // now we must sort out unused edges again
+
+            }
+
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
               network = network_data['network']

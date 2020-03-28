@@ -670,8 +670,8 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
         
-        if (table.rows({ filter : 'applied'}).data().length > 50) {
-          helper.msg("Please apply further filtering to your data (max. 50 interactions are recommended for the network).")
+        if (table.rows({ filter : 'applied'}).data().length > 100) {
+          helper.msg("Please apply further filtering to your data (max. 100 interactions are recommended for the network).")
           return
         }
 
