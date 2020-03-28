@@ -448,19 +448,28 @@ export class BrowseComponent implements OnInit {
             })
 
             $('#export_selected_edges').click(() => {
-              //helper.clear_subgraphs(network);
-              let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
-              if (selected_edges.length === 0) {
-                selected_edges = edge_table.rows({ filter : 'applied'}).data()
+              // mark all marked edges in the graph
+              const selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
+
+              // DONT show the rest of the edges that are not in the table
+              const filtered_edges_raw = edge_table.rows({ filter : 'applied'}).data()
+              let filtered_edges_ids = []
+              for (let i = 0; i < filtered_edges_raw.length; i++){
+                filtered_edges_ids.push(filtered_edges_raw[i][5])
               }
+              console.log(filtered_edges_ids)
+              helper.limit_edges_to(network, filtered_edges_ids)
+              
               helper.mark_edges_network(network, selected_edges)
+
 
               // go to network
               $('[aria-controls=nav-overview]').click()
+
               setTimeout(() => {
                 $('#restart_camera').click()
-                
               }, 200)
+
             })
       
             $('#export_selected_nodes').click(() => {

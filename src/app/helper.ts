@@ -33,6 +33,9 @@ export class Helper {
       }
 
     }
+
+    network_edges
+    network_nodes
     
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
@@ -450,6 +453,8 @@ export class Helper {
     }
 
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
+      this.network_edges = edges
+      this.network_nodes = nodes
 
       const $this = this
       $('#network-plot-container').html(''); // clear possible other network
@@ -762,6 +767,19 @@ export class Helper {
         }
       }
 
+      function removeEdge(id) {
+        network.graph.edges().forEach(
+          (ee) => {
+            if (ee.id == id) {
+              network.graph.dropEdge(ee.id);
+              //ee.hidden = true
+              console.log("edge dropped");
+            }
+          }
+        )
+        network.refresh()
+      };
+
       $('#network_search_node_button').click(() => {
         let to_search = $('#network_search_node').val()
         if (to_search.startsWith('ENSG')) {
@@ -834,12 +852,12 @@ export class Helper {
             gravity: 3, // attracts nodes to the center. Prevents islands from drifting away
             barnesHutOptimize: false,
             barnesHutTheta: 0.5,
-            slowDown: 5,
+            slowDown: 1,
             startingIterations: 1,
             iterationsPerRender: 1,
 
             // Supervisor config
-            worker: true,
+            worker: false,
           }
           network.startForceAtlas2(config);
           //document.getElementById('toggle_layout').innerHTML = 'Stop layout';
@@ -1014,6 +1032,50 @@ export class Helper {
           }
         )
       }
+    }
+
+    public limit_edges_to(network, edge_list) {
+      console.log(edge_list)
+      network.graph.edges().forEach(
+        (ee) => {
+          if (edge_list.includes(ee.id.toString())) {
+            ee.hidden = false
+          } else {
+            ee.hidden = true
+          }
+        }
+      )
+      network.refresh()
+
+      // update search in network
+      $('#network-search').html('');  // clear other search options
+
+      $('#network-search').html(
+        "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      )
+      let node_options = ""   // for node selector
+      for (let node of this.network_nodes) {
+        let label = node['label']
+        let id = node['id']
+        node_options += "<option data-subtext="+label+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(node_options)
+
+      let edge_options = ""   // for network search selector
+      for (let edge of this.network_edges) {
+        if (edge_list.includes(edge['id'].toString())) {
+          let source = edge['source']
+          let target = edge['target']
+          let id = edge['id']
+          edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+        }   
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(edge_options)
+
+      $('#network_search_node').selectpicker()
     }
 
     public load_session_url(params) {
