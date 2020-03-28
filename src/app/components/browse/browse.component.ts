@@ -341,9 +341,10 @@ export class BrowseComponent implements OnInit {
 
             const edges_raw = edge_table.data()
             
-            const number_edges = user_limit || edges_raw.length
-  
+            let number_edges = (user_limit && user_limit < edges_raw.length) ? user_limit : edges_raw.length
+
             let edges = [];
+            console.log(edges_raw)
             for (let i=0; i < number_edges; i++) {
               const interaction = edges_raw[i]
               const id = interaction[5]  // ID
@@ -474,11 +475,8 @@ export class BrowseComponent implements OnInit {
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
             // take the node degree cutoff into account
             const cutoff_degree = $('#input_cutoff_degree').val()
-            console.log(cutoff_degree)
             if (!isNaN(parseFloat(cutoff_degree)) && cutoff_degree.length > 0) {
               // cutoff is set, filter nodes
-              console.log(nodes)
-              console.log(edges)
               let node_degrees = {}
               let filtered_nodes = []
 
@@ -497,8 +495,38 @@ export class BrowseComponent implements OnInit {
               nodes = filtered_nodes
 
               // we must remove the node entries from the datatable for consistency
+              let nodes_to_remove = [];
+              node_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (!(cutoff_degree < node_degrees[this.data()[0]])){
+                  nodes_to_remove.push(this.node())
+                }
+              })
+              nodes_to_remove.forEach(function(node) {
+                node_table.row(node).remove()
+              })
+              node_table.draw()
 
               // now we must sort out unused edges again
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (cutoff_degree < node_degrees[edge.target] && cutoff_degree < node_degrees[edge.source]) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+
+              // now we must update the edges table
+              let edges_to_remove = [];
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (!(cutoff_degree < node_degrees[this.data()[0]]) || !(cutoff_degree < node_degrees[this.data()[1]])){
+                  edges_to_remove.push(this.node())
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
 
             }
 
