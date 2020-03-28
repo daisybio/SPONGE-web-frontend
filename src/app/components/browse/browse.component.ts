@@ -35,7 +35,7 @@ export class BrowseComponent implements OnInit {
     const controller = new Controller()
     const helper = new Helper()
     const $this = this
-    const shared_data: Object = $this.shared_service.getData()
+    const shared_data: Object = $this.shared_service.getData() ? $this.shared_service.getData() : undefined
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
@@ -231,12 +231,19 @@ export class BrowseComponent implements OnInit {
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
       const limit = 1000
+      let p_value
+      if (shared_data != undefined) {
+        p_value = shared_data['p_value']
+      } else {
+        p_value = 1
+      }
+
       let all_data = []
       __get_batches_recursive()
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': 1,
+        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': p_value,
         'callback':data => {
           all_data = all_data.concat(data)
 
@@ -246,6 +253,11 @@ export class BrowseComponent implements OnInit {
             __get_batches_recursive(offset + limit)
 
           } else {
+            // check if we got any interactions
+            if (all_data.length == 0) {
+              return(callback([]))
+            }
+
             // all batches are loaded, continue processing the all_data
             let ordered_data = []
             // remove "run"
@@ -261,7 +273,7 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-
+            console.log(ordered_data.length)
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
@@ -296,7 +308,7 @@ export class BrowseComponent implements OnInit {
               let id = ordered_data[interaction]['ID']
               let source = ordered_data[interaction]['Gene 1']
               let target = ordered_data[interaction]['Gene 2']
-              let size = 30*ordered_data[interaction]['MScor']
+              let size = Math.abs(10*ordered_data[interaction]['MScor'])
               let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
               //let type = 'line'//, curve
               edges.push({
@@ -314,7 +326,8 @@ export class BrowseComponent implements OnInit {
           }
         },
         error: (response) => {
-          helper.msg("Something went wrong while loading the interactions.", true)
+          //helper.msg("Something went wrong while loading the interactions.", true)
+          return(callback([]))
         }
       })  
       }

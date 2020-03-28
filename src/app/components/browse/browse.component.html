@@ -208,21 +208,26 @@
                                         <div class="col-md-4" style="left: -120px;">
                                             <span class="hidden" id='node_data'></span>
                                             <span class="hidden" id='edge_data'></span>
-                                            
-                                           
+
+                                            <div>
+                                                <div class="card card-cascade narrower">
+                                                    <div class="card-body text-center graph-information-title">Legend</div>
+                                                    <div id="network_legend"></div>
+                                                </div>
+                                            </div>
                                             
                                             <div id="node_information"  class="hidden">
-                                                    <div class="card card-cascade narrower" id="node-card">
+                                                    <div class="card card-cascade narrower">
                                                             
-                                                        <div class="card-body text-center graph-information-title"> Node Information:</div>
+                                                        <div class="card-body text-center graph-information-title">Node Information:</div>
                                                         <div id="node_information_content"></div>
                                                     </div>
                                              </div>      
                                              
                                              <div id="edge_information"  class="hidden">
-                                                    <div class="card card-cascade narrower" id="node-card">
+                                                    <div class="card card-cascade narrower">
                                                             
-                                                        <div class="card-body text-center graph-information-title"> Edge Information:</div>
+                                                        <div class="card-body text-center graph-information-title">Edge Information:</div>
                                                         <div id="edge_information_content"></div>
                                                     </div>
                                              </div>  
@@ -275,8 +280,6 @@
                         </div>
                     </div>
 
-                    <div id="expression_heatmap"></div>
-
                     <div class="row d-flex justify-content-center" id='KMP-plot-container-parent'>
                             <div class="text-center hidden" id="loading_spinner_KMP" >
                                     <div class="spinner-border" role="status">
@@ -286,6 +289,8 @@
                         <div class="row justify-content-center container-fluid hidden" id="plots">
                         </div> 
                     </div>
+
+                    <div id="expression_heatmap"></div>
        
                     <!-- Run Information -->
                 <div class="container-fluid">
