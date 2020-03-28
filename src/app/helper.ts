@@ -866,7 +866,7 @@ export class Helper {
           setTimeout(function() {
             $('#toggle_layout').attr('disabled', false)
             $('#toggle_layout').click()
-          }, 3000)
+          }, 2000)
         }
       });  
       
@@ -1121,7 +1121,7 @@ export class Helper {
     }
 
     public filter_nodes_by_degree(){
-      
+
     }
 
 

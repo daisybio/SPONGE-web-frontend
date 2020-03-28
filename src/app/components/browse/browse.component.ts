@@ -6,7 +6,6 @@ import {Router, ActivatedRoute, Params} from '@angular/router';
 import { SharedService } from "../../shared.service"
 
 import sigma from 'sigma';
-import { of } from 'rxjs';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -294,6 +293,18 @@ export class BrowseComponent implements OnInit {
             // remove "run"
             for (let i=0; i < Object.keys(all_data).length; i++) {
               let entry = all_data[i]
+
+              if (shared_data != undefined && shared_data['search_keys']) {
+                if (!(
+                  shared_data['search_keys'].includes(entry['gene1']['ensg_number']) || 
+                  shared_data['search_keys'].includes(entry['gene2']['ensg_number'])
+                  )) {
+                    // interaction has no direct connection to search keys, ignore interaction
+                    continue
+                }
+              }
+              console.log(entry['gene1']['ensg_number'])
+              console.log(entry['gene2']['ensg_number'])
               // change order of columns alredy in object
               let ordered_entry = {}
               ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
@@ -344,7 +355,6 @@ export class BrowseComponent implements OnInit {
             let number_edges = (user_limit && user_limit < edges_raw.length) ? user_limit : edges_raw.length
 
             let edges = [];
-            console.log(edges_raw)
             for (let i=0; i < number_edges; i++) {
               const interaction = edges_raw[i]
               const id = interaction[5]  // ID
@@ -544,7 +554,7 @@ export class BrowseComponent implements OnInit {
                     node_degrees[node.id] += 1
                   }
                 }
-                if (cutoff_degree < node_degrees[node.id]) {
+                if (cutoff_degree <= node_degrees[node.id]) {
                   filtered_nodes.push(node)
                 }
               }
@@ -566,7 +576,7 @@ export class BrowseComponent implements OnInit {
               // now we must sort out unused edges again
               let filtered_edges = []
               edges.forEach(function(edge) {
-                if (cutoff_degree < node_degrees[edge.target] && cutoff_degree < node_degrees[edge.source]) {
+                if (cutoff_degree <= node_degrees[edge.target] && cutoff_degree <= node_degrees[edge.source]) {
                   filtered_edges.push(edge)
                 }
               })
@@ -576,7 +586,7 @@ export class BrowseComponent implements OnInit {
               // now we must update the edges table
               let edges_to_remove = [];
               edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
-                if (!(cutoff_degree < node_degrees[this.data()[0]]) || !(cutoff_degree < node_degrees[this.data()[1]])){
+                if (!(cutoff_degree <= node_degrees[this.data()[0]]) || !(cutoff_degree <= node_degrees[this.data()[1]])){
                   edges_to_remove.push(this.node())
                 }
               })

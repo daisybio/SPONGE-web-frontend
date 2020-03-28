@@ -4,7 +4,6 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
-import { of } from 'rxjs'
 
 declare var Plotly: any;
 declare var $;
@@ -677,6 +676,7 @@ export class SearchComponent implements OnInit {
 
         // append search note to network
         const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
+        let search_keys_ensg = []
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
             {
@@ -686,6 +686,7 @@ export class SearchComponent implements OnInit {
                 for (let elem of response) {
                   if (elem.gene_symbol == key || elem.ensg_number == key) {
                     ensg_numbers.push(elem.ensg_number)
+                    search_keys_ensg.push(elem.ensg_number)
                     break
                   }
                 }
@@ -696,7 +697,8 @@ export class SearchComponent implements OnInit {
                     'nodes': ensg_numbers,
                     'nodes_marked': nodes_marked,
                     'cancer_type': active_cancer_name,
-                    'p_value': $this.pValue_current
+                    'p_value': $this.pValue_current,
+                    'search_keys': search_keys_ensg
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
