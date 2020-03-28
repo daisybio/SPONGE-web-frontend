@@ -473,6 +473,63 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
+
+            // take the maximum p-value into account
+            const maximum_p_value = $('#input_maximum_p_value').val()
+            if (!isNaN(parseFloat(maximum_p_value)) && maximum_p_value.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (maximum_p_value < this.data()[4]) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            
+            } // end of maximum p value filter
+
+            // take the minimum MScor into account
+            const minimum_mscor = $('#input_minimum_mscor').val()
+            if (!isNaN(parseFloat(minimum_mscor)) && minimum_mscor.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (minimum_mscor > this.data()[3]) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            
+            } // end of maximum p value filter
+
             // take the node degree cutoff into account
             const cutoff_degree = $('#input_cutoff_degree').val()
             if (!isNaN(parseFloat(cutoff_degree)) && cutoff_degree.length > 0) {
@@ -528,7 +585,7 @@ export class BrowseComponent implements OnInit {
               })
               edge_table.draw()
 
-            }
+            } // end of degree cutoff filter
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {

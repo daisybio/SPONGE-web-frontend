@@ -57,30 +57,39 @@
                             </div>
                             <table id="browse_user_input">
                                
-                                <!-- <p>Set a cutoff for betweenness (lower bound): </p> -->
-                                <tr class="">
-                                    <td><p>Cutoff for degree (lower bound): </p></td>
-                                    <td><input type="text" class="form-control" id="input_cutoff_degree"></td>
+                                <tr>
+                                    <td><h5>Genes</h5></td>
                                 </tr>
-                                <!-- <p>Set a cutoff for eigenvector (lower bound): </p> -->
                                 <tr class="">
                                     <td><p>Limit for displayed genes (the more the slower)</p></td>
                                     <td><input type="text" class="form-control" id="input_limit" value=10></td>
                                 </tr>
                                 <tr class="">
+                                    <td><p>Cutoff for degree (lower bound): </p></td>
+                                    <td><input type="text" class="form-control" id="input_cutoff_degree" value=1></td>
+                                </tr>
+
+                                <tr>
+                                    <td><h5>Interactions</h5></td>
+                                </tr>
+
+                                <tr class="">
                                     <td><p>Limit for displayed interactions (the more the slower): </p></td>
                                     <td><input type="text" class="form-control" id="input_limit_interactions" value=20></td>
                                 </tr> 
  
-                                    <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
-                                    
-                                    <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
+                                <tr class="">
+                                    <td><p>Maximum p-value: </p></td>
+                                    <td><input type="text" class="form-control" id="input_maximum_p_value" value=1></td>
+                                </tr>
+                                <tr class="">
+                                    <td><p>Minimum MScor: </p></td>
+                                    <td><input type="text" class="form-control" id="input_minimum_mscor" value=0.01></td>
+                                </tr>
 
                              </table>
                            
                                 
-                            
-        
                             <div class="buttons">
 
                                 <button id="load_disease" type="button" class="btn btn-primary button-margin">Go</button>
