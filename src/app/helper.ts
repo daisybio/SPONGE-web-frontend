@@ -1035,7 +1035,6 @@ export class Helper {
     }
 
     public limit_edges_to(network, edge_list) {
-      console.log(edge_list)
       network.graph.edges().forEach(
         (ee) => {
           if (edge_list.includes(ee.id.toString())) {
@@ -1077,6 +1076,50 @@ export class Helper {
 
       $('#network_search_node').selectpicker()
     }
+
+    public limit_nodes_to(network, node_list) {
+      network.graph.nodes().forEach(
+        (node) => {
+          if (node_list.includes(node.id.toString())) {
+            node.hidden = false
+          } else {
+            node.hidden = true
+          }
+        }
+      )
+      network.refresh()
+
+      // update search in network
+      $('#network-search').html('');  // clear other search options
+
+      $('#network-search').html(
+        "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      )
+      let node_options = ""   // for node selector
+      for (let node of this.network_nodes) {
+        if (node_list.includes(node['id'].toString())) {
+          let label = node['label']
+          let id = node['id']
+          node_options += "<option data-subtext="+label+">"+id+"</option>"
+        }
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(node_options)
+
+      let edge_options = ""   // for network search selector
+      for (let edge of this.network_edges) {
+        let source = edge['source']
+        let target = edge['target']
+        let id = edge['id']
+        edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(edge_options)
+
+      $('#network_search_node').selectpicker()
+    }
+
 
     public load_session_url(params) {
       let nodes = [], edges = [], active_cancer

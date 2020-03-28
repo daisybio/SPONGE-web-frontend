@@ -457,7 +457,6 @@ export class BrowseComponent implements OnInit {
               for (let i = 0; i < filtered_edges_raw.length; i++){
                 filtered_edges_ids.push(filtered_edges_raw[i][5])
               }
-              console.log(filtered_edges_ids)
               helper.limit_edges_to(network, filtered_edges_ids)
               
               helper.mark_edges_network(network, selected_edges)
@@ -476,14 +475,19 @@ export class BrowseComponent implements OnInit {
               //helper.clear_subgraphs(network);
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
-              if (selected_nodes_data.length === 0) {
-                helper.msg("Please select genes in the table.", false)
-                return
-              }
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
+
+              const filtered_nodes_raw = node_table.rows({ filter : 'applied'}).data()
+              let filtered_nodes_ids = []
+              for (let i = 0; i < filtered_nodes_raw.length; i++){
+                filtered_nodes_ids.push(filtered_nodes_raw[i][0])
+              }
+
+              helper.limit_nodes_to(network, filtered_nodes_ids)
+
               helper.mark_nodes_network(network, selected_nodes)
               
               // go to network
