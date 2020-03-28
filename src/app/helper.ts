@@ -38,14 +38,14 @@ export class Helper {
     default_edge_color = '#0000FF'
     subgraph_edge_color = '#013220' //'#013220' //339FFF hellblau
     subgraph_node_color = '#008cff'        //'#920518' rot
-    hover_edge_color =  '#a95aa1' //'#228B22' --> grüner hover
+    hover_edge_color =  '#ff00f6' //'#228B22' --> grüner hover
     hover_node_color = '#a95aa1'
     network_grey_edge_color = '#e0dfde'
     edge_color_pvalues_bins = {
-      1: '#fdbe85', //#fae4cf
+      1: '#965a00',//'#fae4cf',
       //0.8: '#fdbe85',
-      0.4: '#530096',//'#f87f2c',
-      0.05: '#530096' //'#c94503'
+      0.4: '#ff9900', //'#530096', lila
+      0.05: '#bf8c40'//'#c94503'
     }
 
     controller = new Controller()
@@ -498,14 +498,15 @@ export class Helper {
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
             autoRescale: ['nodePosition'],  //'edgeSize', nodeSize, nodePosition
+            
             animationsTime: 1000,
             borderSize: 1.5,  
             outerBorderSize: 1.5,
             enableEdgeHovering: true,
-            edgeHoverColor: '#2ecc71',
-            defaultEdgeHoverColor: '#2ecc71',
-            edgeHoverSizeRatio: 1.5,
-            nodeHoverSizeRatio: 1.5,
+            edgeHoverColor: this.hover_edge_color,
+            defaultEdgeHoverColor: this.hover_edge_color,//'#2ecc71', helles grün 
+            edgeHoverSizeRatio: 2.5,
+            nodeHoverSizeRatio: 2.5,
             edgeHoverExtremities: true,
             scalingMode: 'outside',
             doubleClickEnabled: true,
