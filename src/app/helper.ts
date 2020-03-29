@@ -467,6 +467,12 @@ export class Helper {
       $('#network-plot-container').html(''); // clear possible other network
       $('#network-search').html('');  // clear other search options
 
+      if (nodes.length === 0) {
+        // we only get here when we search for specific genes and then changed the disease to a disease where there is no data for these genes
+        $('#network-plot-container').html('No data for your genes in this disease.')
+        return
+      }
+
       $('#network-search').html(
         "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
         "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
@@ -789,6 +795,12 @@ export class Helper {
 
       $('#network_search_node_button').click(() => {
         let to_search = $('#network_search_node').val()
+
+        if (to_search === null) {
+          // empty network
+          return
+        }
+
         if (to_search.startsWith('ENSG')) {
           focusNode(to_search)
         } else {
@@ -855,11 +867,11 @@ export class Helper {
             adjustSizes: false,
             edgeWeightInfluence: 1,
             scalingRatio: 1,
-            strongGravityMode: false,
-            gravity: 3, // attracts nodes to the center. Prevents islands from drifting away
+            strongGravityMode: true,
+            gravity: 1, // attracts nodes to the center. Prevents islands from drifting away
             barnesHutOptimize: false,
             barnesHutTheta: 0.5,
-            slowDown: 1,
+            slowDown: 5,
             startingIterations: 1,
             iterationsPerRender: 1,
 
@@ -889,7 +901,7 @@ export class Helper {
 
       // zoom out 
       $('#restart_camera').click()
-      network.refresh()
+      //network.refresh()
 
       // build legend
       let legend = $('<table>').addClass('table table-striped text-center').attr('id', 'network-legend')
