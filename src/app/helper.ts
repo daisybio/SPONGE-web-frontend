@@ -33,6 +33,9 @@ export class Helper {
       }
 
     }
+
+    network_edges
+    network_nodes
     
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
@@ -222,13 +225,18 @@ export class Helper {
       let seen_time_1=[]
      
       if( $('#myDiv_'+ensgList[$o]).length <=0){
+        console.log("here")
+        console.log(dn)
+        console.log([ensgList[$o]])
         this.controller.get_survival_rates({
           disease_name: dn,
           ensg_number: [ensgList[$o]],
           
           callback: (response) => {
+          console.log("heree") 
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
+          console.log("parsed survival data for the first time") 
           
           for (let j=0; j < response.length; j++) { 
             
@@ -241,6 +249,7 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
+          console.log("parsed survival data") 
           let add_KMP_Plot
         /*  if(response[0].gene.gene_symbol != 'null'){
            add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
@@ -250,11 +259,12 @@ export class Helper {
        //   }
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
        //  if(!!$('myDiv_'+response[0].gene.gene_symbol)){console.log("MIAUUU")}
+          console.log("right before the plot") 
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
             }
-                    
+                   
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0,response[0], dn)
           
           // end loading
@@ -262,7 +272,7 @@ export class Helper {
       
           },
           error: (repsonse) => {
-          this.msg("Something went wrong creating the survival analysis.", true)
+          //this.msg("Something went wrong creating the survival analysis.", true)
           $('#loading_spinner_KMP').addClass('hidden')
           }
         });
@@ -450,10 +460,18 @@ export class Helper {
     }
 
     public make_network(selected_disease, nodes,  edges, node_table=null, edge_table=null) {
+      this.network_edges = edges
+      this.network_nodes = nodes
 
       const $this = this
       $('#network-plot-container').html(''); // clear possible other network
       $('#network-search').html('');  // clear other search options
+
+      if (nodes.length === 0) {
+        // we only get here when we search for specific genes and then changed the disease to a disease where there is no data for these genes
+        $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+        return
+      }
 
       $('#network-search').html(
         "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
@@ -763,8 +781,27 @@ export class Helper {
         }
       }
 
+      function removeEdge(id) {
+        network.graph.edges().forEach(
+          (ee) => {
+            if (ee.id == id) {
+              network.graph.dropEdge(ee.id);
+              //ee.hidden = true
+              console.log("edge dropped");
+            }
+          }
+        )
+        network.refresh()
+      };
+
       $('#network_search_node_button').click(() => {
         let to_search = $('#network_search_node').val()
+
+        if (to_search === null) {
+          // empty network
+          return
+        }
+
         if (to_search.startsWith('ENSG')) {
           focusNode(to_search)
         } else {
@@ -831,8 +868,8 @@ export class Helper {
             adjustSizes: false,
             edgeWeightInfluence: 1,
             scalingRatio: 1,
-            strongGravityMode: false,
-            gravity: 3, // attracts nodes to the center. Prevents islands from drifting away
+            strongGravityMode: true,
+            gravity: 1, // attracts nodes to the center. Prevents islands from drifting away
             barnesHutOptimize: false,
             barnesHutTheta: 0.5,
             slowDown: 5,
@@ -840,7 +877,7 @@ export class Helper {
             iterationsPerRender: 1,
 
             // Supervisor config
-            worker: true,
+            worker: false,
           }
           network.startForceAtlas2(config);
           //document.getElementById('toggle_layout').innerHTML = 'Stop layout';
@@ -865,7 +902,7 @@ export class Helper {
 
       // zoom out 
       $('#restart_camera').click()
-      network.refresh()
+      //network.refresh()
 
       // build legend
       let legend = $('<table>').addClass('table table-striped text-center').attr('id', 'network-legend')
@@ -1016,6 +1053,97 @@ export class Helper {
         )
       }
     }
+
+    public limit_edges_to(network, edge_list) {
+      network.graph.edges().forEach(
+        (ee) => {
+          if (edge_list.includes(ee.id.toString())) {
+            ee.hidden = false
+          } else {
+            ee.hidden = true
+          }
+        }
+      )
+      network.refresh()
+
+      // update search in network
+      $('#network-search').html('');  // clear other search options
+
+      $('#network-search').html(
+        "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      )
+      let node_options = ""   // for node selector
+      for (let node of this.network_nodes) {
+        let label = node['label']
+        let id = node['id']
+        node_options += "<option data-subtext="+label+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(node_options)
+
+      let edge_options = ""   // for network search selector
+      for (let edge of this.network_edges) {
+        if (edge_list.includes(edge['id'].toString())) {
+          let source = edge['source']
+          let target = edge['target']
+          let id = edge['id']
+          edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+        }   
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(edge_options)
+
+      $('#network_search_node').selectpicker()
+    }
+
+    public limit_nodes_to(network, node_list) {
+      network.graph.nodes().forEach(
+        (node) => {
+          if (node_list.includes(node.id.toString())) {
+            node.hidden = false
+          } else {
+            node.hidden = true
+          }
+        }
+      )
+      network.refresh()
+
+      // update search in network
+      $('#network-search').html('');  // clear other search options
+
+      $('#network-search').html(
+        "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>"+
+        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      )
+      let node_options = ""   // for node selector
+      for (let node of this.network_nodes) {
+        if (node_list.includes(node['id'].toString())) {
+          let label = node['label']
+          let id = node['id']
+          node_options += "<option data-subtext="+label+">"+id+"</option>"
+        }
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(node_options)
+
+      let edge_options = ""   // for network search selector
+      for (let edge of this.network_edges) {
+        let source = edge['source']
+        let target = edge['target']
+        let id = edge['id']
+        edge_options += "<option data-subtext="+source+","+target+">"+id+"</option>"
+      }
+      // append options to search-dropdown for network
+      $('#network_search_node').append(edge_options)
+
+      $('#network_search_node').selectpicker()
+    }
+
+    public filter_nodes_by_degree(){
+
+    }
+
 
     public load_session_url(params) {
       let nodes = [], edges = [], active_cancer

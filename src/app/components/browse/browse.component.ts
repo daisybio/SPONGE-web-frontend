@@ -6,7 +6,6 @@ import {Router, ActivatedRoute, Params} from '@angular/router';
 import { SharedService } from "../../shared.service"
 
 import sigma from 'sigma';
-import { of } from 'rxjs';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -103,7 +102,24 @@ export class BrowseComponent implements OnInit {
             return true;
           }
         return false;
-        }
+        },
+        //  filter for correlation
+        function( settings, data, dataIndex ) {
+          if ( settings.nTable.id !== 'interactions-edges-table' ) {
+            return true;
+          }
+          var correlation_min = parseFloat( $('#correlation_min').val());
+          var correlation_max = parseFloat( $('#correlation_max').val());
+          var correlation = parseFloat( data[2] ) || 0; // use data for the correlation column
+          if (( isNaN( correlation_min ) && isNaN( correlation_max ) ) ||
+            ( isNaN( correlation_min ) && correlation <= correlation_max ) ||
+            ( correlation_min <= correlation && isNaN( correlation_max ) ) ||
+            ( correlation_min <= correlation && correlation <= correlation_max ) )
+            {
+              return true;
+            }
+          return false;
+          }
     );
     /* end of configurations */
     
@@ -179,17 +195,17 @@ export class BrowseComponent implements OnInit {
       let sort_by = $('#run-info-select').val().toLowerCase()
 
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
-      let cutoff_betweenness = $('#input_cutoff_betweenness').val()
-      let cutoff_degree = $('#input_cutoff_degree').val()
-      let cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+      const cutoff_betweenness = $('#input_cutoff_betweenness').val()
+      //const cutoff_degree = $('#input_cutoff_degree').val()
+      const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
         helper.msg("The eigenvector should be between 0 and 1.", true)
         $('#loading_spinner').addClass('hidden')
         return 
       }
-      let limit = $('#input_limit').val()
-      let descending = true
+      const limit = $('#input_limit').val()
+      const descending = true
       
       if (shared_data == undefined) {
         controller.get_ceRNA({
@@ -197,7 +213,7 @@ export class BrowseComponent implements OnInit {
           'sorting':sort_by,
           'limit':limit,
           'minBetweenness':cutoff_betweenness,
-          'minNodeDegree': cutoff_degree,
+          //'minNodeDegree': cutoff_degree,
           'minEigenvector': cutoff_eigenvector,
           'descending': descending,
           'callback': data => {
@@ -230,7 +246,8 @@ export class BrowseComponent implements OnInit {
 
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
-      const limit = 1000
+      let limit = 1000
+
       let p_value
       if (shared_data != undefined) {
         p_value = shared_data['p_value']
@@ -243,11 +260,18 @@ export class BrowseComponent implements OnInit {
 
       function __get_batches_recursive(offset=0) {
 
-        controller.get_ceRNA_interactions_specific({'disease_name':disease_trimmed, 'ensg_number':nodes, 'limit': limit, 'offset': offset, 'pValue': p_value,
+        controller.get_ceRNA_interactions_specific({
+          'disease_name':disease_trimmed, 
+          'ensg_number':nodes, 
+          'limit': limit, 
+          'offset': offset, 
+          'pValue': p_value,
+          'pValueDirection': '<',
         'callback':data => {
           all_data = all_data.concat(data)
 
-          if (data.length == limit) {
+          // limit !== 1000 checks if limit is set by user
+          if (limit === 1000 && data.length == limit) {
 
             // there are more interactions to load, call function again
             __get_batches_recursive(offset + limit)
@@ -260,9 +284,22 @@ export class BrowseComponent implements OnInit {
 
             // all batches are loaded, continue processing the all_data
             let ordered_data = []
-            // remove "run"
-            for (let i=0; i < Object.keys(all_data).length; i++) {
+
+            let number_edges = Object.keys(all_data).length
+
+            // also removes "run"
+            for (let i=0; i < number_edges; i++) {
               let entry = all_data[i]
+
+              if (shared_data != undefined && shared_data['search_keys']) {
+                if (!(
+                  shared_data['search_keys'].includes(entry['gene1']['ensg_number']) || 
+                  shared_data['search_keys'].includes(entry['gene2']['ensg_number'])
+                  )) {
+                    // interaction has no direct connection to search keys, ignore interaction
+                    continue
+                }
+              }
               // change order of columns alredy in object
               let ordered_entry = {}
               ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
@@ -273,26 +310,34 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-            console.log(ordered_data.length)
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
             var index_correlation = column_names.indexOf('Correlation');
             var index_mscor = column_names.indexOf('MScor');
             var index_p_value = column_names.indexOf('p-value');
+
+            // order by p-value or mscor
+            const order_by = $('#interactions_filter_by').val() == 'p_value' ? 4 : 3 
   
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
                 { render: function ( ordered_data, type, row ) {
-                        return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
-                         },
+                        let numb = parseFloat(ordered_data).toFixed(4)
+                        if (parseFloat(numb)===0 && numb.length > 1){
+                          // numb is sth like 0.00000001212, we set it to 0.0001 bc it is not 0
+                          numb = numb.substring(0, numb.length-2) + 1
+                        }
+                        return numb
+                        },
                     targets: [ index_correlation, index_mscor, index_p_value ] }
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
               buttons: [
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
-              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+              order: [[ order_by, "asc" ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
@@ -302,15 +347,17 @@ export class BrowseComponent implements OnInit {
             } );
             // colsearch for table
             helper.colSearch('interactions-edges-table', edge_table)
-  
+
+            const edges_raw = edge_table.data()
+            
             let edges = [];
-            for (let interaction in ordered_data) {
-              let id = ordered_data[interaction]['ID']
-              let source = ordered_data[interaction]['Gene 1']
-              let target = ordered_data[interaction]['Gene 2']
-              let size = Math.abs(10*ordered_data[interaction]['MScor'])
-              let color = helper.choose_edge_color(ordered_data[interaction]['p-value'])
-              //let type = 'line'//, curve
+            for (let i=0; i < edges_raw.length; i++) {
+              const interaction = edges_raw[i]
+              const id = interaction[5]  // ID
+              const source = interaction[0] // Gene 1
+              const target = interaction[1] // Gene 2
+              const size = Math.abs(20*interaction[3])  // MScor
+              const color = helper.choose_edge_color(interaction[4])  // p-value
               edges.push({
                 id: id, 
                 source: source, 
@@ -339,7 +386,9 @@ export class BrowseComponent implements OnInit {
       let disease_selector = $('#disease_selectpicker');
       let selected_disease_result = $('#selector_disease_result');
 
+      // initialize selectpicker
       disease_selector.selectpicker()
+      $('#run-info-select').selectpicker()
       
       // takes care of button with link to download page
       // loads specific run information
@@ -398,7 +447,6 @@ export class BrowseComponent implements OnInit {
               if(value == null){
                 value = 'Not defined'
               }
-              console.log(key)
               if (key == 'ks') {
                 value = value.substring(4, value.length-1)
               } 
@@ -433,8 +481,173 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
+
+            /*
+              STEP 1: apply edge filters like p-value and mscor
+            */
+
+            // take the maximum p-value into account
+            const maximum_p_value = $('#input_maximum_p_value').val()
+            if (!isNaN(parseFloat(maximum_p_value)) && maximum_p_value.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (maximum_p_value < this.data()[4]) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            
+            } // end of maximum p value filter
+
+            // take the minimum MScor into account
+            const minimum_mscor = $('#input_minimum_mscor').val()
+            if (!isNaN(parseFloat(minimum_mscor)) && minimum_mscor.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (minimum_mscor > this.data()[3]) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            
+            } // end of maximum p value filter
+
+
+            /*
+              STEP 2: limit edge number to user limit
+            */
+            let user_limit = undefined
+            // check if limit is set by user and is acutally a number
+            if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
+              user_limit = $('#input_limit_interactions').val()
+            }
+            if (!isNaN(parseFloat(user_limit)) && user_limit.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              // edges table is ordered by p-value (ascending)
+              let i = 0
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                i++
+                if (i > user_limit) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            }
+
+            /*
+              STEP 3: Apply node degree filter + sort out unused edges afterwards
+            */
+            const cutoff_degree = $('#input_cutoff_degree').val()
+            if (!isNaN(parseFloat(cutoff_degree)) && cutoff_degree.length > 0) {
+              // cutoff is set, filter nodes
+              let node_degrees = {}
+              let filtered_nodes = []
+
+              for (const node of nodes) {
+                node_degrees[node.id] = 0
+                for (const edge of edges) {
+                  if (edge.source === node.id || edge.target === node.id) {
+                    node_degrees[node.id] += 1
+                  }
+                }
+                if (cutoff_degree <= node_degrees[node.id]) {
+                  filtered_nodes.push(node)
+                }
+              }
+              // override nodes object
+              nodes = filtered_nodes
+
+              // we must remove the node entries from the datatable for consistency
+              let nodes_to_remove = [];
+              node_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (!(cutoff_degree <= node_degrees[this.data()[0]])){
+                  nodes_to_remove.push(this.node())
+                }
+              })
+              nodes_to_remove.forEach(function(node) {
+                node_table.row(node).remove()
+              })
+              node_table.draw()
+
+              // now we must sort out unused edges again
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (cutoff_degree <= node_degrees[edge.target] && cutoff_degree <= node_degrees[edge.source]) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+
+              // now we must update the edges table
+              let edges_to_remove = [];
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                if (!(cutoff_degree <= node_degrees[this.data()[0]]) || !(cutoff_degree <= node_degrees[this.data()[1]])){
+                  edges_to_remove.push(this.node())
+                }
+              })
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+            } // end of degree cutoff filter
+
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
+              if (network_data === undefined) {
+                // we have no network data bc e.g. we have no nodes due to filters
+                network = undefined
+                session = undefined
+                return
+              }
+
               network = network_data['network']
               session = network_data['session']
 
@@ -443,33 +656,46 @@ export class BrowseComponent implements OnInit {
             })
 
             $('#export_selected_edges').click(() => {
-              //helper.clear_subgraphs(network);
-              let selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
-              if (selected_edges.length === 0) {
-                selected_edges = edge_table.rows({ filter : 'applied'}).data()
+              // mark all marked edges in the graph
+              const selected_edges = edge_table.rows('.selected', { filter : 'applied'}).data()
+
+              // DONT show the rest of the edges that are not in the table
+              const filtered_edges_raw = edge_table.rows({ filter : 'applied'}).data()
+              let filtered_edges_ids = []
+              for (let i = 0; i < filtered_edges_raw.length; i++){
+                filtered_edges_ids.push(filtered_edges_raw[i][5])
               }
+              helper.limit_edges_to(network, filtered_edges_ids)
+              
               helper.mark_edges_network(network, selected_edges)
+
 
               // go to network
               $('[aria-controls=nav-overview]').click()
+
               setTimeout(() => {
                 $('#restart_camera').click()
-                
               }, 200)
+
             })
       
             $('#export_selected_nodes').click(() => {
               //helper.clear_subgraphs(network);
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
-              if (selected_nodes_data.length === 0) {
-                helper.msg("Please select genes in the table.", false)
-                return
-              }
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
+
+              const filtered_nodes_raw = node_table.rows({ filter : 'applied'}).data()
+              let filtered_nodes_ids = []
+              for (let i = 0; i < filtered_nodes_raw.length; i++){
+                filtered_nodes_ids.push(filtered_nodes_raw[i][0])
+              }
+
+              helper.limit_nodes_to(network, filtered_nodes_ids)
+
               helper.mark_nodes_network(network, selected_nodes)
               
               // go to network

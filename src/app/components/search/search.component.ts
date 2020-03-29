@@ -4,7 +4,6 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
-import { of } from 'rxjs'
 
 declare var Plotly: any;
 declare var $;
@@ -76,8 +75,6 @@ export class SearchComponent implements OnInit {
       $this.pValue_current = $('#significant_results').is(':checked') ? pValue : 1
 
       search_key = parse_search_key_table()
-      console.log("search ley")
-      console.log(search_key)
       // remove possible ''
       search_key = search_key.filter(item => item);
       if (search_key[0] == '') {
@@ -555,7 +552,7 @@ export class SearchComponent implements OnInit {
           "<div class='card-body'>" +
           "<div id=button_control_"+disease_trimmed+">"+
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
-          "Options" +
+          "Filter" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
           `
@@ -624,7 +621,6 @@ export class SearchComponent implements OnInit {
           $.fn.dataTableExt.afnFiltering.push(
             function (oSettings, aData, iDataIndex) {
               
-              //console.log(this_table)
               if (oSettings.nTable.id == this_table_id) {
                 return hits_to_display.includes(aData[1]);
               } else {
@@ -664,6 +660,13 @@ export class SearchComponent implements OnInit {
         /* export data to browse page, where a graph will be shown */ 
                 
         let table = $('#'+$(this).val()).DataTable()
+
+        // if table is empty, return info msg and stop process
+        if (table.rows({ filter : 'applied'}).data().length === 0) {
+          helper.msg("The table is empty!", false)
+          return
+        }
+
         active_cancer_name = $(this).closest('.card').find('button').first().text()
         let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
   
@@ -673,13 +676,14 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
         
-        if (table.rows({ filter : 'applied'}).data().length > 50) {
-          helper.msg("Please apply further filtering to your data (max. 50 interactions are recommended for the network).")
+        if (table.rows({ filter : 'applied'}).data().length > 100) {
+          helper.msg("Please apply further filtering to your data (max. 100 interactions are recommended for the network).")
           return
         }
 
         // append search note to network
         const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
+        let search_keys_ensg = []
         for (const [index, key] of search_key.entries()) {
           controller.search_string(
             {
@@ -689,6 +693,7 @@ export class SearchComponent implements OnInit {
                 for (let elem of response) {
                   if (elem.gene_symbol == key || elem.ensg_number == key) {
                     ensg_numbers.push(elem.ensg_number)
+                    search_keys_ensg.push(elem.ensg_number)
                     break
                   }
                 }
@@ -699,7 +704,8 @@ export class SearchComponent implements OnInit {
                     'nodes': ensg_numbers,
                     'nodes_marked': nodes_marked,
                     'cancer_type': active_cancer_name,
-                    'p_value': $this.pValue_current
+                    'p_value': $this.pValue_current,
+                    'search_keys': search_keys_ensg
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
