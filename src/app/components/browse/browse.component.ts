@@ -351,7 +351,7 @@ export class BrowseComponent implements OnInit {
             const edges_raw = edge_table.data()
             
             let edges = [];
-            for (let i=0; i < number_edges; i++) {
+            for (let i=0; i < edges_raw.length; i++) {
               const interaction = edges_raw[i]
               const id = interaction[5]  // ID
               const source = interaction[0] // Gene 1
