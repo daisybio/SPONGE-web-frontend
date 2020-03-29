@@ -36,16 +36,16 @@ export class Helper {
     
     default_node_color = '#052444'
     default_edge_color = '#0000FF'
-    subgraph_edge_color = '#013220' //'#013220' //339FFF hellblau
+    subgraph_edge_color = '#339FFF'//'#013220' //'#013220' //339FFF hellblau
     subgraph_node_color = '#008cff'        //'#920518' rot
-    hover_edge_color =  '#ff00f6' //'#228B22' --> grüner hover
+    hover_edge_color =  '#9429ff' //<--lila  //'#ff00f6' //'#228B22' --> grüner hover
     hover_node_color = '#a95aa1'
     network_grey_edge_color = '#e0dfde'
     edge_color_pvalues_bins = {
-      1: '#965a00',//'#fae4cf',
+      1: '#ffe921',//'#965a00',//'#fae4cf',
       //0.8: '#fdbe85',
-      0.4: '#ff9900', //'#530096', lila
-      0.05: '#bf8c40'//'#c94503'
+      0.4: '#ffc021',//'#ff5f29'red orange,//'#ff9900', //'#530096', lila
+      0.05: '#ff9421'//'#bf8c40'//'#c94503'
     }
 
     controller = new Controller()
@@ -492,12 +492,12 @@ export class Helper {
             type: 'canvas'
           },
           settings: {
-            // minEdgeSize: 0.1,
-            // maxEdgeSize: 2,
+             minEdgeSize: 1,
+             maxEdgeSize: 5,
             // minNodeSize: 1,
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
-            autoRescale: ['nodePosition'],  //'edgeSize', nodeSize, nodePosition
+            autoRescale: ['nodePosition','edgeSize'],  //'edgeSize', nodeSize, nodePosition
             
             animationsTime: 1000,
             borderSize: 1.5,  
