@@ -247,12 +247,6 @@ export class BrowseComponent implements OnInit {
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
       let limit = 1000
-      let user_limit = undefined
-      
-      // check if limit is set by user and is acutally a number
-      if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
-        user_limit = +$('#input_limit_interactions').val()
-      }
 
       let p_value
       if (shared_data != undefined) {
@@ -290,8 +284,11 @@ export class BrowseComponent implements OnInit {
 
             // all batches are loaded, continue processing the all_data
             let ordered_data = []
-            // remove "run"
-            for (let i=0; i < Object.keys(all_data).length; i++) {
+
+            let number_edges = Object.keys(all_data).length
+
+            // also removes "run"
+            for (let i=0; i < number_edges; i++) {
               let entry = all_data[i]
 
               if (shared_data != undefined && shared_data['search_keys']) {
@@ -303,8 +300,6 @@ export class BrowseComponent implements OnInit {
                     continue
                 }
               }
-              console.log(entry['gene1']['ensg_number'])
-              console.log(entry['gene2']['ensg_number'])
               // change order of columns alredy in object
               let ordered_entry = {}
               ordered_entry['Gene 1'] = entry['gene1']['ensg_number']
@@ -352,8 +347,6 @@ export class BrowseComponent implements OnInit {
 
             const edges_raw = edge_table.data()
             
-            let number_edges = (user_limit && user_limit < edges_raw.length) ? user_limit : edges_raw.length
-
             let edges = [];
             for (let i=0; i < number_edges; i++) {
               const interaction = edges_raw[i]
@@ -486,6 +479,10 @@ export class BrowseComponent implements OnInit {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
 
+            /*
+              STEP 1: apply edge filters like p-value and mscor
+            */
+
             // take the maximum p-value into account
             const maximum_p_value = $('#input_maximum_p_value').val()
             if (!isNaN(parseFloat(maximum_p_value)) && maximum_p_value.length > 0) {
@@ -542,7 +539,47 @@ export class BrowseComponent implements OnInit {
             
             } // end of maximum p value filter
 
-            // take the node degree cutoff into account
+
+            /*
+              STEP 2: limit edge number to user limit
+            */
+            let user_limit = undefined
+            // check if limit is set by user and is acutally a number
+            if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
+              user_limit = $('#input_limit_interactions').val()
+            }
+            if (!isNaN(parseFloat(user_limit)) && user_limit.length > 0) {
+              let edges_to_remove = []
+              let edges_to_remove_ids = []
+              // edges table is ordered by p-value (ascending)
+              let i = 0
+              edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                i++
+                if (i > user_limit) {
+                  edges_to_remove.push(this.node())
+                  edges_to_remove_ids.push(this.data()[5])
+                }
+              })
+
+              edges_to_remove.forEach(function(edge) {
+                edge_table.row(edge).remove()
+              })
+              edge_table.draw()
+
+              // remove filtered edges from edges object for network
+              let filtered_edges = []
+              edges.forEach(function(edge) {
+                if (!edges_to_remove_ids.includes(edge.id)) {
+                  filtered_edges.push(edge)
+                }
+              })
+              // override edges list
+              edges = filtered_edges
+            }
+
+            /*
+              STEP 3: Apply node degree filter + sort out unused edges afterwards
+            */
             const cutoff_degree = $('#input_cutoff_degree').val()
             if (!isNaN(parseFloat(cutoff_degree)) && cutoff_degree.length > 0) {
               // cutoff is set, filter nodes
@@ -566,7 +603,7 @@ export class BrowseComponent implements OnInit {
               // we must remove the node entries from the datatable for consistency
               let nodes_to_remove = [];
               node_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
-                if (!(cutoff_degree < node_degrees[this.data()[0]])){
+                if (!(cutoff_degree <= node_degrees[this.data()[0]])){
                   nodes_to_remove.push(this.node())
                 }
               })
@@ -601,6 +638,13 @@ export class BrowseComponent implements OnInit {
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
+              if (network_data === undefined) {
+                // we have no network data bc e.g. we have no nodes due to filters
+                network = undefined
+                session = undefined
+                return
+              }
+
               network = network_data['network']
               session = network_data['session']
 

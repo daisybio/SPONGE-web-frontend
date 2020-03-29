@@ -469,7 +469,7 @@ export class Helper {
 
       if (nodes.length === 0) {
         // we only get here when we search for specific genes and then changed the disease to a disease where there is no data for these genes
-        $('#network-plot-container').html('No data for your genes in this disease.')
+        $('#network-plot-container').html('No data was found for your search parameters or search genes.')
         return
       }
 
