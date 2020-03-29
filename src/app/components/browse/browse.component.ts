@@ -316,6 +316,9 @@ export class BrowseComponent implements OnInit {
             var index_correlation = column_names.indexOf('Correlation');
             var index_mscor = column_names.indexOf('MScor');
             var index_p_value = column_names.indexOf('p-value');
+
+            // order by p-value or mscor
+            const order_by = $('#interactions_filter_by').val() == 'p_value' ? 4 : 3 
   
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
@@ -334,7 +337,7 @@ export class BrowseComponent implements OnInit {
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-              order: [[ 4, "asc" ]]
+              order: [[ order_by, "asc" ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
