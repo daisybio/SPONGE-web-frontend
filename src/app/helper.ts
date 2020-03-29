@@ -492,8 +492,8 @@ export class Helper {
             type: 'canvas'
           },
           settings: {
-             minEdgeSize: 1,
-             maxEdgeSize: 5,
+             minEdgeSize: 0.8,
+             maxEdgeSize: 4,
             // minNodeSize: 1,
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
@@ -505,8 +505,8 @@ export class Helper {
             enableEdgeHovering: true,
             edgeHoverColor: this.hover_edge_color,
             defaultEdgeHoverColor: this.hover_edge_color,//'#2ecc71', helles grün 
-            edgeHoverSizeRatio: 2.5,
-            nodeHoverSizeRatio: 2.5,
+            edgeHoverSizeRatio: 1.5,
+            nodeHoverSizeRatio: 1.5,
             edgeHoverExtremities: true,
             scalingMode: 'outside',
             doubleClickEnabled: true,
