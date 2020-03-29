@@ -390,7 +390,9 @@ export class BrowseComponent implements OnInit {
       let disease_selector = $('#disease_selectpicker');
       let selected_disease_result = $('#selector_disease_result');
 
+      // initialize selectpicker
       disease_selector.selectpicker()
+      $('#run-info-select').selectpicker()
       
       // takes care of button with link to download page
       // loads specific run information

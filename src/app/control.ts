@@ -451,6 +451,7 @@ export class Controller {
                 if (config.offset != undefined) {
                     request += "&offset="+config.offset
                 }
+                console.log(request)
                 $.getJSON(request,
                     response => {
                         return config.callback(response)                

@@ -552,7 +552,7 @@ export class SearchComponent implements OnInit {
           "<div class='card-body'>" +
           "<div id=button_control_"+disease_trimmed+">"+
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
-          "Options" +
+          "Filter" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
           `
@@ -660,6 +660,13 @@ export class SearchComponent implements OnInit {
         /* export data to browse page, where a graph will be shown */ 
                 
         let table = $('#'+$(this).val()).DataTable()
+
+        // if table is empty, return info msg and stop process
+        if (table.rows({ filter : 'applied'}).data().length === 0) {
+          helper.msg("The table is empty!", false)
+          return
+        }
+
         active_cancer_name = $(this).closest('.card').find('button').first().text()
         let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
   

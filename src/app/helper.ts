@@ -225,13 +225,18 @@ export class Helper {
       let seen_time_1=[]
      
       if( $('#myDiv_'+ensgList[$o]).length <=0){
+        console.log("here")
+        console.log(dn)
+        console.log([ensgList[$o]])
         this.controller.get_survival_rates({
           disease_name: dn,
           ensg_number: [ensgList[$o]],
           
           callback: (response) => {
+          console.log("heree") 
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
+          console.log("parsed survival data for the first time") 
           
           for (let j=0; j < response.length; j++) { 
             
@@ -244,6 +249,7 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
+          console.log("parsed survival data") 
           let add_KMP_Plot
         /*  if(response[0].gene.gene_symbol != 'null'){
            add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
@@ -253,11 +259,12 @@ export class Helper {
        //   }
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
        //  if(!!$('myDiv_'+response[0].gene.gene_symbol)){console.log("MIAUUU")}
+          console.log("right before the plot") 
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
             }
-                    
+                   
           this.plot_KMP(mean_se,overexpression_0_se,overexpression_1_se,seen_time_mean, seen_time_1,seen_time_0,response[0], dn)
           
           // end loading
@@ -265,7 +272,7 @@ export class Helper {
       
           },
           error: (repsonse) => {
-          this.msg("Something went wrong creating the survival analysis.", true)
+          //this.msg("Something went wrong creating the survival analysis.", true)
           $('#loading_spinner_KMP').addClass('hidden')
           }
         });
