@@ -360,7 +360,7 @@ export class BrowseComponent implements OnInit {
               const id = interaction[5]  // ID
               const source = interaction[0] // Gene 1
               const target = interaction[1] // Gene 2
-              const size = Math.abs(10*interaction[3])  // MScor
+              const size = Math.abs(20*interaction[3])  // MScor
               const color = helper.choose_edge_color(interaction[4])  // p-value
               edges.push({
                 id: id, 
