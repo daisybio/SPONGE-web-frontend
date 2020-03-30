@@ -371,8 +371,6 @@ export class Helper {
           callback: (responsePval) => {
             pvalue = JSON.stringify(responsePval[0].pValue)
           
-         
-        console.log(pvalue)
         //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
         //Im beispiel fall nur y estimate gegen time x
         var mean = {
@@ -412,10 +410,11 @@ export class Helper {
             yref: 'paper',
             x: 1,
             xanchor: 'left',
-            y: 0.5,
+            y: 0.83,
             yanchor: 'top',
-            text: 'P-Value: '+pvalue,
+            text: 'p-Value: '+pvalue,
             showarrow: false,
+            textangle: -90,
             font: {
               family: 'Arial, bold',
               size: 10,
