@@ -844,17 +844,17 @@ export class Helper {
         });
       })
 
-      $('#network_snapshot_svg').on('click', () => {
-        network.toSVG({
-          download: true, 
-          filename: 'SPONGE_'+selected_disease+'_graph.svg',
-          labels: true,
-          size: 1000,
-          width: 1000, 
-          height: 1000,
-          data: true
-        })
-      })
+      // $('#network_snapshot_svg').on('click', () => {
+      //   network.toSVG({
+      //     download: true, 
+      //     filename: 'SPONGE_'+selected_disease+'_graph.svg',
+      //     labels: true,
+      //     size: 1000,
+      //     width: 1000, 
+      //     height: 1000,
+      //     data: true
+      //   })
+      // })
 
       /* restart camera */
       document.getElementById('restart_camera').addEventListener('click', function() {
