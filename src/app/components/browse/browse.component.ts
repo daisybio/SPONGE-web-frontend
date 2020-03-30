@@ -310,6 +310,13 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
+
+            if (ordered_data.length === 0) {
+              $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+              $('#loading_spinner').addClass('hidden')
+              return
+            }
+
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
@@ -389,6 +396,8 @@ export class BrowseComponent implements OnInit {
       // initialize selectpicker
       disease_selector.selectpicker()
       $('#run-info-select').selectpicker()
+      $('#interactions_filter_by').selectpicker()
+
       
       // takes care of button with link to download page
       // loads specific run information
