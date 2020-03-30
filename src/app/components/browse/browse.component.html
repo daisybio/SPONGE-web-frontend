@@ -45,23 +45,29 @@
                 <!--Run information tab in sidenav-->
                     <div class="container-fluid" id="run-info">
                         <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
-
+                            <div id="browse_sorting_value_container1">
                             <table id="browse_user_input">
                                
                                 <tr>
-                                    <td><h5>Genes</h5></td>
+                                    <td><h5 class="underline">Genes </h5></td>
+                                </tr>
+                                <tr>
+                                    <td style="width:90%"> <p style="padding-right: 15px;">Sort by:     </p></td>
+                                    <td style="width:10%;">
+                                   
+                                       <div style="left: 15px;">
+                                        <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true" style="text-align: center;">
+                                            <option data-value="">None</option>
+                                            <option data-value="betweenness">Betweenness</option>
+                                            <option data-value="degree">Degree</option>
+                                            <option data-value="eigenvector">Eigenvector</option>
+                                        </select> 
+                                        </div>
+                                   </td>
                                 </tr>
                             </table>
-                            
-                            <div id="browse_sorting_value_container1">
-                                <p>Sort by: </p>
-                                <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true">
-                                    <option data-value="">None</option>
-                                    <option data-value="betweenness">Betweenness</option>
-                                    <option data-value="degree">Degree</option>
-                                    <option data-value="eigenvector">Eigenvector</option>
-                                </select> 
-                            </div>
+                        </div>
+
                             <table id="browse_user_input">
                                
                                 <tr class="">
@@ -74,13 +80,13 @@
                                 </tr>
 
                                 <tr>
-                                    <td><h5>Interactions</h5></td>
+                                    <td><h5 class="underline">Interactions</h5></td>
                                 </tr>
                             </table>
 
                             <div id="browse_sorting_value_container2">
                                 <p>Sort by: </p>
-                                <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by">
+                                <select class="selectpicker bootstrap-select form-control nice-select" id="interactions_filter_by">
                                     <option data-value="p-value">p-value</option>
                                     <option data-value="mscor">MScor</option>
                                 </select>
