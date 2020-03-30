@@ -962,7 +962,12 @@ export class Helper {
       let data = JSON.parse($('#edge_data').text())
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = this.choose_edge_color(data[ee.id]['p-value'])
+          for (let edge of data) {
+            if (edge.ID == ee.id) {
+              ee.color = this.choose_edge_color(edge['p-value'])
+              break
+            }
+          }
         }
       )
       network.graph.nodes().forEach(
