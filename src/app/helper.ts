@@ -1,6 +1,7 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
+import { PassThrough } from 'stream';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -581,6 +582,7 @@ export class Helper {
         let data = JSON.parse($('#edge_data').text())
         for (let entry in data) {
           if (data[entry]['ID'] == e.data.edge.id) {
+            console.log(data[entry])
             // build a table to display json
             let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
@@ -590,12 +592,35 @@ export class Helper {
               row += "</tr>"
               table += row
             }
+
+            // loading spinner for mirna
+            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border"></div></td></tr>`
+
             table += "</table>"
             $('#edge_information_content').html(table)
             // unhide edge information 
             if ($('#edge_information').hasClass('hidden')) {
               $('#edge_information').removeClass('hidden')
             }
+
+            // load and append mirna data
+            this.controller.get_miRNA_by_ceRNA({
+              disease_name: selected_disease,
+              ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
+              between: true,
+              callback: (response) => {
+                console.log(response)
+                let mirnas = ''
+                for (let entry of response) {
+                  mirnas += entry.mirna.mir_ID + ', '
+                }
+                $('#edge_information .mirna-entry').html(mirnas.slice(0,-2))  // remove ', '
+              },
+              error: () => {
+                $('#edge_information .mirna-entry').html('-')
+              }
+            })
+
             // hide node information
             if (!$('#node_information').hasClass('hidden')) {
               $('#node_information').addClass('hidden')

@@ -4,6 +4,7 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
+import { SSL_OP_TLS_ROLLBACK_BUG } from 'constants'
 
 declare var Plotly: any;
 declare var $;
@@ -770,6 +771,7 @@ export class SearchComponent implements OnInit {
         interaction_info['Correlation'] = interaction['correlation']
         interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
+//        interaction_info['miRNA'] = ''
 
         parsed_search_result['diseases'][disease].push(interaction_info)
 
@@ -904,6 +906,25 @@ export class SearchComponent implements OnInit {
         // enable export to network
         $('#'+table_id).closest('.card-body').find('.export_nodes').prop('disabled', false);
 
+/* 
+        // start adding miRNAs
+        for(let i = 0; i < table.data().length; i++) {
+          controller.get_miRNA_by_ceRNA({
+            disease_name: disease,
+            ensg_number: [table.cell({ row: i, column: 0 }).data(), table.cell({ row: i, column: 1 }).data()],
+            between: true,
+            callback: (response) => {
+              if (response.mirna.mir_ID) {
+                table.cell({ row: i, column: 8 }).data(response.mirna.mir_ID)
+              }
+            },
+            error: () => {
+              table.cell({ row: i, column: 8 }).data("-")
+            }
+          })
+        }
+        table.draw()
+*/
       }
     }
 
