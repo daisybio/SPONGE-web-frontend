@@ -554,7 +554,7 @@ export class SearchComponent implements OnInit {
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
-          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
+          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show as Network</button>"+
           `
           <div class="form-check button-margin inline-block ${search_key.length>1?'': 'hidden'}">
             <input disabled type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
@@ -900,6 +900,9 @@ export class SearchComponent implements OnInit {
       if (table_complete) {
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
+
+        // enable export to network
+        $('#'+table_id).closest('.card-body').find('.export_nodes').prop('disabled', false);
 
       }
     }
