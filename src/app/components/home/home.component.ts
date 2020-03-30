@@ -321,7 +321,6 @@ export class HomeComponent implements OnInit {
         //helper.msg("Please select genes in the search field.", true)
         return
       }
-      console.log(search_key)
       window.open( 'search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
@@ -357,7 +356,6 @@ export class HomeComponent implements OnInit {
                
               },
               error: () => {
-                console.log(request)
               }
             })
           }

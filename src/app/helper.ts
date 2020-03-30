@@ -226,18 +226,13 @@ export class Helper {
       let seen_time_1=[]
      
       if( $('#myDiv_'+ensgList[$o]).length <=0){
-        console.log("here")
-        console.log(dn)
-        console.log([ensgList[$o]])
         this.controller.get_survival_rates({
           disease_name: dn,
           ensg_number: [ensgList[$o]],
           
           callback: (response) => {
-          console.log("heree") 
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
-          console.log("parsed survival data for the first time") 
           
           for (let j=0; j < response.length; j++) { 
             
@@ -250,7 +245,6 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
-          console.log("parsed survival data") 
           let add_KMP_Plot
         /*  if(response[0].gene.gene_symbol != 'null'){
            add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
@@ -259,8 +253,6 @@ export class Helper {
 
        //   }
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
-       //  if(!!$('myDiv_'+response[0].gene.gene_symbol)){console.log("MIAUUU")}
-          console.log("right before the plot") 
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
@@ -582,7 +574,6 @@ export class Helper {
         let data = JSON.parse($('#edge_data').text())
         for (let entry in data) {
           if (data[entry]['ID'] == e.data.edge.id) {
-            console.log(data[entry])
             // build a table to display json
             let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
@@ -609,7 +600,6 @@ export class Helper {
               ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
               between: true,
               callback: (response) => {
-                console.log(response)
                 let mirnas = ''
                 for (let entry of response) {
                   mirnas += entry.mirna.mir_ID + ', '
@@ -810,7 +800,6 @@ export class Helper {
             if (ee.id == id) {
               network.graph.dropEdge(ee.id);
               //ee.hidden = true
-              console.log("edge dropped");
             }
           }
         )

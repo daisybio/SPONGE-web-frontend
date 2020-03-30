@@ -960,7 +960,7 @@ export class SearchComponent implements OnInit {
                 response(values)
               },
               error: () => {
-                console.log(request)
+                //console.log(request)
               }
             })
           }

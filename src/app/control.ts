@@ -56,7 +56,6 @@ export class Controller {
             }
             
             request += "searchString="+config.searchString
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -97,14 +96,12 @@ export class Controller {
             if (config.minCountSign != undefined) {
                 request += "&minCountSign="+config.minCountSign
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
                 }
             ).fail(
                 response => {
-                    console.log(response)
                     return config.error(response)
                 })
             }
@@ -163,7 +160,6 @@ export class Controller {
             if (config.between != undefined) {
                 request += "&between="+config.between
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -287,7 +283,6 @@ export class Controller {
             if (config.offset != undefined) {
                 request += "&offset="+config.offset
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -336,7 +331,6 @@ export class Controller {
             if (config.pValueDirection != undefined) {
                 request += "&pValueDirection="+config.pValueDirection
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -401,7 +395,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -488,7 +481,6 @@ export class Controller {
                 if (config.offset != undefined) {
                     request += "&offset="+config.offset
                 }
-                console.log(request)
                 $.getJSON(request,
                     response => {
                         return config.callback(response)                
