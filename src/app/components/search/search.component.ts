@@ -4,7 +4,7 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
-import { SSL_OP_TLS_ROLLBACK_BUG } from 'constants'
+//import { SSL_OP_TLS_ROLLBACK_BUG } from 'constants'
 
 declare var Plotly: any;
 declare var $;
