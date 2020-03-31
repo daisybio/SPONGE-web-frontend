@@ -72,8 +72,7 @@ export class HomeComponent implements OnInit {
             type: 'bar',
             name: 'Count of significant interactions',
             marker: {
-             // color: 'rgb(94, 48, 201)',
-              color:  'rgb(19,63,103)',//'rgb(172, 27, 99)',
+              color:  'rgb(19,63,103)',//'rgb(172, 27, 99)', nice pink
               opacity: 1
             }
           };
@@ -91,8 +90,7 @@ export class HomeComponent implements OnInit {
         tickangle: -45,
         //hoverformat: '.3f'
       },  
-     // yaxis:{hoverformat: '.3f'},
-      yaxis:{type: 'log'},
+      yaxis:{type:'log'},
       barmode: 'group',
       autosize: false,
       width: 900,
@@ -299,19 +297,11 @@ export class HomeComponent implements OnInit {
     function parse_search_key_table() {
       let search_key = ''
       const ensg_numbers = $('#home_search_key_table .ensg_number')
-      let all_keys_same = []
       for (const ensg_number of ensg_numbers) {
-        all_keys_same.push(ensg_number.innerText[0]=='E')
         search_key += ensg_number.innerText +','
-      }
-      const allEqual = arr => arr.every( v => v === arr[0] )
-      if (!allEqual) {
-        helper.msg("All search keys have to be either genes or miRNAs.")
-        return []
       }
       return search_key.slice(0,-1)  // remove last ','
     }
-
 
     /* Search function for home component */
     $('#home_search_button').click(() => {
@@ -319,9 +309,10 @@ export class HomeComponent implements OnInit {
 
       // check if search_key is non-empty after removing empty chars
       if (search_key.length == 0) {
-        //helper.msg("Please select genes in the search field.", true)
+        helper.msg("Please select genes in the search field.", true)
         return
       }
+      console.log(search_key)
       window.open( 'search?search_key='+encodeURIComponent(search_key), '_top')
     })
 
@@ -357,6 +348,7 @@ export class HomeComponent implements OnInit {
                
               },
               error: () => {
+                console.log(request)
               }
             })
           }
@@ -377,8 +369,6 @@ export class HomeComponent implements OnInit {
             if (terms[1].length && terms[1][0] == '(') {
               terms[1] = terms[1].substring(1, terms[1].length-1);
             }
-
-
             // append searched key to table
             $('#home_search_key_table tbody').append(
               `
