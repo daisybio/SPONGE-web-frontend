@@ -136,7 +136,6 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click();
     }
 
-    
     run_information()
 
     // trigger click on first disease in the beginning
@@ -311,6 +310,13 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
+
+            if (ordered_data.length === 0) {
+              $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+              $('#loading_spinner').addClass('hidden')
+              return
+            }
+
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
             // find index positions from columns to round
@@ -382,7 +388,6 @@ export class BrowseComponent implements OnInit {
     }
 
     function run_information() {
-      
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
       let disease_selector = $('#disease_selectpicker');
@@ -391,7 +396,9 @@ export class BrowseComponent implements OnInit {
       // initialize selectpicker
       disease_selector.selectpicker()
       $('#run-info-select').selectpicker()
-      $('#run-info-select').selectpicker().attr("style","left:15px")
+      $('#interactions_filter_by').selectpicker()
+
+      
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
@@ -818,7 +825,7 @@ export class BrowseComponent implements OnInit {
       } );
       // save data for later search
       $('#node_data').text(JSON.stringify(ordered_data))
-    
+
       /* plot expression data for nodes */
       //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
       return nodes

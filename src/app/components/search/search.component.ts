@@ -4,6 +4,7 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
+import { SSL_OP_TLS_ROLLBACK_BUG } from 'constants'
 
 declare var Plotly: any;
 declare var $;
@@ -554,7 +555,7 @@ export class SearchComponent implements OnInit {
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
-          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+">Show as Network</button>"+
+          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show as Network</button>"+
           `
           <div class="form-check button-margin inline-block ${search_key.length>1?'': 'hidden'}">
             <input disabled type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
@@ -770,6 +771,7 @@ export class SearchComponent implements OnInit {
         interaction_info['Correlation'] = interaction['correlation']
         interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
+//        interaction_info['miRNA'] = ''
 
         parsed_search_result['diseases'][disease].push(interaction_info)
 
@@ -901,6 +903,28 @@ export class SearchComponent implements OnInit {
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
 
+        // enable export to network
+        $('#'+table_id).closest('.card-body').find('.export_nodes').prop('disabled', false);
+
+/* 
+        // start adding miRNAs
+        for(let i = 0; i < table.data().length; i++) {
+          controller.get_miRNA_by_ceRNA({
+            disease_name: disease,
+            ensg_number: [table.cell({ row: i, column: 0 }).data(), table.cell({ row: i, column: 1 }).data()],
+            between: true,
+            callback: (response) => {
+              if (response.mirna.mir_ID) {
+                table.cell({ row: i, column: 8 }).data(response.mirna.mir_ID)
+              }
+            },
+            error: () => {
+              table.cell({ row: i, column: 8 }).data("-")
+            }
+          })
+        }
+        table.draw()
+*/
       }
     }
 
@@ -936,7 +960,7 @@ export class SearchComponent implements OnInit {
                 response(values)
               },
               error: () => {
-                console.log(request)
+                //console.log(request)
               }
             })
           }

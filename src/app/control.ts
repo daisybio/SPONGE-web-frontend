@@ -26,7 +26,7 @@ export class Controller {
     static GENE_COUNT = "/getGeneCount"
 
     static MIRNA_INTERACTION_SPECIFIC = "/miRNAInteraction/findSpecific"
-    // static MIRNA_INTERACTION_FIND_CERNA = "/miRNAInteraction/findceRNA"
+    static MIRNA_INTERACTION_FIND_CERNA = "/miRNAInteraction/findceRNA"
     // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
     static DATASETS = "/dataset"
@@ -56,7 +56,6 @@ export class Controller {
             }
             
             request += "searchString="+config.searchString
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -97,14 +96,12 @@ export class Controller {
             if (config.minCountSign != undefined) {
                 request += "&minCountSign="+config.minCountSign
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
                 }
             ).fail(
                 response => {
-                    console.log(response)
                     return config.error(response)
                 })
             }
@@ -117,7 +114,7 @@ export class Controller {
             error?: (response) => any
         })
         {
-            let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_SPECIFIC
+            let request = Controller.API_ENDPOINT+Controller.CHECKGENEINTERACTION
             if (Object.keys(config).length > 1) {
                 request += '?'
             }
@@ -126,6 +123,42 @@ export class Controller {
             }
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
+            }
+            $.getJSON(request,
+                response => {
+                    return config.callback(response)
+                }
+            ).fail(
+                response => {
+                    return config.error(response)
+                })
+            }
+
+    public get_miRNA_by_ceRNA(
+        config: {
+            disease_name?: string,
+            ensg_number?: string[],
+            gene_symbol?: string[],
+            between: boolean,
+            callback: (response) => any,
+            error?: (response) => any
+        })
+        {
+            let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_FIND_CERNA
+            if (Object.keys(config).length > 1) {
+                request += '?'
+            }
+            if (config.disease_name != undefined) {
+                request += "&disease_name="+config.disease_name
+            }
+            if (config.ensg_number != undefined) {
+                request += "&ensg_number="+config.ensg_number
+            }
+            if (config.gene_symbol != undefined) {
+                request += "&gene_symbol="+config.gene_symbol
+            }
+            if (config.between != undefined) {
+                request += "&between="+config.between
             }
             $.getJSON(request,
                 response => {
@@ -250,7 +283,6 @@ export class Controller {
             if (config.offset != undefined) {
                 request += "&offset="+config.offset
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -299,7 +331,6 @@ export class Controller {
             if (config.pValueDirection != undefined) {
                 request += "&pValueDirection="+config.pValueDirection
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -364,7 +395,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -451,7 +481,6 @@ export class Controller {
                 if (config.offset != undefined) {
                     request += "&offset="+config.offset
                 }
-                console.log(request)
                 $.getJSON(request,
                     response => {
                         return config.callback(response)                

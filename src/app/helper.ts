@@ -1,6 +1,7 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
+import { PassThrough } from 'stream';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -225,18 +226,13 @@ export class Helper {
       let seen_time_1=[]
      
       if( $('#myDiv_'+ensgList[$o]).length <=0){
-        console.log("here")
-        console.log(dn)
-        console.log([ensgList[$o]])
         this.controller.get_survival_rates({
           disease_name: dn,
           ensg_number: [ensgList[$o]],
           
           callback: (response) => {
-          console.log("heree") 
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
-          console.log("parsed survival data for the first time") 
           
           for (let j=0; j < response.length; j++) { 
             
@@ -249,7 +245,6 @@ export class Helper {
          
           overexpression_1_se = this.parse_survival_data(overexpression_1,seen_time_1);
           overexpression_0_se = this.parse_survival_data(overexpression_0, seen_time_0);
-          console.log("parsed survival data") 
           let add_KMP_Plot
         /*  if(response[0].gene.gene_symbol != 'null'){
            add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
@@ -258,8 +253,6 @@ export class Helper {
 
        //   }
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
-       //  if(!!$('myDiv_'+response[0].gene.gene_symbol)){console.log("MIAUUU")}
-          console.log("right before the plot") 
           $('#plots').append(add_KMP_Plot)
           if(dn == encodeURIComponent($('#network-plot-container').val().toString())){
             dn = $('#network-plot-container').val().toString()
@@ -371,8 +364,6 @@ export class Helper {
           callback: (responsePval) => {
             pvalue = JSON.stringify(responsePval[0].pValue)
           
-         
-        console.log(pvalue)
         //Holen der wichtigen Daten und berechnen der Werte + speichern in trace
         //Im beispiel fall nur y estimate gegen time x
         var mean = {
@@ -412,10 +403,11 @@ export class Helper {
             yref: 'paper',
             x: 1,
             xanchor: 'left',
-            y: 0.5,
+            y: 0.83,
             yanchor: 'top',
-            text: 'P-Value: '+pvalue,
+            text: 'p-Value: '+pvalue,
             showarrow: false,
+            textangle: -90,
             font: {
               family: 'Arial, bold',
               size: 10,
@@ -592,12 +584,34 @@ export class Helper {
               row += "</tr>"
               table += row
             }
+
+            // loading spinner for mirna
+            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border"></div></td></tr>`
+
             table += "</table>"
             $('#edge_information_content').html(table)
             // unhide edge information 
             if ($('#edge_information').hasClass('hidden')) {
               $('#edge_information').removeClass('hidden')
             }
+
+            // load and append mirna data
+            this.controller.get_miRNA_by_ceRNA({
+              disease_name: selected_disease,
+              ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
+              between: true,
+              callback: (response) => {
+                let mirnas = ''
+                for (let entry of response) {
+                  mirnas += entry.mirna.mir_ID + ', '
+                }
+                $('#edge_information .mirna-entry').html(mirnas.slice(0,-2))  // remove ', '
+              },
+              error: () => {
+                $('#edge_information .mirna-entry').html('-')
+              }
+            })
+
             // hide node information
             if (!$('#node_information').hasClass('hidden')) {
               $('#node_information').addClass('hidden')
@@ -787,7 +801,6 @@ export class Helper {
             if (ee.id == id) {
               network.graph.dropEdge(ee.id);
               //ee.hidden = true
-              console.log("edge dropped");
             }
           }
         )
@@ -832,17 +845,17 @@ export class Helper {
         });
       })
 
-      $('#network_snapshot_svg').on('click', () => {
-        network.toSVG({
-          download: true, 
-          filename: 'SPONGE_'+selected_disease+'_graph.svg',
-          labels: true,
-          size: 1000,
-          width: 1000, 
-          height: 1000,
-          data: true
-        })
-      })
+      // $('#network_snapshot_svg').on('click', () => {
+      //   network.toSVG({
+      //     download: true, 
+      //     filename: 'SPONGE_'+selected_disease+'_graph.svg',
+      //     labels: true,
+      //     size: 1000,
+      //     width: 1000, 
+      //     height: 1000,
+      //     data: true
+      //   })
+      // })
 
       /* restart camera */
       document.getElementById('restart_camera').addEventListener('click', function() {
@@ -964,7 +977,12 @@ export class Helper {
       let data = JSON.parse($('#edge_data').text())
       network.graph.edges().forEach(
         (ee) => {
-          ee.color = this.choose_edge_color(data[ee.id]['p-value'])
+          for (let edge of data) {
+            if (edge.ID == ee.id) {
+              ee.color = this.choose_edge_color(edge['p-value'])
+              break
+            }
+          }
         }
       )
       network.graph.nodes().forEach(
