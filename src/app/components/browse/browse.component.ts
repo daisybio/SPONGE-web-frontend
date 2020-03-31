@@ -136,6 +136,7 @@ export class BrowseComponent implements OnInit {
       $('#load_disease').click();
     }
 
+    
     run_information()
 
     // trigger click on first disease in the beginning
@@ -381,6 +382,7 @@ export class BrowseComponent implements OnInit {
     }
 
     function run_information() {
+      
       // ALL TS FOR TAB RUN INFORMATION
       // load all disease names from database and insert them into selector 
       let disease_selector = $('#disease_selectpicker');
@@ -389,7 +391,7 @@ export class BrowseComponent implements OnInit {
       // initialize selectpicker
       disease_selector.selectpicker()
       $('#run-info-select').selectpicker()
-      
+      $('#run-info-select').selectpicker().attr("style","left:15px")
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
@@ -435,7 +437,7 @@ export class BrowseComponent implements OnInit {
             run_name.innerHTML = helper.uppercaseFirstLetter(header);
             
             run_name.setAttribute("style","text-decoration:underline")
-
+           
             let table= document.createElement("tr")
             table.appendChild(run_name)
             
