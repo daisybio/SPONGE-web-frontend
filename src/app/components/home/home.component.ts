@@ -73,13 +73,13 @@ export class HomeComponent implements OnInit {
             name: 'Count of significant interactions',
             marker: {
              // color: 'rgb(94, 48, 201)',
-              color:  'rgb(172, 27, 99)',
+              color:  'rgb(19,63,103)',//'rgb(172, 27, 99)',
               opacity: 1
             }
           };
          
 
-    var data = [miRNAs2, correlations_pred,correlations_sig];
+    var data = [correlations_pred,correlations_sig];
     var layout = {
       title: 'SPONGE results for each pair of genes',
       titlefont: {
@@ -92,6 +92,7 @@ export class HomeComponent implements OnInit {
         //hoverformat: '.3f'
       },  
      // yaxis:{hoverformat: '.3f'},
+      yaxis:{type: 'log'},
       barmode: 'group',
       autosize: false,
       width: 900,
