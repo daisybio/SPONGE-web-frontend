@@ -1,7 +1,7 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
-import { PassThrough } from 'stream';
+//import { PassThrough } from 'stream';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
