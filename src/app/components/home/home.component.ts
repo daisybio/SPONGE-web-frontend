@@ -106,8 +106,8 @@ export class HomeComponent implements OnInit {
       },
       showlegend: true,
       legend: {
-        x:0,
-        y:1,
+        x:0.13,
+        y:1.04,
         "orientation": "h"},
       hoverlabel:{
         namelength:50
