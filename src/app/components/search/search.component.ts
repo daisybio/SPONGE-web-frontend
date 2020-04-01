@@ -652,7 +652,7 @@ export class SearchComponent implements OnInit {
         if ($('#'+table_id).length || $(this).closest('.card-header').next().find('.card-body-table').html().length) return 
 
         // start local loading animation, gets removed in the parse function
-        $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border"></div></div>')
+        $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border spinner"></div></div>')
         
         load_interactions(disease, table_id)
       })

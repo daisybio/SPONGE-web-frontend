@@ -586,7 +586,7 @@ export class Helper {
             }
 
             // loading spinner for mirna
-            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border"></div></td></tr>`
+            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border spinner"></div></td></tr>`
 
             table += "</table>"
             $('#edge_information_content').html(table)
