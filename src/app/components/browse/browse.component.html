@@ -48,7 +48,7 @@
                             <div id="browse_sorting_value_container1">
                             <table id="browse_user_input">
                                
-                                <tr class="text-center"> 
+                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 100%;"> 
                                     <th><h5 class="underline">Genes </h5></th>
                                 </tr>
                                 <tr>
@@ -79,17 +79,19 @@
                                     <td><input type="text" class="form-control" id="input_cutoff_degree" value=1></td>
                                 </tr>
 
-                                <tr>
+                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 30%;"> 
                                     <td><h5 class="underline">Interactions</h5></td>
                                 </tr>
                             </table>
-
+                          
                             <div id="browse_sorting_value_container2">
                                 <p>Sort by: </p>
-                                <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by">
+                                <td style="left: 119%; position: relative;">
+                                <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by"  > 
                                     <option data-value="p-value" selected>p-value</option>
                                     <option data-value="mscor">MScor</option>
                                 </select>
+                            </td>
                             </div>
 
                             <table id="browse_user_input">
