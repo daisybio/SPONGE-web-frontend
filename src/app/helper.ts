@@ -525,6 +525,8 @@ export class Helper {
         }
       )
       
+       
+
       let session = new Session(network)
 
       var noverlap_config = {
@@ -918,11 +920,12 @@ export class Helper {
       //network.refresh()
 
       // build legend
-      let legend = $('<table>').addClass('table table-striped text-center').attr('id', 'network-legend')
+      let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 5px 5px 5px 5px;">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
       // append header
       //legend.html(`<tr><th>Color</th><th>p-value</th></tr>`)
       // append rows
-        
+        legend.append('<th style="position: relative;left: 25%;">Legend</th>')
+    
       for (const [threshold, color] of Object.entries(this.edge_color_pvalues_bins)) {
         let row = $('<tr>')
         row.append($('<td>').append($('<span>').addClass('legend-line').css('background-color', color)))
@@ -951,7 +954,8 @@ export class Helper {
         </tr>
       `)
       
-      $('#network_legend').html(legend)
+    //  $('#network_legend').html(legend)
+      $('#network-legend').html(legend)
       
       return({'network': network, 'session': session})
     }
