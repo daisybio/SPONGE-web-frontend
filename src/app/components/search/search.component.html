@@ -11,7 +11,7 @@
             <!-- start search information  -->
             <div class="col-md-auto">
 
-                <div class="card" id="card-dim">
+                <div class="card" id="card-dim" style="z-index: 10;">
                     <h3 class="card-header text-center" id="card-header">Search Genes</h3>
                     <div class="card-body">
                         <div id="options_gene" class="col">
@@ -58,8 +58,11 @@
 
 
 
-            <div class="container-fluid col" >
-                <div id='pie_chart_container'></div>
+            <div class="container-fluid col" style=" margin-top: 20px; margin-bottom: 20px;" >
+                <div class="card-header text-center hidden" id="pie-chart-header"></div>
+                <div id='pie_chart_container_background'>
+                    <div id='pie_chart_container'></div>
+                </div>
             </div>
         </div>
 

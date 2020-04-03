@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, ContentChild } from '@angular/core'
 import { Controller } from "../../control"
 import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
@@ -239,6 +239,7 @@ export class SearchComponent implements OnInit {
       $('#network-container').empty()
       $('#search_key_information tbody').empty()
       $('#plots').empty()
+      $('#pie-chart-header').addClass('hidden')
 
       /* search_key is defined */
       if (search_key != undefined) {
@@ -282,17 +283,27 @@ export class SearchComponent implements OnInit {
             var layout = {
               height: 600,
               width: 1000,
-              title: 'Interactions of ' + search_key.join(', '),
+             // title: 'Significant interactions of ' + search_key.join(', ') +' with p-value < 0.05',
               paper_bgcolor: 'rgba(0,0,0,0)',
               plot_bgcolor: 'rgba(0,0,0,0)',
+              autosize: true
+              
             };
             
+            let pie_chart_header ='<h3>Significant interactions of ' + search_key +'\n with p-value < 0.05</h3>'
             // remove possible old plot
             $('#pie_chart_container').empty()
-
+          //  $('#pie_chart_container_background').empty()
+            $('#pie-chart-header').empty()
+            
             // only show the pie chart if there is a single search key
             if (search_key.length == 1) {
               Plotly.newPlot('pie_chart_container', plot_data, layout);
+             
+              $('#pie-chart-header').append(pie_chart_header)
+              $('#pie-chart-header').removeClass('hidden')
+            
+              
 
               // handle click function on pie chart
               $('#pie_chart_container').on('plotly_click', function(_, data){
