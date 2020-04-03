@@ -937,13 +937,15 @@ export class Helper {
         <tr>
           <td>
             <span class='legend-dot-small'></span>
+            <span class='legend-dot-middle'></span>
+            <span class='legend-dot-big'></span>
           </td>
           <td>
-            low Degree
+            Degree
           </td>
         </tr>
       `)
-      legend.append(`
+     /** legend.append(`
         <tr>
           <td>
             <span class='legend-dot-big'></span>
@@ -952,7 +954,7 @@ export class Helper {
             high Degree
           </td>
         </tr>
-      `)
+      `) */
       
     //  $('#network_legend').html(legend)
       $('#network-legend').html(legend)
