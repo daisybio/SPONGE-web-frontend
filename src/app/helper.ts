@@ -461,7 +461,7 @@ export class Helper {
 
       if (nodes.length === 0) {
         // we only get here when we search for specific genes and then changed the disease to a disease where there is no data for these genes
-        $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+        $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
         return
       }
 
@@ -603,11 +603,18 @@ export class Helper {
               ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
               between: true,
               callback: (response) => {
-                let mirnas = ''
+                // there can be duplicates
+                let mirnas = {}
                 for (let entry of response) {
-                  mirnas += entry.mirna.mir_ID + ', '
+                  mirnas[entry.mirna.mir_ID] = true
                 }
-                $('#edge_information .mirna-entry').html(mirnas.slice(0,-2))  // remove ', '
+
+
+                let mirnas_string = ''
+                for (let entry of Object.keys(mirnas)) {
+                  mirnas_string += entry + ', '
+                }
+                $('#edge_information .mirna-entry').html(mirnas_string.slice(0,-2))  // remove ', '
               },
               error: () => {
                 $('#edge_information .mirna-entry').html('-')

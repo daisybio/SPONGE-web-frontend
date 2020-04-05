@@ -294,6 +294,7 @@ export class SearchComponent implements OnInit {
               pie_chart_header.append(' with p-value < 0.05')
             }
             // remove possible old plot
+            
             $('#pie_chart_container').empty()
           //  $('#pie_chart_container_background').empty()
             $('#pie-chart-header').empty()
@@ -305,7 +306,9 @@ export class SearchComponent implements OnInit {
               $('#pie-chart-header').append(pie_chart_header)
               $('#pie-chart-header').removeClass('hidden')
             
-              
+              if ($('#pie_chart_container_background').hasClass('hidden')){
+                $('#pie_chart_container_background').removeClass('hidden')
+              }
 
               // handle click function on pie chart
               $('#pie_chart_container').on('plotly_click', function(_, data){
@@ -316,6 +319,11 @@ export class SearchComponent implements OnInit {
                   scrollTop: $( "button:contains('"+data.points[0].label+"')" ).offset().top
                 }, 1000)
               });
+            } else {
+              // hide the container
+              if (!$('#pie_chart_container_background').hasClass('hidden')){
+                $('#pie_chart_container_background').addClass('hidden')
+              }
             }
 
             build_accordion()
