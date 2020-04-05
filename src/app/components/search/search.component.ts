@@ -851,6 +851,10 @@ export class SearchComponent implements OnInit {
 
         // define table settings based on search key length
         let datatable_settings = {
+          dom: '<"top"Bf>rt<"bottom"lip>',
+          buttons: [
+            'copy', 'csv', 'excel', 'pdf', 'print'
+          ],
           orderCellsTop: true,
           drawCallback: function( settings ) {
             var api = this.api();
