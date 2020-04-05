@@ -289,8 +289,10 @@ export class SearchComponent implements OnInit {
               autosize: true
               
             };
-            
-            let pie_chart_header ='<h3>Significant interactions of ' + search_key +'\n with p-value < 0.05</h3>'
+            let pie_chart_header = $('<h3>').text(`Significant interactions of ${search_key}`)
+            if ($('#significant_results').is(':checked')) {
+              pie_chart_header.append(' with p-value < 0.05')
+            }
             // remove possible old plot
             $('#pie_chart_container').empty()
           //  $('#pie_chart_container_background').empty()
