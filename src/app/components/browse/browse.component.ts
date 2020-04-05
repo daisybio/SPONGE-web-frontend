@@ -52,6 +52,17 @@ export class BrowseComponent implements OnInit {
     /* In case we passed data from search to browse (shared service), set cancer type */
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
+
+      // we also want to remove options that are not valid
+      console.log(shared_data['interactive_cancer_types'])
+
+      $('#disease_selectpicker option').each( function (option) {
+        console.log($(this))
+        console.log(option)
+        if (!shared_data['interactive_cancer_types'].includes($(this).text().toLowerCase())) {
+          $(this).addClass('hidden')
+        }
+      })
     }
     //##################################################################################
 
@@ -209,10 +220,10 @@ export class BrowseComponent implements OnInit {
       
       if (shared_data == undefined) {
         controller.get_ceRNA({
-          'disease_name':disease_trimmed,
-          'sorting':sort_by,
-          'limit':limit,
-          'minBetweenness':cutoff_betweenness,
+          'disease_name': disease_trimmed,
+          'sorting': sort_by,
+          'limit': limit,
+          'minBetweenness': cutoff_betweenness,
           //'minNodeDegree': cutoff_degree,
           'minEigenvector': cutoff_eigenvector,
           'descending': descending,
@@ -228,11 +239,35 @@ export class BrowseComponent implements OnInit {
         )
       } else {
         // check if there are stored nodes, if so, return them
+        if (shared_data['nodes'].length > limit) {
+          if (!$('#network_messages .alert-nodes').length) {
+            $('#network_messages').append(
+              `
+              <!-- Info Alert -->
+              <div class="alert alert-info alert-dismissible fade show alert-nodes">
+                  <strong>N.B.</strong> You have selected ${shared_data['nodes'].length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+              </div>
+              `)
+          } 
+        } else {
+          // alert-nodes is there
+          $('#network_messages .alert-nodes').remove()
+        }
+
         controller.get_ceRNA({
           'disease_name': shared_data['cancer_type'],
           'ensg_number': shared_data['nodes'],
+          'limit': limit,
+          'sorting': sort_by,
+          // 'minBetweenness': cutoff_betweenness,
+          //'minNodeDegree': cutoff_degree,
+          // 'minEigenvector': cutoff_eigenvector,
+          'descending': descending,
           'callback': data => {
+            console.log(data)
             let nodes = parse_node_data(data)
+            console.log(shared_data['nodes'])
             return callback(nodes)
             },
             error: (response) => {
@@ -312,7 +347,7 @@ export class BrowseComponent implements OnInit {
             }
 
             if (ordered_data.length === 0) {
-              $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+              $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
               $('#loading_spinner').addClass('hidden')
               return
             }
@@ -325,7 +360,18 @@ export class BrowseComponent implements OnInit {
             var index_p_value = column_names.indexOf('p-value');
 
             // order by p-value or mscor
-            const order_by = $('#interactions_filter_by').val() == 'p_value' ? 4 : 3 
+            let order_by
+            let order_by_asc_des
+            if ($('#interactions_filter_by').val() == 'p-value') {
+              order_by = 4
+              order_by_asc_des = 'asc'
+            } else if ($('#interactions_filter_by').val() == 'Mscor') {
+              order_by = 3
+              order_by_asc_des = 'desc'
+            } else if ($('#interactions_filter_by').val() == 'Correlation'){
+              order_by = 2
+              order_by_asc_des = 'desc'
+            }
   
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
@@ -344,7 +390,7 @@ export class BrowseComponent implements OnInit {
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-              order: [[ order_by, "asc" ]]
+              order: [[ order_by, order_by_asc_des ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
@@ -560,14 +606,15 @@ export class BrowseComponent implements OnInit {
             if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
               user_limit = $('#input_limit_interactions').val()
             }
+
             if (!isNaN(parseFloat(user_limit)) && user_limit.length > 0) {
               let edges_to_remove = []
               let edges_to_remove_ids = []
               // edges table is ordered by p-value (ascending)
-              let i = 0
+              let interaction_counter = 0
               edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
-                i++
-                if (i > user_limit) {
+                interaction_counter++
+                if (interaction_counter > user_limit) {
                   edges_to_remove.push(this.node())
                   edges_to_remove_ids.push(this.data()[5])
                 }
@@ -585,6 +632,23 @@ export class BrowseComponent implements OnInit {
                   filtered_edges.push(edge)
                 }
               })
+
+              if (interaction_counter > user_limit) {
+                if (!$('#network_messages .alert-edges').length) {
+                  $('#network_messages').append(
+                    `
+                    <!-- Info Alert -->
+                    <div class="alert alert-info alert-dismissible fade show alert-edges">
+                        <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                    `
+                  )
+                } 
+              } else {
+                // alert-nodes is there
+                $('#network_messages .alert-edges').remove()
+              }
               // override edges list
               edges = filtered_edges
             }

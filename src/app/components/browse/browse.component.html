@@ -56,9 +56,8 @@
                                     <td style="width:5%;left: 15px; position: relative;">
                                    
                                     
-                                        <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" data-live-search="true" style="text-align: center;">
-                                            <option data-value="">None</option>
-                                            <option data-value="betweenness">Betweenness</option>
+                                        <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" style="text-align: center;">
+                                            <option data-value="betweenness" selected>Betweenness</option>
                                             <option data-value="degree">Degree</option>
                                             <option data-value="eigenvector">Eigenvector</option>
                                         </select> 
@@ -72,7 +71,7 @@
                                
                                 <tr class="">
                                     <td><p>Limit for displayed genes (the more the slower)</p></td>
-                                    <td><input type="text" class="form-control" id="input_limit" value=10></td>
+                                    <td><input type="text" class="form-control" id="input_limit" value=50></td>
                                 </tr>
                                 <tr class="">
                                     <td><p>Cutoff for degree (lower bound): </p></td>
@@ -89,7 +88,8 @@
                                 <td style="width: 5%; position: relative;">
                                 <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by"  > 
                                     <option data-value="p-value" selected>p-value</option>
-                                    <option data-value="mscor">MScor</option>
+                                    <option data-value="MScor">MScor</option>
+                                    <option data-value="Correlation">Correlation</option>
                                 </select>
                             </td>
                             </div>
@@ -98,7 +98,7 @@
 
                                 <tr class="">
                                     <td><p>Limit for displayed interactions (the more the slower): </p></td>
-                                    <td><input type="text" class="form-control" id="input_limit_interactions" value=20></td>
+                                    <td><input type="text" class="form-control" id="input_limit_interactions" value=100></td>
                                 </tr> 
  
                                 <tr class="">
@@ -212,6 +212,9 @@
                                 <div class="container-flex">
                                     <div class="row no-gutter">
                                         <div class="dynamic-width-network-col col" style="left: 20px;">
+                                            <div id="network_messages">
+
+                                            </div>
                                             <div id='network-plot-container-parent'>
                                                 <div id='network-legend'></div>
                                                 <div id='network-plot-container'></div>

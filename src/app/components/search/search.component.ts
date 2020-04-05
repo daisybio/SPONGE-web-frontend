@@ -42,6 +42,7 @@ export class SearchComponent implements OnInit {
       'Network Analysis ID': 'network_analysis_ID'
   }
 
+    let unique_disease_names: string[] = []
     var search_key: string[];
     var limit: number = 100;
     var parsed_search_result: any;
@@ -111,12 +112,11 @@ export class SearchComponent implements OnInit {
 
       // build html for response_data
       const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
-      let uniquelabels = [];
       $.each(labels, function(i, el){
-          if($.inArray(el, uniquelabels) === -1) uniquelabels.push(el);
+          if($.inArray(el, unique_disease_names) === -1) unique_disease_names.push(el);
       });
 
-      for (let disease of uniquelabels) {
+      for (let disease of unique_disease_names) {
         let disease_trimmed = disease.split(' ').join('').replace('&', 'and')
         let table_id: string = disease_trimmed + "-table"
         // make first letter uppercase
@@ -720,6 +720,7 @@ export class SearchComponent implements OnInit {
                   }
                 }
 
+                console.log(unique_disease_names)
                 if (ensg_numbers.length == ensg_numbers_with_keys_length) {
                   // last key has been added
                   $this.shared_service.setData({
@@ -727,7 +728,8 @@ export class SearchComponent implements OnInit {
                     'nodes_marked': nodes_marked,
                     'cancer_type': active_cancer_name,
                     'p_value': $this.pValue_current,
-                    'search_keys': search_keys_ensg
+                    'search_keys': search_keys_ensg,
+                    'interactive_cancer_types': unique_disease_names
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
