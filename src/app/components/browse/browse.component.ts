@@ -54,11 +54,7 @@ export class BrowseComponent implements OnInit {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
 
       // we also want to remove options that are not valid
-      console.log(shared_data['interactive_cancer_types'])
-
       $('#disease_selectpicker option').each( function (option) {
-        console.log($(this))
-        console.log(option)
         if (!shared_data['interactive_cancer_types'].includes($(this).text().toLowerCase())) {
           $(this).addClass('hidden')
         }
@@ -69,7 +65,6 @@ export class BrowseComponent implements OnInit {
     let node_table
     let edge_table
     
-
     let session = null
 
     // first things first, define dimensions of network container

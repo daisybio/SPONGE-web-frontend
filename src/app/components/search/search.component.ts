@@ -4,7 +4,6 @@ import { Helper } from "../../helper"
 import {Router, ActivatedRoute, Params} from '@angular/router'
 import { SharedService } from "../../shared.service"
 import 'datatables.net'
-//import { SSL_OP_TLS_ROLLBACK_BUG } from 'constants'
 
 declare var Plotly: any;
 declare var $;
@@ -42,7 +41,6 @@ export class SearchComponent implements OnInit {
       'Network Analysis ID': 'network_analysis_ID'
   }
 
-    let unique_disease_names: string[] = []
     var search_key: string[];
     var limit: number = 100;
     var parsed_search_result: any;
@@ -111,6 +109,7 @@ export class SearchComponent implements OnInit {
     function draw_cancer_type_accordion() {
 
       // build html for response_data
+      let unique_disease_names = []
       const labels = count_object.map(function(disease) {return disease.run.dataset.disease_name })
       $.each(labels, function(i, el){
           if($.inArray(el, unique_disease_names) === -1) unique_disease_names.push(el);
@@ -720,7 +719,6 @@ export class SearchComponent implements OnInit {
                   }
                 }
 
-                console.log(unique_disease_names)
                 if (ensg_numbers.length == ensg_numbers_with_keys_length) {
                   // last key has been added
                   $this.shared_service.setData({
@@ -729,7 +727,7 @@ export class SearchComponent implements OnInit {
                     'cancer_type': active_cancer_name,
                     'p_value': $this.pValue_current,
                     'search_keys': search_keys_ensg,
-                    'interactive_cancer_types': unique_disease_names
+                    'interactive_cancer_types': count_object.map(function(disease) {return disease.run.dataset.disease_name })
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
