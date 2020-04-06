@@ -40,36 +40,15 @@ export class BrowseComponent implements OnInit {
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
-
-    //##################################################################################
-    // Here we check if there is information (e.g. from session or from search) to load
-    /* In case we restore an old session */
-    this.activatedRoute.queryParams.subscribe(params => {
-      if (Object.keys(params).length > 0) {
-        // there are url params, load previous session
-        url_storage = helper.load_session_url(params)
-      }
-    });
-
-    /* In case we passed data from search to browse (shared service), set cancer type */
-    if (shared_data != undefined) {
-      $('#disease_selectpicker').val(shared_data['cancer_type'])
-
-      // we also want to remove options that are not valid
-      $('#disease_selectpicker option').each( function (option) {
-        if (!shared_data['interactive_cancer_types'].includes($(this).text().toLowerCase())) {
-          $(this).addClass('hidden')
-        }
-      })
-    }
-    //##################################################################################
-
+    run_information()
+    
     let node_table
     let edge_table
-    const default_node_limit = 50
+    const default_node_limit = 25
     $('#input_limit').val(default_node_limit)
     
     let session = null
+
 
     // first things first, define dimensions of network container
     $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
@@ -136,21 +115,7 @@ export class BrowseComponent implements OnInit {
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
     });
-
-
-    $('#title-BG').change( () => {
-      $('#load_disease').click();
-    })
-
-   if( document.querySelector('#disease_selectpicker')){
-      $('#load_disease').click();
-    }
-
-    run_information()
-
-    // trigger click on first disease in the beginning
-    $('#load_disease').click()
-    
+  
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
         $('#v-pills-run_information-tab').removeClass('active')
@@ -198,6 +163,32 @@ export class BrowseComponent implements OnInit {
         $('#nav-nodes-tab').removeClass('active')
       }            
     })
+
+    //##################################################################################
+    // Here we check if there is information (e.g. from session or from search) to load
+    /* In case we restore an old session */
+    this.activatedRoute.queryParams.subscribe(params => {
+      if (Object.keys(params).length > 0) {
+        // there are url params, load previous session
+        url_storage = helper.load_session_url(params)
+      }
+    });
+
+    /* In case we passed data from search to browse (shared service), set cancer type */
+    if (shared_data != undefined) {
+      $('#disease_selectpicker').val(shared_data['cancer_type'])
+
+      // we also want to remove options that are not valid
+      $('#disease_selectpicker option').each( function (option) {
+        if (!shared_data['interactive_cancer_types'].includes($(this).text().toLowerCase())) {
+          $(this).addClass('hidden')
+        }
+      })
+    } else {
+      // trigger click on first disease in the beginning
+      $('#load_disease').click()
+    }
+    //##################################################################################
 
     function load_nodes(disease_trimmed, callback?) {
 
@@ -250,7 +241,7 @@ export class BrowseComponent implements OnInit {
         )
       } else {    
         controller.get_ceRNA({
-          disease_name: shared_data['cancer_type'],
+          disease_name: disease_trimmed,
           ensg_number: shared_data['nodes'],
           limit: 1000,
           sorting: sort_by,
@@ -465,16 +456,19 @@ export class BrowseComponent implements OnInit {
 
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
-      // load all disease names from database and insert them into selector 
-      let disease_selector = $('#disease_selectpicker');
-      let selected_disease_result = $('#selector_disease_result');
 
       // initialize selectpicker
-      disease_selector.selectpicker()
+      $('#disease_selectpicker').selectpicker()
       $('#run-info-select').selectpicker()
       $('#interactions_filter_by').selectpicker()
 
-      
+      let disease_selector = $('#disease_selectpicker');
+      let selected_disease_result = $('#selector_disease_result')
+
+      $('#disease_selectpicker').on('change', function(){
+        $('#load_disease').click();
+      })
+     
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
@@ -482,11 +476,24 @@ export class BrowseComponent implements OnInit {
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
 
-        $("#interactions-nodes-table-container").empty(); //clear possible older tables
-        $("#interactions-edges-table-container").empty(); //clear possible older tables
+        console.log("here")
+        console.log($("#interactions-nodes-table"))
+        if ($("#interactions-nodes-table").length) {
+          console.log("removing tables")
+
+          $('#interactions-nodes-table').DataTable().destroy()
+          $('#interactions-eges-table').DataTable().destroy()
+
+          $("#interactions-nodes-table-container").empty(); //clear possible older tables
+          $("#interactions-edges-table-container").empty(); //clear possible older tables
+        } 
         $("#expression_heatmap").empty(); //clear possible older expression map
         $('#network_messages').empty()
         $('#plots').empty()
+
+
+        // remove 
+
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 
