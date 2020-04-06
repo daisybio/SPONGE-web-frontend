@@ -202,9 +202,22 @@ export class BrowseComponent implements OnInit {
     function load_nodes(disease_trimmed, callback?) {
 
       // load data if nothing was loaded in search page
-      let sort_by = $('#run-info-select').val().toLowerCase()
+      let sort_by: string
+      switch ($('#run-info-select').val()) {
+        case 'DB Degree': {
+          sort_by = 'node_degree'
+          break
+        }
+        case 'Betweenness': {
+          sort_by = 'betweenness'
+          break
+        }
+        case 'Eigenvector': {
+          sort_by = 'eigenvector'
+          break
+        }
+      } 
 
-      if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       // check the eigenvector cutoff since it is different to the others
@@ -216,92 +229,83 @@ export class BrowseComponent implements OnInit {
 
       let limit = $('#input_limit').val()
       let loading_limit: boolean
-      if (limit == default_node_limit) {
-        // we have not changed the user limit
-        if (shared_data == undefined) {
-          // we are also not coming from search, load normal default limit
-          loading_limit = true
-        } else{
-          // we have not changed the limit but we are coming from search, load all selected ineraction genes, apply limit later
-          loading_limit = false
-        }
-      } else {
-        // node limit has been edited
-        if (shared_data == undefined) {
-          // we have no search data stored, we just load until limit
-          loading_limit = true
-        } else {
-          // we have search result stored and need to load eveything, limit will be applied later
-          loading_limit = false
-        }
-      }
 
-      let all_data = []
-      
-
-      if (loading_limit) {
-        let iterations = 0
-
-        function __get_batches_iterative(offset = 0) {
-          // we add the limit to the api request
-          let current_limit = limit
-          if (limit > 1000) {
-            current_limit = 1000
-            limit -= 1000
+      if (shared_data == undefined) {
+        controller.get_ceRNA({
+          disease_name: disease_trimmed,
+          sorting: sort_by,
+          limit: limit,
+          minBetweenness: cutoff_betweenness,
+          minEigenvector: cutoff_eigenvector,
+          descending: true,
+          callback: data => {
+            let nodes = parse_node_data(data)
+            return callback(nodes)
+            },
+            error: (response) => {
+              $('#loading_spinner').addClass('hidden')
+              helper.msg("Something went wrong while loading the ceRNAs.", true)
+            }
           }
-
-          controller.get_ceRNA({
-            sorting: sort_by,
-            minBetweenness: cutoff_betweenness,
-            minEigenvector: cutoff_eigenvector,
-            descending: true,
-            limit: current_limit,
-            offset: offset,
-            disease_name: shared_data != undefined ? shared_data['cancer_type'] : disease_trimmed,
-            callback: (data) => {
-              all_data = all_data.concat(data)
-
-              if (Object.keys.length == 1000 && limit > 0) {
-                // we just stopped because we reached the limit
-                __get_batches_iterative(offset + 1000)
-              } else {
-                // we stop loading data
-                let nodes = parse_node_data(all_data)
-                return callback(nodes)
+        )
+      } else {    
+        controller.get_ceRNA({
+          disease_name: shared_data['cancer_type'],
+          ensg_number: shared_data['nodes'],
+          limit: 1000,
+          sorting: sort_by,
+          minBetweenness: cutoff_betweenness,
+          minEigenvector: cutoff_eigenvector,
+          descending: true,
+          callback: data => {
+            if (data.length > limit) {
+              
+              // apply limit here but take care that search keys are still in data
+              let data_with_keys = []
+              let data_without_keys = []
+              for (const e of data) {
+                if (shared_data['search_keys'].includes(e['gene']['ensg_number'])) {
+                  data_with_keys.push(e)
+                } else {
+                  data_without_keys.push(e)
+                }
               }
-            }
-          })
-        }
-        __get_batches_iterative()
-        
-      } else {
-        function __get_batches_iterative(offset = 0) {
-          // no limit to api request, limit will be applied later
-          controller.get_ceRNA({
-            sorting: sort_by,
-            minBetweenness: cutoff_betweenness,
-            minEigenvector: cutoff_eigenvector,
-            descending: true,
-            offset: offset,
-            disease_name: shared_data != undefined ? shared_data['cancer_type'] : disease_trimmed,
-            callback: (data) => {
-              all_data = all_data.concat(data)
-              console.log(all_data)
-              if (Object.keys.length == 100 && !loading_limit) {
-                // we just stopped because we reached the limit
-                offset += 100
-                __get_batches_iterative()
-              } else {
-                // we stop loading data
-                let nodes = parse_node_data(all_data, true)
-                return callback(nodes)
+
+              // fill up data until limit is reached
+              let i = 0
+              for (const e of data_without_keys) {
+                data_with_keys.push(e)
+                i ++
+                if (i >= limit - shared_data['search_keys'].length){
+                  break
+                }
               }
+
+               // create info message 
+               if (!$('#network_messages .alert-nodes').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
+                      <strong>N.B.</strong> You have selected ${data.length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `)
+                } 
+              
+              data = data_with_keys
+             
             }
-          })
-        }
-        __get_batches_iterative()
+
+            let nodes = parse_node_data(data)
+            return callback(nodes)
+            },
+          error: (response) => {
+            $('#loading_spinner').addClass('hidden')
+            helper.msg("Something went wrong while loading the ceRNAs.", true)
+          }
+        })
       }
-
     }
     
 
@@ -371,8 +375,7 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-            console.log(all_data)
-            console.log(ordered_data)
+
             if (ordered_data.length === 0) {
               $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
               $('#loading_spinner').addClass('hidden')
@@ -479,9 +482,10 @@ export class BrowseComponent implements OnInit {
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
 
-        $("#interactions-nodes-table-container").html(''); //clear possible older tables
-        $("#interactions-edges-table-container").html(''); //clear possible older tables
-        $("#expression_heatmap").html(''); //clear possible older expression map
+        $("#interactions-nodes-table-container").empty(); //clear possible older tables
+        $("#interactions-edges-table-container").empty(); //clear possible older tables
+        $("#expression_heatmap").empty(); //clear possible older expression map
+        $('#network_messages').empty()
         $('#plots').empty()
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
@@ -724,22 +728,6 @@ export class BrowseComponent implements OnInit {
             } // end of degree cutoff filter
 
           
-            if (node_table.data().length > $('#input_limit').val()) {
-              if (!$('#network_messages .alert-nodes').length) {
-                $('#network_messages').append(
-                  `
-                  <!-- Info Alert -->
-                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                      <strong>N.B.</strong> You have selected ${node_table.data().length} genes, the current limit is ${$('#input_limit').val()}. If you want to display more, increase the limit and press go again.
-                      <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  </div>
-                  `)
-              } 
-            } else {
-              // alert-nodes is there
-              $('#network_messages .alert-nodes').remove()
-            }
-
             if (Object.keys(edges).length > user_limit) {
               if (!$('#network_messages .alert-edges').length) {
                 $('#network_messages').append(
@@ -883,17 +871,10 @@ export class BrowseComponent implements OnInit {
       })
     }
 
-    function parse_node_data(data, apply_limit=false) {
+    function parse_node_data(data) {
       /*
       parses the returned node data from the api
       */
-
-      console.log(data)
-
-      // apply limit to data if needed
-      if (apply_limit) {
-        // todo
-      }
 
       let ordered_data = [];
       for (let i=0; i < Object.keys(data).length; i++) {
@@ -906,9 +887,9 @@ export class BrowseComponent implements OnInit {
         }
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']  == null ? '-' : entry['gene_symbol']
-        ordered_entry['Betweeness'] = entry['betweeness']
+        ordered_entry['Betweenness'] = entry['betweeness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
-        ordered_entry['Node Degree'] = entry['node_degree']
+        ordered_entry['DB Degree'] = entry['node_degree']
         ordered_data.push(ordered_entry)
       }
       let nodes = [];
