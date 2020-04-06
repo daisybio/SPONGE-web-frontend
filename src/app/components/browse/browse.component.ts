@@ -889,7 +889,7 @@ export class BrowseComponent implements OnInit {
         }
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']  == null ? '-' : entry['gene_symbol']
-        ordered_entry['Betweenness'] = entry['betweeness']
+        ordered_entry['Betweenness'] = entry['betweenness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['DB Degree'] = entry['node_degree']
         ordered_data.push(ordered_entry)
@@ -913,7 +913,7 @@ export class BrowseComponent implements OnInit {
       let column_names = Object.keys(ordered_data[0]);
 
       // find index positions from columns to round
-      var index_betweeness = column_names.indexOf('Betweeness');
+      var index_betweenness = column_names.indexOf('Betweenness');
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
       node_table = $('#interactions-nodes-table').DataTable( {
@@ -921,7 +921,7 @@ export class BrowseComponent implements OnInit {
           { render: function ( ordered_data, type, row ) {
               return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
             },
-            targets: [index_betweeness, index_eigenvector] }
+            targets: [index_betweenness, index_eigenvector] }
         ],
         dom: '<"top"Bf>rt<"bottom"lip>',
         buttons: [

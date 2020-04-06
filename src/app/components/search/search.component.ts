@@ -34,7 +34,7 @@ export class SearchComponent implements OnInit {
     const gene_table_columns = {
       'ENSG Number': 'ensg_number',
       'Gene Symbol': 'gene_symbol',
-      'Betweeness': 'betweeness',
+      'Betweenness': 'betweenness',
       'Eigenvector': 'eigenvector',
       'Node Degree': 'node_degree',
       'Gene ID': 'gene_ID',
