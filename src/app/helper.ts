@@ -491,6 +491,9 @@ export class Helper {
       $('#network_search_node').selectpicker()
       console.log('NODESSSSSSSS')
       console.log(nodes)
+
+      console.log('EDGESS')
+      console.log(edges)
       let graph = {
         nodes: nodes,
         edges: edges
@@ -509,13 +512,12 @@ export class Helper {
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
             autoRescale: ['nodePosition','edgeSize'],  //'edgeSize', nodeSize, nodePosition
-            
             animationsTime: 1000,
             borderSize: 1.5,  
             outerBorderSize: 1.5,
             enableEdgeHovering: true,
             edgeHoverColor: this.hover_edge_color,
-            defaultEdgeHoverColor: this.hover_edge_color,//'#2ecc71', helles grün 
+            defaultEdgeHoverColor: this.hover_edge_color, //'#2ecc71', helles grün 
             edgeHoverSizeRatio: 1.5,
             nodeHoverSizeRatio: 1.5,
             edgeHoverExtremities: true,

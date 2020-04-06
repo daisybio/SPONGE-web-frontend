@@ -44,7 +44,7 @@ export class BrowseComponent implements OnInit {
     
     let node_table
     let edge_table
-    const default_node_limit = 25
+    const default_node_limit = 10
     $('#input_limit').val(default_node_limit)
     
     let session = null
@@ -164,6 +164,10 @@ export class BrowseComponent implements OnInit {
       }            
     })
 
+    $('#disease_selectpicker').on('change', function(){
+      $('#load_disease').click();
+    })
+
     //##################################################################################
     // Here we check if there is information (e.g. from session or from search) to load
     /* In case we restore an old session */
@@ -184,11 +188,10 @@ export class BrowseComponent implements OnInit {
           $(this).addClass('hidden')
         }
       })
-    } else {
-      // trigger click on first disease in the beginning
-      $('#load_disease').click()
-    }
+    } 
     //##################################################################################
+
+    $('#load_disease').click()
 
     function load_nodes(disease_trimmed, callback?) {
 
@@ -464,10 +467,6 @@ export class BrowseComponent implements OnInit {
 
       let disease_selector = $('#disease_selectpicker');
       let selected_disease_result = $('#selector_disease_result')
-
-      $('#disease_selectpicker').on('change', function(){
-        $('#load_disease').click();
-      })
      
       // takes care of button with link to download page
       // loads specific run information
@@ -476,8 +475,6 @@ export class BrowseComponent implements OnInit {
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
 
-        console.log("here")
-        console.log($("#interactions-nodes-table"))
         if ($("#interactions-nodes-table").length) {
           console.log("removing tables")
 
@@ -486,13 +483,11 @@ export class BrowseComponent implements OnInit {
 
           $("#interactions-nodes-table-container").empty(); //clear possible older tables
           $("#interactions-edges-table-container").empty(); //clear possible older tables
+
+          $("#expression_heatmap").empty(); //clear possible older expression map
+          $('#network_messages').empty()
+          $('#plots').empty()
         } 
-        $("#expression_heatmap").empty(); //clear possible older expression map
-        $('#network_messages').empty()
-        $('#plots').empty()
-
-
-        // remove 
 
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
