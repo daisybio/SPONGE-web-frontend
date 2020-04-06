@@ -96,7 +96,6 @@ export class Controller {
             if (config.minCountSign != undefined) {
                 request += "&minCountSign="+config.minCountSign
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -332,6 +331,7 @@ export class Controller {
             if (config.pValueDirection != undefined) {
                 request += "&pValueDirection="+config.pValueDirection
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -396,7 +396,7 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-
+        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                

@@ -696,11 +696,6 @@ export class SearchComponent implements OnInit {
         let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
-        
-        if (table.rows({ filter : 'applied'}).data().length > 100) {
-          helper.msg("Please apply further filtering to your data (max. 100 interactions are recommended for the network).")
-          return
-        }
 
         // append search note to network
         const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length

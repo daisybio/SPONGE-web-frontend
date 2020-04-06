@@ -1,4 +1,5 @@
 import { Component, OnInit, ErrorHandler} from '@angular/core';
+import { Location } from '@angular/common';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { Session } from "../../session";
@@ -24,7 +25,8 @@ export class BrowseComponent implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private shared_service: SharedService
+    private shared_service: SharedService,
+    private _location: Location
     ) {
 
   }
@@ -64,6 +66,8 @@ export class BrowseComponent implements OnInit {
 
     let node_table
     let edge_table
+    const default_node_limit = 50
+    $('#input_limit').val(default_node_limit)
     
     let session = null
 
@@ -202,7 +206,6 @@ export class BrowseComponent implements OnInit {
 
       if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
-      //const cutoff_degree = $('#input_cutoff_degree').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
@@ -210,69 +213,97 @@ export class BrowseComponent implements OnInit {
         $('#loading_spinner').addClass('hidden')
         return 
       }
-      const limit = $('#input_limit').val()
-      const descending = true
-      
-      if (shared_data == undefined) {
-        controller.get_ceRNA({
-          'disease_name': disease_trimmed,
-          'sorting': sort_by,
-          'limit': limit,
-          'minBetweenness': cutoff_betweenness,
-          //'minNodeDegree': cutoff_degree,
-          'minEigenvector': cutoff_eigenvector,
-          'descending': descending,
-          'callback': data => {
-            let nodes = parse_node_data(data)
-            return callback(nodes)
-            },
-            error: (response) => {
-              $('#loading_spinner').addClass('hidden')
-              helper.msg("Something went wrong while loading the ceRNAs.", true)
-            }
-          }
-        )
-      } else {
-        // check if there are stored nodes, if so, return them
-        if (shared_data['nodes'].length > limit) {
-          if (!$('#network_messages .alert-nodes').length) {
-            $('#network_messages').append(
-              `
-              <!-- Info Alert -->
-              <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                  <strong>N.B.</strong> You have selected ${shared_data['nodes'].length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-              </div>
-              `)
-          } 
-        } else {
-          // alert-nodes is there
-          $('#network_messages .alert-nodes').remove()
-        }
 
-        controller.get_ceRNA({
-          'disease_name': shared_data['cancer_type'],
-          'ensg_number': shared_data['nodes'],
-          'limit': limit,
-          'sorting': sort_by,
-          // 'minBetweenness': cutoff_betweenness,
-          //'minNodeDegree': cutoff_degree,
-          // 'minEigenvector': cutoff_eigenvector,
-          'descending': descending,
-          'callback': data => {
-            console.log(data)
-            let nodes = parse_node_data(data)
-            console.log(shared_data['nodes'])
-            return callback(nodes)
-            },
-            error: (response) => {
-              $('#loading_spinner').addClass('hidden')
-              helper.msg("Something went wrong while loading the ceRNAs.", true)
-            }
-          }
-        )
+      let limit = $('#input_limit').val()
+      let loading_limit: boolean
+      if (limit == default_node_limit) {
+        // we have not changed the user limit
+        if (shared_data == undefined) {
+          // we are also not coming from search, load normal default limit
+          loading_limit = true
+        } else{
+          // we have not changed the limit but we are coming from search, load all selected ineraction genes, apply limit later
+          loading_limit = false
+        }
+      } else {
+        // node limit has been edited
+        if (shared_data == undefined) {
+          // we have no search data stored, we just load until limit
+          loading_limit = true
+        } else {
+          // we have search result stored and need to load eveything, limit will be applied later
+          loading_limit = false
+        }
       }
+
+      let all_data = []
+      
+
+      if (loading_limit) {
+        let iterations = 0
+
+        function __get_batches_iterative(offset = 0) {
+          // we add the limit to the api request
+          let current_limit = limit
+          if (limit > 1000) {
+            current_limit = 1000
+            limit -= 1000
+          }
+
+          controller.get_ceRNA({
+            sorting: sort_by,
+            minBetweenness: cutoff_betweenness,
+            minEigenvector: cutoff_eigenvector,
+            descending: true,
+            limit: current_limit,
+            offset: offset,
+            disease_name: shared_data != undefined ? shared_data['cancer_type'] : disease_trimmed,
+            callback: (data) => {
+              all_data = all_data.concat(data)
+
+              if (Object.keys.length == 1000 && limit > 0) {
+                // we just stopped because we reached the limit
+                __get_batches_iterative(offset + 1000)
+              } else {
+                // we stop loading data
+                let nodes = parse_node_data(all_data)
+                return callback(nodes)
+              }
+            }
+          })
+        }
+        __get_batches_iterative()
+        
+      } else {
+        function __get_batches_iterative(offset = 0) {
+          // no limit to api request, limit will be applied later
+          controller.get_ceRNA({
+            sorting: sort_by,
+            minBetweenness: cutoff_betweenness,
+            minEigenvector: cutoff_eigenvector,
+            descending: true,
+            offset: offset,
+            disease_name: shared_data != undefined ? shared_data['cancer_type'] : disease_trimmed,
+            callback: (data) => {
+              all_data = all_data.concat(data)
+              console.log(all_data)
+              if (Object.keys.length == 100 && !loading_limit) {
+                // we just stopped because we reached the limit
+                offset += 100
+                __get_batches_iterative()
+              } else {
+                // we stop loading data
+                let nodes = parse_node_data(all_data, true)
+                return callback(nodes)
+              }
+            }
+          })
+        }
+        __get_batches_iterative()
+      }
+
     }
+    
 
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
@@ -340,7 +371,8 @@ export class BrowseComponent implements OnInit {
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
-
+            console.log(all_data)
+            console.log(ordered_data)
             if (ordered_data.length === 0) {
               $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
               $('#loading_spinner').addClass('hidden')
@@ -628,22 +660,6 @@ export class BrowseComponent implements OnInit {
                 }
               })
 
-              if (interaction_counter > user_limit) {
-                if (!$('#network_messages .alert-edges').length) {
-                  $('#network_messages').append(
-                    `
-                    <!-- Info Alert -->
-                    <div class="alert alert-info alert-dismissible fade show alert-edges">
-                        <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    </div>
-                    `
-                  )
-                } 
-              } else {
-                // alert-nodes is there
-                $('#network_messages .alert-edges').remove()
-              }
               // override edges list
               edges = filtered_edges
             }
@@ -706,6 +722,40 @@ export class BrowseComponent implements OnInit {
               edge_table.draw()
 
             } // end of degree cutoff filter
+
+          
+            if (node_table.data().length > $('#input_limit').val()) {
+              if (!$('#network_messages .alert-nodes').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
+                      <strong>N.B.</strong> You have selected ${node_table.data().length} genes, the current limit is ${$('#input_limit').val()}. If you want to display more, increase the limit and press go again.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `)
+              } 
+            } else {
+              // alert-nodes is there
+              $('#network_messages .alert-nodes').remove()
+            }
+
+            if (Object.keys(edges).length > user_limit) {
+              if (!$('#network_messages .alert-edges').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-edges">
+                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `
+                )
+              } 
+            } else {
+              // alert-nodes is there
+              $('#network_messages .alert-edges').remove()
+            }
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
@@ -785,6 +835,18 @@ export class BrowseComponent implements OnInit {
                 //network.click()
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
+
+              // if we come from search, we want to have a back button 
+              if (!$('#network_messages .back').length) {
+                $('#network_messages .back').append(
+                  `
+                    <button type="button" class="btn btn-primary back">Back to search</button>
+                  `
+                )
+                $(document).on('click', '#network_messages .back', function() {
+                  this._location.back();
+                })
+              }
             }
 
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
@@ -821,10 +883,18 @@ export class BrowseComponent implements OnInit {
       })
     }
 
-    function parse_node_data(data) {
+    function parse_node_data(data, apply_limit=false) {
       /*
       parses the returned node data from the api
       */
+
+      console.log(data)
+
+      // apply limit to data if needed
+      if (apply_limit) {
+        // todo
+      }
+
       let ordered_data = [];
       for (let i=0; i < Object.keys(data).length; i++) {
         let entry = data[i]

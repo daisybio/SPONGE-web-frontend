@@ -30,7 +30,7 @@ export class Helper {
           return edges;
         });
       } catch {
-        //console.log("adjacent_edges exists")
+
       }
 
     }
@@ -543,7 +543,6 @@ export class Helper {
 
       network.bind('overNode', (e) => {
         // events: overNode outNode clickNode doubleClickNode rightClickNode
-        //console.log(e.type, e.data.node.label, e.data.captor, e.data);
         // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
@@ -589,7 +588,8 @@ export class Helper {
             }
 
             // loading spinner for mirna
-            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border spinner"></div></td></tr>`
+            const id = data[entry]["Gene 1"]+'_'+data[entry]["Gene 2"]
+            table += `<tr><td>miRNAs: </td><td class="mirna-entry" id="${id}"><div class="spinner-border spinner"></div></td></tr>`
 
             table += "</table>"
             $('#edge_information_content').html(table)
@@ -615,10 +615,11 @@ export class Helper {
                 for (let entry of Object.keys(mirnas)) {
                   mirnas_string += entry + ', '
                 }
-                $('#edge_information .mirna-entry').html(mirnas_string.slice(0,-2))  // remove ', '
+            
+                $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
               },
               error: () => {
-                $('#edge_information .mirna-entry').html('-')
+                $('#edge_information #'+id).html('-')
               }
             })
 
