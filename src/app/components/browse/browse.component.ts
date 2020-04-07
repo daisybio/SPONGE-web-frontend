@@ -239,63 +239,38 @@ export class BrowseComponent implements OnInit {
             }
           }
         )
-      } else {    
+      } else {
+        
+        // kinda tricky construct, we load first the information for the search keys and then for the rest until limit
         controller.get_ceRNA({
           disease_name: disease_trimmed,
-          ensg_number: shared_data['nodes'],
+          ensg_number: shared_data['search_keys'],
           limit: 1000,
-          sorting: sort_by,
-          minBetweenness: cutoff_betweenness,
-          minEigenvector: cutoff_eigenvector,
-          descending: true,
-          callback: data => {
-            if (data.length > limit) {
-              
-              // apply limit here but take care that search keys are still in data
-              let data_with_keys = []
-              let data_without_keys = []
-              for (const e of data) {
-                if (shared_data['search_keys'].includes(e['gene']['ensg_number'])) {
-                  data_with_keys.push(e)
-                } else {
-                  data_without_keys.push(e)
-                }
+          callback: data1 => {
+            
+            controller.get_ceRNA({
+              disease_name: disease_trimmed,
+              ensg_number: shared_data['nodes'],
+              limit: limit-shared_data['search_keys'].length,
+              sorting: sort_by,
+              minBetweenness: cutoff_betweenness,
+              minEigenvector: cutoff_eigenvector,
+              descending: true,
+              callback: data2 => {
+                    
+                let nodes = parse_node_data(data1.concat(data2))
+                return callback(nodes)
+                },
+              error: (response) => {
+                $('#loading_spinner').addClass('hidden')
+                helper.msg("Something went wrong while loading the ceRNAs.", true)
               }
+            })
 
-              // fill up data until limit is reached
-              let i = 0
-              for (const e of data_without_keys) {
-                data_with_keys.push(e)
-                i ++
-                if (i >= limit - shared_data['search_keys'].length){
-                  break
-                }
-              }
 
-               // create info message 
-               if (!$('#network_messages .alert-nodes').length) {
-                $('#network_messages').append(
-                  `
-                  <!-- Info Alert -->
-                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                      <strong>N.B.</strong> ${data.length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
-                      <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  </div>
-                  `)
-                } 
-              
-              data = data_with_keys
-             
-            }
-
-            let nodes = parse_node_data(data)
-            return callback(nodes)
-            },
-          error: (response) => {
-            $('#loading_spinner').addClass('hidden')
-            helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
         })
+
       }
     }
     
