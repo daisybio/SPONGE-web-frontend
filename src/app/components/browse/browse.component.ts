@@ -834,10 +834,8 @@ export class BrowseComponent implements OnInit {
                     <button type="button" class="btn btn-primary back">Back to Search</button>
                   `
                 )
-                $(document).on('click', '#network_messages .back', function() {
+                $('#network_messages .back').click(function() {
                   $this._location.back();
-                  //$this.router.navigateByUrl(shared_data['search_route']);
-                  // window.location.replace(shared_data['search_route'])
                 })
               }
 

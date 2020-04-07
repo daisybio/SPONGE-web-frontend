@@ -372,6 +372,10 @@ export class SearchComponent implements OnInit {
         // load cancer type
         const disease:string = shared_data['cancer_type']
         $(`#disease_accordion button:contains("${disease}")`).click()
+        // scroll down to opened accordion tab
+        $([document.documentElement, document.body]).animate({
+          scrollTop: $(`#disease_accordion button:contains("${disease}")`).offset().top
+        }, 1000)
         if ('search_filter' in shared_data){
           // load filters 
           const disease_trimmed = disease.toLowerCase().split(' ').join('').replace('&', 'and')
@@ -778,8 +782,7 @@ export class SearchComponent implements OnInit {
                       p_value_max: $(`#pvalue_max_${table_id}`).val(),
                       cor_min: $(`#correlation_min_${table_id}`).val(),
                       cor_max: $(`#correlation_max_${table_id}`).val(),
-                    },
-                    'search_route':  'search' + window.location.search
+                    }
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
