@@ -176,8 +176,10 @@ export class Helper {
           var layout = {
             title: 'Expression Heatmap',
             annotations: [],
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'ghostwhite',
+            plot_bgcolor: 'rgb(248,248,255)',
+            width: 1500,
+            autosize:true,
             yaxis: {
               automargin: true,
               showticklabels: false,
@@ -188,6 +190,8 @@ export class Helper {
           if ($('#expression_heatmap').length) {
             // element is not on page in case user changes page while loading, we just prevent throwing an error
             Plotly.newPlot('expression_heatmap', data, layout);
+            $('#expression_heatmap_container_background').removeClass('hidden')
+            
           }
         },
         error: () => {
@@ -492,6 +496,11 @@ export class Helper {
       $('#network_search_node').append(edge_options)
 
       $('#network_search_node').selectpicker()
+      console.log('NODESSSSSSSS')
+      console.log(nodes)
+
+      console.log('EDGESS')
+      console.log(edges)
       let graph = {
         nodes: nodes,
         edges: edges
