@@ -1,4 +1,5 @@
 import { Component, OnInit, ErrorHandler} from '@angular/core';
+import { Location } from '@angular/common';
 import { Controller } from "../../control";
 import { Helper } from "../../helper";
 import { Session } from "../../session";
@@ -24,7 +25,9 @@ export class BrowseComponent implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private shared_service: SharedService
+    private shared_service: SharedService,
+    private router: Router,
+    private _location: Location
     ) {
 
   }
@@ -38,28 +41,15 @@ export class BrowseComponent implements OnInit {
 
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
-
-    //##################################################################################
-    // Here we check if there is information (e.g. from session or from search) to load
-    /* In case we restore an old session */
-    this.activatedRoute.queryParams.subscribe(params => {
-      if (Object.keys(params).length > 0) {
-        // there are url params, load previous session
-        url_storage = helper.load_session_url(params)
-      }
-    });
-
-    /* In case we passed data from search to browse (shared service), set cancer type */
-    if (shared_data != undefined) {
-      $('#disease_selectpicker').val(shared_data['cancer_type'])
-    }
-    //##################################################################################
-
+    run_information()
+    
     let node_table
     let edge_table
+    const default_node_limit = 25
+    $('#input_limit').val(default_node_limit)
     
-
     let session = null
+
 
     // first things first, define dimensions of network container
     $('#network-plot-container-parent').css('height', $('#network-plot-container').width())
@@ -126,21 +116,7 @@ export class BrowseComponent implements OnInit {
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
     });
-
-
-    $('#title-BG').change( () => {
-      $('#load_disease').click();
-    })
-
-   if( document.querySelector('#disease_selectpicker')){
-      $('#load_disease').click();
-    }
-
-    run_information()
-
-    // trigger click on first disease in the beginning
-    $('#load_disease').click()
-    
+  
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
         $('#v-pills-run_information-tab').removeClass('active')
@@ -189,14 +165,56 @@ export class BrowseComponent implements OnInit {
       }            
     })
 
+    $('#disease_selectpicker').on('change', function(){
+      $('#load_disease').click();
+    })
+
+    //##################################################################################
+    // Here we check if there is information (e.g. from session or from search) to load
+    /* In case we restore an old session */
+    this.activatedRoute.queryParams.subscribe(params => {
+      if (Object.keys(params).length > 0) {
+        // there are url params, load previous session
+        url_storage = helper.load_session_url(params)
+      }
+    });
+
+    /* In case we passed data from search to browse (shared service), set cancer type */
+    if (shared_data != undefined) {
+      $('#disease_selectpicker').val(shared_data['cancer_type'])
+
+      // we also want to remove options that are not valid
+      $('#disease_selectpicker option').each( function (option) {
+        if (!shared_data['interactive_cancer_types'].includes($(this).text().toLowerCase())) {
+          $(this).addClass('hidden')
+        }
+      })
+
+    } 
+    //##################################################################################
+
+    $('#load_disease').click()
+
     function load_nodes(disease_trimmed, callback?) {
 
       // load data if nothing was loaded in search page
-      let sort_by = $('#run-info-select').val().toLowerCase()
+      let sort_by: string
+      switch ($('#run-info-select').val()) {
+        case 'DB Degree': {
+          sort_by = 'node_degree'
+          break
+        }
+        case 'Betweenness': {
+          sort_by = 'betweenness'
+          break
+        }
+        case 'Eigenvector': {
+          sort_by = 'eigenvector'
+          break
+        }
+      } 
 
-      if (sort_by=="none" || sort_by=="") {sort_by = undefined}
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
-      //const cutoff_degree = $('#input_cutoff_degree').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
       // check the eigenvector cutoff since it is different to the others
       if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
@@ -204,19 +222,19 @@ export class BrowseComponent implements OnInit {
         $('#loading_spinner').addClass('hidden')
         return 
       }
-      const limit = $('#input_limit').val()
-      const descending = true
-      
+
+      let limit = $('#input_limit').val()
+      let loading_limit: boolean
+
       if (shared_data == undefined) {
         controller.get_ceRNA({
-          'disease_name':disease_trimmed,
-          'sorting':sort_by,
-          'limit':limit,
-          'minBetweenness':cutoff_betweenness,
-          //'minNodeDegree': cutoff_degree,
-          'minEigenvector': cutoff_eigenvector,
-          'descending': descending,
-          'callback': data => {
+          disease_name: disease_trimmed,
+          sorting: sort_by,
+          limit: limit,
+          minBetweenness: cutoff_betweenness,
+          minEigenvector: cutoff_eigenvector,
+          descending: true,
+          callback: data => {
             let nodes = parse_node_data(data)
             return callback(nodes)
             },
@@ -226,23 +244,66 @@ export class BrowseComponent implements OnInit {
             }
           }
         )
-      } else {
-        // check if there are stored nodes, if so, return them
+      } else {    
         controller.get_ceRNA({
-          'disease_name': shared_data['cancer_type'],
-          'ensg_number': shared_data['nodes'],
-          'callback': data => {
+          disease_name: disease_trimmed,
+          ensg_number: shared_data['nodes'],
+          limit: 1000,
+          sorting: sort_by,
+          minBetweenness: cutoff_betweenness,
+          minEigenvector: cutoff_eigenvector,
+          descending: true,
+          callback: data => {
+            if (data.length > limit) {
+              
+              // apply limit here but take care that search keys are still in data
+              let data_with_keys = []
+              let data_without_keys = []
+              for (const e of data) {
+                if (shared_data['search_keys'].includes(e['gene']['ensg_number'])) {
+                  data_with_keys.push(e)
+                } else {
+                  data_without_keys.push(e)
+                }
+              }
+
+              // fill up data until limit is reached
+              let i = 0
+              for (const e of data_without_keys) {
+                data_with_keys.push(e)
+                i ++
+                if (i >= limit - shared_data['search_keys'].length){
+                  break
+                }
+              }
+
+               // create info message 
+               if (!$('#network_messages .alert-nodes').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
+                      <strong>N.B.</strong> You have selected ${data.length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `)
+                } 
+              
+              data = data_with_keys
+             
+            }
+
             let nodes = parse_node_data(data)
             return callback(nodes)
             },
-            error: (response) => {
-              $('#loading_spinner').addClass('hidden')
-              helper.msg("Something went wrong while loading the ceRNAs.", true)
-            }
+          error: (response) => {
+            $('#loading_spinner').addClass('hidden')
+            helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
-        )
+        })
       }
     }
+    
 
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
@@ -312,7 +373,7 @@ export class BrowseComponent implements OnInit {
             }
 
             if (ordered_data.length === 0) {
-              $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+              $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
               $('#loading_spinner').addClass('hidden')
               return
             }
@@ -325,7 +386,18 @@ export class BrowseComponent implements OnInit {
             var index_p_value = column_names.indexOf('p-value');
 
             // order by p-value or mscor
-            const order_by = $('#interactions_filter_by').val() == 'p_value' ? 4 : 3 
+            let order_by
+            let order_by_asc_des
+            if ($('#interactions_filter_by').val() == 'p-value') {
+              order_by = 4
+              order_by_asc_des = 'asc'
+            } else if ($('#interactions_filter_by').val() == 'Mscor') {
+              order_by = 3
+              order_by_asc_des = 'desc'
+            } else if ($('#interactions_filter_by').val() == 'Correlation'){
+              order_by = 2
+              order_by_asc_des = 'desc'
+            }
   
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
@@ -344,7 +416,7 @@ export class BrowseComponent implements OnInit {
                   'copy', 'csv', 'excel', 'pdf', 'print'
               ],
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-              order: [[ order_by, "asc" ]]
+              order: [[ order_by, order_by_asc_des ]]
             }); 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
@@ -389,16 +461,15 @@ export class BrowseComponent implements OnInit {
 
     function run_information() {
       // ALL TS FOR TAB RUN INFORMATION
-      // load all disease names from database and insert them into selector 
-      let disease_selector = $('#disease_selectpicker');
-      let selected_disease_result = $('#selector_disease_result');
 
       // initialize selectpicker
-      disease_selector.selectpicker()
+      $('#disease_selectpicker').selectpicker()
       $('#run-info-select').selectpicker()
       $('#interactions_filter_by').selectpicker()
 
-      
+      let disease_selector = $('#disease_selectpicker');
+      let selected_disease_result = $('#selector_disease_result')
+     
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
@@ -406,10 +477,19 @@ export class BrowseComponent implements OnInit {
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
 
-        $("#interactions-nodes-table-container").html(''); //clear possible older tables
-        $("#interactions-edges-table-container").html(''); //clear possible older tables
-        $("#expression_heatmap").html(''); //clear possible older expression map
-        $('#plots').empty()
+        if ($("#interactions-nodes-table").length) {
+
+          $('#interactions-nodes-table').DataTable().destroy()
+          $('#interactions-eges-table').DataTable().destroy()
+
+          $("#interactions-nodes-table-container").empty(); //clear possible older tables
+          $("#interactions-edges-table-container").empty(); //clear possible older tables
+
+          $("#expression_heatmap").empty(); //clear possible older expression map
+          $('#network_messages').empty()
+          $('#plots').empty()
+        } 
+
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
 
@@ -560,14 +640,15 @@ export class BrowseComponent implements OnInit {
             if ($('#input_limit_interactions').val() && !isNaN($('#input_limit_interactions').val())) {
               user_limit = $('#input_limit_interactions').val()
             }
+
             if (!isNaN(parseFloat(user_limit)) && user_limit.length > 0) {
               let edges_to_remove = []
               let edges_to_remove_ids = []
               // edges table is ordered by p-value (ascending)
-              let i = 0
+              let interaction_counter = 0
               edge_table.rows().every(function(rowIdx, tableLoop, rowLoop) {
-                i++
-                if (i > user_limit) {
+                interaction_counter++
+                if (interaction_counter > user_limit) {
                   edges_to_remove.push(this.node())
                   edges_to_remove_ids.push(this.data()[5])
                 }
@@ -585,6 +666,7 @@ export class BrowseComponent implements OnInit {
                   filtered_edges.push(edge)
                 }
               })
+
               // override edges list
               edges = filtered_edges
             }
@@ -647,6 +729,24 @@ export class BrowseComponent implements OnInit {
               edge_table.draw()
 
             } // end of degree cutoff filter
+
+          
+            if (Object.keys(edges).length > user_limit) {
+              if (!$('#network_messages .alert-edges').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-edges">
+                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `
+                )
+              } 
+            } else {
+              // alert-nodes is there
+              $('#network_messages .alert-edges').remove()
+            }
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
@@ -727,6 +827,19 @@ export class BrowseComponent implements OnInit {
               //  network.click()
                 helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
               }
+
+              // if we come from search, we want to have a back button 
+              if (!$('#network_messages .back').length) {
+                $('#network_messages').append(
+                  `
+                    <button type="button" class="btn btn-primary back">Back to Search</button>
+                  `
+                )
+                $('#network_messages .back').click(function() {
+                  $this._location.back();
+                })
+              }
+
             }
 
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables
@@ -768,6 +881,7 @@ export class BrowseComponent implements OnInit {
       /*
       parses the returned node data from the api
       */
+
       let ordered_data = [];
       for (let i=0; i < Object.keys(data).length; i++) {
         let entry = data[i]
@@ -779,9 +893,9 @@ export class BrowseComponent implements OnInit {
         }
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']  == null ? '-' : entry['gene_symbol']
-        ordered_entry['Betweeness'] = entry['betweeness']
+        ordered_entry['Betweenness'] = entry['betweenness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
-        ordered_entry['Node Degree'] = entry['node_degree']
+        ordered_entry['DB Degree'] = entry['node_degree']
         ordered_data.push(ordered_entry)
       }
       let nodes = [];
@@ -803,7 +917,7 @@ export class BrowseComponent implements OnInit {
       let column_names = Object.keys(ordered_data[0]);
 
       // find index positions from columns to round
-      var index_betweeness = column_names.indexOf('Betweeness');
+      var index_betweenness = column_names.indexOf('Betweenness');
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
       node_table = $('#interactions-nodes-table').DataTable( {
@@ -811,7 +925,7 @@ export class BrowseComponent implements OnInit {
           { render: function ( ordered_data, type, row ) {
               return ordered_data.toString().match(/\d+(\.\d{1,3})?/g)[0];
             },
-            targets: [index_betweeness, index_eigenvector] }
+            targets: [index_betweenness, index_eigenvector] }
         ],
         dom: '<"top"Bf>rt<"bottom"lip>',
         buttons: [

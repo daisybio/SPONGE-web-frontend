@@ -30,7 +30,7 @@ export class Helper {
           return edges;
         });
       } catch {
-        //console.log("adjacent_edges exists")
+
       }
 
     }
@@ -185,7 +185,10 @@ export class Helper {
               title: 'Samples'
             },
           };
-          Plotly.newPlot('expression_heatmap', data, layout);
+          if ($('#expression_heatmap').length) {
+            // element is not on page in case user changes page while loading, we just prevent throwing an error
+            Plotly.newPlot('expression_heatmap', data, layout);
+          }
         },
         error: () => {
           //this.msg("Something went wrong loading the expression data.", true)
@@ -461,7 +464,7 @@ export class Helper {
 
       if (nodes.length === 0) {
         // we only get here when we search for specific genes and then changed the disease to a disease where there is no data for these genes
-        $('#network-plot-container').html('No data was found for your search parameters or search genes.')
+        $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
         return
       }
 
@@ -489,7 +492,11 @@ export class Helper {
       $('#network_search_node').append(edge_options)
 
       $('#network_search_node').selectpicker()
+      console.log('NODESSSSSSSS')
+      console.log(nodes)
 
+      console.log('EDGESS')
+      console.log(edges)
       let graph = {
         nodes: nodes,
         edges: edges
@@ -508,13 +515,12 @@ export class Helper {
             // maxNodeSize: 8,
             defaultNodeColor: this.default_node_color,
             autoRescale: ['nodePosition','edgeSize'],  //'edgeSize', nodeSize, nodePosition
-            
             animationsTime: 1000,
             borderSize: 1.5,  
             outerBorderSize: 1.5,
             enableEdgeHovering: true,
             edgeHoverColor: this.hover_edge_color,
-            defaultEdgeHoverColor: this.hover_edge_color,//'#2ecc71', helles grün 
+            defaultEdgeHoverColor: this.hover_edge_color, //'#2ecc71', helles grün 
             edgeHoverSizeRatio: 1.5,
             nodeHoverSizeRatio: 1.5,
             edgeHoverExtremities: true,
@@ -542,7 +548,6 @@ export class Helper {
 
       network.bind('overNode', (e) => {
         // events: overNode outNode clickNode doubleClickNode rightClickNode
-        //console.log(e.type, e.data.node.label, e.data.captor, e.data);
         // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
@@ -588,7 +593,8 @@ export class Helper {
             }
 
             // loading spinner for mirna
-            table += `<tr><td>miRNAs: </td><td class="mirna-entry"><div class="spinner-border spinner"></div></td></tr>`
+            const id = data[entry]["Gene 1"]+'_'+data[entry]["Gene 2"]
+            table += `<tr><td>miRNAs: </td><td class="mirna-entry" id="${id}"><div class="spinner-border spinner"></div></td></tr>`
 
             table += "</table>"
             $('#edge_information_content').html(table)
@@ -603,14 +609,22 @@ export class Helper {
               ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
               between: true,
               callback: (response) => {
-                let mirnas = ''
+                // there can be duplicates
+                let mirnas = {}
                 for (let entry of response) {
-                  mirnas += entry.mirna.mir_ID + ', '
+                  mirnas[entry.mirna.mir_ID] = true
                 }
-                $('#edge_information .mirna-entry').html(mirnas.slice(0,-2))  // remove ', '
+
+
+                let mirnas_string = ''
+                for (let entry of Object.keys(mirnas)) {
+                  mirnas_string += entry + ', '
+                }
+            
+                $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
               },
               error: () => {
-                $('#edge_information .mirna-entry').html('-')
+                $('#edge_information #'+id).html('-')
               }
             })
 

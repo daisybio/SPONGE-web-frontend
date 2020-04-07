@@ -10,7 +10,7 @@ export class Controller {
         if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
           //  Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
           //alfred api
-          Controller.API_ENDPOINT = "http://10.162.163.20:5000"
+          Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
 
         } else {
             Controller.API_ENDPOINT = window.location.origin+"/sponge-api"
@@ -331,6 +331,7 @@ export class Controller {
             if (config.pValueDirection != undefined) {
                 request += "&pValueDirection="+config.pValueDirection
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -395,6 +396,7 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
+        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
