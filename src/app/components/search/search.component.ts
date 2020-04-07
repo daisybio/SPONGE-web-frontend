@@ -255,6 +255,12 @@ export class SearchComponent implements OnInit {
       $(tables).each(function () {
           $(this).dataTable().fnDestroy();
       });
+
+      // remove all old filters
+      while (true) {
+        if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+        else { break }
+      }
       
       // clear older search-results
       $('#key_information').empty()
@@ -805,13 +811,12 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
-        if (table.rows({ filter : 'applied'}).data().length > 400) {
-          helper.msg("Please apply further filtering to your data (>400 is too large).")
-          return
-        }
+        // if (table.rows({ filter : 'applied'}).data().length > 400) {
+        //   helper.msg("Please apply further filtering to your data (>400 is too large).")
+        //   return
+        // }
 
         // append search note to network
-        const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
         let search_keys_ensg = []
         
         let search_keys_that_matter = []
@@ -837,6 +842,7 @@ export class SearchComponent implements OnInit {
 
                 if (search_keys_ensg.length == search_keys_that_matter.length) {
                   // last key has been added
+                  console.log(ensg_numbers)
                   $this.shared_service.setData({
                     'nodes': ensg_numbers,
                     'nodes_marked': nodes_marked,
