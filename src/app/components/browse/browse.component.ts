@@ -26,6 +26,7 @@ export class BrowseComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private shared_service: SharedService,
+    private router: Router,
     private _location: Location
     ) {
 
@@ -188,6 +189,7 @@ export class BrowseComponent implements OnInit {
           $(this).addClass('hidden')
         }
       })
+
     } 
     //##################################################################################
 
@@ -476,7 +478,6 @@ export class BrowseComponent implements OnInit {
         $('#loading_spinner').removeClass('hidden')
 
         if ($("#interactions-nodes-table").length) {
-          console.log("removing tables")
 
           $('#interactions-nodes-table').DataTable().destroy()
           $('#interactions-eges-table').DataTable().destroy()
@@ -828,15 +829,18 @@ export class BrowseComponent implements OnInit {
 
               // if we come from search, we want to have a back button 
               if (!$('#network_messages .back').length) {
-                $('#network_messages .back').append(
+                $('#network_messages').append(
                   `
-                    <button type="button" class="btn btn-primary back">Back to search</button>
+                    <button type="button" class="btn btn-primary back">Back to Search</button>
                   `
                 )
                 $(document).on('click', '#network_messages .back', function() {
-                  this._location.back();
+                  $this._location.back();
+                  //$this.router.navigateByUrl(shared_data['search_route']);
+                  // window.location.replace(shared_data['search_route'])
                 })
               }
+
             }
 
             // check if there is data in url storage and if so, mark nodes and edges in the graph and tables

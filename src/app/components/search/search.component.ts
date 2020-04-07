@@ -30,6 +30,7 @@ export class SearchComponent implements OnInit {
     const $this = this
     const pValue = .05
     this.pValue_current = 0.05  //default
+    const shared_data: Object = $this.shared_service.getData() ? $this.shared_service.getData() : undefined
 
     const gene_table_columns = {
       'ENSG Number': 'ensg_number',
@@ -326,6 +327,11 @@ export class SearchComponent implements OnInit {
             }
 
             build_accordion()
+
+            apply_previous_settings()
+
+            // DONE LOADING
+            $('#loading_spinner').addClass('hidden'); 
           }
         })
         
@@ -357,6 +363,25 @@ export class SearchComponent implements OnInit {
         }
 
 
+      }
+    }
+
+    function apply_previous_settings() {
+      if (shared_data != undefined && 'cancer_type' in shared_data){
+
+        // load cancer type
+        const disease:string = shared_data['cancer_type']
+        $(`#disease_accordion button:contains("${disease}")`).click()
+        if ('search_filter' in shared_data){
+          // load filters 
+          const disease_trimmed = disease.toLowerCase().split(' ').join('').replace('&', 'and')
+          $(`#pvalue_min_${disease_trimmed}-table`).val(shared_data['search_filter']['p_value_min'])
+          $(`#pvalue_max_${disease_trimmed}-table`).val(shared_data['search_filter']['p_value_max'])
+          $(`#mscor_min_${disease_trimmed}-table`).val(shared_data['search_filter']['mscor_min'])
+          $(`#mscor_max_${disease_trimmed}-table`).val(shared_data['search_filter']['mscor_max'])
+          $(`#correlation_min_${disease_trimmed}-table`).val(shared_data['search_filter']['cor_min'])
+          $(`#correlation_max_${disease_trimmed}-table`).val(shared_data['search_filter']['cor_max'])
+        }
       }
     }
 
@@ -411,13 +436,13 @@ export class SearchComponent implements OnInit {
           if (settings.nTable.id !== table_id) {
             return true;
           }
-          var mscore_min = parseFloat($('#mscore_min_' + table_id).val().toString());
-          var mscore_max = parseFloat($('#mscore_max_' + table_id).val().toString());
-          var mscore = parseFloat(data[6]) || 0; // use data for the mscor column
-          if ((isNaN(mscore_min) && isNaN(mscore_max)) ||
-            (isNaN(mscore_min) && mscore <= mscore_max) ||
-            (mscore_min <= mscore && isNaN(mscore_max)) ||
-            (mscore_min <= mscore && mscore <= mscore_max)) {
+          var mscor_min = parseFloat($('#mscor_min_' + table_id).val().toString());
+          var mscor_max = parseFloat($('#mscor_max_' + table_id).val().toString());
+          var mscor = parseFloat(data[6]) || 0; // use data for the mscor column
+          if ((isNaN(mscor_min) && isNaN(mscor_max)) ||
+            (isNaN(mscor_min) && mscor <= mscor_max) ||
+            (mscor_min <= mscor && isNaN(mscor_max)) ||
+            (mscor_min <= mscor && mscor <= mscor_max)) {
             return true;
           }
           return false;
@@ -437,7 +462,24 @@ export class SearchComponent implements OnInit {
             return true;
           }
           return false;
-        }
+        },
+        //  filter for correlation
+        function( settings, data, dataIndex ) {
+          if ( settings.nTable.id !== table_id ) {
+            return true;
+          }
+          var correlation_min = parseFloat( $('#correlation_min_' + table_id).val().toString());
+          var correlation_max = parseFloat( $('#correlation_max_' + table_id).val().toString());
+          var correlation = parseFloat( data[5] ) || 0; // use data for the correlation column
+          if (( isNaN( correlation_min ) && isNaN( correlation_max ) ) ||
+            ( isNaN( correlation_min ) && correlation <= correlation_max ) ||
+            ( correlation_min <= correlation && isNaN( correlation_max ) ) ||
+            ( correlation_min <= correlation && correlation <= correlation_max ) )
+            {
+              return true;
+            }
+          return false;
+          }
       );
     }
 
@@ -587,14 +629,20 @@ export class SearchComponent implements OnInit {
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
           "<div>" +
           "<p>Set filter for MScor</p>" +
-          "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_min_" + table_id + "' name='mscore_min'>&nbsp;" +
-          "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscore_max_" + table_id + "' name='mscore_max'>" +
+          "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscor_min_" + table_id + "' name='mscor_min'>&nbsp;" +
+          "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='mscor_max_" + table_id + "' name='mscor_max'>" +
           "</div>" +
           "<hr>" +
           "<div>" +
           "<p>Set filter for P-value</p>" +
           "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_min_" + table_id + "' name='pvalue_min'>&nbsp;" +
           "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_max_" + table_id + "' name='pvalue_max'>" +
+          "</div>" +
+          "<hr>" +
+          "<div>" +
+          "<p>Set filter for Correlation</p>" +
+          "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='correlation_min_" + table_id + "' name='correlation_min'>&nbsp;" +
+          "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='correlation_max_" + table_id + "' name='correlation_max'>" +
           "</div>" +
           "</div>" +
           "</div>" +
@@ -679,8 +727,8 @@ export class SearchComponent implements OnInit {
 
       $('.export_nodes').click(function() {
         /* export data to browse page, where a graph will be shown */ 
-                
-        let table = $('#'+$(this).val()).DataTable()
+        const table_id = $(this).val()
+        let table = $('#'+table_id).DataTable()
 
         // if table is empty, return info msg and stop process
         if (table.rows({ filter : 'applied'}).data().length === 0) {
@@ -722,7 +770,16 @@ export class SearchComponent implements OnInit {
                     'cancer_type': active_cancer_name,
                     'p_value': $this.pValue_current,
                     'search_keys': search_keys_ensg,
-                    'interactive_cancer_types': count_object.map(function(disease) {return disease.run.dataset.disease_name })
+                    'interactive_cancer_types': count_object.map(function(disease) {return disease.run.dataset.disease_name }),
+                    'search_filter': {
+                      mscor_min: $(`#mscor_min_${table_id}`).val(),
+                      mscor_max: $(`#mscor_max_${table_id}`).val(),
+                      p_value_min: $(`#pvalue_min_${table_id}`).val(),
+                      p_value_max: $(`#pvalue_max_${table_id}`).val(),
+                      cor_min: $(`#correlation_min_${table_id}`).val(),
+                      cor_max: $(`#correlation_max_${table_id}`).val(),
+                    },
+                    'search_route':  'search' + window.location.search
                   })
                   // navigate to browse
                   $this.router.navigateByUrl('browse');
@@ -733,9 +790,8 @@ export class SearchComponent implements OnInit {
           )
         }
        
-      })
+      }) 
 
-      $('#loading_spinner').addClass('hidden');  
     }
 
     function parse_cerna_response_to_table(response, table_id, table_complete=false) {
@@ -887,7 +943,14 @@ export class SearchComponent implements OnInit {
 
         helper.colSearch(table_id, table)
   
-        $('#mscore_min_' + table_id + ', #mscore_max_' + table_id + ', #pvalue_min_' + table_id + ', #pvalue_max_' + table_id).keyup(() => {
+        $(`
+        #mscor_min_${table_id},
+        #mscor_max_${table_id},
+        #pvalue_min_${table_id},
+        #pvalue_max_${table_id},
+        #correlation_min_${table_id},
+        #correlation_max_${table_id}
+        `).keyup(() => {
           table.draw()
         })
   

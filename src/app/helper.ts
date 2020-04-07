@@ -185,7 +185,10 @@ export class Helper {
               title: 'Samples'
             },
           };
-          Plotly.newPlot('expression_heatmap', data, layout);
+          if ($('#expression_heatmap').length) {
+            // element is not on page in case user changes page while loading, we just prevent throwing an error
+            Plotly.newPlot('expression_heatmap', data, layout);
+          }
         },
         error: () => {
           //this.msg("Something went wrong loading the expression data.", true)
