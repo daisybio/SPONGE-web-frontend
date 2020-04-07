@@ -45,7 +45,7 @@ export class BrowseComponent implements OnInit {
     
     let node_table
     let edge_table
-    const default_node_limit = 10
+    const default_node_limit = 25
     $('#input_limit').val(default_node_limit)
     
     let session = null
