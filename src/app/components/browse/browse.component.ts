@@ -167,6 +167,7 @@ export class BrowseComponent implements OnInit {
 
     $('#disease_selectpicker').on('change', function(){
       $('#load_disease').click();
+      $('#disease_selectpicker').selectpicker('refresh');
     })
 
     //##################################################################################
@@ -365,6 +366,7 @@ export class BrowseComponent implements OnInit {
             if (ordered_data.length === 0) {
               $('#network-plot-container').html('<p style="margin-top:150px">No data was found for your search parameters or search genes.</p>')
               $('#loading_spinner').addClass('hidden')
+              // $('#disease_selectpicker').attr('disabled',false)
               return
             }
 
@@ -475,7 +477,7 @@ export class BrowseComponent implements OnInit {
 
 
         // start loading
-        disease_selector.attr('disabled',true)
+        // disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
 
         if ($("#interactions-nodes-table").length) {
@@ -571,7 +573,6 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
-
             /*
               STEP 1: apply edge filters like p-value and mscor
             */
