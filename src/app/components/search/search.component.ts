@@ -842,7 +842,6 @@ export class SearchComponent implements OnInit {
 
                 if ([...new Set(search_keys_ensg)].length == [...new Set(search_keys_that_matter)].length) {
                   // last key has been added
-                  console.log([...new Set(ensg_numbers)])
                   $this.shared_service.setData({
                     'nodes': [...new Set(ensg_numbers)],
                     'nodes_marked': [...new Set(nodes_marked)],

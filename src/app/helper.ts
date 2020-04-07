@@ -492,11 +492,6 @@ export class Helper {
       $('#network_search_node').append(edge_options)
 
       $('#network_search_node').selectpicker()
-      console.log('NODESSSSSSSS')
-      console.log(nodes)
-
-      console.log('EDGESS')
-      console.log(edges)
       let graph = {
         nodes: nodes,
         edges: edges
