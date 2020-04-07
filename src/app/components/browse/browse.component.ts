@@ -390,7 +390,10 @@ export class BrowseComponent implements OnInit {
               order_by = 2
               order_by_asc_des = 'desc'
             }
-  
+
+            const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
+            const disease_name = $('#disease_selectpicker').val()
+            const filename = `SPONGE Interactions ${disease_name} ${search_key}`
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
                 { render: function ( ordered_data, type, row ) {
@@ -405,7 +408,26 @@ export class BrowseComponent implements OnInit {
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
               buttons: [
-                  'copy', 'csv', 'excel', 'pdf', 'print'
+                {
+                    extend: 'copyHtml5',
+                    title: filename
+                },
+                {
+                    extend: 'csvHtml5',
+                    title: filename
+                },
+                {
+                  extend: 'excelHtml5',
+                  title: filename
+                },
+                // { removed due to bad formation of default pdf file
+                //   extend: 'pdfHtml5',
+                //   title: filename
+                // },
+                {
+                  extend: 'print',
+                  title: filename
+                },
               ],
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
               order: [[ order_by, order_by_asc_des ]]
@@ -924,6 +946,10 @@ export class BrowseComponent implements OnInit {
       var index_betweenness = column_names.indexOf('Betweenness');
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
+
+      const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
+      const disease_name = $('#disease_selectpicker').val()
+      const filename = `SPONGE Genes ${disease_name} ${search_key}`
       node_table = $('#interactions-nodes-table').DataTable( {
         columnDefs: [
           { render: function ( ordered_data, type, row ) {
@@ -933,7 +959,26 @@ export class BrowseComponent implements OnInit {
         ],
         dom: '<"top"Bf>rt<"bottom"lip>',
         buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
+          {
+              extend: 'copyHtml5',
+              title: filename
+          },
+          {
+              extend: 'csvHtml5',
+              title: filename
+          },
+          {
+            extend: 'excelHtml5',
+            title: filename
+          },
+          // { removed due to bad formation of default pdf file
+          //   extend: 'pdfHtml5',
+          //   title: filename
+          // },
+          {
+            extend: 'print',
+            title: filename
+          },
         ],
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
       });

@@ -978,12 +978,36 @@ export class SearchComponent implements OnInit {
         )}
   
         push_interaction_filters(table_id)
-
+        
+        const disease_first_letter_uppercase = disease.charAt(0).toUpperCase() + disease.substring(1);
+        const filename = `SPONGE Interactions ${disease_first_letter_uppercase} ${search_key}`
         // define table settings based on search key length
         let datatable_settings = {
           dom: '<"top"Bf>rt<"bottom"lip>',
+          // buttons: [
+          //   'copy', 'csv', 'excel', 'pdf', 'print'
+          // ],
           buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
+            {
+                extend: 'copyHtml5',
+                title: filename
+            },
+            {
+                extend: 'csvHtml5',
+                title: filename
+            },
+            {
+              extend: 'excelHtml5',
+              title: filename
+            },
+            // { removed due to bad formation of default pdf file
+            //   extend: 'pdfHtml5',
+            //   title: filename
+            // },
+            {
+              extend: 'print',
+              title: filename
+            },
           ],
           orderCellsTop: true,
           drawCallback: function( settings ) {
