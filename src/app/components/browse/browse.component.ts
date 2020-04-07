@@ -247,18 +247,38 @@ export class BrowseComponent implements OnInit {
           ensg_number: shared_data['search_keys'],
           limit: 1000,
           callback: data1 => {
+
+            let genes_without_keys = shared_data['nodes'].filter( function( el ) {
+              return !shared_data['search_keys'].includes( el );
+            } );
             
             controller.get_ceRNA({
               disease_name: disease_trimmed,
-              ensg_number: shared_data['nodes'],
+              ensg_number: genes_without_keys,
               limit: limit-shared_data['search_keys'].length,
               sorting: sort_by,
               minBetweenness: cutoff_betweenness,
               minEigenvector: cutoff_eigenvector,
               descending: true,
               callback: data2 => {
-                    
-                let nodes = parse_node_data(data1.concat(data2))
+
+                const all_data = data1.concat(data2)
+
+                if ((shared_data['nodes'].length + shared_data['search_keys'].length) > limit) {
+                  // create info message 
+                  if (!$('#network_messages .alert-nodes').length) {
+                    $('#network_messages').append(
+                      `
+                      <!-- Info Alert -->
+                      <div class="alert alert-info alert-dismissible fade show alert-nodes">
+                          <strong>N.B.</strong> ${shared_data['nodes'].length + shared_data['search_keys'].length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                          <button type="button" class="close" data-dismiss="alert">&times;</button>
+                      </div>
+                      `)
+                  } 
+                }  
+
+                let nodes = parse_node_data(all_data)
                 return callback(nodes)
                 },
               error: (response) => {
@@ -718,7 +738,7 @@ export class BrowseComponent implements OnInit {
                   `
                   <!-- Info Alert -->
                   <div class="alert alert-info alert-dismissible fade show alert-edges">
-                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
+                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go.
                       <button type="button" class="close" data-dismiss="alert">&times;</button>
                   </div>
                   `
@@ -884,12 +904,12 @@ export class BrowseComponent implements OnInit {
       for (let gene in ordered_data) {
         let id = ordered_data[gene]['ENSG Number'];
         let label = ordered_data[gene]['Gene Symbol'];
-        if (label == '') {
+        if (label == '-') {
           label = ordered_data[gene]['ENSG Number']
         }
         let x = ordered_data[gene]['Betweenness']*10 //helper.getRandomInt(10)
         let y = ordered_data[gene]['Eigenvector']*10 //helper.getRandomInt(10)
-        let size = ordered_data[gene]['DB Degree']/1000;
+        let size = ordered_data[gene]['DB Degree']/1000*2;
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
       }

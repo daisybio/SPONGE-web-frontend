@@ -906,9 +906,11 @@ export class Helper {
             iterationsPerRender: 1,
 
             // Supervisor config
-            worker: false,
+            worker: true,
           }
-          network.startForceAtlas2(config);
+
+          network.startForceAtlas2(config)
+          
           //document.getElementById('toggle_layout').innerHTML = 'Stop layout';
           $('#toggle_layout').attr('disabled', true)
 

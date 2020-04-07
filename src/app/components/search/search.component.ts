@@ -82,6 +82,10 @@ export class SearchComponent implements OnInit {
       search_key = parse_search_key_table()
       // remove possible ''
       search_key = search_key.filter(item => item);
+
+      // update url
+      update_url()
+
       if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -221,6 +225,15 @@ export class SearchComponent implements OnInit {
       }
     }
 
+    function update_url() {
+      const current_url_search = window.location.search
+      let new_url_search = '?search_key=' + search_key
+
+      if (current_url_search != new_url_search) {
+        window.history.pushState(null ,"", window.location.origin + window.location.pathname + new_url_search);
+      }
+    }
+
     function classify_searchKey(search_key:string){
       if (search_key.startsWith('ENSG')) {
         return "ENSG"
@@ -242,6 +255,12 @@ export class SearchComponent implements OnInit {
       $(tables).each(function () {
           $(this).dataTable().fnDestroy();
       });
+
+      // remove all old filters
+      while (true) {
+        if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+        else { break }
+      }
       
       // clear older search-results
       $('#key_information').empty()
@@ -792,13 +811,12 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
-        if (table.rows({ filter : 'applied'}).data().length > 400) {
-          helper.msg("Please apply further filtering to your data (>400 is too large).")
-          return
-        }
+        // if (table.rows({ filter : 'applied'}).data().length > 400) {
+        //   helper.msg("Please apply further filtering to your data (>400 is too large).")
+        //   return
+        // }
 
         // append search note to network
-        const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
         let search_keys_ensg = []
         
         let search_keys_that_matter = []
@@ -822,14 +840,15 @@ export class SearchComponent implements OnInit {
                   }
                 }
 
-                if (search_keys_ensg.length == search_keys_that_matter.length) {
+                if ([...new Set(search_keys_ensg)].length == [...new Set(search_keys_that_matter)].length) {
                   // last key has been added
+                  console.log([...new Set(ensg_numbers)])
                   $this.shared_service.setData({
-                    'nodes': ensg_numbers,
-                    'nodes_marked': nodes_marked,
+                    'nodes': [...new Set(ensg_numbers)],
+                    'nodes_marked': [...new Set(nodes_marked)],
                     'cancer_type': active_cancer_name,
                     'p_value': $this.pValue_current,
-                    'search_keys': search_keys_ensg,
+                    'search_keys': [...new Set(search_keys_ensg)],
                     'interactive_cancer_types': count_object.map(function(disease) {return disease.run.dataset.disease_name }),
                     'search_filter': {
                       mscor_min: $(`#mscor_min_${table_id}`).val(),
