@@ -182,6 +182,7 @@ export class BrowseComponent implements OnInit {
     /* In case we passed data from search to browse (shared service), set cancer type */
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
+      $('#disease_selectpicker').selectpicker('refresh');
 
       // we also want to remove options that are not valid
       $('#disease_selectpicker option').each( function (option) {
@@ -216,12 +217,6 @@ export class BrowseComponent implements OnInit {
 
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
-      // check the eigenvector cutoff since it is different to the others
-      if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
-        helper.msg("The eigenvector should be between 0 and 1.", true)
-        $('#loading_spinner').addClass('hidden')
-        return 
-      }
 
       let limit = $('#input_limit').val()
       let loading_limit: boolean
@@ -244,63 +239,38 @@ export class BrowseComponent implements OnInit {
             }
           }
         )
-      } else {    
+      } else {
+        
+        // kinda tricky construct, we load first the information for the search keys and then for the rest until limit
         controller.get_ceRNA({
           disease_name: disease_trimmed,
-          ensg_number: shared_data['nodes'],
+          ensg_number: shared_data['search_keys'],
           limit: 1000,
-          sorting: sort_by,
-          minBetweenness: cutoff_betweenness,
-          minEigenvector: cutoff_eigenvector,
-          descending: true,
-          callback: data => {
-            if (data.length > limit) {
-              
-              // apply limit here but take care that search keys are still in data
-              let data_with_keys = []
-              let data_without_keys = []
-              for (const e of data) {
-                if (shared_data['search_keys'].includes(e['gene']['ensg_number'])) {
-                  data_with_keys.push(e)
-                } else {
-                  data_without_keys.push(e)
-                }
+          callback: data1 => {
+            
+            controller.get_ceRNA({
+              disease_name: disease_trimmed,
+              ensg_number: shared_data['nodes'],
+              limit: limit-shared_data['search_keys'].length,
+              sorting: sort_by,
+              minBetweenness: cutoff_betweenness,
+              minEigenvector: cutoff_eigenvector,
+              descending: true,
+              callback: data2 => {
+                    
+                let nodes = parse_node_data(data1.concat(data2))
+                return callback(nodes)
+                },
+              error: (response) => {
+                $('#loading_spinner').addClass('hidden')
+                helper.msg("Something went wrong while loading the ceRNAs.", true)
               }
+            })
 
-              // fill up data until limit is reached
-              let i = 0
-              for (const e of data_without_keys) {
-                data_with_keys.push(e)
-                i ++
-                if (i >= limit - shared_data['search_keys'].length){
-                  break
-                }
-              }
 
-               // create info message 
-               if (!$('#network_messages .alert-nodes').length) {
-                $('#network_messages').append(
-                  `
-                  <!-- Info Alert -->
-                  <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                      <strong>N.B.</strong> You have selected ${data.length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
-                      <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  </div>
-                  `)
-                } 
-              
-              data = data_with_keys
-             
-            }
-
-            let nodes = parse_node_data(data)
-            return callback(nodes)
-            },
-          error: (response) => {
-            $('#loading_spinner').addClass('hidden')
-            helper.msg("Something went wrong while loading the ceRNAs.", true)
           }
         })
+
       }
     }
     
@@ -473,6 +443,17 @@ export class BrowseComponent implements OnInit {
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
+
+        // before we do anything, we check if the input values are valid
+        const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+        // check the eigenvector cutoff since it is different to the others
+        if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
+          helper.msg("The eigenvector should be between 0 and 1.", true)
+          $('#loading_spinner').addClass('hidden')
+          return 
+        }
+
+
         // start loading
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
@@ -906,9 +887,9 @@ export class BrowseComponent implements OnInit {
         if (label == '') {
           label = ordered_data[gene]['ENSG Number']
         }
-        let x = helper.getRandomInt(10);
-        let y = helper.getRandomInt(10);
-        let size = 20*ordered_data[gene]['Eigenvector'];
+        let x = ordered_data[gene]['Betweenness']*10 //helper.getRandomInt(10)
+        let y = ordered_data[gene]['Eigenvector']*10 //helper.getRandomInt(10)
+        let size = ordered_data[gene]['DB Degree']/1000;
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
       }

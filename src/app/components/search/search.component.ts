@@ -30,7 +30,11 @@ export class SearchComponent implements OnInit {
     const $this = this
     const pValue = .05
     this.pValue_current = 0.05  //default
-    const shared_data: Object = $this.shared_service.getData() ? $this.shared_service.getData() : undefined
+    let shared_data: Object = $this.shared_service.getData() ? $this.shared_service.getData() : undefined
+
+    if (shared_data!= undefined) {
+      $('#significant_results').prop('checked', shared_data['search_filter']['significant_check'])
+    }
 
     const gene_table_columns = {
       'ENSG Number': 'ensg_number',
@@ -232,6 +236,12 @@ export class SearchComponent implements OnInit {
     function search(limit) {
       // start loading
       $('#loading_spinner').removeClass('hidden')
+
+      // destroy all old datatables
+      var tables = $.fn.dataTable.fnTables(true);
+      $(tables).each(function () {
+          $(this).dataTable().fnDestroy();
+      });
       
       // clear older search-results
       $('#key_information').empty()
@@ -240,7 +250,7 @@ export class SearchComponent implements OnInit {
       $('#search_key_information tbody').empty()
       $('#plots').empty()
       $('#pie-chart-header').addClass('hidden')
-
+      
       /* search_key is defined */
       if (search_key != undefined) {
         parsed_search_result = {}
@@ -386,6 +396,9 @@ export class SearchComponent implements OnInit {
           $(`#correlation_min_${disease_trimmed}-table`).val(shared_data['search_filter']['cor_min'])
           $(`#correlation_max_${disease_trimmed}-table`).val(shared_data['search_filter']['cor_max'])
         }
+
+        // reset
+        shared_data = undefined
       }
     }
 
@@ -617,16 +630,17 @@ export class SearchComponent implements OnInit {
           "</div>" +
           "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
           "<div class='card-body'>" +
-          "<div id=button_control_"+disease_trimmed+">"+
+          "<div class='button-control-container' id=button_control_"+disease_trimmed+">"+
           "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show as Network</button>"+
           `
-          <div class="form-check button-margin inline-block ${search_key.length>1?'': 'hidden'}">
-            <input disabled type="checkbox" class="form-check-input" id="interactions_to_all_search_keys_`+ table_id +`">
-            <label class="form-check-label" for="interactions_to_all_search_keys_`+ table_id +`">Show only interactions to all search genes</label>
-          </div>
+          <select class="selectpicker ${(search_key.length<2) ? 'hidden' : ''}" id="interactions_relatve_to_search_keys_${table_id}" disabled>
+            <option value="all">All</option>
+            <option value="to">Show only interactions <strong>to all</strong> search genes</option>
+            <option value="between">Show only interactions <strong>between</strong> search genes</option>
+          </select>
           `+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
@@ -657,22 +671,32 @@ export class SearchComponent implements OnInit {
         $('#disease_accordion').append(accordion_card)
       }
 
+      $('.selectpicker').selectpicker()
+
       // manage checkbox d´to just display intersection of gene interactions between all search keys
-      $(document).on('change', "input[id^='interactions_to_all_search_keys_']", function() {
+      $(document).on('change', "select[id^='interactions_relatve_to_search_keys_']", function() {
         // find datatable
-        const this_table_id = $(this).attr('id').split('interactions_to_all_search_keys_')[1]
+        const this_table_id = $(this).attr('id').split('interactions_relatve_to_search_keys_')[1]
         const this_table = $('#'+this_table_id).DataTable()
-    
-        if(this.checked) {
+
+        if(this.value == 'to') {
+          // remove filter
+          while (true) {
+            if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+            else { break }
+          }
+          this_table.draw()
+
           // filter datatable to only get intersection of gene interactions between all search keys
           const unique_keys = this_table.column(0).data().unique()
           const unique_hits = this_table.column(1).data().unique()
           const data = this_table.data()
 
-          // create object to check for each unique key per hit
+          // create object to check for each search key per interaction. 
           let empty_hit_checklist = {}
           unique_keys.each(key => empty_hit_checklist[key] = 0)
 
+          // create an object for each interaction partner in the whole table. in the object we store, how many hits it has per search key
           let hit_check_object = {}
           unique_hits.each(hit => hit_check_object[hit] = JSON.parse(JSON.stringify(empty_hit_checklist)))  // deep copy
 
@@ -703,17 +727,36 @@ export class SearchComponent implements OnInit {
           );
           this_table.draw()
 
+        } else if (this.value == 'between') {
+          // remove filter
+          while (true) {
+            if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
+            else { break }
+          }
+          this_table.draw()
+
+          $.fn.dataTableExt.afnFiltering.push(
+            function (oSettings, aData, iDataIndex) {
+              
+              if (oSettings.nTable.id == this_table_id) {
+                return search_key.includes(aData[1]);
+              } else {
+                return true
+              }
+            }
+          );
+          this_table.draw()
+
         } else {
           // remove filter
           while (true) {
             if($.fn.dataTableExt.afnFiltering.length) {$.fn.dataTableExt.afnFiltering.pop()} 
             else { break }
           }
-          
-          
           this_table.draw()
         }
       });
+
       
       // load table when accordion tab is opened and table has not been loaded already
       $(document).on('click', '.btn.btn-link.collapsed', function() {
@@ -749,24 +792,37 @@ export class SearchComponent implements OnInit {
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
 
+        if (table.rows({ filter : 'applied'}).data().length > 400) {
+          helper.msg("Please apply further filtering to your data (>400 is too large).")
+          return
+        }
+
         // append search note to network
         const ensg_numbers_with_keys_length = ensg_numbers.length + search_key.length
         let search_keys_ensg = []
+        
+        let search_keys_that_matter = []
         for (const [index, key] of search_key.entries()) {
-          controller.search_string(
+          if (table.column(0).search(key).row({search: 'applied', filter : 'applied'}).data() != undefined) {
+            // search key occurs in filtered table
+            search_keys_that_matter.push(key)
+          }
+        }
+
+        for (const key of search_keys_that_matter) {
+           controller.search_string(
             {
               searchString: key,
               callback: function(response) {
                 // get ensg number of search key
                 for (let elem of response) {
                   if (elem.gene_symbol == key || elem.ensg_number == key) {
-                    ensg_numbers.push(elem.ensg_number)
                     search_keys_ensg.push(elem.ensg_number)
                     break
                   }
                 }
 
-                if (ensg_numbers.length == ensg_numbers_with_keys_length) {
+                if (search_keys_ensg.length == search_keys_that_matter.length) {
                   // last key has been added
                   $this.shared_service.setData({
                     'nodes': ensg_numbers,
@@ -782,6 +838,7 @@ export class SearchComponent implements OnInit {
                       p_value_max: $(`#pvalue_max_${table_id}`).val(),
                       cor_min: $(`#correlation_min_${table_id}`).val(),
                       cor_max: $(`#correlation_max_${table_id}`).val(),
+                      significant_check: $this.pValue_current==pValue ? true : false
                     }
                   })
                   // navigate to browse
@@ -977,20 +1034,35 @@ export class SearchComponent implements OnInit {
         }
       }
 
-      // enable intersection search if more than 1 gene key was found
-      if ($('#'+table_id).DataTable().column(0).data().unique().length > 1) {
-        $('#interactions_to_all_search_keys_'+table_id).prop("disabled", false)
-      } else {
-        // else show info that just one search key was found 
-        $('#interactions_to_all_search_keys_'+table_id).prop("title", "All the interactions belong to just one search gene.")
-      }
-
       if (table_complete) {
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
 
         // enable export to network
         $('#'+table_id).closest('.card-body').find('.export_nodes').prop('disabled', false);
+
+         // enable intersection_search if more than 1 gene key was found
+        if ($('#'+table_id).DataTable().column(0).data().unique().length > 1) {
+          $('#interactions_relatve_to_search_keys_'+table_id).removeAttr('disabled')
+          $('#interactions_relatve_to_search_keys_'+table_id).selectpicker('refresh')
+        } else{
+
+          if(search_key.length > 1) {
+            // else show info that just one search key was found 
+            $('#interactions_relatve_to_search_keys_'+table_id).closest('div.button-control-container').append(
+              `
+              <div class="alert alert-info alert-dismissible fade show">
+                  <strong>N.B.</strong> All the interactions belong to just one search gene.
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+              </div>
+              `
+              )
+          }
+
+          $('#interactions_relatve_to_search_keys_'+table_id).closest('div').remove()
+          
+        }
+
 
 /* 
         // start adding miRNAs
