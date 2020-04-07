@@ -236,7 +236,7 @@ export class BrowseComponent implements OnInit {
             },
             error: (response) => {
               $('#loading_spinner').addClass('hidden')
-              helper.msg("Something went wrong while loading the ceRNAs.", true)
+              helper.msg("Something went wrong while loading the ceRNAs. Perhaps try a smaller limit.", true)
             }
           }
         )
@@ -252,6 +252,11 @@ export class BrowseComponent implements OnInit {
             let genes_without_keys = shared_data['nodes'].filter( function( el ) {
               return !shared_data['search_keys'].includes( el );
             } );
+
+            if (genes_without_keys.length > 500) {
+              // manually limiting query size since it would cause an error due to url length limitations. nobody is going to be able to display more than 500 genes anyway
+              genes_without_keys = genes_without_keys.slice(0, 500)
+            }
             
             controller.get_ceRNA({
               disease_name: disease_trimmed,
@@ -272,7 +277,7 @@ export class BrowseComponent implements OnInit {
                       `
                       <!-- Info Alert -->
                       <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                          <strong>N.B.</strong> ${shared_data['nodes'].length + shared_data['search_keys'].length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                          <strong>N.B.</strong> ${shared_data['nodes'].length + shared_data['search_keys'].length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go.
                           <button type="button" class="close" data-dismiss="alert">&times;</button>
                       </div>
                       `)
@@ -284,7 +289,7 @@ export class BrowseComponent implements OnInit {
                 },
               error: (response) => {
                 $('#loading_spinner').addClass('hidden')
-                helper.msg("Something went wrong while loading the ceRNAs.", true)
+                helper.msg("Something went wrong while loading the ceRNAs. Perhaps try a smaller limit.", true)
               }
             })
 
@@ -930,7 +935,7 @@ export class BrowseComponent implements OnInit {
         }
         let x = ordered_data[gene]['Betweenness']*10 //helper.getRandomInt(10)
         let y = ordered_data[gene]['Eigenvector']*10 //helper.getRandomInt(10)
-        let size = ordered_data[gene]['DB Degree']/1000*2;
+        let size = (Math.sqrt(ordered_data[gene]['DB Degree'])/10)
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
       }

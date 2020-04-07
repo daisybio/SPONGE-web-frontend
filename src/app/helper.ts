@@ -504,10 +504,10 @@ export class Helper {
             type: 'canvas'
           },
           settings: {
-             minEdgeSize: 0.8,
-             maxEdgeSize: 4,
-            // minNodeSize: 1,
-            // maxNodeSize: 8,
+            minEdgeSize: 0.8,
+            maxEdgeSize: 4,
+            minNodeSize: 1,
+            maxNodeSize: 10,
             defaultNodeColor: this.default_node_color,
             autoRescale: ['nodePosition','edgeSize'],  //'edgeSize', nodeSize, nodePosition
             animationsTime: 1000,
