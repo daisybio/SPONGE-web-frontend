@@ -718,7 +718,7 @@ export class BrowseComponent implements OnInit {
                   `
                   <!-- Info Alert -->
                   <div class="alert alert-info alert-dismissible fade show alert-edges">
-                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go again.
+                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go.
                       <button type="button" class="close" data-dismiss="alert">&times;</button>
                   </div>
                   `
@@ -882,7 +882,7 @@ export class BrowseComponent implements OnInit {
       for (let gene in ordered_data) {
         let id = ordered_data[gene]['ENSG Number'];
         let label = ordered_data[gene]['Gene Symbol'];
-        if (label == '') {
+        if (label == '-') {
           label = ordered_data[gene]['ENSG Number']
         }
         let x = ordered_data[gene]['Betweenness']*10 //helper.getRandomInt(10)
