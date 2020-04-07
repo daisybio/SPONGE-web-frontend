@@ -840,15 +840,15 @@ export class SearchComponent implements OnInit {
                   }
                 }
 
-                if (search_keys_ensg.length == search_keys_that_matter.length) {
+                if ([...new Set(search_keys_ensg)].length == [...new Set(search_keys_that_matter)].length) {
                   // last key has been added
-                  console.log(ensg_numbers)
+                  console.log([...new Set(ensg_numbers)])
                   $this.shared_service.setData({
-                    'nodes': ensg_numbers,
-                    'nodes_marked': nodes_marked,
+                    'nodes': [...new Set(ensg_numbers)],
+                    'nodes_marked': [...new Set(nodes_marked)],
                     'cancer_type': active_cancer_name,
                     'p_value': $this.pValue_current,
-                    'search_keys': search_keys_ensg,
+                    'search_keys': [...new Set(search_keys_ensg)],
                     'interactive_cancer_types': count_object.map(function(disease) {return disease.run.dataset.disease_name }),
                     'search_filter': {
                       mscor_min: $(`#mscor_min_${table_id}`).val(),

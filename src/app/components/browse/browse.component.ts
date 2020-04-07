@@ -247,10 +247,14 @@ export class BrowseComponent implements OnInit {
           ensg_number: shared_data['search_keys'],
           limit: 1000,
           callback: data1 => {
+
+            let genes_without_keys = shared_data['nodes'].filter( function( el ) {
+              return !shared_data['search_keys'].includes( el );
+            } );
             
             controller.get_ceRNA({
               disease_name: disease_trimmed,
-              ensg_number: shared_data['nodes'],
+              ensg_number: genes_without_keys,
               limit: limit-shared_data['search_keys'].length,
               sorting: sort_by,
               minBetweenness: cutoff_betweenness,
