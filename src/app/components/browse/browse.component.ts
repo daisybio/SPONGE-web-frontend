@@ -182,6 +182,7 @@ export class BrowseComponent implements OnInit {
     /* In case we passed data from search to browse (shared service), set cancer type */
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
+      $('#disease_selectpicker').selectpicker('refresh');
 
       // we also want to remove options that are not valid
       $('#disease_selectpicker option').each( function (option) {
