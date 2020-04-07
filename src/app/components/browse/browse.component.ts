@@ -571,12 +571,8 @@ export class BrowseComponent implements OnInit {
         // load interaction data (edges), load network data (nodes)
        
         load_nodes(this.disease_trimmed, nodes => {
-          console.log("here")
-          console.log(nodes)
           let ensg_numbers = nodes.map(function(node) {return node.id})
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
-            console.log("here")
-            console.log(edges)
             /*
               STEP 1: apply edge filters like p-value and mscor
             */
