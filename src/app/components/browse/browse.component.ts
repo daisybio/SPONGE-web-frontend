@@ -217,12 +217,6 @@ export class BrowseComponent implements OnInit {
 
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
-      // check the eigenvector cutoff since it is different to the others
-      if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
-        helper.msg("The eigenvector should be between 0 and 1.", true)
-        $('#loading_spinner').addClass('hidden')
-        return 
-      }
 
       let limit = $('#input_limit').val()
       let loading_limit: boolean
@@ -284,7 +278,7 @@ export class BrowseComponent implements OnInit {
                   `
                   <!-- Info Alert -->
                   <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                      <strong>N.B.</strong> You have selected ${data.length} genes, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
+                      <strong>N.B.</strong> ${data.length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go again.
                       <button type="button" class="close" data-dismiss="alert">&times;</button>
                   </div>
                   `)
@@ -474,6 +468,17 @@ export class BrowseComponent implements OnInit {
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
+
+        // before we do anything, we check if the input values are valid
+        const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
+        // check the eigenvector cutoff since it is different to the others
+        if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
+          helper.msg("The eigenvector should be between 0 and 1.", true)
+          $('#loading_spinner').addClass('hidden')
+          return 
+        }
+
+
         // start loading
         disease_selector.attr('disabled',true)
         $('#loading_spinner').removeClass('hidden')
@@ -905,9 +910,9 @@ export class BrowseComponent implements OnInit {
         if (label == '') {
           label = ordered_data[gene]['ENSG Number']
         }
-        let x = helper.getRandomInt(10);
-        let y = helper.getRandomInt(10);
-        let size = 20*ordered_data[gene]['Eigenvector'];
+        let x = ordered_data[gene]['Betweenness']*10 //helper.getRandomInt(10)
+        let y = ordered_data[gene]['Eigenvector']*10 //helper.getRandomInt(10)
+        let size = ordered_data[gene]['DB Degree']/1000;
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
       }
