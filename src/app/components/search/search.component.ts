@@ -82,6 +82,10 @@ export class SearchComponent implements OnInit {
       search_key = parse_search_key_table()
       // remove possible ''
       search_key = search_key.filter(item => item);
+
+      // update url
+      update_url()
+
       if (search_key[0] == '') {
         helper.msg("Please select a search gene", false)
       } else {
@@ -218,6 +222,15 @@ export class SearchComponent implements OnInit {
           }
         })
       }
+      }
+    }
+
+    function update_url() {
+      const current_url_search = window.location.search
+      let new_url_search = '?search_key=' + search_key
+
+      if (current_url_search != new_url_search) {
+        window.history.pushState(null ,"", window.location.origin + window.location.pathname + new_url_search);
       }
     }
 
