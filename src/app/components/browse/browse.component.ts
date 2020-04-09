@@ -814,6 +814,7 @@ export class BrowseComponent implements OnInit {
 
               setTimeout(() => {
                 $('#restart_camera').click()
+                $('#toggle_layout').click()
               }, 200)
 
             })
@@ -842,8 +843,8 @@ export class BrowseComponent implements OnInit {
               setTimeout(() => {
                 // network.refresh()
                 $('#restart_camera').click()
-               
-              }, 500)
+                $('#toggle_layout').click()
+              }, 200)
             })
 
             //##################################################################################
