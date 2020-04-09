@@ -245,23 +245,23 @@ export class BrowseComponent implements OnInit {
         // kinda tricky construct, we load first the information for the search keys and then for the rest until limit
         controller.get_ceRNA({
           disease_name: disease_trimmed,
-          ensg_number: shared_data['search_keys'],
-          limit: 1000,
+          ensg_number: shared_data['search_keys'].concat(shared_data['nodes_marked']),
+          limit: limit,
           callback: data1 => {
 
-            let genes_without_keys = shared_data['nodes'].filter( function( el ) {
-              return !shared_data['search_keys'].includes( el );
+            let genes_without_keys_or_marked = shared_data['nodes'].filter( function( el ) {
+              return !shared_data['search_keys'].includes( el ) && !shared_data['nodes_marked'].includes( el );
             } );
 
-            if (genes_without_keys.length > 500) {
+            if (genes_without_keys_or_marked.length > 500) {
               // manually limiting query size since it would cause an error due to url length limitations. nobody is going to be able to display more than 500 genes anyway
-              genes_without_keys = genes_without_keys.slice(0, 500)
+              genes_without_keys_or_marked = genes_without_keys_or_marked.slice(0, 500)
             }
             
             controller.get_ceRNA({
               disease_name: disease_trimmed,
-              ensg_number: genes_without_keys,
-              limit: limit-shared_data['search_keys'].length,
+              ensg_number: genes_without_keys_or_marked,
+              limit: limit - (shared_data['search_keys'].length + shared_data['nodes_marked'].length),
               sorting: sort_by,
               minBetweenness: cutoff_betweenness,
               minEigenvector: cutoff_eigenvector,
@@ -270,14 +270,15 @@ export class BrowseComponent implements OnInit {
 
                 const all_data = data1.concat(data2)
 
-                if ((shared_data['nodes'].length + shared_data['search_keys'].length) > limit) {
+                if ((genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length) > limit) {
                   // create info message 
                   if (!$('#network_messages .alert-nodes').length) {
                     $('#network_messages').append(
                       `
                       <!-- Info Alert -->
                       <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                          <strong>N.B.</strong> ${shared_data['nodes'].length + shared_data['search_keys'].length} genes were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go.
+                          <strong>N.B.</strong> ${genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length} genes 
+                          were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go.
                           <button type="button" class="close" data-dismiss="alert">&times;</button>
                       </div>
                       `)

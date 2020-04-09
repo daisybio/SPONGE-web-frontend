@@ -792,6 +792,7 @@ export class SearchComponent implements OnInit {
       })
 
       $('.export_nodes').click(function() {
+
         /* export data to browse page, where a graph will be shown */ 
         const table_id = $(this).val()
         let table = $('#'+table_id).DataTable()
@@ -810,11 +811,6 @@ export class SearchComponent implements OnInit {
         let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
 
         let ensg_numbers:string[] = nodes.map(function(node) {return node.id})
-
-        // if (table.rows({ filter : 'applied'}).data().length > 400) {
-        //   helper.msg("Please apply further filtering to your data (>400 is too large).")
-        //   return
-        // }
 
         // append search note to network
         let search_keys_ensg = []
