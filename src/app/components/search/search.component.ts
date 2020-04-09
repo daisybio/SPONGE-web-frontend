@@ -64,6 +64,8 @@ export class SearchComponent implements OnInit {
           url_storage = helper.load_session_url(params)
         }
         search_key = decodeURIComponent(params.search_key).split(',');
+        // only unique
+        search_key = [...new Set(search_key)]
       });
 
     function parse_search_key_table() {
@@ -72,8 +74,8 @@ export class SearchComponent implements OnInit {
       for (const ensg_number of ensg_numbers) {
         search_key += ensg_number.innerText +','
       }
-      search_key = search_key.slice(0,-1)
-      return  search_key.split(',') // remove last ','
+      search_key = search_key.slice(0,-1) // remove last ','
+      return  [...new Set(search_key.split(','))] 
     }
     
     $('#options_gene_go').click( () => {
@@ -93,17 +95,6 @@ export class SearchComponent implements OnInit {
         search(limit)
       }    
     })
-
-    // $('#options_mirna_go').click( () => {
-    //   search_key = $('#mirna_search_keys').val().split(' ').join('')
-    //   // remove last char if it is ','
-    //   search_key = search_key[-1] == ',' ? search_key.slice(0, -1) : search_key
-    //   if (search_key[0] == '') {
-    //     helper.msg("Please select a search gene", false)
-    //   } else {
-    //     search(limit)
-    //   }
-    // })
     
     // set significant result checkbox to true by default
     $('#significant_results').prop('checked', true)
