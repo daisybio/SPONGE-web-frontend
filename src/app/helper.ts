@@ -746,9 +746,7 @@ export class Helper {
             break
           }
         }
-        console.log(nodes[node].id)
-        // load KMP
-       $this.load_KMP(nodes[node].id,nodes[node].id,selected_disease) 
+       
         return nodes[node]
       }
 
@@ -775,6 +773,9 @@ export class Helper {
         let camera = network.cameras[0]
         let node = searchNode(node_as_string)
         node.color = $this.subgraph_node_color
+        
+        // load KMP
+       $this.load_KMP(session.get_selected()['nodes'],node.id,selected_disease) 
         sigma.misc.animation.camera(
           camera,
           {
