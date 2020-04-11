@@ -154,7 +154,7 @@ export class HomeComponent implements OnInit {
       for (const ensg_number of ensg_numbers) {
         search_key += ensg_number.innerText +','
       }
-      return search_key.slice(0,-1)  // remove last ','
+      return [...new Set(search_key.slice(0,-1).split(','))]  // remove last ','
     }
 
     /* Search function for home component */
@@ -167,7 +167,7 @@ export class HomeComponent implements OnInit {
         return
       }
 
-      window.open( 'search?search_key='+encodeURIComponent(search_key), '_top')
+      window.open( 'search?search_key='+encodeURIComponent(search_key.join(',')), '_top')
     })
 
     $(function() { 
