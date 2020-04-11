@@ -837,6 +837,9 @@ export class BrowseComponent implements OnInit {
               helper.limit_nodes_to(network, filtered_nodes_ids)
 
               helper.mark_nodes_network(network, selected_nodes)
+
+               // load KMP
+              helper.load_KMP(selected_nodes,"",selected_disease_result) 
               
               // go to network
               $('[aria-controls=nav-overview]').click()

@@ -263,7 +263,7 @@ export class Helper {
         /*  if(response[0].gene.gene_symbol != 'null'){
            add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.gene_symbol +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
           }else{*/
-           add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.ensg_number +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 3px #023f75; border-radius: 10px;'></div> "
+           add_KMP_Plot =  "<div class='col-auto' id='myDiv_"+response[0].gene.ensg_number +"'style='min-height:410px; min-width:510px; background-color:white; margin:10px; border: solid 2px #136fe2; border-radius: 10px;'></div> "
 
        //   }
           //          let add_KMP_Plot =  "<div class='col justify-content-md-center' id='kmp-plot-container' style='background-color:white;margin:10px; border: solid 3px #023f75; border-radius: 10px;'>"+"<div id='myDiv_"+response[0].gene +"'style='left:50%;'></div> "+"</div>"
@@ -775,7 +775,8 @@ export class Helper {
         node.color = $this.subgraph_node_color
         
         // load KMP
-       $this.load_KMP(session.get_selected()['nodes'],node.id,selected_disease) 
+        $this.load_KMP(session.get_selected()['nodes'],node.id,selected_disease) 
+      
         sigma.misc.animation.camera(
           camera,
           {
@@ -1077,6 +1078,7 @@ export class Helper {
           if (nodes.includes(node['id'])) {
             node.color = this.subgraph_node_color
           }
+          
         }
       )
     }
