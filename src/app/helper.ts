@@ -276,6 +276,11 @@ export class Helper {
           
           // end loading
            $('#loading_spinner_KMP').addClass('hidden')
+
+            // show KMP
+       if($('#plots').hasClass('hidden')){
+        $('#plots').removeClass('hidden') 
+      }
       
           },
           error: (repsonse) => {
@@ -726,10 +731,7 @@ export class Helper {
 
        // load KMP
        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
-       // show KMP
-       if($('#plots').hasClass('hidden')){
-         $('#plots').removeClass('hidden') 
-       }
+     
 
       }
 
@@ -744,6 +746,9 @@ export class Helper {
             break
           }
         }
+        console.log(nodes[node].id)
+        // load KMP
+       $this.load_KMP(nodes[node].id,nodes[node].id,selected_disease) 
         return nodes[node]
       }
 

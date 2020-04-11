@@ -856,7 +856,9 @@ export class BrowseComponent implements OnInit {
                
                 $('#export_selected_nodes').click()
               //  network.click()
-                helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
+              
+                helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
+                
               }
 
               // if we come from search, we want to have a back button 
@@ -881,7 +883,8 @@ export class BrowseComponent implements OnInit {
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
                 console.log(shared_data['nodes_marked'])
-                helper.load_KMP(ensg_numbers,"",this.disease_trimmed)
+                
+                helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
               }
               /*
               // TODO:  we currently cant restore edges bc of missing ids
