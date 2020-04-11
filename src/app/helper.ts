@@ -1,6 +1,7 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
+//import { relative } from 'path';
 //import { PassThrough } from 'stream';
 
 // wtf you have to declare sigma after importing it
@@ -178,10 +179,16 @@ export class Helper {
             annotations: [],
             paper_bgcolor: 'ghostwhite',
             plot_bgcolor: 'rgb(248,248,255)',
-            width: 1500,
-            autosize:true,
             yaxis: {
-              automargin: true,
+              automargin: false,
+              margin: {
+                l: 50,
+                r: 50,
+                b: 100,
+                t: 100,
+                pad: 4,
+              
+              },
               showticklabels: false,
               ticks: '',
               title: 'Samples'
