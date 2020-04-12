@@ -9,6 +9,8 @@
     @media (width:1440px) {
       left: 0px;      
   }
+
+
     
    #network-plot-container{
       position: absolute;
@@ -146,6 +148,16 @@
     flex: 0 0 33.333333%;
     max-width: 33.333333%;
     right: 120px;
+
+}
+ }
+
+ @media screen and (width: 2560px){
+  .col-md-4 {
+
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+    right: 300px;
 
 }
  }
@@ -806,6 +818,10 @@
 
 .dynamic-width-network-col {
   width: 60%;
+  @media screen and (width: 2560px){
+    width: 60%;
+    left: 300px !important;
+   }
 }
 
 #loading_spinner_KMP{
