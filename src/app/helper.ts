@@ -170,8 +170,16 @@ export class Helper {
               z: z,
               y: Object.keys(seen_sample_ids),
               x: ordered_genes,
-              type: 'heatmap'
-            }
+              type: 'heatmap',
+            
+            hovertemplate:
+            "<br>  </br>" +
+            "Expression Value: %{z}<br>" +
+            "Sample-ID: %{y} <br>" +
+            "Gene: %{x}<br>" +
+            
+            "<extra></extra>"
+        }
           ];
 
           var layout = {
