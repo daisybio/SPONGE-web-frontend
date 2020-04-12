@@ -6,6 +6,9 @@
     position: relative;
     display: block;
     left: 120px;
+    @media (width:1440px) {
+      left: 0px;      
+  }
     
    #network-plot-container{
       position: absolute;
@@ -121,7 +124,12 @@
     text-align: center;
     margin-bottom: 10px;
    }
-  
+  #side-table{
+    left: -120px;
+    @media (width: 1440px) {
+      left: 0px;
+    }
+  }
 }
 .select-mod
 {
