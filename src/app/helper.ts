@@ -1003,7 +1003,7 @@ export class Helper {
       
       return({'network': network, 'session': session})
     }
-
+ 
     nodeIDclicked:any = "test";
     public node_is_clicked(nodeID){
       this.nodeIDclicked= nodeID
