@@ -976,7 +976,7 @@ export class Helper {
       }
 
       legend.append(`
-        <tr>
+        <tr width="30px">
           <td>
             <span class='legend-dot-small'></span>
             <span class='legend-dot-middle'></span>
