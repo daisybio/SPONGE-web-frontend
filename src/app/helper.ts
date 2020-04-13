@@ -1005,7 +1005,7 @@ export class Helper {
       //network.refresh()
 
       // build legend 
-      let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 0px 0px 5px; border-collapse: separate;">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
+      let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 10px 0px 5px; border-collapse: separate; background-color: white">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
       // append header
       //legend.html(`<tr><th>Color</th><th>p-value</th></tr>`)
       // append rows
