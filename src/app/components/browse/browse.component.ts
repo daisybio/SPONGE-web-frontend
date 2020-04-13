@@ -858,7 +858,6 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                
                 $('#export_selected_nodes').click()
-              //  network.click()
               
                 helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
                 
