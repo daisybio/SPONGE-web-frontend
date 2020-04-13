@@ -8,17 +8,15 @@ export class Controller {
     constructor() {
 
         if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-          //  Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
-          //alfred api
-          Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
+
+            Controller.API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
 
         } else {
+
             Controller.API_ENDPOINT = window.location.origin+"/sponge-api"
         }
     }
 
-    // static API_ENDPOINT = "https://exbio.wzw.tum.de/sponge-api"
-    // static API_ENDPOINT = document.getElementsByTagName('base')[0].href+"sponge-api/ui"
     static CERNA_INTERACTION_FINDALL = "/ceRNAInteraction/findAll"
     static CERNA_INTERACTION_SPECIFIC = "/ceRNAInteraction/findSpecific"
     static CHECKGENEINTERACTION = "/ceRNAInteraction/checkGeneInteraction"
@@ -56,6 +54,7 @@ export class Controller {
             }
             
             request += "searchString="+config.searchString
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -96,6 +95,7 @@ export class Controller {
             if (config.minCountSign != undefined) {
                 request += "&minCountSign="+config.minCountSign
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -124,6 +124,7 @@ export class Controller {
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -160,6 +161,7 @@ export class Controller {
             if (config.between != undefined) {
                 request += "&between="+config.between
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -204,6 +206,7 @@ export class Controller {
             if (config.information != undefined) {
                 request += "&information="+config.information
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -234,6 +237,7 @@ export class Controller {
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -283,6 +287,7 @@ export class Controller {
             if (config.offset != undefined) {
                 request += "&offset="+config.offset
             }
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -407,134 +412,138 @@ export class Controller {
             })
         }
 
-        public get_survival_pvalue(
-            config: {
-                disease_name : string,
-                ensg_number: string[],
-                gene_symbol?: string[],
-                limit?: number,
-                offset?: number
-                callback: (response) => any,
-                error?: (response) => any
+    public get_survival_pvalue(
+        config: {
+            disease_name : string,
+            ensg_number: string[],
+            gene_symbol?: string[],
+            limit?: number,
+            offset?: number
+            callback: (response) => any,
+            error?: (response) => any
+        }
+    ){
+        let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_PVALUE
+        if (Object.keys(config).length > 1) {
+            request += '?'
+        }
+        if (config.disease_name != undefined) {
+            request += "&disease_name="+config.disease_name
+        }
+        if (config.ensg_number != undefined) {
+            request += "&ensg_number="+config.ensg_number
+        }
+        if (config.gene_symbol != undefined) {
+            request += "&gene_symbol="+config.gene_symbol
+        }
+        
+        if (config.limit != undefined) {
+            request += "&limit="+config.limit
+        }
+        if (config.offset != undefined) {
+            request += "&offset="+config.offset
+        }
+        console.log(request)
+        $.getJSON(request,
+            response => {
+                return config.callback(response)                
             }
-        ){
-            let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_PVALUE
-            if (Object.keys(config).length > 1) {
-                request += '?'
-            }
-            if (config.disease_name != undefined) {
-                request += "&disease_name="+config.disease_name
-            }
-            if (config.ensg_number != undefined) {
-                request += "&ensg_number="+config.ensg_number
-            }
-            if (config.gene_symbol != undefined) {
-                request += "&gene_symbol="+config.gene_symbol
-            }
-           
-            if (config.limit != undefined) {
-                request += "&limit="+config.limit
-            }
-            if (config.offset != undefined) {
-                request += "&offset="+config.offset
-            }
-            $.getJSON(request,
-                response => {
-                    return config.callback(response)                
-                }
-            ).fail(
-                response => {
-                    return config.error(response)
-                })
-            }
+        ).fail(
+            response => {
+                return config.error(response)
+            })
+        }
 
-            public get_survival_rates(
-                config: {
-                    disease_name : string,
-                    ensg_number: string[],
-                    gene_symbol?: string[],
-                    sample_ID?: string[],
-                    limit?: number,
-                    offset?: number
-                    callback: (response) => any,
-                    error?: (response) => any
-                }
-            ){
-                let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_RATES
-                if (Object.keys(config).length > 1) {
-                    request += '?'
-                }
-                if (config.disease_name != undefined) {
-                    request += "&disease_name="+config.disease_name
-                }
-                if (config.ensg_number != undefined) {
-                    request += "&ensg_number="+config.ensg_number
-                }
-                if (config.gene_symbol != undefined) {
-                    request += "&gene_symbol="+config.gene_symbol
-                }
-                if (config.sample_ID != undefined) {
-                    request += "&sample_ID="+config.sample_ID
-                }
-               
-                if (config.limit != undefined) {
-                    request += "&limit="+config.limit
-                }
-                if (config.offset != undefined) {
-                    request += "&offset="+config.offset
-                }
-                $.getJSON(request,
-                    response => {
-                        return config.callback(response)                
-                    }
-                ).fail(
-                    response => {
-                        return config.error(response)
-                    })
-                }
+    public get_survival_rates(
+        config: {
+            disease_name : string,
+            ensg_number: string[],
+            gene_symbol?: string[],
+            sample_ID?: string[],
+            limit?: number,
+            offset?: number
+            callback: (response) => any,
+            error?: (response) => any
+        }
+    ){
+        let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_RATES
+        if (Object.keys(config).length > 1) {
+            request += '?'
+        }
+        if (config.disease_name != undefined) {
+            request += "&disease_name="+config.disease_name
+        }
+        if (config.ensg_number != undefined) {
+            request += "&ensg_number="+config.ensg_number
+        }
+        if (config.gene_symbol != undefined) {
+            request += "&gene_symbol="+config.gene_symbol
+        }
+        if (config.sample_ID != undefined) {
+            request += "&sample_ID="+config.sample_ID
+        }
+        
+        if (config.limit != undefined) {
+            request += "&limit="+config.limit
+        }
+        if (config.offset != undefined) {
+            request += "&offset="+config.offset
+        }
+        console.log(request)
+        $.getJSON(request,
+            response => {
+                return config.callback(response)                
+            }
+        ).fail(
+            response => {
+                return config.error(response)
+            })
+        }
 
-                public get_survival_sampleInfo(
-                    config: {
-                        disease_name : string,
-                        sample_ID: string[],
-                        limit?: number,
-                        offset?: number
-                        callback: (response) => any,
-                        error?: (response) => any
-                    }
-                ){
-                    let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_SAMPLEINFO
-                    if (Object.keys(config).length > 1) {
-                        request += '?'
-                    }
-                    if (config.disease_name != undefined) {
-                        request += "&disease_name="+config.disease_name
-                    }
-                    if (config.sample_ID != undefined) {
-                        request += "&sample_ID="+config.sample_ID
-                    }
-                   
-                    if (config.limit != undefined) {
-                        request += "&limit="+config.limit
-                    }
-                    if (config.offset != undefined) {
-                        request += "&offset="+config.offset
-                    }
-                    $.getJSON(request,
-                        response => {
-                            return config.callback(response)                
-                        }
-                    ).fail(
-                        response => {
-                            return config.error(response)
-                        })
-                    }
+    public get_survival_sampleInfo(
+        config: {
+            disease_name : string,
+            sample_ID: string[],
+            limit?: number,
+            offset?: number
+            callback: (response) => any,
+            error?: (response) => any
+        }
+    ){
+        let request = Controller.API_ENDPOINT+Controller.SURVIVAL_ANALYSIS_SAMPLEINFO
+        if (Object.keys(config).length > 1) {
+            request += '?'
+        }
+        if (config.disease_name != undefined) {
+            request += "&disease_name="+config.disease_name
+        }
+        if (config.sample_ID != undefined) {
+            request += "&sample_ID="+config.sample_ID
+        }
+        
+        if (config.limit != undefined) {
+            request += "&limit="+config.limit
+        }
+        if (config.offset != undefined) {
+            request += "&offset="+config.offset
+        }
+        console.log(request)
+        $.getJSON(request,
+            response => {
+                return config.callback(response)                
+            }
+        ).fail(
+            response => {
+                return config.error(response)
+            })
+        }
     
     public get_datasets(callback: (response) => any, disease_name?: string) {
         let request = Controller.API_ENDPOINT+Controller.DATASETS
         if (disease_name != undefined) {
             request += "?disease_name="+disease_name
         }
+        console.log(request)
         $.getJSON(request,
             response => {
                 return callback(response)
@@ -565,7 +574,7 @@ export class Controller {
         })
         {
             let request = Controller.API_ENDPOINT+Controller.OVERALL_COUNTS
-           
+            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
