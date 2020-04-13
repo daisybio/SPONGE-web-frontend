@@ -805,8 +805,11 @@ export class BrowseComponent implements OnInit {
                 filtered_edges_ids.push(filtered_edges_raw[i][5])
               }
               helper.limit_edges_to(network, filtered_edges_ids)
-              
-              helper.mark_edges_network(network, selected_edges)
+
+              if (selected_edges.length > 0) {
+                // only mark edges and grey out rest if any edge is selected
+                helper.mark_edges_network(network, selected_edges)
+              }
 
 
               // go to network
