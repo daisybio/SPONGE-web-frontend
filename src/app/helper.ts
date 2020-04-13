@@ -595,6 +595,13 @@ export class Helper {
 
       network.addCamera('cam1')
 
+      network.bind('outNode', (e) => {
+        // hide node information
+        if (!$('#node_information').hasClass('hidden')) {
+          $('#node_information').addClass('hidden')
+        }
+      })
+
       network.bind('overNode', (e) => {
         // events: overNode outNode clickNode doubleClickNode rightClickNode
         // e.data.node.color = $this.hover_node_color
@@ -625,6 +632,13 @@ export class Helper {
           }
         }
       });
+
+      network.bind('outEdge', (e) => {  
+        // hide edge information
+        if (!$('#edge_information').hasClass('hidden')) {
+          $('#edge_information').addClass('hidden')
+        }
+      })
 
       network.bind('overEdge', (e) => {
         // e.data.edge.color = $this.hover_edge_color
@@ -803,8 +817,8 @@ export class Helper {
         The camera moves to center the given node-string "ENSG..." and the node gets marked.
         Afterwards, the node gets also marked in the node_table.
         */
-        let camera = network.cameras[0]
-        let node = searchNode(node_as_string)
+        const camera = network.cameras[0]
+        const node = searchNode(node_as_string)
         node.color = $this.subgraph_node_color
         
         // load KMP
@@ -821,6 +835,10 @@ export class Helper {
             duration: 300
           }
         );
+
+        setTimeout( () => {
+          node.hover()
+        }, 400)
         // mark node in node table
         if (node_table) {
           $this.mark_nodes_table(node_table, node_as_string)
