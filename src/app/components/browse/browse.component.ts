@@ -601,6 +601,7 @@ export class BrowseComponent implements OnInit {
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
 
+          // start loading heatmap simultaneously
           // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (readability + loading time)
           if (ensg_numbers.length < 51){
             // load expression data

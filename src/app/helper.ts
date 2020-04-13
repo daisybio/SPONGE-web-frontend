@@ -601,7 +601,7 @@ export class Helper {
         // load the node information for window on the side
         let data = JSON.parse($('#node_data').text())
         for (let entry in data) {
-          if (data[entry]['ENSG Number'] == e.data.node.id && data[entry]['Gene Symbol'] == e.data.node.label) {
+          if (data[entry]['ENSG Number'] == e.data.node.id) {
             // build a table to display json
             let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
