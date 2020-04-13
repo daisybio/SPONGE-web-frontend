@@ -304,7 +304,7 @@ export class SearchComponent implements OnInit {
               height: 600,
               width: 1000,
              // title: 'Significant interactions of ' + search_key.join(', ') +' with p-value < 0.05',
-              paper_bgcolor: 'rgba(0,0,0,0)',
+              paper_bgcolor: 'white',
               plot_bgcolor: 'rgba(0,0,0,0)',
               autosize: true
               

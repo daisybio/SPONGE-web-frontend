@@ -53,6 +53,8 @@ export class Helper {
       0.05: '#ff9421'//'#bf8c40'//'#c94503'
     }
 
+    active_kmp_plots = [] // stores ensg numbers of active kmp plots to avoid duplicates
+
     controller = new Controller()
 
     public buildTable(data, table_name, column_names) {
@@ -217,6 +219,7 @@ export class Helper {
 
     public destroy_KMPs() {
       $('#KMP-plot-container-parent #plots').empty()
+      this.active_kmp_plots = []
     }
 
     public load_KMP(ensgList,clicked_Node,disease_name) 
@@ -233,6 +236,7 @@ export class Helper {
       //Rauslöschen des KMP-Plots wenn Node deselected wird
       if($('#myDiv_'+clicked_Node).length >0){
         $('#myDiv_'+clicked_Node).remove()
+        this.active_kmp_plots.splice(this.active_kmp_plots.indexOf(clicked_Node))
         $('#loading_spinner_KMP').addClass('hidden')
       }
       
@@ -253,6 +257,17 @@ export class Helper {
           ensg_number: [ensgList[$o]],
           
           callback: (response) => {
+
+            if (this.active_kmp_plots.includes(response[0].gene.ensg_number)) {
+              // skip if duplicate, we created the plot due to other function call in the meanwhile.
+              // this is not optimal but sufficient solution for now
+              return
+            } else {
+              // add ens number to list so we know it is currently active
+              this.active_kmp_plots.push(response[0].gene.ensg_number)
+            }
+
+
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
           
@@ -286,9 +301,9 @@ export class Helper {
            $('#loading_spinner_KMP').addClass('hidden')
 
             // show KMP
-       if($('#plots').hasClass('hidden')){
-        $('#plots').removeClass('hidden') 
-      }
+          if($('#plots').hasClass('hidden')){
+            $('#plots').removeClass('hidden') 
+          }
       
           },
           error: (repsonse) => {
