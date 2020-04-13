@@ -135,12 +135,20 @@ export class Helper {
         disease_name: disease,
         ensg_number: nodes,
         callback: response => {
-          var z = []
-          var seen_sample_ids = {}
-          let ordered_genes = nodes.sort()
+          let z = []
+          let seen_sample_ids = {}
+          
+          let name_mapper = {} // {ensg_number : gene_symbol || ensg_number}
           
           for (let e in response) {
             let experiment = response[e]
+
+            if (experiment['gene']['gene_symbol'] != null){
+              name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']} (${experiment['gene']['ensg_number']})`
+            } else {
+              name_mapper[experiment['gene']['ensg_number']] = experiment['gene']['ensg_number'] 
+            }
+
             let gene = experiment['gene']['ensg_number']
             let expr_value = experiment['expr_value']
             let sample_ID = experiment['sample_ID']
@@ -152,6 +160,8 @@ export class Helper {
               seen_sample_ids[sample_ID] = new_obj
             }
           }
+
+          let ordered_genes = nodes.sort()
 
           // sort genes alphabetically
           ordered_genes.forEach((ensg_number) => {
@@ -171,7 +181,7 @@ export class Helper {
             {
               z: z,
               y: Object.keys(seen_sample_ids),
-              x: ordered_genes,
+              x: ordered_genes.map(e => name_mapper[e]),
               type: 'heatmap',
             
             hovertemplate:

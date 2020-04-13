@@ -600,6 +600,13 @@ export class BrowseComponent implements OnInit {
        
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
+
+          // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (readability + loading time)
+          if (ensg_numbers.length < 51){
+            // load expression data
+            helper.load_heatmap(this.disease_trimmed, ensg_numbers)
+          }
+
           load_edges(this.disease_trimmed, ensg_numbers, edges => {
             /*
               STEP 1: apply edge filters like p-value and mscor
@@ -902,10 +909,10 @@ export class BrowseComponent implements OnInit {
             }
 
             // set maximum amount of genes for heatmap, it gets too much wich a ceartain amoung (readability + loading time)
-            if (ensg_numbers.length < 51){
-              // load expression data
-              helper.load_heatmap(this.disease_trimmed, ensg_numbers)
-            }
+            // if (ensg_numbers.length < 51){
+            //   // load expression data
+            //   helper.load_heatmap(this.disease_trimmed, ensg_numbers)
+            // }
             
             // stop loading screen
             disease_selector.attr('disabled', false)
