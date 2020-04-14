@@ -555,6 +555,14 @@ button.export_nodes {
   }
 }
 
+#disease_accordion {
+  .collapse {
+    span.info {
+      font-size: small;
+    }
+  }
+}
+
 /* SEARCH END */
 
 
@@ -568,3 +576,10 @@ button.export_nodes {
 }
 
 /* BROWSE END */
+
+
+// fix for bootstrap bug
+button:disabled {
+  cursor: not-allowed;
+  pointer-events: all !important;
+}

@@ -641,7 +641,7 @@ export class SearchComponent implements OnInit {
           "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
           "<div class='card-body'>" +
           "<div class='button-control-container' id=button_control_"+disease_trimmed+">"+
-          "<button class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
+          "<button disabled='true' class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
           "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show as Network</button>"+
@@ -662,7 +662,7 @@ export class SearchComponent implements OnInit {
           "</div>" +
           "<hr>" +
           "<div>" +
-          "<p>Set filter for P-value</p>" +
+          `<p>Set filter for P-value ${$this.pValue_current == pValue ? '<span class="info" >(Be aware that only signficant entries (<0.05) are displayed)</span>' : '' }</p>` +
           "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_min_" + table_id + "' name='pvalue_min'>&nbsp;" +
           "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_max_" + table_id + "' name='pvalue_max'>" +
           "</div>" +
@@ -1005,7 +1005,7 @@ export class SearchComponent implements OnInit {
               }
             }
           }
-        }
+        }        
 
         if (search_key.length > 1) {
           // grouping by search key
@@ -1061,14 +1061,19 @@ export class SearchComponent implements OnInit {
         if (url_storage) {
           helper.mark_nodes_table(table, url_storage['nodes'])
         }
+
+        // disbale buttons
+        $('#'+table_id).closest('.card-body').find('button').prop('disabled', true);
+      
       }
 
       if (table_complete) {
+
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
 
-        // enable export to network
-        $('#'+table_id).closest('.card-body').find('.export_nodes').prop('disabled', false);
+        // enable buttons
+        $('#'+table_id).closest('.card-body').find('button').prop('disabled', false);
 
          // enable intersection_search if more than 1 gene key was found
         if ($('#'+table_id).DataTable().column(0).data().unique().length > 1) {
