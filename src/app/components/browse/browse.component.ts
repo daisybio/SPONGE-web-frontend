@@ -180,10 +180,15 @@ export class BrowseComponent implements OnInit {
       }
     });
 
-    /* In case we passed data from search to browse (shared service), set cancer type */
+    /* In case we passed data from search to browse (shared service), set cancer type and disable select */
     if (shared_data != undefined) {
       $('#disease_selectpicker').val(shared_data['cancer_type'])
+      $('#disease_selectpicker').attr('disabled', true);
       $('#disease_selectpicker').selectpicker('refresh');
+
+      // we also rename the Browse Header
+      $("#title-BG h1").text('Search Result')
+
 
       // we also want to remove options that are not valid
       $('#disease_selectpicker option').each( function (option) {
