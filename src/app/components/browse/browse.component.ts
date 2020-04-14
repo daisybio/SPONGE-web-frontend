@@ -225,7 +225,6 @@ export class BrowseComponent implements OnInit {
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
 
       let limit = $('#input_limit').val()
-      let loading_limit: boolean
 
       if (shared_data == undefined) {
         controller.get_ceRNA({
@@ -272,7 +271,6 @@ export class BrowseComponent implements OnInit {
               minEigenvector: cutoff_eigenvector,
               descending: true,
               callback: data2 => {
-
                 const all_data = data1.concat(data2)
 
                 if ((genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length) > limit) {
@@ -900,7 +898,6 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
-                console.log(shared_data['nodes_marked'])
                 
                 helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
               }

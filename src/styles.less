@@ -555,16 +555,28 @@ button.export_nodes {
   }
 }
 
+#disease_accordion {
+  .collapse {
+    span.info {
+      font-size: small;
+    }
+  }
+}
+
 /* SEARCH END */
 
 
 
 /* BROWSE START */
 #network-plot-container {
-  .sigma-scene {
-    padding-right: 5px;
-    padding-bottom: 5px;
-  }
+  
 }
 
 /* BROWSE END */
+
+
+// fix for bootstrap bug
+button:disabled {
+  cursor: not-allowed;
+  pointer-events: all !important;
+}
