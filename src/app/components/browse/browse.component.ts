@@ -235,9 +235,7 @@ export class BrowseComponent implements OnInit {
           minEigenvector: cutoff_eigenvector,
           descending: true,
           callback: data => {
-            console.log("here")
             let nodes = parse_node_data(data)
-            console.log("there")
             return callback(nodes)
             },
             error: (response) => {
@@ -259,9 +257,9 @@ export class BrowseComponent implements OnInit {
               return !shared_data['search_keys'].includes( el ) && !shared_data['nodes_marked'].includes( el );
             } );
 
-            if (genes_without_keys_or_marked.length > 400) {
+            if (genes_without_keys_or_marked.length > 500) {
               // manually limiting query size since it would cause an error due to url length limitations. nobody is going to be able to display more than 500 genes anyway
-              genes_without_keys_or_marked = genes_without_keys_or_marked.slice(0, 100)
+              genes_without_keys_or_marked = genes_without_keys_or_marked.slice(0, 500)
             }
             
             controller.get_ceRNA({
@@ -273,7 +271,6 @@ export class BrowseComponent implements OnInit {
               minEigenvector: cutoff_eigenvector,
               descending: true,
               callback: data2 => {
-                console.log("here")
                 const all_data = data1.concat(data2)
 
                 if ((genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length) > limit) {
@@ -290,10 +287,8 @@ export class BrowseComponent implements OnInit {
                       `)
                   } 
                 }  
-                console.log("here1")
 
                 let nodes = parse_node_data(all_data)
-                console.log("here2")
                 return callback(nodes)
                 },
               error: (response) => {
@@ -903,7 +898,6 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
-                console.log(shared_data['nodes_marked'])
                 
                 helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
               }
