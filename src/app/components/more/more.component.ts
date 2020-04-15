@@ -28,7 +28,7 @@ export class MoreComponent implements OnInit {
               <i class=""></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
             </td>
             <td class="">
-              <a href="ftp://exbiomeduser:nfef8guer@10.162.163.20/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
+              <a href="https://exbio.wzw.tum.de/sponge-files/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
                   Download
               </a>
             </td>
