@@ -139,16 +139,18 @@ export class Helper {
           let seen_sample_ids = {}
           
           let name_mapper = {} // {ensg_number : gene_symbol || ensg_number}
-          
+        
           for (let e in response) {
             let experiment = response[e]
-
+           
             if (experiment['gene']['gene_symbol'] != null){
+             
               name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']} (${experiment['gene']['ensg_number']})`
+              
             } else {
               name_mapper[experiment['gene']['ensg_number']] = experiment['gene']['ensg_number'] 
             }
-
+           
             let gene = experiment['gene']['ensg_number']
             let expr_value = experiment['expr_value']
             let sample_ID = experiment['sample_ID']
@@ -160,13 +162,18 @@ export class Helper {
               seen_sample_ids[sample_ID] = new_obj
             }
           }
-
+         
           let ordered_genes = nodes.sort()
 
           // sort genes alphabetically
           ordered_genes.forEach((ensg_number) => {
             ordered_genes[ensg_number];
           });
+          //          console.log(ordered_genes[ordered_genes.length-1].split(' ').join('<br>'))
+          
+          
+         
+          
           for(let sample_ID in seen_sample_ids) {
             let genes_values = seen_sample_ids[sample_ID]
             let l = []
@@ -176,12 +183,17 @@ export class Helper {
             }
             z.push(l)
           }
-
+          
+          let sample_names =ordered_genes.map(e => name_mapper[e])
+          
+         
+          sample_names[sample_names.length-1]= sample_names[sample_names.length-1].split(' ').join('<br>')
+       
           var data = [
             {
               z: z,
               y: Object.keys(seen_sample_ids),
-              x: ordered_genes.map(e => name_mapper[e]),
+              x: sample_names,
               type: 'heatmap',
             
             hovertemplate:
@@ -400,14 +412,15 @@ export class Helper {
      {       
        
        // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
+       console.log(response.gene.gene_symbol)
        var genename
-       if(response.gene.gene_symbol == "null"){
-          genename="Unknown"
+       var ensg
+       if(response.gene.gene_symbol == null){
+        ensg = 'Survival Analysis of gene ' + response.gene.ensg_number + ' from cancer set <br>'+ disease_name
        }else{
-         genename= response.gene.gene_symbol 
+        ensg = 'Survival Analysis of gene ' + response.gene.gene_symbol  + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
        }
-        var ensg = `Survival Analysis of gene ${genename == null ? response.gene.ensg_number : genename + ' (' + response.gene.ensg_number + ')' } from cancer set <br> ${disease_name}`
-        
+      
         var sestimateGesamt = [];
         var pvalue;
         this.controller.get_survival_pvalue({
@@ -445,9 +458,16 @@ export class Helper {
          // autosize: false,
         //  width:480,
          // height: 400,
+         // legend:{
+         //   orientation:"h",
+         //   y: -0.35,
+         // },
           legend:{
-            orientation:"h",
-            y: -0.35,
+            xanchor:"center",
+            yanchor:"top",
+            orientation: 'h',
+            y:-0.35, // play with it
+            x:0.5   // play with it
           },
           annotations: [
            {
@@ -470,12 +490,12 @@ export class Helper {
             text:ensg ,
             font: {
               family: 'Arial, bold',
-              size: 12,
+              size: 14,
               color: '#052444',
             }
           },
           xaxis: {
-            title: 'Duration(days)',
+            title: 'Duration (Days)',
             autorange: true,
             hoverformat: '.3f'
           }, 
@@ -1010,7 +1030,7 @@ export class Helper {
       //network.refresh()
 
       // build legend 
-      let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 10px 0px 5px; border-collapse: separate; background-color: white">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
+      let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 10px 0px 5px; border-collapse: separate;">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
       // append header
       //legend.html(`<tr><th>Color</th><th>p-value</th></tr>`)
       // append rows

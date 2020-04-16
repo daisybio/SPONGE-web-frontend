@@ -301,12 +301,25 @@ export class SearchComponent implements OnInit {
             }];
 
             var layout = {
+              autosize: false,
               height: 600,
               width: 1000,
              // title: 'Significant interactions of ' + search_key.join(', ') +' with p-value < 0.05',
               paper_bgcolor: 'white',
               plot_bgcolor: 'rgba(0,0,0,0)',
-              autosize: true
+              
+              margin: {
+                l: 20,
+                r: 50,
+                b: 100,
+                t: 100,
+                pad: 4
+              },
+              legend:{
+                xanchor:"center",
+                x: 0.9,
+                y: 0.55
+              },
               
             };
             let pie_chart_header = $('<h3>').text(`Significant interactions of ${search_key}`)

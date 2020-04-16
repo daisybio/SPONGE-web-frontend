@@ -126,6 +126,7 @@ thead {
 }
 
 .legend-{
+  background-color: #f8f8ff !important;
   &line {
     height: 10px;
     width: 45px;
@@ -455,6 +456,7 @@ button.export_nodes {
 .slice{
   cursor: pointer;
 }
+
 /* PLOTLY PIE CHART END */
 
 
@@ -480,12 +482,14 @@ button.export_nodes {
           position: relative;
           padding: 5px;
           margin-right: 10px;
-         
+          background: transparent;
+          -webkit-appearance: none;
           a:not([href]):not([tabindex]):hover, a:not([href]):not([tabindex]):focus {
             color: #04feff;
             text-decoration: none;
             background: transparent;
             border-color: #04feff;
+            -webkit-appearance: none;
         }
       }
 
