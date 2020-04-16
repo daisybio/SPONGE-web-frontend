@@ -9,9 +9,14 @@
     border: solid 2px #136fe2;
     border-radius: 10px;
 
-    @media (width:1440px) {
+    @media (max-width:1440px) {
       left: 0px;      
     }
+
+    @media (width:3840px) {
+      left: 820px;
+    }
+   
       
    #network-plot-container{
       position: absolute;
@@ -27,6 +32,10 @@
 #network-functions{
   position: relative;
   left: 121px;
+
+  @media (width:3840px){
+      left: 821px;
+   }
 }
        
   @media (width:1440px){
@@ -36,7 +45,13 @@
     }
    }
 
-   @media (max-width: 768px){
+  
+   @media (width: 1280px){
+    div.row.justify-content-md-center{
+    left: 50px !important;
+    position:relative;}
+    }
+   @media (width: 768px){
     div.row.justify-content-md-center{
     left: 121px;
     position:relative;}
@@ -179,9 +194,15 @@
 }
  }
  
-@media screen and (max-width: 1440px) {
+@media screen and (width: 1440px) {
   div#side-table.col-md-4 {right: 0px;}
 }
+
+@media screen and (width: 1280px) {
+  div#side-table.col-md-4 {right: 0px;}
+}
+
+
 
   #spinner{
     color: rgb(172, 27, 99) !important;
@@ -189,7 +210,7 @@
 
 #network-legend{
   width: 150px;
-  height: 100%;
+  //height: 100%;
   position: absolute;
   z-index: 10;
   font-size: x-small;
@@ -548,6 +569,7 @@
      width: 280px;
      margin-right: 0;
      left: -20px;
+
      @media(width:1440px){
      
       min-width: 200px;
