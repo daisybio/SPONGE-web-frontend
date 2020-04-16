@@ -406,7 +406,7 @@ export class Helper {
        }else{
          genename= response.gene.gene_symbol 
        }
-        var ensg = 'Survival Analysis of gene ' + genename + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
+        var ensg = `Survival Analysis of gene ${genename == null ? response.gene.ensg_number : genename + ' (' + response.gene.ensg_number + ')' } from cancer set <br> ${disease_name}`
         
         var sestimateGesamt = [];
         var pvalue;
@@ -892,6 +892,7 @@ export class Helper {
         network.refresh()
       };
 
+      $('#network_search_node_button').unbind()
       $('#network_search_node_button').click(() => {
         let to_search = $('#network_search_node').val()
 
@@ -909,6 +910,7 @@ export class Helper {
       })
 
       /* Save network button */
+      $('#network_snapshot_png').unbind()
       $('#network_snapshot_png').on('click', () => {
         network.renderers[0].snapshot({
           format: 'png', 
@@ -919,6 +921,7 @@ export class Helper {
         });
       })
 
+      $('#network_snapshot_jpg').unbind()
       $('#network_snapshot_jpg').on('click', () => {
         network.renderers[0].snapshot({
           format: 'jpg', 
@@ -943,6 +946,7 @@ export class Helper {
       // })
 
       /* restart camera */
+      $('#restart_camera').unbind()
       document.getElementById('restart_camera').addEventListener('click', function() {
         network.camera.goTo({
           x: 0,
@@ -990,6 +994,7 @@ export class Helper {
         }
       });  
       
+      $('#reset_graph').unbind()
       $('#reset_graph').click( () => {
         this.clear_colors(network);
         if (node_table) this.clear_table(node_table)  // no node table in search

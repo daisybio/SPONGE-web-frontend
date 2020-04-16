@@ -805,16 +805,8 @@ export class SearchComponent implements OnInit {
 
         // append search note to network
         let search_keys_ensg = []
-        
-        let search_keys_that_matter = []
-        for (const [index, key] of search_key.entries()) {
-          if (table.column(0).search(key).row({search: 'applied', filter : 'applied'}).data() != undefined) {
-            // search key occurs in filtered table
-            search_keys_that_matter.push(key)
-          }
-        }
 
-        for (const key of search_keys_that_matter) {
+        for (const key of search_key) {
            controller.search_string(
             {
               searchString: key,
@@ -827,7 +819,7 @@ export class SearchComponent implements OnInit {
                   }
                 }
 
-                if ([...new Set(search_keys_ensg)].length == [...new Set(search_keys_that_matter)].length) {
+                if ([...new Set(search_keys_ensg)].length == [...new Set(search_key)].length) {
                   // last key has been added
                   $this.shared_service.setData({
                     'nodes': [...new Set(ensg_numbers)],
