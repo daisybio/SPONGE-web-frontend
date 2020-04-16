@@ -139,16 +139,18 @@ export class Helper {
           let seen_sample_ids = {}
           
           let name_mapper = {} // {ensg_number : gene_symbol || ensg_number}
-          
+        
           for (let e in response) {
             let experiment = response[e]
-
+           
             if (experiment['gene']['gene_symbol'] != null){
+             
               name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']} (${experiment['gene']['ensg_number']})`
+              
             } else {
               name_mapper[experiment['gene']['ensg_number']] = experiment['gene']['ensg_number'] 
             }
-
+           
             let gene = experiment['gene']['ensg_number']
             let expr_value = experiment['expr_value']
             let sample_ID = experiment['sample_ID']
@@ -160,13 +162,18 @@ export class Helper {
               seen_sample_ids[sample_ID] = new_obj
             }
           }
-
+         
           let ordered_genes = nodes.sort()
 
           // sort genes alphabetically
           ordered_genes.forEach((ensg_number) => {
             ordered_genes[ensg_number];
           });
+          //          console.log(ordered_genes[ordered_genes.length-1].split(' ').join('<br>'))
+          
+          
+         
+          
           for(let sample_ID in seen_sample_ids) {
             let genes_values = seen_sample_ids[sample_ID]
             let l = []
@@ -176,12 +183,17 @@ export class Helper {
             }
             z.push(l)
           }
-
+          
+          let sample_names =ordered_genes.map(e => name_mapper[e])
+          
+         
+          sample_names[sample_names.length-1]= sample_names[sample_names.length-1].split(' ').join('<br>')
+       
           var data = [
             {
               z: z,
               y: Object.keys(seen_sample_ids),
-              x: ordered_genes.map(e => name_mapper[e]),
+              x: sample_names,
               type: 'heatmap',
             
             hovertemplate:
