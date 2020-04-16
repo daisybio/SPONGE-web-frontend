@@ -412,13 +412,14 @@ export class Helper {
      {       
        
        // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
+       console.log(response.gene.gene_symbol)
        var genename
-       if(response.gene.gene_symbol == "null"){
-          genename="Unknown"
+       var ensg
+       if(response.gene.gene_symbol == null){
+        ensg = 'Survival Analysis of gene ' + response.gene.ensg_number + ' from cancer set <br>'+ disease_name
        }else{
-         genename= response.gene.gene_symbol 
+        ensg = 'Survival Analysis of gene ' + response.gene.gene_symbol  + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
        }
-        var ensg = 'Survival Analysis of gene ' + genename + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
         
         var sestimateGesamt = [];
         var pvalue;
@@ -457,9 +458,16 @@ export class Helper {
          // autosize: false,
         //  width:480,
          // height: 400,
+         // legend:{
+         //   orientation:"h",
+         //   y: -0.35,
+         // },
           legend:{
-            orientation:"h",
-            y: -0.35,
+            xanchor:"center",
+            yanchor:"top",
+            orientation: 'h',
+            y:-0.35, // play with it
+            x:0.5   // play with it
           },
           annotations: [
            {
@@ -482,12 +490,12 @@ export class Helper {
             text:ensg ,
             font: {
               family: 'Arial, bold',
-              size: 12,
+              size: 14,
               color: '#052444',
             }
           },
           xaxis: {
-            title: 'Duration(days)',
+            title: 'Duration (Days)',
             autorange: true,
             hoverformat: '.3f'
           }, 
