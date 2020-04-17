@@ -245,21 +245,24 @@ export class BrowseComponent implements OnInit {
           }
         )
       } else {
-        
-        // kinda tricky construct, we load first the information for the search keys and then for the rest until limit
+        // kinda tricky construct, we load first the information for the search keys + marked nodes since we want to give them higher priority and then for the rest until limit
         controller.get_ceRNA({
           disease_name: disease_trimmed,
           ensg_number: shared_data['search_keys'].concat(shared_data['nodes_marked']),
           limit: limit,
           callback: data1 => {
 
-            let genes_without_keys_or_marked = shared_data['nodes'].filter( function( el ) {
-              return !shared_data['search_keys'].includes( el ) && !shared_data['nodes_marked'].includes( el );
-            } );
-
+            let genes_without_keys_or_marked = shared_data['nodes']
+            genes_without_keys_or_marked = genes_without_keys_or_marked.filter( ( el ) => !shared_data['search_keys'].concat(shared_data['nodes_marked']).includes( el ) );
             if (genes_without_keys_or_marked.length > 500) {
               // manually limiting query size since it would cause an error due to url length limitations. nobody is going to be able to display more than 500 genes anyway
               genes_without_keys_or_marked = genes_without_keys_or_marked.slice(0, 500)
+            }
+
+            if (genes_without_keys_or_marked.length == 0) {
+              // only interactions between search keys
+              let nodes = parse_node_data(data1)
+              return callback(nodes)
             }
             
             controller.get_ceRNA({
@@ -868,6 +871,7 @@ export class BrowseComponent implements OnInit {
             // Here we check if there is data to be marked in the network/tables (e.g. from old session of search)
             // check if there is data in the shared_service, meaning we came from search and want to load specific data
             if (shared_data != undefined) {
+              console.log(shared_data)
               if (shared_data['nodes_marked'].length) {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
                
