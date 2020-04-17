@@ -139,13 +139,14 @@ export class Helper {
           let seen_sample_ids = {}
           
           let name_mapper = {} // {ensg_number : gene_symbol || ensg_number}
-        
+        // name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']} (${experiment['gene']['ensg_number']})`
+
           for (let e in response) {
             let experiment = response[e]
            
             if (experiment['gene']['gene_symbol'] != null){
              
-              name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']} (${experiment['gene']['ensg_number']})`
+              name_mapper[experiment['gene']['ensg_number']] = `${experiment['gene']['gene_symbol']}`
               
             } else {
               name_mapper[experiment['gene']['ensg_number']] = experiment['gene']['ensg_number'] 
@@ -187,7 +188,7 @@ export class Helper {
           let sample_names =ordered_genes.map(e => name_mapper[e])
           
          
-          sample_names[sample_names.length-1]= sample_names[sample_names.length-1].split(' ').join('<br>')
+         // sample_names[sample_names.length-1]= sample_names[sample_names.length-1].split(' ').join('<br>')
        
           var data = [
             {
@@ -418,7 +419,7 @@ export class Helper {
        if(response.gene.gene_symbol == null){
         ensg = 'Survival Analysis of gene ' + response.gene.ensg_number + ' from cancer set <br>'+ disease_name
        }else{
-        ensg = 'Survival Analysis of gene ' + response.gene.gene_symbol  + "  ("+response.gene.ensg_number+") " + ' from cancer set <br>'+ disease_name
+        ensg = 'Survival Analysis of gene ' + response.gene.gene_symbol   + ' from cancer set <br>'+ disease_name
        }
       
         var sestimateGesamt = [];
