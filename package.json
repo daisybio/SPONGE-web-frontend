@@ -32,7 +32,7 @@
     "datatables.net-colreorder-bs": "^1.5.1",
     "datatables.net-dt": "^1.10.19",
     "datatables.net-fixedheader": "^3.1.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-ui-dist": "^1.12.1",
     "jszip": "^3.2.2",
     "ngx-autosize": "^1.7.5",
