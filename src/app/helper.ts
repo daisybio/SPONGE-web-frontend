@@ -69,15 +69,37 @@ export class Helper {
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
+
         thead.appendChild(headRow);
         table.appendChild(thead); 
         data.forEach(function(el) {
           var tr = document.createElement("tr");
           for (var o in el) {  
             var td = document.createElement("td");
-            td.appendChild(document.createTextNode(el[o]))
+            if(el[o] == 'pathway'){
+              if(el['Gene Symbol'] != '-'){
+              var path=document.createElement("a");
+              path.setAttribute("id","test");
+              path.setAttribute("class","btn btn-outline-primary");
+              path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+el['Gene Symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
+              path.setAttribute("value","Pathway");
+              path.setAttribute("target","_blank");
+              path.textContent="Link to WikiPathways";
+
+
+              var btn="<button type='button' class='btn btn-outline-primary' onclick='location.href='#''>Edit</button>";
+              td.appendChild(path);
+              $("#test").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''>Edit</button>");
+             // tr.appendChild(path);
+              }else{
+                td.appendChild(document.createTextNode("-"));
+              }
+            }else{
+              td.appendChild(document.createTextNode(el[o]))
+            }
             tr.appendChild(td);
           }
+          
           tbody.appendChild(tr);  
         });
         table.appendChild(tbody);             

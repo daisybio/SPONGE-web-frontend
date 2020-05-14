@@ -912,6 +912,10 @@ export class SearchComponent implements OnInit {
         interaction_info['Correlation'] = interaction['correlation']
         interaction_info['MScor'] = interaction['mscor']
         interaction_info['p-value'] = interaction['p_value']
+        interaction_info['Gene Ontology'] = ''
+        interaction_info['Hallmarks'] = ''
+        interaction_info['Pathway'] = 'pathway'
+        
 //        interaction_info['miRNA'] = ''
 
         parsed_search_result['diseases'][disease].push(interaction_info)
