@@ -70,7 +70,7 @@ export class Helper {
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
-
+       let $this =this
         thead.appendChild(headRow);
         table.appendChild(thead); 
         data.forEach(function(el) {
@@ -107,18 +107,17 @@ export class Helper {
               }
             
             }else if(el[o] == 'hallmark' && el['Gene Symbol'] != '-'){
-              console.log(el['Gene Symbol'])
-              var path=document.createElement("a");
-              path.setAttribute("id","hallmark"+el['Gene Symbol']);
-              this.hallmark_info(Object.values(el['Gene Symbol']).toString)
-             // path.textContent="GeneCard for "+el['Gene Symbol'];
-              td.appendChild(path);
-             // $("#hallmark").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
-              if(el['Gene Symbol'] == '-'){
-                td.appendChild(document.createTextNode("-"));
-              }
+                           
+              td.setAttribute("id","hallmark_"+el['ENSG Number']);
+              
+              $this.hallmark_info(el['Gene Symbol'],el['ENSG Number'])
+              
+             
+             
             }else{
+             
               td.appendChild(document.createTextNode(el[o]))
+              
             }
             tr.appendChild(td);
           }
@@ -129,6 +128,7 @@ export class Helper {
         return table;
       }
 
+    
     public colSearch(datatable_id, table) {
       // setup for colsearch
       $('#'+datatable_id+' thead tr').clone(true).appendTo( '#'+datatable_id+' thead' )
@@ -1380,30 +1380,38 @@ export class Helper {
       return({'nodes': nodes, 'edges': edges, 'active_cancer': active_cancer})
     }
 
-    public hallmark_info(gs){
-      console.log(gs)
+    public hallmark_info(gs,ensg){
+    
       this.controller.get_Hallmark({
         gene_symbol: [gs],
         callback: (response) => {
 
-
+          console.log(response)
           /**
            * Get Hallmarks and add to table
            */
           let hallmark_string = ''
+          if(response.length >0){
           for (let entry of response) {
             hallmark_string += entry.hallmark + ', '
           }
       console.log(hallmark_string)
-      $('#hallmark'+gs).html(hallmark_string)
+      $('#hallmark_'+ensg).html(hallmark_string.slice(0,-2))
+        }else{
+          $('#hallmark_'+ensg).html('No hallmark associated')
+        }
          // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
         },
         error: () => {
-          $('#hallmark'+gs).html('No hallmark associated')
+          $('#hallmark_'+ensg).html('No hallmark associated')
         //  $('#edge_information #'+id).html('-')
         }
       })
+  
     }
+
+    
+
     public setCookie(cname, cvalue, exdays) {
       var d = new Date();
       d.setTime(d.getTime() + (exdays*24*60*60*1000));

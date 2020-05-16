@@ -40,7 +40,7 @@ export class Controller {
     static SURVIVAL_ANALYSIS_SAMPLEINFO  = "/survivalAnalysis/sampleInformation"
 
     static OVERALL_COUNTS = "/getOverallCounts"
-    static GENE_ONTOLOGY = "//getGeneOntology"
+    static GENE_ONTOLOGY = "/getGeneOntology"
     static HALLMARKS="/getHallmark"
 
     public search_string(
@@ -585,15 +585,15 @@ export class Controller {
                 response => {
                     return config.error(response)
                 })
-            }
+        }
 
-            public get_GO(
+        public get_GO(
                 config: {
-                    gene_symbol?: string[], 
+                    gene_symbol: string[], 
                     callback: (response) => any,
                     error?: (response) => any
                 })
-                {
+        {
                     let request = Controller.API_ENDPOINT+Controller.GENE_ONTOLOGY
                     if (Object.keys(config).length > 1) {
                         request += '?'
@@ -611,31 +611,33 @@ export class Controller {
                         response => {
                             return config.error(response)
                         })
-                    }
+        }
 
-                    public get_Hallmark(
-                        config: {
-                            gene_symbol?: string[], 
-                            callback: (response) => any,
-                            error?: (response) => any
-                        })
-                        {
-                            let request = Controller.API_ENDPOINT+Controller.HALLMARKS
-                            if (Object.keys(config).length > 1) {
-                                request += '?'
-                            }
-                            
-                            if (config.gene_symbol != undefined) {
-                                request += "&gene_symbol="+config.gene_symbol
-                            }
-                            console.log(request)
-                            $.getJSON(request,
-                                response => {
-                                    return config.callback(response)
-                                }
-                            ).fail(
-                                response => {
-                                    return config.error(response)
-                                })
-                            }
+        public get_Hallmark(
+            config: {
+                gene_symbol: string[], 
+                callback: (response) => any,
+                error?: (response) => any
+            })
+            {
+                let request = Controller.API_ENDPOINT+Controller.HALLMARKS
+                if (Object.keys(config).length > 1) {
+                    request += '?'
+                }
+                
+                if (config.gene_symbol != undefined) {
+                    request += "&gene_symbol="+config.gene_symbol
+                }
+                console.log(request)
+                $.getJSON(request,
+                    response => {
+                        return config.callback(response)
+                    }
+                ).fail(
+                    response => {
+                        return config.error(response)
+                    })
+                }
+
+                   
 }
