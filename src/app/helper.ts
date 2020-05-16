@@ -80,19 +80,41 @@ export class Helper {
             if(el[o] == 'pathway'){
               if(el['Gene Symbol'] != '-'){
               var path=document.createElement("a");
-              path.setAttribute("id","test");
+              path.setAttribute("id","pathway");
               path.setAttribute("class","btn btn-outline-primary");
               path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+el['Gene Symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
               path.setAttribute("value","Pathway");
               path.setAttribute("target","_blank");
               path.textContent="Link to WikiPathways";
-
-
-              var btn="<button type='button' class='btn btn-outline-primary' onclick='location.href='#''>Edit</button>";
               td.appendChild(path);
-              $("#test").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''>Edit</button>");
+              $("#pathway").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
              // tr.appendChild(path);
               }else{
+                td.appendChild(document.createTextNode("-"));
+              }
+            }else if(el[o] == 'genecard' && el['Gene Symbol'] != '-'){
+              var path=document.createElement("a");
+              path.setAttribute("id","genecard");
+              path.setAttribute("class","btn btn-outline-primary");
+              path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['Gene Symbol']);
+              path.setAttribute("value","Hallmark");
+              path.setAttribute("target","_blank");
+              path.textContent="GeneCard for "+el['Gene Symbol'];
+              td.appendChild(path);
+              $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
+              if(el['Gene Symbol'] == '-'){
+                td.appendChild(document.createTextNode("-"));
+              }
+            
+            }else if(el[o] == 'hallmark' && el['Gene Symbol'] != '-'){
+              console.log(el['Gene Symbol'])
+              var path=document.createElement("a");
+              path.setAttribute("id","hallmark"+el['Gene Symbol']);
+              this.hallmark_info(Object.values(el['Gene Symbol']).toString)
+             // path.textContent="GeneCard for "+el['Gene Symbol'];
+              td.appendChild(path);
+             // $("#hallmark").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
+              if(el['Gene Symbol'] == '-'){
                 td.appendChild(document.createTextNode("-"));
               }
             }else{
@@ -1358,6 +1380,30 @@ export class Helper {
       return({'nodes': nodes, 'edges': edges, 'active_cancer': active_cancer})
     }
 
+    public hallmark_info(gs){
+      console.log(gs)
+      this.controller.get_Hallmark({
+        gene_symbol: [gs],
+        callback: (response) => {
+
+
+          /**
+           * Get Hallmarks and add to table
+           */
+          let hallmark_string = ''
+          for (let entry of response) {
+            hallmark_string += entry.hallmark + ', '
+          }
+      console.log(hallmark_string)
+      $('#hallmark'+gs).html(hallmark_string)
+         // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
+        },
+        error: () => {
+          $('#hallmark'+gs).html('No hallmark associated')
+        //  $('#edge_information #'+id).html('-')
+        }
+      })
+    }
     public setCookie(cname, cvalue, exdays) {
       var d = new Date();
       d.setTime(d.getTime() + (exdays*24*60*60*1000));
