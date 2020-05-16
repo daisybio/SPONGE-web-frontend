@@ -61,6 +61,7 @@ export class Helper {
         var table = document.createElement("table");
         table.id=table_name;
         table.className="table table-striped full-width"
+        table.setAttribute("style"," text-align: center");
         var thead = document.createElement("thead");
         var tbody = document.createElement("tbody");
         var headRow = document.createElement("tr");

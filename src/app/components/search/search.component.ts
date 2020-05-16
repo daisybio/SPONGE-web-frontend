@@ -665,6 +665,7 @@ export class SearchComponent implements OnInit {
             <option value="between">Show only interactions <strong>between</strong> search genes</option>
           </select>
           `+
+          "<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Gene Enrichment</button>"+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +
@@ -858,6 +859,43 @@ export class SearchComponent implements OnInit {
             }
           )
         }
+       
+      }) 
+
+      /*Gene Enrichment Button*/
+      $('.export_nodes_enrichment').click(function() {
+
+        /* export data to browse page, where a graph will be shown */ 
+        const table_id = $(this).val()
+        let table = $('#'+table_id).DataTable()
+
+        // if table is empty, return info msg and stop process
+        if (table.rows({ filter : 'applied'}).data().length === 0) {
+          helper.msg("The table is empty!", false)
+          return
+        }
+
+        active_cancer_name = $(this).closest('.card').find('button').first().text()
+        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+  
+        // get data
+        let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
+        let nodes_marked = parse_node_data(table.rows('.selected', { filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
+
+      
+        let url;
+        let query;
+        if(nodes_marked.length != 0){
+          query = nodes_marked.join("%0A")
+          url= "https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query="+query+"&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background="
+
+        }else{
+          query = nodes.join("%0A")
+          url= "https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query="+query+"&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background="
+         
+        }
+
+        window.open(url);
        
       }) 
 
