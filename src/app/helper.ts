@@ -67,6 +67,9 @@ export class Helper {
         var headRow = document.createElement("tr");
         column_names.forEach(function(el) {
           var th=document.createElement("th");
+          if(el == "Gene Ontology"){
+            th.setAttribute("style","width:30%")
+          }
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
@@ -121,10 +124,7 @@ export class Helper {
             else if(el[o] == 'hallmark'){
               var hallmark=document.createElement("p");           
               hallmark.setAttribute("id","hallmark"+el['ENSG Number'])
-              
-            //  $this.hallmark_info(el['Gene Symbol'],el['ENSG Number'])
-              
-              //if(td.textContent==""){ td.appendChild(document.createTextNode("No hallmark associated"))}
+         
               $this.controller.get_Hallmark({
                 gene_symbol: [el['Gene Symbol']],
                 callback: (response) => {
@@ -139,27 +139,60 @@ export class Helper {
                   }
                   hallmark.textContent = hallmark_string.slice(0,-2)
                 
-        
-                  
-                
-           //   $('#hallmark-'+ensg).html(hallmark_string.slice(0,-2))
-           
-                 // $('#hallmark').html('No hallmark associated')
-                
-                 // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
-              
                 }, error:(err) =>{
-                 // $('#hallmark-'+ensg).html(err)
-                 hallmark.textContent = err
-
-                 
-                }
                
-          
+                 hallmark.textContent = err
+                }
             })
 
              
             td.appendChild(hallmark);
+            }
+            else if(el[o] == 'go'){
+              td.setAttribute("class","go")
+             
+              //für jde go nummer nen button machen mit link
+        
+              $this.controller.get_GO({
+                gene_symbol: [el['Gene Symbol']],
+                callback: (response) => {
+                
+                  /**
+                   * Get GO numbers
+                   */
+                 // for (let entry of response) {
+                 //   go_numbers.push(entry['gene_ontology_symbol']) 
+                 // }
+                
+                   //button generieren
+                   if(response.length >0){
+                    for (var entry of response) {
+                      var go=document.createElement("a");           
+                      go.setAttribute("id","go"+el['ENSG Number'])
+                      go.setAttribute("class","btn btn-outline-primary");
+                      go.setAttribute("target","_blank");
+                      go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
+                      go.textContent=entry['gene_ontology_symbol'];
+                      td.appendChild(go)
+                      
+        
+              
+                    }
+                    
+                  }else{
+                    var go=document.createElement("a");           
+                    go.setAttribute("id","go"+el['ENSG Number'])             
+                    go.textContent= "No entry found"
+                    td.appendChild(go)
+                    
+                  }
+                }
+            
+            })           
+           
+                  
+            
+
             }else{
              
               td.appendChild(document.createTextNode(el[o]))
