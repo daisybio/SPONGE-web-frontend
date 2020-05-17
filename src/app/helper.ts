@@ -70,13 +70,15 @@ export class Helper {
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
-       let $this =this
+        let $this =this
         thead.appendChild(headRow);
         table.appendChild(thead); 
         data.forEach(function(el) {
+
           var tr = document.createElement("tr");
           for (var o in el) {  
             var td = document.createElement("td");
+           
             if(el[o] == 'pathway'){
               if(el['Gene Symbol'] != '-'){
               var path=document.createElement("a");
@@ -92,28 +94,72 @@ export class Helper {
               }else{
                 td.appendChild(document.createTextNode("-"));
               }
-            }else if(el[o] == 'genecard' && el['Gene Symbol'] != '-'){
+            }
+            else if(el[o] == 'genecard'){
               var path=document.createElement("a");
               path.setAttribute("id","genecard");
               path.setAttribute("class","btn btn-outline-primary");
-              path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['Gene Symbol']);
-              path.setAttribute("value","Hallmark");
-              path.setAttribute("target","_blank");
-              path.textContent="GeneCard for "+el['Gene Symbol'];
-              td.appendChild(path);
-              $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
-              if(el['Gene Symbol'] == '-'){
-                td.appendChild(document.createTextNode("-"));
-              }
             
-            }else if(el[o] == 'hallmark' && el['Gene Symbol'] != '-'){
-                           
-              td.setAttribute("id","hallmark_"+el['ENSG Number']);
+              path.setAttribute("target","_blank");
+              if(el['Gene Symbol'] != '-'){
               
-              $this.hallmark_info(el['Gene Symbol'],el['ENSG Number'])
+              path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['Gene Symbol']);
               
+              path.textContent="GeneCard for "+el['Gene Symbol'];
+            
+              }else{
+                path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['ENSG Number']);
+              
+                path.textContent="GeneCard for "+el['ENSG Number'];
+                //td.appendChild(document.createTextNode("-"));
+              }
+
+              td.appendChild(path);
+           //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
+            
+            }
+            else if(el[o] == 'hallmark'){
+              var hallmark=document.createElement("p");           
+              hallmark.setAttribute("id","hallmark"+el['ENSG Number'])
+              
+            //  $this.hallmark_info(el['Gene Symbol'],el['ENSG Number'])
+              
+              //if(td.textContent==""){ td.appendChild(document.createTextNode("No hallmark associated"))}
+              $this.controller.get_Hallmark({
+                gene_symbol: [el['Gene Symbol']],
+                callback: (response) => {
+                  /**
+                   * Get Hallmarks and add to table
+                   */
+                  
+                  let hallmark_string=''
+                  
+                  for (let entry of response) {
+                    hallmark_string += entry.hallmark + ', '
+                  }
+                  hallmark.textContent = hallmark_string.slice(0,-2)
+                
+        
+                  
+                
+           //   $('#hallmark-'+ensg).html(hallmark_string.slice(0,-2))
+           
+                 // $('#hallmark').html('No hallmark associated')
+                
+                 // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
+              
+                }, error:(err) =>{
+                 // $('#hallmark-'+ensg).html(err)
+                 hallmark.textContent = err
+
+                 
+                }
+               
+          
+            })
+
              
-             
+            td.appendChild(hallmark);
             }else{
              
               td.appendChild(document.createTextNode(el[o]))
@@ -1385,30 +1431,34 @@ export class Helper {
       this.controller.get_Hallmark({
         gene_symbol: [gs],
         callback: (response) => {
-
-          console.log(response)
           /**
            * Get Hallmarks and add to table
            */
-          let hallmark_string = ''
-          if(response.length >0){
+          
+          let hallmark_string=''
+          
           for (let entry of response) {
             hallmark_string += entry.hallmark + ', '
           }
-      console.log(hallmark_string)
-      $('#hallmark_'+ensg).html(hallmark_string.slice(0,-2))
-        }else{
-          $('#hallmark_'+ensg).html('No hallmark associated')
-        }
+      
+
+          $('#hallmark'+ensg).innerHTML=hallmark_string.slice(0,-2)
+        
+   //   $('#hallmark-'+ensg).html(hallmark_string.slice(0,-2))
+   
+         // $('#hallmark').html('No hallmark associated')
+        
          // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
-        },
-        error: () => {
-          $('#hallmark_'+ensg).html('No hallmark associated')
-        //  $('#edge_information #'+id).html('-')
+      
+        }, error:(err) =>{
+         // $('#hallmark-'+ensg).html(err)
+         var td = document.getElementById('#hallmark'+ensg)
+         td.appendChild(document.createTextNode(err))
         }
-      })
+       
   
-    }
+    })
+  }
 
     
 

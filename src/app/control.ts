@@ -628,15 +628,18 @@ export class Controller {
                 if (config.gene_symbol != undefined) {
                     request += "&gene_symbol="+config.gene_symbol
                 }
-                console.log(request)
+                //console.log(request)
                 $.getJSON(request,
                     response => {
                         return config.callback(response)
                     }
-                ).fail(
-                    response => {
-                        return config.error(response)
+                ).fail(function()
+                      {
+                        console.log("miauz2")
+                        return config.error("No hallmark associated")
+                        
                     })
+                                
                 }
 
                    
