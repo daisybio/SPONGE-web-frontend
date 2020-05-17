@@ -1054,6 +1054,7 @@ export class SearchComponent implements OnInit {
           }
         }        
 
+        let first_col_hidden = false
         if (search_key.length > 1) {
           // grouping by search key
           datatable_settings['order'] =  [[0, 'asc']]
@@ -1065,6 +1066,7 @@ export class SearchComponent implements OnInit {
           //   visible: false
           // }]
         } else {
+          first_col_hidden = true;
           // hide "Key" Column if we have just 1 search column
           datatable_settings['columnDefs'] = [
             {
@@ -1077,7 +1079,7 @@ export class SearchComponent implements OnInit {
 
         table = $("#" + table_id).DataTable(datatable_settings)
 
-        helper.colSearch(table_id, table)
+        helper.colSearch(table_id, table, first_col_hidden)
   
         $(`
         #mscor_min_${table_id},

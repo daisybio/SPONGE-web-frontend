@@ -208,14 +208,21 @@ export class Helper {
       }
 
     
-    public colSearch(datatable_id, table) {
+    public colSearch(datatable_id, table, first_col_hidden=false) {
+      let s;
+      if (first_col_hidden) {
+        s = 1
+      } else {
+        s = 0
+      }
       // setup for colsearch
       $('#'+datatable_id+' thead tr').clone(true).appendTo( '#'+datatable_id+' thead' )
       $('#'+datatable_id+' thead tr:eq(1) th').unbind()
       $('#'+datatable_id+' thead tr:eq(1) th').each( function (i) {
+          i = i + s;
           var title = $(this).text();
           $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-  
+        
           $( 'input', this ).on( 'keyup change', function () {
               if ( table.column(i).search() !== this['value'] ) {
                   table
