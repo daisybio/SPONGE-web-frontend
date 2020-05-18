@@ -70,12 +70,13 @@ export class Helper {
         column_names.forEach(function(el) {
           var th=document.createElement("th");
           if(el == "Gene Ontology"){
-            th.setAttribute("style","width:30%")
+            th.setAttribute("style","min-width:250px")
           }else if(el == "Hallmarks"){
-            th.setAttribute("style","min-width: 250px")
+            th.setAttribute("style","min-width: 245px")
           }else if(el == "Gene Type" || el == "Gene Symbol"){
-            th.setAttribute("style","min-width: 120px;")
+            th.setAttribute("style","min-width: 110px;")
           }
+          
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
@@ -92,12 +93,12 @@ export class Helper {
               if(el['Gene Symbol'] != '-'){
               var path=document.createElement("a");
               path.setAttribute("id","pathway");
-              path.setAttribute("class","btn btn-outline-primary btn-sm");
+              path.setAttribute("class","btn btn-outline-primary");
               
               path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+el['Gene Symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
               path.setAttribute("value","Pathway");
               path.setAttribute("target","_blank");
-              path.textContent="Link to WikiPathways";
+              path.textContent="WikiPathways";
               td.appendChild(path);
             //  $("#pathway").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
              // tr.appendChild(path);
@@ -108,7 +109,7 @@ export class Helper {
             else if(el[o] == 'genecard'){
               var path=document.createElement("a");
               path.setAttribute("id","genecard");
-              path.setAttribute("class","btn btn-outline-primary btn-sm");
+              path.setAttribute("class","btn btn-outline-primary");
             
               path.setAttribute("target","_blank");
               if(el['Gene Symbol'] != '-'){
@@ -174,7 +175,7 @@ export class Helper {
                  var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
                  var go_button=document.createElement("a");           
                  go_button.setAttribute("id","show_more")
-                 go_button.setAttribute("class","btn btn-outline-primary btn-sm");
+                 go_button.setAttribute("class","btn btn-outline-primary");
                   go_button.setAttribute("data-toggle","collapse")
                   go_button.setAttribute("style","margin:10px")
                   go_button.textContent="Show more"
@@ -191,12 +192,12 @@ export class Helper {
                     for (var entry of response) {
                       var go=document.createElement("a");           
                       go.setAttribute("id","go"+el['ENSG Number'])
-                      go.setAttribute("class","btn btn-outline-primary btn-sm");
+                      go.setAttribute("class","btn btn-outline-primary");
                       go.setAttribute("target","_blank");
                       go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
                       go.textContent=entry['gene_ontology_symbol'];
 
-                      if(button_count<13){
+                      if(button_count<5){
                       
                       td.appendChild(go)
                      
@@ -206,7 +207,7 @@ export class Helper {
         
                       button_count++
                     }
-                    if(button_count>12){
+                    if(button_count>4){
                       
                       td.appendChild(go_div)
                       td.appendChild(go_button)
