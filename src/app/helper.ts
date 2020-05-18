@@ -164,7 +164,21 @@ export class Helper {
                  //   go_numbers.push(entry['gene_ontology_symbol']) 
                  // }
                 
-                   //button generieren
+                 var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
+                 var go_button=document.createElement("a");           
+                 go_button.setAttribute("id","go_button"+el['ENSG Number'])
+                 go_button.setAttribute("class","btn btn-outline-primary");
+                  go_button.setAttribute("data-toggle","collapse")
+                  go_button.textContent="Show more"
+                  go_button.setAttribute("data-target","#collapseButtons")
+                  go_button.setAttribute("aria-expanded","false")
+                  go_button.setAttribute("aria-controls","collapseButtons")
+
+                  var go_div = document.createElement("div")
+                  go_div.setAttribute("class","collapse")
+                  go_div.setAttribute("id","collapseButtons")
+
+                  //button generieren
                    if(response.length >0){
                     for (var entry of response) {
                       var go=document.createElement("a");           
@@ -173,10 +187,20 @@ export class Helper {
                       go.setAttribute("target","_blank");
                       go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
                       go.textContent=entry['gene_ontology_symbol'];
-                      td.appendChild(go)
+
+                      if(button_count<13){
                       
+                      td.appendChild(go)
+                     
+                      }else{
+                        go_div.appendChild(go)
+                      }
         
-              
+                      button_count++
+                    }
+                    if(button_count>12){
+                      td.appendChild(go_button)
+                      td.appendChild(go_div)
                     }
                     
                   }else{
