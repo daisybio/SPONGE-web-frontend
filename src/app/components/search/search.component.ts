@@ -861,7 +861,7 @@ export class SearchComponent implements OnInit {
         }
        
       }) 
-
+     
       /*Gene Enrichment Button*/
       $('.export_nodes_enrichment').click(function() {
 

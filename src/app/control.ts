@@ -635,7 +635,7 @@ export class Controller {
                     }
                 ).fail(function()
                       {
-                        console.log("miauz2")
+                       
                         return config.error("No hallmark associated")
                         
                     })
