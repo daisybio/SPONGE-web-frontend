@@ -59,7 +59,7 @@ export class Helper {
     controller = new Controller()
 
     public buildTable(data, table_name, column_names) {
-      $('.spinner').removeClass("hidden")
+      
         var table = document.createElement("table");
         table.id=table_name;
         table.className="table table-striped full-width"
@@ -72,7 +72,7 @@ export class Helper {
           if(el == "Gene Ontology"){
             th.setAttribute("style","min-width:250px")
           }else if(el == "Hallmarks"){
-            th.setAttribute("style","min-width: 245px")
+          //  th.setAttribute("style","min-width: 245px")
           }else if(el == "Gene Type" || el == "Gene Symbol"){
             th.setAttribute("style","min-width: 110px;")
           }

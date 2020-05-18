@@ -835,7 +835,39 @@ export class BrowseComponent implements OnInit {
               }, 200)
 
             })
-      
+            
+                    /*Gene Enrichment Button*/
+            $('#export_gene_enrichment').click(() =>{
+              let selected_nodes = []
+              let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
+            
+              for(let i = 0; i < selected_nodes_data.length; i++) {
+                // first row is ensg number
+                selected_nodes.push(selected_nodes_data[i][0])
+              }
+              
+              let nodes_for_ge = []
+              
+              for(let i = 0; i < nodes.length; i++) {
+                // first row is ensg number
+                nodes_for_ge.push(nodes[i]['id'])
+              }
+            
+              let url;
+              let query;
+              if(selected_nodes.length != 0){
+                query = selected_nodes.join("%0A")
+                url= "https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query="+query+"&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background="
+
+              }else{
+                query = nodes_for_ge.join("%0A")
+                url= "https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query="+query+"&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background="
+              
+              }
+
+              window.open(url);
+            
+            }) 
             $('#export_selected_nodes').click(() => {
               //helper.clear_subgraphs(network);
               let selected_nodes = []
@@ -949,6 +981,10 @@ export class BrowseComponent implements OnInit {
         ordered_entry['Betweenness'] = entry['betweenness']
         ordered_entry['Eigenvector'] = entry['eigenvector']
         ordered_entry['DB Degree'] = entry['node_degree']
+        ordered_entry['Hallmarks'] = 'hallmark'
+        ordered_entry['Pathway'] = 'pathway'
+        ordered_entry['GeneCard'] = 'genecard'
+        ordered_entry['Gene Ontology'] = 'go'
         ordered_data.push(ordered_entry)
       }
       let nodes = [];
@@ -1009,6 +1045,8 @@ export class BrowseComponent implements OnInit {
         ],
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
       });
+      $('#interactions-nodes-table div').append("<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;'>Gene Enrichment</button>")
+
       // colsearch for table
       helper.colSearch('interactions-nodes-table', node_table)
 
@@ -1018,6 +1056,8 @@ export class BrowseComponent implements OnInit {
       // save data for later search
       $('#node_data').text(JSON.stringify(ordered_data))
 
+    
+    
       /* plot expression data for nodes */
       //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
       return nodes
