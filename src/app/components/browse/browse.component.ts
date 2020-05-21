@@ -170,6 +170,15 @@ export class BrowseComponent implements OnInit {
       $('#disease_selectpicker').selectpicker('refresh');
     })
 
+       $(document).on('click', '#show_more', function() {
+      if($(this).closest('#show_more').hasClass('collapse')){
+      $(this).closest('#show_more').text("Show more")
+    }else{
+      $(this).closest('#show_more').text("Show less")
+    }
+      
+    })
+
     //##################################################################################
     // Here we check if there is information (e.g. from session or from search) to load
     /* In case we restore an old session */

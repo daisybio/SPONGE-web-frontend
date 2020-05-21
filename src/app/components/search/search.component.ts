@@ -105,6 +105,15 @@ export class SearchComponent implements OnInit {
       $(this).closest('tr').remove()
     })
 
+    $(document).on('click', '#show_more', function() {
+      if($(this).closest('#show_more').hasClass('collapse')){
+      $(this).closest('#show_more').text("Show more")
+    }else{
+      $(this).closest('#show_more').text("Show less")
+    }
+      
+    })
+
 
     function draw_cancer_type_accordion() {
 

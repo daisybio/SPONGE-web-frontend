@@ -59,7 +59,7 @@ export class Helper {
     controller = new Controller()
 
     public buildTable(data, table_name, column_names) {
-      
+        
         var table = document.createElement("table");
         table.id=table_name;
         table.className="table table-striped full-width"
