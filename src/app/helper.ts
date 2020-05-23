@@ -130,6 +130,7 @@ export class Helper {
             
             }
             else if(el[o] == 'hallmark'){
+              if(el['Gene Symbol'] != "-"){
               var hallmark=document.createElement("p");           
               hallmark.setAttribute("id","hallmark"+el['ENSG Number'])
          
@@ -155,8 +156,12 @@ export class Helper {
 
              
             td.appendChild(hallmark);
+          }else{
+            td.appendChild(document.createTextNode("-"));
+          }
             }
             else if(el[o] == 'go'){
+              if(el['Gene Symbol'] !="-"){
               td.setAttribute("class","go")
              
               //für jde go nummer nen button machen mit link
@@ -223,7 +228,9 @@ export class Helper {
                 }
             
             })           
-           
+          }else{
+            td.appendChild(document.createTextNode("-"));
+          }
                   
             
 
