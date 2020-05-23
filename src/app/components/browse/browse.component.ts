@@ -170,11 +170,11 @@ export class BrowseComponent implements OnInit {
       $('#disease_selectpicker').selectpicker('refresh');
     })
 
-       $(document).on('click', '#show_more', function() {
-      if($(this).closest('#show_more').hasClass('collapse')){
-      $(this).closest('#show_more').text("Show more")
-    }else{
+    $(document).on('click', '#show_more', function() {
+      if($(this).closest('#show_more').attr('aria-expanded')==='true'){
       $(this).closest('#show_more').text("Show less")
+    }else{
+      $(this).closest('#show_more').text("Show more")
     }
       
     })

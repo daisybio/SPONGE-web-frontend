@@ -181,13 +181,13 @@ export class Helper {
                   go_button.setAttribute("data-toggle","collapse")
                   go_button.setAttribute("style","margin:10px")
                   go_button.textContent="Show more"
-                  go_button.setAttribute("data-target","#collapseButtons")
+                  go_button.setAttribute("data-target","#collapseButtons"+el['Gene Symbol'])
                   go_button.setAttribute("aria-expanded","false")
                   go_button.setAttribute("aria-controls","collapseButtons")
 
                   var go_div = document.createElement("div")
                   go_div.setAttribute("class","collapse")
-                  go_div.setAttribute("id","collapseButtons")
+                  go_div.setAttribute("id","collapseButtons"+el['Gene Symbol'])
 
                   //button generieren
                    if(response.length >0){
