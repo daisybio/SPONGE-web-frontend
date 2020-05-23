@@ -1,9 +1,6 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
-//import { PassThrough } from 'stream';
-//import { relative } from 'path';
-//import { PassThrough } from 'stream';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -805,11 +802,13 @@ export class Helper {
             // build a table to display json
             let table = "<table class='table table-striped table-hover'>"
             for (let attribute in data[entry]) {
+              if(!(attribute == 'Hallmarks' || attribute == 'Gene Ontology'|| attribute == 'GeneCard' || attribute == 'Pathway')){
               let row = "<tr>"
               row += "<td>"+attribute+": </td>"
               row += "<td>"+data[entry][attribute]+"</td>"
               row += "</tr>"
               table += row
+              }
             }
             table += "</table>"
             $('#node_information_content').html(table)
