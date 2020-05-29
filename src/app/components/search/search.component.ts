@@ -666,7 +666,8 @@ export class SearchComponent implements OnInit {
           "<button disabled='true' class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
-          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show as Network</button>"+
+          "<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Gene Set Enrichment Analysis<br> (external)</button>"+
+          "<button class='export_nodes btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Show competing endogenous<br> RNA network</button>"+
           `
           <select class="selectpicker ${(search_key.length<2) ? 'hidden' : ''}" id="interactions_relatve_to_search_keys_${table_id}" disabled>
             <option value="all">All</option>
@@ -674,7 +675,6 @@ export class SearchComponent implements OnInit {
             <option value="between">Show only interactions <strong>between</strong> search genes</option>
           </select>
           `+
-          "<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;' value="+table_id+" disabled='true'>Gene Enrichment</button>"+
           "</div>"+
           "<div class='collapse' id='control_" + table_id + "' style='margin-bottom:20px;'>" +
           "<div class='card card-body' style='border-radius:10px; background-color: #004085; background:linear-gradient(45deg, #043056, #004085, #043056); color:white'>" +

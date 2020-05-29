@@ -1054,7 +1054,7 @@ export class BrowseComponent implements OnInit {
         ],
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
       });
-      $('#interactions-nodes-table div').append("<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;'>Gene Enrichment</button>")
+      $('#interactions-nodes-table div').append("<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;'>Gene Set Enrichment Analysis<br> (external)</button>")
 
       // colsearch for table
       helper.colSearch('interactions-nodes-table', node_table)
