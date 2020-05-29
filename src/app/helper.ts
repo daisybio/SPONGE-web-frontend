@@ -377,7 +377,7 @@ export class Helper {
           ];
 
           var layout = {
-            title: 'Expression Heatmap',
+            title: 'Expression Heatmap <br>transcripts per million',
             annotations: [],
             paper_bgcolor: 'ghostwhite',
             plot_bgcolor: 'rgb(248,248,255)',
