@@ -171,6 +171,7 @@ export class SearchComponent implements OnInit {
             }
           })
         }
+        
       } else if (search_key[0].startsWith('MIMAT')) {
         // key is MIMAT number
         controller.get_miRNA_interactions_all({
@@ -223,6 +224,7 @@ export class SearchComponent implements OnInit {
         })
       }
       }
+      
     }
 
     function update_url() {
@@ -803,6 +805,7 @@ export class SearchComponent implements OnInit {
         $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border spinner"></div></div>')
         
         load_interactions(disease, table_id)
+       
       })
 
       $('.export_nodes').click(function() {
@@ -978,7 +981,7 @@ export class SearchComponent implements OnInit {
           rowse_to_append.push(Object.values(obj))
         });
         $('#'+table_id).DataTable().rows.add(rowse_to_append).draw()
-
+        
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
 
@@ -1003,7 +1006,7 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
-
+        
         // this line also removes the loading spinner
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
@@ -1020,7 +1023,7 @@ export class SearchComponent implements OnInit {
         )}
   
         push_interaction_filters(table_id)
-        
+        helper.buildTable_GO_HM(table_id,2)
         const disease_first_letter_uppercase = disease.charAt(0).toUpperCase() + disease.substring(1);
         const filename = `SPONGE Interactions ${disease_first_letter_uppercase} ${search_key}`
         // define table settings based on search key length
@@ -1112,7 +1115,14 @@ export class SearchComponent implements OnInit {
           // we reached the last page and want to load the next page IF there is still more to load
           if ((info.pages-1 == info.page) && (info.recordsTotal % limit == 0)) {
             load_interactions(disease, table_id, info.recordsTotal)
+            
           }
+          helper.buildTable_GO_HM(table_id,1)
+        });
+
+        $(document).on('click', "#" + table_id + '_paginate', function () {
+
+          helper.buildTable_GO_HM(table_id,1)
         });
   
         // mark rows in datatable (and thus later in network) if we restore old session
@@ -1124,9 +1134,10 @@ export class SearchComponent implements OnInit {
         $('#'+table_id).closest('.card-body').find('button').prop('disabled', true);
       
       }
-
+      
+     
       if (table_complete) {
-
+       
         // remove loading button for more interactions
         $('#collapse_' + disease_trimmed).find('.card-body-table').find('.spinner-more').remove()
 
@@ -1154,7 +1165,7 @@ export class SearchComponent implements OnInit {
           $('#interactions_relatve_to_search_keys_'+table_id).closest('div').remove()
           
         }
-
+       
 
 /* 
         // start adding miRNAs

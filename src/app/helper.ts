@@ -1,6 +1,7 @@
 import { Controller } from "../app/control";
 import { Session } from "../app/session";
 import sigma from 'sigma';
+import { element } from 'protractor';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -126,46 +127,200 @@ export class Helper {
            //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
             
             }
-            else if(el[o] == 'hallmark'){
-              if(el['Gene Symbol'] != "-"){
-              var hallmark=document.createElement("p");           
-              hallmark.setAttribute("id","hallmark"+el['ENSG Number'])
-         
-              $this.controller.get_Hallmark({
-                gene_symbol: [el['Gene Symbol']],
-                callback: (response) => {
-                  /**
-                   * Get Hallmarks and add to table
-                   */
-                  
-                  let hallmark_string=''
-                  
-                  for (let entry of response) {
-                    hallmark_string += entry.hallmark + ', '
-                  }
-                  hallmark.textContent = hallmark_string.slice(0,-2)
-                
-                }, error:(err) =>{
-               
-                 hallmark.textContent = err
-                }
-            })
-
+       else{
              
-            td.appendChild(hallmark);
-          }else{
-            td.appendChild(document.createTextNode("-"));
-          }
+              td.appendChild(document.createTextNode(el[o]))
+              
             }
-            else if(el[o] == 'go'){
-              if(el['Gene Symbol'] !="-"){
+            tr.appendChild(td);
+          }
+          
+          tbody.appendChild(tr);  
+        });
+        table.appendChild(tbody);   
+             
+        return table;
+      }
+
+      public buildTable_GO_HM(table_id,count) {
+       
+       console.log(table_id)
+     //   let id = table_id.toString();
+        let gene_symbols =[] //list with gene names for api request
+        
+        //get table and append go and hallmark wird vor aufheben des spinners aufgehoben
+        //alle gene ids holen um eine api anfrage zu machen
+     var table = document.getElementById(table_id) as HTMLTableElement;
+        console.log(table)
+      
+      for (var i = 0, row; row = table.rows[i]; i++) {
+        //iterate through rows
+      
+        for (var j = 0, col; col = row.cells[j]; j++) {
+          if(j == count){
+        //  console.log(col.textContent)
+          if(!gene_symbols.includes(col.textContent) && col.textContent !== "" && col.textContent !== "Gene Symbol")
+          gene_symbols.push(col.textContent)
+        }
+        }  
+     }
+ 
+     /**Get Hallmarks and add to table */
+
+     this.controller.get_Hallmark({
+         gene_symbol: gene_symbols,
+         callback: (response) => {
+
+        //get corresponding hallmark col
+        for (var i = 0, row; row = table.rows[i]; i++) {
+        //iterate through rows
+           var tr = document.createElement("tr");
+          for (var j = 0, col ; col  = row.cells[j]; j++)
+          {
+            
+            var td = document.createElement("td");
+                
+            if(col.textContent == 'hallmark')
+            {
+               if(row.cells[2].textContent != "-")
+               {
+
+                 var hallmark=document.createElement("p");           
+                 hallmark.setAttribute("id","hallmark"+row.cells[1].textContent)
+        
+                 let hallmark_string=''
+                 if(response.length>0)
+                 {
+                   //get entries for the gene symbol of the current col
+                   for (let entry of response) {
+                     console.log(row.cells[1].textContent)
+                     if(entry.gene['gene_symbol'] == row.cells[1].textContent )
+                      hallmark_string += entry.hallmark + ', '
+                     }
+                   
+                  }
+                 
+                  if(hallmark_string != ""){
+                        hallmark.textContent = hallmark_string.slice(0,-2)
+                  }else{
+                        hallmark.textContent = "-"
+                      }
+                 console.log(hallmark.textContent)
+                 td.appendChild(hallmark);
+                 col.parentNode.replaceChild(hallmark, col);
+                }
+             else
+             {
+               td.appendChild(document.createTextNode("-"));
+               col.parentNode.replaceChild(td, col);
+             }
+
+            }
+          }
+       }}, error:(err) =>{
+                 console.log(err)   
+         // hallmark.textContent = err
+          }
+      })
+
+      this.controller.get_GO({
+        gene_symbol: gene_symbols,
+        callback: (response) => {
+         
+        
+          /**
+           * Get GO numbers
+           */
+         // for (let entry of response) {
+         //   go_numbers.push(entry['gene_ontology_symbol']) 
+         // }
+         //get corresponding hallmark col
+         for (var i = 0, row; row = table.rows[i]; i++) {
+          //iterate through rows
+             var tr = document.createElement("tr");
+            for (var j = 0, col ; col  = row.cells[j]; j++)
+            {
+              
+              var td = document.createElement("td");
+              if(col.textContent == 'go')
+              {
+        var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
+         var go_button=document.createElement("a");           
+         go_button.setAttribute("id","show_more")
+         go_button.setAttribute("class","btn btn-outline-primary btn-block");
+        
+          go_button.setAttribute("data-toggle","collapse")
+          go_button.setAttribute("style","margin:10px")
+          go_button.textContent="Show more"
+          go_button.setAttribute("data-target","#collapseButtons"+row.cells[1].textContent)
+          go_button.setAttribute("aria-expanded","false")
+          go_button.setAttribute("aria-controls","collapseButtons")
+
+          var go_div = document.createElement("div")
+          go_div.setAttribute("class","collapse")
+          go_div.setAttribute("id","collapseButtons"+row.cells[1].textContent)
+        
+              
+          //button generieren
+           if(response.length >0){
+            for (var entry of response) {
+              if(entry.gene['gene_symbol'] == row.cells[1].textContent ){
+              var go=document.createElement("a");           
+              go.setAttribute("id","go"+entry.gene['ENSG Number'])
+              go.setAttribute("class","btn btn-outline-primary btn-block mr-2");
+              go.setAttribute("target","_blank");
+              go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
+              go.setAttribute("data-toggle","tooltip") 
+              go.setAttribute("data-placement","right")
+              //hover text
+              go.setAttribute("title",entry['description'])
+              go.textContent=entry['gene_ontology_symbol'];
+
+              if(button_count<5){
+              
+              td.appendChild(go)
+             
+              }else{
+                go_div.appendChild(go)
+              }
+
+              button_count++
+            }
+            if(button_count>4){
+              
+              td.appendChild(go_div)
+              td.appendChild(go_button)
+            }
+          }
+          col.parentNode.replaceChild(td, col);
+
+          }
+          else{
+            var go=document.createElement("a");           
+            go.setAttribute("id","go"+entry.gene['ENSG Number'])             
+            go.textContent= "No entry found"
+            td.appendChild(go)
+            col.parentNode.replaceChild(td, col);
+
+          }
+       
+            }
+          }
+      }
+    }
+    })         
+
+
+      /**   else if(col == 'go'){
+              if(col['Gene Symbol'] !="-"){
               td.setAttribute("class","go")
              
               //für jde go nummer nen button machen mit link
         
-              $this.controller.get_GO({
-                gene_symbol: [el['Gene Symbol']],
+              this.controller.get_GO({
+                gene_symbol: gene_symbols,
                 callback: (response) => {
+                 
                 
                   /**
                    * Get GO numbers
@@ -174,26 +329,26 @@ export class Helper {
                  //   go_numbers.push(entry['gene_ontology_symbol']) 
                  // }
                 
-                 var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
+      /**         var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
                  var go_button=document.createElement("a");           
                  go_button.setAttribute("id","show_more")
                  go_button.setAttribute("class","btn btn-outline-primary btn-block");
                   go_button.setAttribute("data-toggle","collapse")
                   go_button.setAttribute("style","margin:10px")
                   go_button.textContent="Show more"
-                  go_button.setAttribute("data-target","#collapseButtons"+el['Gene Symbol'])
+                  go_button.setAttribute("data-target","#collapseButtons"+col['Gene Symbol'])
                   go_button.setAttribute("aria-expanded","false")
                   go_button.setAttribute("aria-controls","collapseButtons")
 
                   var go_div = document.createElement("div")
                   go_div.setAttribute("class","collapse")
-                  go_div.setAttribute("id","collapseButtons"+el['Gene Symbol'])
+                  go_div.setAttribute("id","collapseButtons"+col['Gene Symbol'])
 
                   //button generieren
                    if(response.length >0){
                     for (var entry of response) {
                       var go=document.createElement("a");           
-                      go.setAttribute("id","go"+el['ENSG Number'])
+                      go.setAttribute("id","go"+col['ENSG Number'])
                       go.setAttribute("class","btn btn-outline-primary btn-block");
                       go.setAttribute("target","_blank");
                       go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
@@ -217,7 +372,7 @@ export class Helper {
                     
                   }else{
                     var go=document.createElement("a");           
-                    go.setAttribute("id","go"+el['ENSG Number'])             
+                    go.setAttribute("id","go"+col['ENSG Number'])             
                     go.textContent= "No entry found"
                     td.appendChild(go)
                     
@@ -233,15 +388,22 @@ export class Helper {
 
             }else{
              
-              td.appendChild(document.createTextNode(el[o]))
+            //  td.appendChild(document.createTextNode(col))
               
             }
-            tr.appendChild(td);
-          }
           
-          tbody.appendChild(tr);  
-        });
-        table.appendChild(tbody);             
+            tr.appendChild(td);
+           // row.appendChild(tr); 
+      */
+        
+          
+        
+              
+        
+        
+        
+      
+               
         return table;
       }
 
