@@ -203,7 +203,7 @@ export class Helper {
                   if(hallmark_string != ""){
                         hallmark.textContent = hallmark_string.slice(0,-2)
                   }else{
-                        hallmark.textContent = "-"
+                        hallmark.textContent = "No hallmark associated for gene of interest!"
                       }
                  console.log(hallmark.textContent)
                  td.appendChild(hallmark);
@@ -244,6 +244,8 @@ export class Helper {
               var td = document.createElement("td");
               if(col.textContent == 'go')
               {
+                if(row.cells[1].textContent != "-")
+                {
         var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
          var go_button=document.createElement("a");           
          go_button.setAttribute("id","show_more")
@@ -262,7 +264,7 @@ export class Helper {
         
               
           //button generieren
-           if(response.length >0){
+           if(response.length >0 ){
             for (var entry of response) {
               if(entry.gene['gene_symbol'] == row.cells[1].textContent ){
               var go=document.createElement("a");           
@@ -292,18 +294,23 @@ export class Helper {
               td.appendChild(go_button)
             }
           }
-          col.parentNode.replaceChild(td, col);
-
-          }
-          else{
+          if(td.textContent== null || td.textContent== "" ){
             var go=document.createElement("a");           
-            go.setAttribute("id","go"+entry.gene['ENSG Number'])             
+            go.setAttribute("id","go"+row.cells[0].textContent )             
             go.textContent= "No entry found"
             td.appendChild(go)
-            col.parentNode.replaceChild(td, col);
-
           }
-       
+
+          col.parentNode.replaceChild(td, col);
+         
+          }
+
+          
+        }else{
+          
+          td.appendChild(document.createTextNode("-"));
+          col.parentNode.replaceChild(td, col);
+        }
             }
           }
       }
