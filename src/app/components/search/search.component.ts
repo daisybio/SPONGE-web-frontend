@@ -113,8 +113,14 @@ export class SearchComponent implements OnInit {
     }
       
     })
-
-
+    $(document).on('click', '.pagination', function() {
+      console.log("clicked")
+      let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
+      let table_id = tmp_id.split('_')[0]
+      //$(this).closest('tr').remove()
+      helper.buildTable_GO_HM(table_id,1)
+    })
+   
     function draw_cancer_type_accordion() {
 
       // build html for response_data
