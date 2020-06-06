@@ -90,7 +90,7 @@ export class Helper {
           for (var o in el) {  
             var td = document.createElement("td");
            
-            if(el[o] == 'pathway'){
+           /** if(el[o] == 'pathway'){
               if(el['Gene Symbol'] != '-'){
               var path=document.createElement("a");
               path.setAttribute("id","pathway");
@@ -105,9 +105,9 @@ export class Helper {
              // tr.appendChild(path);
               }else{
                 td.appendChild(document.createTextNode("-"));
-              }
-            }
-            else if(el[o] == 'genecard'){
+              } 
+            } */
+            if(el[o] == 'genecard'){
               var path=document.createElement("a");
               path.setAttribute("id","genecard");
               path.setAttribute("class","btn btn-outline-primary");
@@ -174,6 +174,71 @@ export class Helper {
         }
         }  
      }
+
+     this.controller.get_WikiPathway({
+      gene_symbol: gene_symbols,
+      callback: (response) => {
+          //get corresponding pathway col
+          for (var i = 0, row; row = table.rows[i]; i++) {
+            //iterate through rows
+              
+              for (var j = 0, col ; col  = row.cells[j]; j++)
+              {
+                
+                var td = document.createElement("td");
+                
+                if(col.textContent == 'pathway')
+                { console.log("drin")
+                   if(row.cells[2].textContent != "-")
+                   {
+    
+
+                    
+                    // var pathway=document.createElement("p");           
+                     //pathway.setAttribute("id","pathway"+row.cells[1].textContent)
+            
+                     var path=document.createElement("a");
+                     if(response.length>0)
+                     {
+                       //get entries for the gene symbol of the current col
+                       for (let entry of response) {
+                        // console.log(row.cells[1].textContent)
+                         if(entry.gene['gene_symbol'] == row.cells[1].textContent ){
+                         
+                          path.setAttribute("id","pathway");
+                          path.setAttribute("class","btn btn-outline-primary");
+                          
+                          path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+entry.gene['gene_symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
+                          path.setAttribute("value","Pathway");
+                          path.setAttribute("target","_blank");
+                          path.textContent="WikiPathways";
+                          
+                     
+                          }
+                         }
+                       
+                      }
+                     
+                      if(path.textContent == ""){
+                        path.textContent = "No pathway associated for gene of interest!"
+                          }
+                   //  console.log(hallmark.textContent)
+                     td.appendChild(path);
+                     
+                     col.parentNode.replaceChild(td, col);
+                    }
+                 else
+                 {
+                   td.appendChild(document.createTextNode("-"));
+                   col.parentNode.replaceChild(td, col);
+                 }
+    
+                }
+              }
+      
+    }
+  }
+     })
  
      /**Get Hallmarks and add to table */
 

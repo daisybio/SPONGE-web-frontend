@@ -42,6 +42,7 @@ export class Controller {
     static OVERALL_COUNTS = "/getOverallCounts"
     static GENE_ONTOLOGY = "/getGeneOntology"
     static HALLMARKS="/getHallmark"
+    static PATHWAY = "/getWikipathway"
 
     public search_string(
         config: {
@@ -641,6 +642,33 @@ export class Controller {
                     })
                                 
                 }
+
+                public get_WikiPathway(
+                    config: {
+                        gene_symbol: string[], 
+                        callback: (response) => any,
+                        error?: (response) => any
+                    })
+                    {
+                        let request = Controller.API_ENDPOINT+Controller.PATHWAY
+                        if (Object.keys(config).length > 1) {
+                            request += '?'
+                        }
+                        
+                        if (config.gene_symbol != undefined) {
+                            request += "&gene_symbol="+config.gene_symbol
+                        }
+                        //console.log(request)
+                        $.getJSON(request,
+                            response => {
+                                return config.callback(response)
+                            }
+                        ).fail(
+                            response => {
+                                return config.error(response)
+                            })
+                                        
+                        }
 
                    
 }
