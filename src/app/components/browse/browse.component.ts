@@ -179,6 +179,15 @@ export class BrowseComponent implements OnInit {
       
     })
 
+     //load further hallmarks and gos
+     $(document).on('click', '.pagination', function() {
+      let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
+     let table_id = tmp_id.split('_')[0]
+     if(table_id == 'interactions-nodes-table'){
+      helper.buildTable_GO_HM('interactions-nodes-table',1)
+     }
+    })
+
     //##################################################################################
     // Here we check if there is information (e.g. from session or from search) to load
     /* In case we restore an old session */
@@ -393,6 +402,7 @@ export class BrowseComponent implements OnInit {
 
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
+            
             // find index positions from columns to round
             var index_correlation = column_names.indexOf('Correlation');
             var index_mscor = column_names.indexOf('MScor');
@@ -1018,7 +1028,7 @@ export class BrowseComponent implements OnInit {
       var index_betweenness = column_names.indexOf('Betweenness');
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
-
+      helper.buildTable_GO_HM('interactions-nodes-table',1)
       const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
       const disease_name = $('#disease_selectpicker').val()
       const filename = `SPONGE Genes ${disease_name} ${search_key}`

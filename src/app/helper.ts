@@ -60,21 +60,24 @@ export class Helper {
         
         var table = document.createElement("table");
         table.id=table_name;
-        table.className="table table-striped w-auto"
-        table.setAttribute("style"," text-align: center");
+        table.className="table table-striped"
+        table.setAttribute("style"," text-align: center; width:100%");
         var thead = document.createElement("thead");
         var tbody = document.createElement("tbody");
         var headRow = document.createElement("tr");
         column_names.forEach(function(el) {
           var th=document.createElement("th");
           if(el == "Gene Ontology"){
-           // th.setAttribute("style","min-width:250px")
+            th.setAttribute("style","min-width:250px")
           }else if(el == "Hallmarks"){
           //  th.setAttribute("style","min-width: 245px")
           }else if(el == "Gene Type" || el == "Gene Symbol"){
-           // th.setAttribute("style","min-width: 110px;")
+           // th.setAttribute("style","width: 110px;")
+          }else if(el == "GeneCard"){
+            //th.setAttribute("style","width: 110px;")
           }
-          
+        
+         // th.setAttribute("style","width: min-content;")
           th.appendChild(document.createTextNode(el));
           headRow.appendChild(th);
         });
@@ -91,7 +94,7 @@ export class Helper {
               if(el['Gene Symbol'] != '-'){
               var path=document.createElement("a");
               path.setAttribute("id","pathway");
-              path.setAttribute("class","btn btn-outline-primary btn-block");
+              path.setAttribute("class","btn btn-outline-primary");
               
               path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+el['Gene Symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
               path.setAttribute("value","Pathway");
@@ -107,7 +110,7 @@ export class Helper {
             else if(el[o] == 'genecard'){
               var path=document.createElement("a");
               path.setAttribute("id","genecard");
-              path.setAttribute("class","btn btn-outline-primary btn-block");
+              path.setAttribute("class","btn btn-outline-primary");
             
               path.setAttribute("target","_blank");
               if(el['Gene Symbol'] != '-'){
@@ -138,13 +141,20 @@ export class Helper {
           tbody.appendChild(tr);  
         });
         table.appendChild(tbody);   
-             
-        return table;
+        let container =document.createElement('div');
+        container.setAttribute("class","container-fluid");
+     //   container.setAttribute("style","width:1300px")
+        container.appendChild(table)
+        return container;
       }
 
       public buildTable_GO_HM(table_id,count) {
        
-       
+        let div= document.createElement('div')
+        div.setAttribute("class","full-width text-center")
+        let spinner = document.createElement('div')
+        spinner.setAttribute("class","spinner-border spinner")
+        div.appendChild(spinner)
      //   let id = table_id.toString();
         let gene_symbols =[] //list with gene names for api request
         
@@ -181,7 +191,7 @@ export class Helper {
             var td = document.createElement("td");
                 
             if(col.textContent == 'hallmark')
-            {
+            { col.parentNode.replaceChild(div,col)
                if(row.cells[2].textContent != "-")
                {
 
@@ -193,7 +203,7 @@ export class Helper {
                  {
                    //get entries for the gene symbol of the current col
                    for (let entry of response) {
-                     console.log(row.cells[1].textContent)
+                    // console.log(row.cells[1].textContent)
                      if(entry.gene['gene_symbol'] == row.cells[1].textContent )
                       hallmark_string += entry.hallmark + ', '
                      }
@@ -205,9 +215,10 @@ export class Helper {
                   }else{
                         hallmark.textContent = "No hallmark associated for gene of interest!"
                       }
-                 console.log(hallmark.textContent)
+               //  console.log(hallmark.textContent)
                  td.appendChild(hallmark);
-                 col.parentNode.replaceChild(hallmark, col);
+                 
+                 div.parentNode.replaceChild(hallmark, div);
                 }
              else
              {
@@ -247,7 +258,7 @@ export class Helper {
                   var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
                   var go_button=document.createElement("a");           
                   go_button.setAttribute("id","show_more")
-                  go_button.setAttribute("class","btn btn-outline-primary btn-block");
+                  go_button.setAttribute("class","btn btn-outline-primary");
                   
                     go_button.setAttribute("data-toggle","collapse")
                     go_button.setAttribute("style","margin:10px")
@@ -269,7 +280,7 @@ export class Helper {
                         {
                           var go=document.createElement("a");           
                           go.setAttribute("id","go"+entry.gene['ENSG Number'])
-                          go.setAttribute("class","btn btn-outline-primary btn-block mr-2");
+                          go.setAttribute("class","btn btn-outline-primary mr-2");
                           go.setAttribute("target","_blank");
                           go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
                           go.setAttribute("data-toggle","tooltip") 

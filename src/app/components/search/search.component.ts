@@ -115,7 +115,6 @@ export class SearchComponent implements OnInit {
     })
     //load further hallmarks and gos
     $(document).on('click', '.pagination', function() {
-      console.log("clicked")
       let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
       let table_id = tmp_id.split('_')[0]
       helper.buildTable_GO_HM(table_id,1)
@@ -1062,6 +1061,11 @@ export class SearchComponent implements OnInit {
             },
           ],
           orderCellsTop: true,
+        //  autoWidth: false,
+      
+        
+         
+          
           drawCallback: function( settings ) {
             var api = this.api();
             // enable last button always if there are more interactions to load
@@ -1092,6 +1096,7 @@ export class SearchComponent implements OnInit {
                 "targets": [ 0 ],
                 "visible": false,
                 "searchable": true
+                
             }
           ]
         }
