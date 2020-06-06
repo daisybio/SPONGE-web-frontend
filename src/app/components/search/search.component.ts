@@ -113,11 +113,11 @@ export class SearchComponent implements OnInit {
     }
       
     })
+    //load further hallmarks and gos
     $(document).on('click', '.pagination', function() {
       console.log("clicked")
       let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
       let table_id = tmp_id.split('_')[0]
-      //$(this).closest('tr').remove()
       helper.buildTable_GO_HM(table_id,1)
     })
    
@@ -478,6 +478,7 @@ export class SearchComponent implements OnInit {
           orderCellsTop: true,
         })
         helper.colSearch(table_id, table)
+       
 
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
