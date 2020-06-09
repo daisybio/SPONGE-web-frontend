@@ -1061,11 +1061,9 @@ export class SearchComponent implements OnInit {
             },
           ],
           orderCellsTop: true,
-        //  autoWidth: false,
-      
-        
-         
-          
+          responsive : true,
+          scrollX:  true,
+     
           drawCallback: function( settings ) {
             var api = this.api();
             // enable last button always if there are more interactions to load

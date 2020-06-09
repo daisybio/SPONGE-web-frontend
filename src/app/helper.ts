@@ -386,8 +386,9 @@ export class Helper {
                         if(entry.gene['gene_symbol'] == row.cells[1].textContent )
                         {
                           var go=document.createElement("a");           
-                          go.setAttribute("id","go"+entry.gene['ENSG Number'])
+                          go.setAttribute("id","go")
                           go.setAttribute("class","btn btn-outline-primary mr-2");
+                          go.setAttribute("title","GO Description")
                           go.setAttribute("target","_blank");
                           go.setAttribute("href",'https://www.ebi.ac.uk/QuickGO/term/'+entry['gene_ontology_symbol']);
                           go.setAttribute("data-toggle","tooltip") 

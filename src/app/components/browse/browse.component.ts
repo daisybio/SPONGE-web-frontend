@@ -436,7 +436,9 @@ export class BrowseComponent implements OnInit {
                         }
                         return numb
                         },
-                    targets: [ index_correlation, index_mscor, index_p_value ] }
+                    targets: [ index_correlation, index_mscor, index_p_value ] }, 
+                   
+                
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
               buttons: [
@@ -461,6 +463,9 @@ export class BrowseComponent implements OnInit {
                   title: filename
                 },
               ],
+              
+              responsive:true,
+              scrollX:  true,
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
               order: [[ order_by, order_by_asc_des ]]
             }); 
@@ -1063,7 +1068,9 @@ export class BrowseComponent implements OnInit {
             title: filename
           },
         ],
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]]
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        responsive:true,
+        scrollX:  true,
       });
       $('#interactions-nodes-table div').append("<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;'>Gene Set Enrichment Analysis<br> (external)</button>")
 
