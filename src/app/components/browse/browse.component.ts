@@ -144,6 +144,7 @@ export class BrowseComponent implements OnInit {
     })
 
     $("#nav-nodes-tab").on('click',function(){
+      helper.buildTable_GO_HM('interactions-nodes-table',1)
       if($(this).hasClass('active')){
         $(this).removeClass('active')}
       if($('#nav-edges-tab').hasClass('active')){
