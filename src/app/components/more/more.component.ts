@@ -21,6 +21,7 @@ export class MoreComponent implements OnInit {
     controller.get_datasets(
       data => {
         for (const dataset of data) {
+          if(dataset['disease_name'] != "Ovarian Cancer AU"){
           $('#dataset_download_table').append(
           `
           <tr>
@@ -34,6 +35,21 @@ export class MoreComponent implements OnInit {
             </td>
           </tr>
           `)
+        }else{
+          $('#dataset_download_table').append(
+            `
+            <tr>
+              <td class="full-width">
+                <i class=""></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
+              </td>
+              <td class="text-center">
+                <a >
+                    No data available
+                </a>
+              </td>
+            </tr>
+            `)
+        }
         }
       }
     )
