@@ -169,7 +169,7 @@ export class Helper {
         for (var j = 0, col; col = row.cells[j]; j++) {
           if(j == count){
      
-          if(!gene_symbols.includes(col.textContent) && col.textContent !== "" && col.textContent !== "Gene Symbol")
+          if(!gene_symbols.includes(col.textContent) && col.textContent != "-" && col.textContent !== "" && col.textContent !== "Gene Symbol")
           gene_symbols.push(col.textContent)
         }
         }  
@@ -237,8 +237,31 @@ export class Helper {
               }
       
     }
-  }
-     })
+  },error:(err) =>{
+    //if the respose is empty because all gene names are - 
+            //get corresponding hallmark col
+            for (var i = 0, row; row = table.rows[i]; i++) {
+              //iterate through rows
+                 var tr = document.createElement("tr");
+                for (var j = 0, col ; col  = row.cells[j]; j++)
+                {
+                  
+                  var td = document.createElement("td");
+                      
+                  if(col.textContent == 'pathway')
+                  { 
+      
+                    
+                     td.appendChild(document.createTextNode("-"));
+                     col.parentNode.replaceChild(td, col);
+                     
+                     }
+                    }
+             // hallmark.textContent = err
+              }}
+
+}         )    
+    
  
      /**Get Hallmarks and add to table */
 
@@ -294,9 +317,28 @@ export class Helper {
             }
           }
        }}, error:(err) =>{
-                 console.log(err)   
-         // hallmark.textContent = err
-          }
+               
+                  //if the respose is empty because all gene names are - 
+                  //get corresponding hallmark col
+                  for (var i = 0, row; row = table.rows[i]; i++) {
+                    //iterate through rows
+                       var tr = document.createElement("tr");
+                      for (var j = 0, col ; col  = row.cells[j]; j++)
+                      {
+                        
+                        var td = document.createElement("td");
+                            
+                        if(col.textContent == 'hallmark')
+                        { 
+            
+                          
+                           td.appendChild(document.createTextNode("-"));
+                           col.parentNode.replaceChild(td, col);
+                           
+                           }
+                          }
+                   // hallmark.textContent = err
+                    }}
       })
 
        /**
@@ -307,7 +349,7 @@ export class Helper {
         gene_symbol: gene_symbols,
         callback: (response) => {
          
-      
+      console.log(response)
          //get corresponding hallmark col
          for (var i = 0, row; row = table.rows[i]; i++) {
           //iterate through rows
@@ -383,11 +425,34 @@ export class Helper {
                   }else{
                     td.appendChild(document.createTextNode("-"));
                     col.parentNode.replaceChild(td, col);
+                    
                   }
             }
           }
       }
-    }
+    }, error:(err) =>{
+          //if the respose is empty because all gene names are - 
+                  //get corresponding hallmark col
+                  for (var i = 0, row; row = table.rows[i]; i++) {
+                    //iterate through rows
+                       var tr = document.createElement("tr");
+                      for (var j = 0, col ; col  = row.cells[j]; j++)
+                      {
+                        
+                        var td = document.createElement("td");
+                            
+                        if(col.textContent == 'go')
+                        { 
+            
+                          
+                           td.appendChild(document.createTextNode("-"));
+                           col.parentNode.replaceChild(td, col);
+                           
+                           }
+                          }
+                   // hallmark.textContent = err
+                    }}
+    
     })              
         return table;
       }

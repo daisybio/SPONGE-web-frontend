@@ -670,7 +670,7 @@ export class SearchComponent implements OnInit {
           "</div>" +
           "<div id='collapse_" + disease_trimmed + "' class='collapse' aria-labelledby='headingOne' data-parent='#disease_accordion'>" +
           "<div class='card-body'>" +
-          "<div class='button-control-container' id=button_control_"+disease_trimmed+">"+
+          "<div class='button-control-container' id=button_control_"+disease_trimmed+" style='left: 15px; position: relative;'>"+
           "<button disabled='true' class='btn btn-secondary button-margin' type='button' data-toggle='collapse' data-target='#control_" + table_id + "' aria-expanded='false'>" +
           "Filter" +
           "</button>" +
