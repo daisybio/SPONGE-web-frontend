@@ -70,7 +70,7 @@ export class Helper {
           if(el == "Gene Ontology"){
             th.setAttribute("style","min-width:250px")
           }else if(el == "Hallmarks"){
-          //  th.setAttribute("style","min-width: 245px")
+            th.setAttribute("style","min-width: 200px")
           }else if(el == "Gene Type" || el == "Gene Symbol"){
            // th.setAttribute("style","width: 110px;")
           }else if(el == "GeneCard"){
@@ -189,14 +189,13 @@ export class Helper {
           //get corresponding pathway col
           for (var i = 0, row; row = table.rows[i]; i++) {
             //iterate through rows
-              
-              for (var j = 0, col ; col  = row.cells[j]; j++)
-              {
+              let col = row.cells[count+6]
+            
                 
                 var td = document.createElement("td");
                 
                 if(col.textContent == 'pathway')
-                { console.log("drin")
+                { 
                    if(row.cells[count].textContent != "-")
                    {
     
@@ -242,7 +241,7 @@ export class Helper {
                  }
     
                 }
-              }
+              
       
     }
   },error:(err) =>{
@@ -251,8 +250,7 @@ export class Helper {
             for (var i = 0, row; row = table.rows[i]; i++) {
               //iterate through rows
                  var tr = document.createElement("tr");
-                for (var j = 0, col ; col  = row.cells[j]; j++)
-                {
+                 let col = row.cells[count+6]
                   
                   var td = document.createElement("td");
                       
@@ -264,7 +262,7 @@ export class Helper {
                      col.parentNode.replaceChild(td, col);
                      
                      }
-                    }
+                    
              // hallmark.textContent = err
               }}
 
@@ -281,9 +279,8 @@ export class Helper {
         for (var i = 0, row; row = table.rows[i]; i++) {
         //iterate through rows
            var tr = document.createElement("tr");
-          for (var j = 0, col ; col  = row.cells[j]; j++)
-          {
-            
+          
+            let col = row.cells[count+5]
             var td = document.createElement("td");
                 
             if(col.textContent == 'hallmark')
@@ -325,7 +322,7 @@ export class Helper {
              }
 
             }
-          }
+          
        }}, error:(err) =>{
                
                   //if the respose is empty because all gene names are - 
@@ -333,8 +330,7 @@ export class Helper {
                   for (var i = 0, row; row = table.rows[i]; i++) {
                     //iterate through rows
                        var tr = document.createElement("tr");
-                      for (var j = 0, col ; col  = row.cells[j]; j++)
-                      {
+                       let col = row.cells[count+5]
                         
                         var td = document.createElement("td");
                             
@@ -346,7 +342,7 @@ export class Helper {
                            col.parentNode.replaceChild(td, col);
                            
                            }
-                          }
+                          
                    // hallmark.textContent = err
                     }}
       })
@@ -364,8 +360,7 @@ export class Helper {
          for (var i = 0, row; row = table.rows[i]; i++) {
           //iterate through rows
              var tr = document.createElement("tr");
-            for (var j = 0, col ; col  = row.cells[j]; j++)
-            {
+             let col = row.cells[count+8]
               
               var td = document.createElement("td");
               if(col.textContent == 'go')
@@ -439,7 +434,7 @@ export class Helper {
                     
                   }
             }
-          }
+          
       }
     }, error:(err) =>{
           //if the respose is empty because all gene names are - 
@@ -447,8 +442,7 @@ export class Helper {
                   for (var i = 0, row; row = table.rows[i]; i++) {
                     //iterate through rows
                        var tr = document.createElement("tr");
-                      for (var j = 0, col ; col  = row.cells[j]; j++)
-                      {
+                       let col = row.cells[count+8]
                         
                         var td = document.createElement("td");
                             
@@ -460,7 +454,7 @@ export class Helper {
                            col.parentNode.replaceChild(td, col);
                            
                            }
-                          }
+                          
                    // hallmark.textContent = err
                     }}
     
