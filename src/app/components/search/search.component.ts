@@ -811,6 +811,7 @@ export class SearchComponent implements OnInit {
         $(this).closest('.card-header').next().find('.card-body-table').html('<div class="full-width text-center"><div class="spinner-border spinner"></div></div>')
         
         load_interactions(disease, table_id)
+        
        
       })
 
@@ -987,6 +988,7 @@ export class SearchComponent implements OnInit {
           rowse_to_append.push(Object.values(obj))
         });
         $('#'+table_id).DataTable().rows.add(rowse_to_append).draw()
+        helper.buildTable_GO_HM(table_id)
         
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
