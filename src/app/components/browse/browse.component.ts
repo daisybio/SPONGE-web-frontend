@@ -144,7 +144,7 @@ export class BrowseComponent implements OnInit {
     })
 
     $("#nav-nodes-tab").on('click',function(){
-      helper.buildTable_GO_HM('interactions-nodes-table',1)
+      helper.buildTable_GO_HM('interactions-nodes-table')
       if($(this).hasClass('active')){
         $(this).removeClass('active')}
       if($('#nav-edges-tab').hasClass('active')){
@@ -185,7 +185,7 @@ export class BrowseComponent implements OnInit {
       let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
      let table_id = tmp_id.split('_')[0]
      if(table_id == 'interactions-nodes-table'){
-      helper.buildTable_GO_HM('interactions-nodes-table',1)
+      helper.buildTable_GO_HM('interactions-nodes-table')
      }
     })
 
@@ -1034,7 +1034,7 @@ export class BrowseComponent implements OnInit {
       var index_betweenness = column_names.indexOf('Betweenness');
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
-      helper.buildTable_GO_HM('interactions-nodes-table',1)
+      helper.buildTable_GO_HM('interactions-nodes-table')
       const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
       const disease_name = $('#disease_selectpicker').val()
       const filename = `SPONGE Genes ${disease_name} ${search_key}`

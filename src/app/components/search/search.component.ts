@@ -117,7 +117,7 @@ export class SearchComponent implements OnInit {
     $(document).on('click', '.pagination', function() {
       let tmp_id =$(this).closest('.paginate_button .page-item .active').prevObject[0].children[0].id
       let table_id = tmp_id.split('_')[0]
-      helper.buildTable_GO_HM(table_id,1)
+      helper.buildTable_GO_HM(table_id)
     })
    
     function draw_cancer_type_accordion() {
@@ -1029,7 +1029,7 @@ export class SearchComponent implements OnInit {
         )}
   
         push_interaction_filters(table_id)
-        helper.buildTable_GO_HM(table_id,2)
+      
         const disease_first_letter_uppercase = disease.charAt(0).toUpperCase() + disease.substring(1);
         const filename = `SPONGE Interactions ${disease_first_letter_uppercase} ${search_key}`
         // define table settings based on search key length
@@ -1113,7 +1113,7 @@ export class SearchComponent implements OnInit {
         `).keyup(() => {
           table.draw()
         })
-  
+        helper.buildTable_GO_HM(table_id)
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
@@ -1127,12 +1127,12 @@ export class SearchComponent implements OnInit {
             load_interactions(disease, table_id, info.recordsTotal)
             
           }
-          helper.buildTable_GO_HM(table_id,1)
+          helper.buildTable_GO_HM(table_id)
         });
 
         $(document).on('click', "#" + table_id + '_paginate', function () {
 
-          helper.buildTable_GO_HM(table_id,1)
+          helper.buildTable_GO_HM(table_id)
         });
   
         // mark rows in datatable (and thus later in network) if we restore old session
@@ -1175,7 +1175,7 @@ export class SearchComponent implements OnInit {
           $('#interactions_relatve_to_search_keys_'+table_id).closest('div').remove()
           
         }
-       
+        helper.buildTable_GO_HM(table_id)
 
 /* 
         // start adding miRNAs

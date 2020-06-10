@@ -148,8 +148,8 @@ export class Helper {
         return container;
       }
 
-      public buildTable_GO_HM(table_id,count) {
-       
+      public buildTable_GO_HM(table_id) {
+       let count =0
         let div= document.createElement('div')
         div.setAttribute("class","full-width text-center")
         let spinner = document.createElement('div')
@@ -162,17 +162,25 @@ export class Helper {
         //alle gene ids holen um eine api anfrage zu machen
      var table = document.getElementById(table_id) as HTMLTableElement;
       
-      
+    
+     for (var i = 0, row; row = table.rows[i]; i++) {
+      //iterate through rows
+    
+      for (var j = 0, col; col = row.cells[j]; j++) {
+        if(col.textContent.match("Gene Symbol")){
+          count =j;
+          break
+        }
+      }
+    }
+       //fill array for api request
       for (var i = 0, row; row = table.rows[i]; i++) {
         //iterate through rows
-      
-        for (var j = 0, col; col = row.cells[j]; j++) {
-          if(j == count){
      
-          if(!gene_symbols.includes(col.textContent) && col.textContent != "-" && col.textContent !== "" && col.textContent !== "Gene Symbol")
-          gene_symbols.push(col.textContent)
+          if(!gene_symbols.includes( row.cells[count].textContent) && row.cells[count].textContent != "-" && row.cells[count].textContent !== "" && row.cells[count].textContent !== "Gene Symbol"){
+          gene_symbols.push( row.cells[count].textContent)
         }
-        }  
+        
      }
 
      this.controller.get_WikiPathway({
@@ -189,7 +197,7 @@ export class Helper {
                 
                 if(col.textContent == 'pathway')
                 { console.log("drin")
-                   if(row.cells[2].textContent != "-")
+                   if(row.cells[count].textContent != "-")
                    {
     
 
@@ -203,7 +211,7 @@ export class Helper {
                        //get entries for the gene symbol of the current col
                        for (let entry of response) {
                         // console.log(row.cells[1].textContent)
-                         if(entry.gene['gene_symbol'] == row.cells[1].textContent ){
+                         if(entry.gene['gene_symbol'] == row.cells[count].textContent ){
                          
                           path.setAttribute("id","pathway");
                           path.setAttribute("class","btn btn-outline-primary");
@@ -279,8 +287,9 @@ export class Helper {
             var td = document.createElement("td");
                 
             if(col.textContent == 'hallmark')
-            { col.parentNode.replaceChild(div,col)
-               if(row.cells[2].textContent != "-")
+            { 
+              //col.parentNode.replaceChild(div,col)
+               if(row.cells[count].textContent != "-")
                {
 
                  var hallmark=document.createElement("p");           
@@ -292,7 +301,7 @@ export class Helper {
                    //get entries for the gene symbol of the current col
                    for (let entry of response) {
                     // console.log(row.cells[1].textContent)
-                     if(entry.gene['gene_symbol'] == row.cells[1].textContent )
+                     if(entry.gene['gene_symbol'] == row.cells[count].textContent )
                       hallmark_string += entry.hallmark + ', '
                      }
                    
@@ -305,8 +314,9 @@ export class Helper {
                       }
                //  console.log(hallmark.textContent)
                  td.appendChild(hallmark);
-                 
-                 div.parentNode.replaceChild(hallmark, div);
+                 col.parentNode.replaceChild(td, col);
+
+               //  div.parentNode.replaceChild(hallmark, div);
                 }
              else
              {
@@ -360,7 +370,7 @@ export class Helper {
               var td = document.createElement("td");
               if(col.textContent == 'go')
               {
-                if(row.cells[1].textContent != "-")
+                if(row.cells[count].textContent != "-")
                 {
                   var button_count=1  //if more than 12 go buttons exist, the show more button is used data-toggle="collapse"
                   var go_button=document.createElement("a");           
@@ -370,20 +380,20 @@ export class Helper {
                     go_button.setAttribute("data-toggle","collapse")
                     go_button.setAttribute("style","margin:10px")
                     go_button.textContent="Show more"
-                    go_button.setAttribute("data-target","#collapseButtons"+row.cells[1].textContent)
+                    go_button.setAttribute("data-target","#collapseButtons"+row.cells[count].textContent)
                     go_button.setAttribute("aria-expanded","false")
                     go_button.setAttribute("aria-controls","collapseButtons")
 
                     var go_div = document.createElement("div")
                     go_div.setAttribute("class","collapse")
-                    go_div.setAttribute("id","collapseButtons"+row.cells[1].textContent)
+                    go_div.setAttribute("id","collapseButtons"+row.cells[count].textContent)
                   
                         
                     //button generieren
                     if(response.length >0 ){
                       for (var entry of response) 
                       {
-                        if(entry.gene['gene_symbol'] == row.cells[1].textContent )
+                        if(entry.gene['gene_symbol'] == row.cells[count].textContent )
                         {
                           var go=document.createElement("a");           
                           go.setAttribute("id","go")
@@ -482,7 +492,7 @@ export class Helper {
                       .search( this['value'])
                       .draw();
               }
-            $this.buildTable_GO_HM(datatable_id,1)
+            $this.buildTable_GO_HM(datatable_id)
           } 
          
           );
