@@ -70,7 +70,7 @@ export class Helper {
           if(el == "Gene Ontology"){
             th.setAttribute("style","min-width:250px")
           }else if(el == "Hallmarks"){
-            th.setAttribute("style","min-width: 200px")
+            th.setAttribute("style","min-width: 150px")
           }else if(el == "Gene Type" || el == "Gene Symbol"){
            // th.setAttribute("style","width: 110px;")
           }else if(el == "GeneCard"){
@@ -176,11 +176,37 @@ export class Helper {
        //fill array for api request
       for (var i = 0, row; row = table.rows[i]; i++) {
         //iterate through rows
-     
+        var tr = document.createElement("tr");
+        var td = document.createElement("td");
           if(!gene_symbols.includes( row.cells[count].textContent) && row.cells[count].textContent != "-" && row.cells[count].textContent !== "" && row.cells[count].textContent !== "Gene Symbol"){
           gene_symbols.push( row.cells[count].textContent)
         }
+        if(row.cells[9].textContent=='genecard'){
+          var path=document.createElement("a");
+          path.setAttribute("id","genecard");
+          path.setAttribute("class","btn btn-outline-primary");
         
+          path.setAttribute("target","_blank");
+          if(row.cells[count].textContent != '-'){
+          
+          path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+row.cells[count].textContent);
+          
+          path.textContent="GeneCard for "+row.cells[count].textContent;
+        
+          }else{
+            path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+row.cells[count-1].textContent);
+          
+            path.textContent="GeneCard for "+row.cells[count-1].textContent;
+            //td.appendChild(document.createTextNode("-"));
+          }
+
+          td.appendChild(path);
+       //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
+        
+  
+       row.cells[9].parentNode.replaceChild(td, row.cells[9]);
+
+      }
      }
 
      this.controller.get_WikiPathway({
