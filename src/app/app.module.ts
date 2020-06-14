@@ -13,6 +13,7 @@ import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
 import { AutosizeModule } from 'ngx-autosize';
 import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
+import { DownloadComponent } from './components/download/download.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
     BrowseComponent,
     MoreComponent,
     CreditsComponent,
-    TutorialComponent
+    TutorialComponent,
+    DownloadComponent
   ],
   imports: [
     BrowserModule,
