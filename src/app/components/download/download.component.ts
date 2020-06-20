@@ -34,7 +34,7 @@ export class DownloadComponent implements OnInit {
           </tr>
           `)
         }else{
-          $('#dataset_download_table').append(
+       /*   $('#dataset_download_table').append(
             `
             <tr>
               <td class="full-width">
@@ -46,7 +46,7 @@ export class DownloadComponent implements OnInit {
                 </a>
               </td>
             </tr>
-            `)
+            `) */
         }
         }
       }
