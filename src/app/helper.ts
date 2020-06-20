@@ -107,7 +107,7 @@ export class Helper {
                 td.appendChild(document.createTextNode("-"));
               } 
             } */
-            if(el[o] == 'genecard'){
+         /**   if(el[o] == 'genecard'){
               var path=document.createElement("a");
               path.setAttribute("id","genecard");
               path.setAttribute("class","btn btn-outline-primary");
@@ -129,12 +129,13 @@ export class Helper {
               td.appendChild(path);
            //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
             
-            }
-       else{
+            } 
+       else{*/
              
               td.appendChild(document.createTextNode(el[o]))
               
-            }
+            //}
+            
             tr.appendChild(td);
           }
           
@@ -150,6 +151,7 @@ export class Helper {
 
       public buildTable_GO_HM(table_id) {
        let count =0
+       let cardcount=0
         let div= document.createElement('div')
         div.setAttribute("class","full-width text-center")
         let spinner = document.createElement('div')
@@ -162,7 +164,8 @@ export class Helper {
         //alle gene ids holen um eine api anfrage zu machen
      var table = document.getElementById(table_id) as HTMLTableElement;
       
-    
+    let x = table.rows[0].cells.length
+    console.log(x)
      for (var i = 0, row; row = table.rows[i]; i++) {
       //iterate through rows
     
@@ -173,6 +176,7 @@ export class Helper {
         }
       }
     }
+    console.log("Count "+count)
        //fill array for api request
       for (var i = 0, row; row = table.rows[i]; i++) {
         //iterate through rows
@@ -181,7 +185,9 @@ export class Helper {
           if(!gene_symbols.includes( row.cells[count].textContent) && row.cells[count].textContent != "-" && row.cells[count].textContent !== "" && row.cells[count].textContent !== "Gene Symbol"){
           gene_symbols.push( row.cells[count].textContent)
         }
-        if(row.cells[9].textContent=='genecard'){
+     
+    
+        if(row.cells[x-2].textContent == 'genecard'){
           var path=document.createElement("a");
           path.setAttribute("id","genecard");
           path.setAttribute("class","btn btn-outline-primary");
@@ -204,8 +210,8 @@ export class Helper {
        //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
         
   
-       row.cells[9].parentNode.replaceChild(td, row.cells[9]);
-
+       row.cells[x-2].parentNode.replaceChild(td, row.cells[x-2]);
+        
       }
      }
 
@@ -215,7 +221,7 @@ export class Helper {
           //get corresponding pathway col
           for (var i = 0, row; row = table.rows[i]; i++) {
             //iterate through rows
-              let col = row.cells[count+6]
+              let col = row.cells[x-3]
             
                 
                 var td = document.createElement("td");
@@ -306,7 +312,7 @@ export class Helper {
         //iterate through rows
            var tr = document.createElement("tr");
           
-            let col = row.cells[count+5]
+            let col = row.cells[x-4]
             var td = document.createElement("td");
                 
             if(col.textContent == 'hallmark')
@@ -381,15 +387,15 @@ export class Helper {
         gene_symbol: gene_symbols,
         callback: (response) => {
          
-      console.log(response)
+    //  console.log(response)
          //get corresponding hallmark col
          for (var i = 0, row; row = table.rows[i]; i++) {
           //iterate through rows
              var tr = document.createElement("tr");
-             let col = row.cells[count+8]
+             let col = row.cells[x-1]
               
               var td = document.createElement("td");
-              if(col.textContent == 'go')
+              if(col.textContent == "go")
               {
                 if(row.cells[count].textContent != "-")
                 {
