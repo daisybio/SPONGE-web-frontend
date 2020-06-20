@@ -89,54 +89,9 @@ export class Helper {
           var tr = document.createElement("tr");
           for (var o in el) {  
             var td = document.createElement("td");
-           
-           /** if(el[o] == 'pathway'){
-              if(el['Gene Symbol'] != '-'){
-              var path=document.createElement("a");
-              path.setAttribute("id","pathway");
-              path.setAttribute("class","btn btn-outline-primary");
-              
-              path.setAttribute("href",'https://www.wikipathways.org/index.php?query='+el['Gene Symbol']+'&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query');
-              path.setAttribute("value","Pathway");
-              path.setAttribute("target","_blank");
-              path.textContent="WikiPathways";
-              td.appendChild(path);
-            //  $("#pathway").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
-             // tr.appendChild(path);
-              }else{
-                td.appendChild(document.createTextNode("-"));
-              } 
-            } */
-         /**   if(el[o] == 'genecard'){
-              var path=document.createElement("a");
-              path.setAttribute("id","genecard");
-              path.setAttribute("class","btn btn-outline-primary");
-            
-              path.setAttribute("target","_blank");
-              if(el['Gene Symbol'] != '-'){
-              
-              path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['Gene Symbol']);
-              
-              path.textContent="GeneCard for "+el['Gene Symbol'];
-            
-              }else{
-                path.setAttribute("href",'https://www.genecards.org/cgi-bin/carddisp.pl?gene='+el['ENSG Number']);
-              
-                path.textContent="GeneCard for "+el['ENSG Number'];
-                //td.appendChild(document.createTextNode("-"));
-              }
-
-              td.appendChild(path);
-           //   $("#genecard").html("<button type='button' class='btn btn-outline-primary' onclick='location.href='#''></button>");
-            
-            } 
-       else{*/
-             
+          
               td.appendChild(document.createTextNode(el[o]))
-              
-            //}
-            
-            tr.appendChild(td);
+              tr.appendChild(td);
           }
           
           tbody.appendChild(tr);  
@@ -151,21 +106,22 @@ export class Helper {
 
       public buildTable_GO_HM(table_id) {
        let count =0
-       let cardcount=0
+      
         let div= document.createElement('div')
         div.setAttribute("class","full-width text-center")
         let spinner = document.createElement('div')
         spinner.setAttribute("class","spinner-border spinner")
         div.appendChild(spinner)
-     //   let id = table_id.toString();
         let gene_symbols =[] //list with gene names for api request
         
         //get table and append go and hallmark wird vor aufheben des spinners aufgehoben
         //alle gene ids holen um eine api anfrage zu machen
      var table = document.getElementById(table_id) as HTMLTableElement;
       
+    //length of the rows. Because the tables have a diff number of elements btw gene symbol and the last element in browse and search,
+    // the additional elements are appended from behind 
     let x = table.rows[0].cells.length
-    console.log(x)
+    
      for (var i = 0, row; row = table.rows[i]; i++) {
       //iterate through rows
     
@@ -176,12 +132,10 @@ export class Helper {
         }
       }
     }
-    console.log("Count "+count)
+
        //fill array for api request
       for (var i = 0, row; row = table.rows[i]; i++) {
-        //iterate through rows
-        var tr = document.createElement("tr");
-        var td = document.createElement("td");
+          var td = document.createElement("td");
           if(!gene_symbols.includes( row.cells[count].textContent) && row.cells[count].textContent != "-" && row.cells[count].textContent !== "" && row.cells[count].textContent !== "Gene Symbol"){
           gene_symbols.push( row.cells[count].textContent)
         }
@@ -230,12 +184,6 @@ export class Helper {
                 { 
                    if(row.cells[count].textContent != "-")
                    {
-    
-
-                    
-                    // var pathway=document.createElement("p");           
-                     //pathway.setAttribute("id","pathway"+row.cells[1].textContent)
-            
                      var path=document.createElement("a");
                      if(response.length>0)
                      {
@@ -252,7 +200,6 @@ export class Helper {
                           path.setAttribute("target","_blank");
                           path.textContent="WikiPathways";
                           
-                     
                           }
                          }
                        
@@ -261,7 +208,7 @@ export class Helper {
                       if(path.textContent == ""){
                         path.textContent = "No pathway associated for gene of interest!"
                           }
-                   //  console.log(hallmark.textContent)
+                  
                      td.appendChild(path);
                      
                      col.parentNode.replaceChild(td, col);
@@ -272,17 +219,14 @@ export class Helper {
                    col.parentNode.replaceChild(td, col);
                  }
     
-                }
-              
-      
+                }   
     }
   },error:(err) =>{
-    //if the respose is empty because all gene names are - 
-            //get corresponding hallmark col
+    //if the response is empty because all gene names are - 
             for (var i = 0, row; row = table.rows[i]; i++) {
               //iterate through rows
                  var tr = document.createElement("tr");
-                 let col = row.cells[count+6]
+                 let col = row.cells[x-3]
                   
                   var td = document.createElement("td");
                       
@@ -295,7 +239,6 @@ export class Helper {
                      
                      }
                     
-             // hallmark.textContent = err
               }}
 
 }         )    
@@ -317,7 +260,7 @@ export class Helper {
                 
             if(col.textContent == 'hallmark')
             { 
-              //col.parentNode.replaceChild(div,col)
+              
                if(row.cells[count].textContent != "-")
                {
 
@@ -358,11 +301,11 @@ export class Helper {
        }}, error:(err) =>{
                
                   //if the respose is empty because all gene names are - 
-                  //get corresponding hallmark col
+            
                   for (var i = 0, row; row = table.rows[i]; i++) {
                     //iterate through rows
                        var tr = document.createElement("tr");
-                       let col = row.cells[count+5]
+                       let col = row.cells[x-4]
                         
                         var td = document.createElement("td");
                             
@@ -387,10 +330,9 @@ export class Helper {
         gene_symbol: gene_symbols,
         callback: (response) => {
          
-    //  console.log(response)
-         //get corresponding hallmark col
+   
          for (var i = 0, row; row = table.rows[i]; i++) {
-          //iterate through rows
+        
              var tr = document.createElement("tr");
              let col = row.cells[x-1]
               
@@ -469,19 +411,16 @@ export class Helper {
           
       }
     }, error:(err) =>{
-          //if the respose is empty because all gene names are - 
-                  //get corresponding hallmark col
+         
                   for (var i = 0, row; row = table.rows[i]; i++) {
-                    //iterate through rows
+                    
                        var tr = document.createElement("tr");
-                       let col = row.cells[count+8]
+                       let col = row.cells[x-1]
                         
                         var td = document.createElement("td");
                             
                         if(col.textContent == 'go')
                         { 
-            
-                          
                            td.appendChild(document.createTextNode("-"));
                            col.parentNode.replaceChild(td, col);
                            
