@@ -20,34 +20,20 @@ export class DownloadComponent implements OnInit {
       data => {
         for (const dataset of data) {
           if(dataset['disease_name'] != "Ovarian Cancer AU"){
-          $('#dataset_download_table').append(
-          `
-          <tr>
-            <td class="full-width">
-              <i class=""></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
-            </td>
-            <td class="">
-              <a href="https://exbio.wzw.tum.de/sponge-files/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
-                  Download
-              </a>
-            </td>
-          </tr>
-          `)
-        }else{
-       /*   $('#dataset_download_table').append(
+            $('#dataset_download_table').append(
             `
             <tr>
               <td class="full-width">
                 <i class=""></i> ${helper.uppercaseFirstLetter(dataset['disease_name'])}
               </td>
-              <td class="text-center">
-                <a >
-                    No data available
+              <td class="">
+                <a href="https://exbio.wzw.tum.de/sponge-files/${dataset['disease_name'].split(' ').join('_')}.zip" class="btn btn-primary link-button">
+                    Download
                 </a>
               </td>
             </tr>
-            `) */
-        }
+            `)
+          }
         }
       }
     )
