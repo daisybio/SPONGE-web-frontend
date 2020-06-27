@@ -988,7 +988,6 @@ export class SearchComponent implements OnInit {
           rowse_to_append.push(Object.values(obj))
         });
         $('#'+table_id).DataTable().rows.add(rowse_to_append).draw()
-        helper.buildTable_GO_HM(table_id)
         
       } else {
         /************* TABLE DOES NOT EXIST YET, CREATE IT ****************/
@@ -1014,6 +1013,8 @@ export class SearchComponent implements OnInit {
           table_id,
           Object.keys(parsed_search_result['diseases'][disease][0])
         )
+        // helper.buildTable_GO_HM(table_id)
+
         
         // this line also removes the loading spinner
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
@@ -1064,7 +1065,7 @@ export class SearchComponent implements OnInit {
           ],
           orderCellsTop: true,
           responsive : true,
-          scrollX:  true,
+          // scrollX:  true,
      
           drawCallback: function( settings ) {
             var api = this.api();
@@ -1103,7 +1104,6 @@ export class SearchComponent implements OnInit {
 
         table = $("#" + table_id).DataTable(datatable_settings)
 
-        helper.colSearch(table_id, table, first_col_hidden)
   
         $(`
         #mscor_min_${table_id},
@@ -1115,27 +1115,29 @@ export class SearchComponent implements OnInit {
         `).keyup(() => {
           table.draw()
         })
-        helper.buildTable_GO_HM(table_id)
+        // helper.buildTable_GO_HM(table_id)
+
         // make rows selectable
         $('#' + table_id + ' tbody').on('click', 'tr', function () {
           $(this).toggleClass('selected');
         })
+        helper.colSearch(table_id, table, first_col_hidden)
 
         // automatically load new entries over API when last+1 page is reached
-        $(document).on('click', "#" + table_id + '_next', function () {
-          let info = $("#" + table_id).DataTable().page.info()
-          // we reached the last page and want to load the next page IF there is still more to load
-          if ((info.pages-1 == info.page) && (info.recordsTotal % limit == 0)) {
-            load_interactions(disease, table_id, info.recordsTotal)
+        // $(document).on('click', "#" + table_id + '_next', function () {
+        //   let info = $("#" + table_id).DataTable().page.info()
+        //   // we reached the last page and want to load the next page IF there is still more to load
+        //   if ((info.pages-1 == info.page) && (info.recordsTotal % limit == 0)) {
+        //     load_interactions(disease, table_id, info.recordsTotal)
             
-          }
-          helper.buildTable_GO_HM(table_id)
-        });
+        //   }
+        //   helper.buildTable_GO_HM(table_id)
+        // });
 
-        $(document).on('click', "#" + table_id + '_paginate', function () {
+        // $(document).on('click', "#" + table_id + '_paginate', function () {
 
-          helper.buildTable_GO_HM(table_id)
-        });
+        //   helper.buildTable_GO_HM(table_id)
+        // });
   
         // mark rows in datatable (and thus later in network) if we restore old session
         if (url_storage) {
@@ -1178,6 +1180,7 @@ export class SearchComponent implements OnInit {
           
         }
         helper.buildTable_GO_HM(table_id)
+        
 
 /* 
         // start adding miRNAs

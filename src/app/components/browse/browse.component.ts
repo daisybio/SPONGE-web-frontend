@@ -177,7 +177,9 @@ export class BrowseComponent implements OnInit {
     }else{
       $(this).closest('#show_more').text("Show more")
     }
-      
+
+    // click on show more should not add class selected (or remove it)
+    $(this).closest('tr').toggleClass('selected')
     })
 
      //load further hallmarks and gos
@@ -465,10 +467,11 @@ export class BrowseComponent implements OnInit {
               ],
               
               responsive:true,
-              scrollX:  true,
+              // scrollX:  true,
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
               order: [[ order_by, order_by_asc_des ]]
-            }); 
+            });
+            edge_table.draw() 
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
             } ); 
@@ -1035,6 +1038,7 @@ export class BrowseComponent implements OnInit {
       var index_eigenvector = column_names.indexOf('Eigenvector');
       $("#interactions-nodes-table-container").append(helper.buildTable(ordered_data,'interactions-nodes-table', column_names))
       helper.buildTable_GO_HM('interactions-nodes-table')
+
       const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
       const disease_name = $('#disease_selectpicker').val()
       const filename = `SPONGE Genes ${disease_name} ${search_key}`
@@ -1070,8 +1074,10 @@ export class BrowseComponent implements OnInit {
         ],
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
         responsive:true,
-        scrollX:  true,
+        // scrollX:  true,
       });
+      node_table.draw()
+
       $('#interactions-nodes-table div').append("<button class='export_nodes_enrichment btn btn-primary button-margin' style='float: left;'>Gene Set Enrichment Analysis<br> (external)</button>")
 
       // colsearch for table

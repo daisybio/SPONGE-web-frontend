@@ -209,7 +209,7 @@ export class Helper {
                       }
                      
                       if(path.textContent == ""){
-                        path.textContent = "No pathway associated for gene of interest!"
+                        path.textContent = "-"
                           }
                   
                      td.appendChild(path);
@@ -284,7 +284,7 @@ export class Helper {
                   if(hallmark_string != ""){
                         hallmark.textContent = hallmark_string.slice(0,-2)
                   }else{
-                        hallmark.textContent = "No hallmark associated for gene of interest!"
+                        hallmark.textContent = "-"
                       }
                  td.appendChild(hallmark);
                  col.parentNode.replaceChild(td, col);
