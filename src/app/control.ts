@@ -57,7 +57,6 @@ export class Controller {
             }
             
             request += "searchString="+config.searchString
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -98,7 +97,6 @@ export class Controller {
             if (config.minCountSign != undefined) {
                 request += "&minCountSign="+config.minCountSign
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -127,7 +125,6 @@ export class Controller {
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -164,7 +161,6 @@ export class Controller {
             if (config.between != undefined) {
                 request += "&between="+config.between
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -209,7 +205,6 @@ export class Controller {
             if (config.information != undefined) {
                 request += "&information="+config.information
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -240,7 +235,6 @@ export class Controller {
             if (config.gene_symbol != undefined) {
                 request += "&gene_symbol="+config.gene_symbol
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -290,7 +284,6 @@ export class Controller {
             if (config.offset != undefined) {
                 request += "&offset="+config.offset
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -339,7 +332,6 @@ export class Controller {
             if (config.pValueDirection != undefined) {
                 request += "&pValueDirection="+config.pValueDirection
             }
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -404,7 +396,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -446,7 +437,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -492,7 +482,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -530,7 +519,6 @@ export class Controller {
         if (config.offset != undefined) {
             request += "&offset="+config.offset
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return config.callback(response)                
@@ -546,7 +534,6 @@ export class Controller {
         if (disease_name != undefined) {
             request += "?disease_name="+disease_name
         }
-        console.log(request)
         $.getJSON(request,
             response => {
                 return callback(response)
@@ -577,7 +564,6 @@ export class Controller {
         })
         {
             let request = Controller.API_ENDPOINT+Controller.OVERALL_COUNTS
-            console.log(request)
             $.getJSON(request,
                 response => {
                     return config.callback(response)
@@ -603,7 +589,6 @@ export class Controller {
                     if (config.gene_symbol != undefined) {
                         request += "&gene_symbol="+config.gene_symbol
                     }
-                    console.log(request)
                     $.getJSON(request,
                         response => {
                             return config.callback(response)
@@ -629,7 +614,6 @@ export class Controller {
                 if (config.gene_symbol != undefined) {
                     request += "&gene_symbol="+config.gene_symbol
                 }
-                //console.log(request)
                 $.getJSON(request,
                     response => {
                         return config.callback(response)
@@ -658,7 +642,6 @@ export class Controller {
                         if (config.gene_symbol != undefined) {
                             request += "&gene_symbol="+config.gene_symbol
                         }
-                        //console.log(request)
                         $.getJSON(request,
                             response => {
                                 return config.callback(response)

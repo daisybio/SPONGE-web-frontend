@@ -52,6 +52,10 @@ export class Helper {
       0.05: '#ff9421'//'#bf8c40'//'#c94503'
     }
 
+    // we want to mark up to 2 nodes or edges as hovered for comparison
+    active_nodes = []
+    active_edges = []
+
     active_kmp_plots = [] // stores ensg numbers of active kmp plots to avoid duplicates
 
     controller = new Controller()
@@ -189,7 +193,6 @@ export class Helper {
                      {
                        //get entries for the gene symbol of the current col
                        for (let entry of response) {
-                        // console.log(row.cells[1].textContent)
                          if(entry.gene['gene_symbol'] == row.cells[count].textContent ){
                          
                           path.setAttribute("id","pathway");
@@ -272,7 +275,6 @@ export class Helper {
                  {
                    //get entries for the gene symbol of the current col
                    for (let entry of response) {
-                    // console.log(row.cells[1].textContent)
                      if(entry.gene['gene_symbol'] == row.cells[count].textContent )
                       hallmark_string += entry.hallmark + ', '
                      }
@@ -284,7 +286,6 @@ export class Helper {
                   }else{
                         hallmark.textContent = "No hallmark associated for gene of interest!"
                       }
-               //  console.log(hallmark.textContent)
                  td.appendChild(hallmark);
                  col.parentNode.replaceChild(td, col);
 
@@ -532,11 +533,7 @@ export class Helper {
           ordered_genes.forEach((ensg_number) => {
             ordered_genes[ensg_number];
           });
-          //          console.log(ordered_genes[ordered_genes.length-1].split(' ').join('<br>'))
-          
-          
-         
-          
+            
           for(let sample_ID in seen_sample_ids) {
             let genes_values = seen_sample_ids[sample_ID]
             let l = []
@@ -548,9 +545,6 @@ export class Helper {
           }
           
           let sample_names =ordered_genes.map(e => name_mapper[e])
-          
-         
-         // sample_names[sample_names.length-1]= sample_names[sample_names.length-1].split(' ').join('<br>')
        
           var data = [
             {
@@ -651,8 +645,6 @@ export class Helper {
               // add ens number to list so we know it is currently active
               this.active_kmp_plots.push(response[0].gene.ensg_number)
             }
-
-
             
           mean_se= this.parse_survival_data(response,seen_time_mean);
           
@@ -751,15 +743,7 @@ export class Helper {
                 }
               }
                 
-                let n = censored_0.length; //hier ist ein tod eingetreten 
-                let vorherSE=1; // alle SE die bis zu einen Event passiert sind für die Multiplikation 
-              //  if(SE_array.length>0){
-              /// for(let v=0; v< SE_array.length;v++){
-                // vorherSE *= SE_array[v];
-              // }
-             // }
-
-              // var estimate = vorherSE*(1-(n/bigger_equal_time)); //geteilt durch alle größer gleich der aktuellen zeit
+              let n = censored_0.length; //hier ist ein tod eingetreten 
             
               var estimate = last_estimate*(1-(n/bigger_equal_time));
               last_estimate = estimate;
@@ -775,7 +759,6 @@ export class Helper {
      {       
        
        // Plotly.purge('myDiv_'+gene_name); $('#network-plot-container').val().toString()
-       console.log(response.gene.gene_symbol)
        var genename
        var ensg
        if(response.gene.gene_symbol == null){
@@ -924,11 +907,7 @@ export class Helper {
       $('#network_search_node').append(edge_options)
 
       $('#network_search_node').selectpicker()
-      console.log('NODESSSSSSSS')
-      console.log(nodes)
 
-      console.log('EDGESS')
-      console.log(edges)
       let graph = {
         nodes: nodes,
         edges: edges
@@ -951,8 +930,8 @@ export class Helper {
             borderSize: 1.5,  
             outerBorderSize: 1.5,
             enableEdgeHovering: true,
-            edgeHoverColor: this.hover_edge_color,
-            defaultEdgeHoverColor: this.hover_edge_color, //'#2ecc71', helles grün 
+            edgeHoverColor: this.default_edge_color, // just make edges bigger on hover, change color on click
+            defaultEdgeHoverColor: this.default_edge_color, //'#2ecc71', helles grün 
             edgeHoverSizeRatio: 1.5,
             nodeHoverSizeRatio: 1.5,
             edgeHoverExtremities: true,
@@ -963,8 +942,6 @@ export class Helper {
         }
       )
       
-       
-
       let session = new Session(network)
 
       var noverlap_config = {
@@ -978,111 +955,101 @@ export class Helper {
 
       network.addCamera('cam1')
 
-      network.bind('outNode', (e) => {
-        // hide node information
-        if (!$('#node_information').hasClass('hidden')) {
-          $('#node_information').addClass('hidden')
-        }
-      })
+      // network.bind('outNode', (e) => {
+      //   // hide node information
+      //   if (!$('#node_information').hasClass('hidden')) {
+      //     $('#node_information').addClass('hidden')
+      //   }
+      // })
 
       network.bind('overNode', (e) => {
         // events: overNode outNode clickNode doubleClickNode rightClickNode
         // e.data.node.color = $this.hover_node_color
         // load the node information for window on the side
-        let data = JSON.parse($('#node_data').text())
-        for (let entry in data) {
-          if (data[entry]['ENSG Number'] == e.data.node.id) {
-            // build a table to display json
-            let table = "<table class='table table-striped table-hover'>"
-            for (let attribute in data[entry]) {
-              if(!(attribute == 'Hallmarks' || attribute == 'Gene Ontology'|| attribute == 'GeneCard' || attribute == 'Pathway')){
-              let row = "<tr>"
-              row += "<td>"+attribute+": </td>"
-              row += "<td>"+data[entry][attribute]+"</td>"
-              row += "</tr>"
-              table += row
-              }
-            }
-            table += "</table>"
-            $('#node_information_content').html(table)
-            // unhide node information 
-            if ($('#node_information').hasClass('hidden')) {
-              $('#node_information').removeClass('hidden')
-            }
-            // hide edge information
-            if (!$('#edge_information').hasClass('hidden')) {
-              $('#edge_information').addClass('hidden')
-            }
-            break
-          }
-        }
+        
       });
 
-      network.bind('outEdge', (e) => {  
-        // hide edge information
-        if (!$('#edge_information').hasClass('hidden')) {
-          $('#edge_information').addClass('hidden')
-        }
-      })
+      // network.bind('outEdge', (e) => {  
+      //   // hide edge information
+      //   if (!$('#edge_information').hasClass('hidden')) {
+      //     $('#edge_information').addClass('hidden')
+      //   }
+      // })
 
-      network.bind('overEdge', (e) => {
+      network.bind('clickEdge', (e) => {
         // e.data.edge.color = $this.hover_edge_color
-        let data = JSON.parse($('#edge_data').text())
-        for (let entry in data) {
-          if (data[entry]['ID'] == e.data.edge.id) {
-            // build a table to display json
-            let table = "<table class='table table-striped table-hover'>"
-            for (let attribute in data[entry]) {
-              let row = "<tr>"
-              row += "<td>"+attribute+": </td>"
-              row += "<td>"+data[entry][attribute]+"</td>"
-              row += "</tr>"
-              table += row
-            }
+        if ($(`#edge_information_content .${e.data.edge.id}`).length) {
+          e.data.edge.color = this.default_edge_color
+          $(`#edge_information_content .${e.data.edge.id}`).remove()
+        } else {
+          e.data.edge.color = this.hover_edge_color
+          let data = JSON.parse($('#edge_data').text())
+          for (let entry in data) {
 
-            // loading spinner for mirna
-            const id = data[entry]["Gene 1"]+'_'+data[entry]["Gene 2"]
-            table += `<tr><td>miRNAs: </td><td class="mirna-entry" id="${id}"><div class="spinner-border spinner"></div></td></tr>`
-
-            table += "</table>"
-            $('#edge_information_content').html(table)
-            // unhide edge information 
-            if ($('#edge_information').hasClass('hidden')) {
-              $('#edge_information').removeClass('hidden')
-            }
-
-            // load and append mirna data
-            this.controller.get_miRNA_by_ceRNA({
-              disease_name: selected_disease,
-              ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
-              between: true,
-              callback: (response) => {
-                // there can be duplicates
-                let mirnas = {}
-                for (let entry of response) {
-                  mirnas[entry.mirna.mir_ID] = true
-                }
-
-
-                let mirnas_string = ''
-                for (let entry of Object.keys(mirnas)) {
-                  mirnas_string += entry + ', '
-                }
-            
-                $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
-              },
-              error: () => {
-                $('#edge_information #'+id).html('-')
+            if (data[entry]['ID'] == e.data.edge.id) {
+              // build a table to display json
+              let table = `<table class='table table-striped table-hover '>`
+              for (let attribute in data[entry]) {
+                let row = "<tr>"
+                row += "<td>"+attribute+": </td>"
+                row += "<td>"+data[entry][attribute]+"</td>"
+                row += "</tr>"
+                table += row
               }
-            })
+  
+              // loading spinner for mirna
+              const id = data[entry]["Gene 1"]+'_'+data[entry]["Gene 2"]
+              table += `<tr><td>miRNAs: </td><td class="mirna-entry" id="${id}"><div class="spinner-border spinner"></div></td></tr>`
+  
+              table += "</table>"
 
-            // hide node information
-            if (!$('#node_information').hasClass('hidden')) {
-              $('#node_information').addClass('hidden')
+              $('#edge_information_content').append(
+                `<div class="card ${e.data.edge.id}">
+                  <div class="card-body">
+                    ${table}
+                  </div>
+                </div>`
+                )
+              
+              // load and append mirna data
+              this.controller.get_miRNA_by_ceRNA({
+                disease_name: selected_disease,
+                ensg_number: [data[entry]["Gene 1"], data[entry]["Gene 2"]],
+                between: true,
+                callback: (response) => {
+                  // there can be duplicates
+                  let mirnas = {}
+                  for (let entry of response) {
+                    mirnas[entry.mirna.mir_ID] = true
+                  }
+  
+                  let mirnas_string = ''
+                  for (let entry of Object.keys(mirnas)) {
+                    mirnas_string += entry + ', '
+                  }
+              
+                  $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
+                },
+                error: () => {
+                  $('#edge_information #'+id).html('-')
+                }
+              })
+              break
+  
             }
-            break
           }
         }
+        // unhide edge information 
+        if ($('#edge_information').hasClass('hidden')) {
+          $('#edge_information').removeClass('hidden')
+        }
+    
+        // hide node information
+        if (!$('#node_information').hasClass('hidden')) {
+          $('#node_information').addClass('hidden')
+        }
+
+        network.refresh()
       })
 
       // network.bind('outEdge', (ee) => { 
@@ -1102,7 +1069,6 @@ export class Helper {
             clickNode_clicked = false
           }, 500)
         }
-
       })
 
       function nodeDoubleClick(e) {
@@ -1135,8 +1101,8 @@ export class Helper {
 
       function nodeSingleClick(e) {
         /*
-        removes everything but neighborhood
-        this function alters the network, hence triggers url update
+        marks the node as clicked (by color)
+        loads KMP plot for node
         */
        var nodeId = e.data.node.id;
 
@@ -1164,7 +1130,45 @@ export class Helper {
        // load KMP
        $this.load_KMP(session.get_selected()['nodes'],nodeId,selected_disease) 
      
+       // remove data if node was unselected
+       if ($(`#node_information_content .${e.data.node.id}`).length) {
+        $(`#node_information_content .${e.data.node.id}`).remove()
+       } else {
+        // show information for clicked node
+        let data = JSON.parse($('#node_data').text())
+        for (let entry in data) {
+          if (data[entry]['ENSG Number'] == e.data.node.id) {
+            // build a table to display json
+            let table = `<table class='table table-striped table-hover'>`
+            for (let attribute in data[entry]) {
+              if(!(attribute == 'Hallmarks' || attribute == 'Gene Ontology'|| attribute == 'GeneCard' || attribute == 'Pathway')){
+              let row = "<tr>"
+              row += "<td>"+attribute+": </td>"
+              row += "<td>"+data[entry][attribute]+"</td>"
+              row += "</tr>"
+              table += row
+              }
+            }
+            table += "</table>"
 
+            $('#node_information_content').append(
+              `<div class="card ${e.data.node.id}">
+                <div class="card-body">
+                  ${table}
+                </div>
+              </div>`
+              )
+            }
+          }
+        }
+        // unhide node information 
+        if ($('#node_information').hasClass('hidden')) {
+          $('#node_information').removeClass('hidden')
+        }
+        // hide edge information
+        if (!$('#edge_information').hasClass('hidden')) {
+          $('#edge_information').addClass('hidden')
+        }
       }
 
       function searchNode(node_as_string) {
@@ -1221,9 +1225,9 @@ export class Helper {
           }
         );
 
-        setTimeout( () => {
-          node.hover()
-        }, 400)
+        // setTimeout( () => {
+        //   node.hover()
+        // }, 400)
         // mark node in node table
         if (node_table) {
           $this.mark_nodes_table(node_table, node_as_string)
@@ -1713,15 +1717,8 @@ export class Helper {
           for (let entry of response) {
             hallmark_string += entry.hallmark + ', '
           }
-      
 
           $('#hallmark'+ensg).innerHTML=hallmark_string.slice(0,-2)
-        
-   //   $('#hallmark-'+ensg).html(hallmark_string.slice(0,-2))
-   
-         // $('#hallmark').html('No hallmark associated')
-        
-         // $('#edge_information #'+id).html(mirnas_string.slice(0,-2))  // remove ', '
       
         }, error:(err) =>{
          // $('#hallmark-'+ensg).html(err)

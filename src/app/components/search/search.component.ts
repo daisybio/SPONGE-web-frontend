@@ -340,7 +340,7 @@ export class SearchComponent implements OnInit {
             };
             let pie_chart_header = $('<h3>').text(`Significant interactions of ${search_key}`)
             if ($('#significant_results').is(':checked')) {
-              pie_chart_header.append(' with p-value < 0.05')
+              pie_chart_header.append(' with adjusted p-value < 0.05')
             }
             // remove possible old plot
             
@@ -568,7 +568,7 @@ export class SearchComponent implements OnInit {
         }
         let x = helper.getRandomInt(10);
         let y = helper.getRandomInt(10);
-        let size = parseFloat(nodes_data[gene]['p-value']);
+        let size = parseFloat(nodes_data[gene]['adjusted p-value']);
         let color = helper.default_node_color;
         nodes.push({id, label, x, y , size, color})
 
@@ -611,7 +611,7 @@ export class SearchComponent implements OnInit {
             ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
             ordered_entry['Correlation'] = entry['correlation']
             ordered_entry['MScor'] = entry['mscor']
-            ordered_entry['p-value'] = entry['p_value']
+            ordered_entry['adjusted p-value'] = entry['p_value']
             ordered_entry['ID'] = i
             ordered_data.push(ordered_entry)
           }
@@ -624,7 +624,7 @@ export class SearchComponent implements OnInit {
             let source = ordered_data[interaction]['Gene 1'];
             let target = ordered_data[interaction]['Gene 2'];
             let size = 100*ordered_data[interaction]['MScor'];
-            let color = helper.choose_edge_color(ordered_data[interaction]['p-value']);
+            let color = helper.choose_edge_color(ordered_data[interaction]['adjusted p-value']);
             //let type = 'line'//, curve
             edges.push({
               id: id,
@@ -693,7 +693,7 @@ export class SearchComponent implements OnInit {
           "</div>" +
           "<hr>" +
           "<div>" +
-          `<p>Set filter for P-value ${$this.pValue_current == pValue ? '<span class="info" >(Be aware that only signficant entries (<0.05) are displayed)</span>' : '' }</p>` +
+          `<p>Set filter for adjusted p-value ${$this.pValue_current == pValue ? '<span class="info" >(Be aware that only signficant entries (<0.05) are displayed)</span>' : '' }</p>` +
           "<span>Minimum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_min_" + table_id + "' name='pvalue_min'>&nbsp;" +
           "<span>Maximum: </span><input type='text' style='border-radius:10px; margin-right: 50px;' id='pvalue_max_" + table_id + "' name='pvalue_max'>" +
           "</div>" +
@@ -828,7 +828,7 @@ export class SearchComponent implements OnInit {
         }
 
         active_cancer_name = $(this).closest('.card').find('button').first().text()
-        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'adjusted p-value']
   
         // get data
         let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
@@ -895,7 +895,7 @@ export class SearchComponent implements OnInit {
         }
 
         active_cancer_name = $(this).closest('.card').find('button').first().text()
-        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'p-value']
+        let params_genes_keys = ['key', 'ensg_number', 'gene_symbol', 'gene_type', 'chromosome', 'correlation', 'mscor', 'adjusted p-value']
   
         // get data
         let nodes = parse_node_data(table.rows({ filter : 'applied'}).data(), params_genes_keys).map(function(node) {return node.id})
@@ -968,7 +968,7 @@ export class SearchComponent implements OnInit {
         interaction_info['Chromosome'] = interaction[gene_to_extract]['chromosome_name']
         interaction_info['Correlation'] = interaction['correlation']
         interaction_info['MScor'] = interaction['mscor']
-        interaction_info['p-value'] = interaction['p_value']
+        interaction_info['adjusted p-value'] = interaction['p_value']
         interaction_info['Hallmarks'] = 'hallmark'
         interaction_info['Pathway'] = 'pathway'
         interaction_info['GeneCard'] = 'genecard'

@@ -389,7 +389,7 @@ export class BrowseComponent implements OnInit {
               ordered_entry['Gene 2'] = entry['gene2']['ensg_number']
               ordered_entry['Correlation'] = entry['correlation']
               ordered_entry['MScor'] = entry['mscor']
-              ordered_entry['p-value'] = entry['p_value']
+              ordered_entry['adjusted p-value'] = entry['p_value']
               ordered_entry['ID'] = i
               ordered_data.push(ordered_entry)
             }
@@ -407,12 +407,12 @@ export class BrowseComponent implements OnInit {
             // find index positions from columns to round
             var index_correlation = column_names.indexOf('Correlation');
             var index_mscor = column_names.indexOf('MScor');
-            var index_p_value = column_names.indexOf('p-value');
+            var index_p_value = column_names.indexOf('adjusted p-value');
 
             // order by p-value or mscor
             let order_by
             let order_by_asc_des
-            if ($('#interactions_filter_by').val() == 'p-value') {
+            if ($('#interactions_filter_by').val() == 'adjusted p-value') {
               order_by = 4
               order_by_asc_des = 'asc'
             } else if ($('#interactions_filter_by').val() == 'Mscor') {

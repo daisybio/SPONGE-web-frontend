@@ -97,7 +97,7 @@
                                <td style="width: 95%; position: relative;"><p>Sort by: </p></td>
                                 <td style="width: 5%; position: relative;">
                                 <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by"  > 
-                                    <option data-value="p-value" selected>p-value</option>
+                                    <option data-value="p-value" selected>adjusted p-value</option>
                                     <option data-value="MScor">MScor</option>
                                     <option data-value="Correlation">Correlation</option>
                                 </select>
@@ -112,12 +112,12 @@
                                 </tr> 
  
                                 <tr class="">
-                                    <td><p>Maximum p-value: </p></td>
-                                    <td><input type="text" class="form-control" id="input_maximum_p_value" value=1></td>
+                                    <td><p>Maximum adjusted p-value: </p></td>
+                                    <td><input type="text" class="form-control" id="input_maximum_p_value" value=0.01></td>
                                 </tr>
                                 <tr class="">
                                     <td><p>Minimum MScor: </p></td>
-                                    <td><input type="text" class="form-control" id="input_minimum_mscor" value=0.01></td>
+                                    <td><input type="text" class="form-control" id="input_minimum_mscor" value=0.1></td>
                                 </tr>
 
                              </table>
@@ -135,7 +135,7 @@
                                         </button>
                                 </a>
                                 <!--Displays the data of the currently shown run--> 
-                                <!--TO-DO maybe add info what each entrie means-->
+                                <!--TODO maybe add info what each entrie means-->
                                 <div class="collapse" id="collapseExample">
                                     <div class="card card-body">
                                         <pre id="selector_disease_result"></pre>
@@ -317,7 +317,7 @@
                                         </div>
                                         <hr>
                                         <div>
-                                            <p>Filter for p-value</p>
+                                            <p>Filter for adjusted p-value</p>
                                             <span>Minimum: </span><input type="text" id="pvalue_min" name="pvalue_min">&nbsp;
                                             <span>Maximum: </span><input type="text" id="pvalue_max" name="pvalue_max">
                                         </div>
