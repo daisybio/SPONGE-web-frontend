@@ -1,286 +1,306 @@
-<section >
- <div class="container" >
-          <div class="jumbotron shadow-lg" id="bigBox">
-                
-                <h1 class="display-4" id="headline">What's possible on SPONGE Web <br> Tutorial & Documentation</h1>
-                <hr class="my-4">
-
-                <p> </p>
-          
-              <div class="card shadow">
-               <h3 class="card-header" id="card-header">What is SPONGE-web good for?</h3> 
-                <div class="card-body">
-                <p class="card-text" style="text-align: justify;">
-                  microRNAs are important small non-coding transcriptional regulators involved in many biological processes and human diseases. It is assumed that at least half of the genes in the human genome are influenced by miRNA regulation. Since the number of transcripts with miRNA binding sites far exceeds the number of different miRNAs, these are in competition, creating a complex competing endogenous RNA (ceRNA) interaction network. We applied SPONGE, a method for the fast construction of genome-wide ceRNA interaction networks using sparse partial correlation, to infer ceRNA regulatory networks for 23 cancer types in The Cancer Genome Atlas. To make these networks accessible for biomedical research, we created SPONGE-web, a web resource featuring an application programming interface that allows software developers and data analysts to query and filter ceRNA networks efficiently. As an application case and to make this rich resource easily accessible, we further developed a web interface that allows users to visualize ceRNA networks interactively. Access to the web interface or the API requires no login or registration. In addition we developed a R and python package to access the data from a development environment. SPONGE-web enables its users to identify potent ceRNA regulators via network centrality measures and to assess their potential as cancer biomarkers through survival analysis. In summary, SPONGE-web is a novel, feature-rich web resource supporting the community in studying ceRNA regulation.
-                </p>
-                </div>
-          </div>
-          
-          <p> </p>
-
-          <div class="row d-flex justify-content-center">
-            <div class="col-4">
-                <div class="card shadow" style="max-width: 18rem;">
-                  <h5 class="card-header" id="card-header" style="background-color: #051e3e ;">Documentation of the API</h5>
-                  <div class="card-body" style="background-color: #adcbe3 ;">
-                      <p class="card-title">Follow the white rabbit and check out & play with our API! </p>
-                    <a class="d-flex justify-content-center" id="api-rabbit" target="_blank">
-                 
-                    </a>
-                  </div>
-                </div>
-              </div>
-              
-           
-              <div class="col">
-                <div class="card shadow">
-                    <h3 class="card-header" id="card-header" style="text-align: center;">Tutorial Video</h3>
-                    <div class="card-body">
-                      <video width="auto" height="auto" controls>
-                        <source src="https://www.youtube.com/watch?v=1sro7HJg8GM" type="video/mp4">
-                        
-                      Your browser does not support the video tag.
-                      </video>
-    
-                    
-                    
-                    </div>
-            </div>
-            </div>
+<section>
+  <div class="container">
+    <div class="jumbotron shadow-lg" id="bigBox">
+      <h1 class="display-4" id="headline">What's possible on SPONGEdb <br> Tutorial & Documentation</h1>
+      <hr class="my-4">
 
 
-          </div>
+      <p> </p>
 
-          <div class="col">
-            <div class="card shadow">
-                <h3 class="card-header" id="card-header" style="text-align: center;">Large-scale inference of ceRNA networks with sparse partial correlation</h3>
-                <div class="card-body" style="text-align: center;">
-                  <iframe width="560" height="315" src="https://www.youtube.com/embed/1sro7HJg8GM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
+      <div class="card shadow">
+        <h3 class="card-header" id="card-header">What is SPONGEdb good for?</h3>
+        <div class="card-body">
+          <p class="card-text" style="text-align: justify;">
+            microRNAs are important small non-coding transcriptional regulators involved in many biological processes
+            and human diseases. It is assumed that at least half of the genes in the human genome are influenced by
+            miRNA regulation. Since the number of transcripts with miRNA binding sites far exceeds the number of
+            different miRNAs, these are in competition, creating a complex competing endogenous RNA (ceRNA) interaction
+            network. We applied SPONGE, a method for the fast construction of genome-wide ceRNA interaction networks
+            using sparse partial correlation, to infer ceRNA regulatory networks for 23 cancer types in The Cancer
+            Genome Atlas. To make these networks accessible for biomedical research, we created SPONGEdb, a web
+            resource featuring an application programming interface that allows software developers and data analysts to
+            query and filter ceRNA networks efficiently. As an application case and to make this rich resource easily
+            accessible, we further developed a web interface that allows users to visualize ceRNA networks
+            interactively. Access to the web interface or the API requires no login or registration. In addition we
+            developed a R and python package to access the data from a development environment. SPONGEdb enables its
+            users to identify potent ceRNA regulators via network centrality measures and to assess their potential as
+            cancer biomarkers through survival analysis. In summary, SPONGEdb is a novel, feature-rich web resource
+            supporting the community in studying ceRNA regulation.
+          </p>
         </div>
-        </div>
-          
-        <p> </p>
-        
-        <div class="row d-flex justify-content-center">
-
-        <div class="col-md">
-          <div class="card shadow">
-              <h3 class="card-header" id="card-header" style="text-align: center;">How to use the search bar on home</h3>
-              <div class="card-body">
-               
-                <p class="card-text">You can enter a gene symbol or ENSG number to search in the SPONGE database for all corresponding interactions.
-                    <br> On the next side you will find tables of the found cancer sets. You can search those tables for other genes or create 
-                    a network from those table entries by clicking the "Show as Network" Button.  You can also select some entries and export only those to the network.<br><br>
-                    Search Features: <br>
-                    
-                </p>
-
-                <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th scope="col">Function </th>
-                        <th scope="col">Effect</th>
-                        
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr >
-                        <th scope="row">Search Box</th>
-                        <td>Search for a ENSG number or Gene Symbol. Check the box to only obtain significant results</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Result Boxes</th>
-                        <td>Lists the cancer datasets, which contain interactions with the searched value. The tables visualize values such as mscor, pvalue, correlation and ids</td> <!--browser version-->
-                      </tr>
-                      <tr>
-                        <th scope="row">Options Button</th>
-                        <td>Set a range for the Mscore or adjusted p-value. You dont have to submit your entry, it will be applied automatically</td> <!--browser version-->
-                      </tr>
-                      <tr>
-                        <th scope="row">Hallmarks</th>
-                        <td>Associated cancer hallmarks.</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Show as Network Button</th>
-                        <td>Exports selected table entries or default ones to create a interaction network.</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Gene Enrichment Button</th>
-                        <td>If no gene is selected, all genes will be used for gene enrichment analysis. Otherwise the selected entries will be used for a default query on g:Profiler. </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">WikiPathways</th>
-                        <td>Brings you to a pathway visualization on WikiPathways. </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">GeneCard</th>
-                        <td>Displays further information of the gene with help of GeneCards.</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Gene Ontology</th>
-                        <td>All associating GO numbers will be displayed for the gene and link to their entry on QuickGO.</td>
-                      </tr>
-                    </tbody>
-                  </table>
-              
-              </div>
       </div>
-      </div>
-   
-        <div class="col-md">
-          <div class="card shadow">
-              <h3 class="card-header" id="card-header" style="text-align: center;">Browse functionalities explained</h3>
-              <div class="card-body">
-               
-                <p class="card-text"> On the browse site you can create different interaction networks and investigate which genes/miRNAs affect each other.
-                  The node sizes and edge thicknes is corresponding to the Mscore and node degree. When loading a new cancer set, also a expression heatmap will be produced. <br>
-                    Network-Features: <br>
-                    
-                </p>
-                
-                <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th scope="col">Function </th>
-                        <th scope="col">Effect</th>
-                        
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr >
-                        <th scope="row" >Title Banner Select</th>
-                        <td>Select one of the cancer sets, which should be used for a network</td>              
-                      </tr>
-                      <tr >
-                        <th scope="row">Click on a Node</th>
-                        <td>Survival Analysis (Kaplan-Meier Plot) will be displaied for the Node</td>              
-                      </tr>
-                      <tr>
-                        <th scope="row">Hover over Node/Edge</th>
-                        <td>Values such as Mscor, pvalue, betweenes, correlation and gene ids will be displayed in a side table</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Search under network</th>
-                        <td>Select a ENSG number or interaction of interest (number) and it will be colored and focused on in the network</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Save as</th>
-                        <td>You can save & download the plot as .jpg or .png.</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Reset camera</th>
-                        <td>Reset the viewpoint of the network after zooming or focusing on a node</td>
-                      </tr>
-                      <tr>
-                        <th scope="row" style="width: 30%">Force atlas 2/ start layout</th>
-                        <td>Start a layout for a better visualization of the network</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Reset Colors</th>
-                        <td>Deselect clicked nodes</td>
-                      </tr>
 
+      <p> </p>
+
+        <!-- <div class="col">
+                  <div class="card shadow">
+                      <h3 class="card-header" id="card-header" style="text-align: center;">Tutorial Video</h3>
+                      <div class="card-body">
+                        <video width="auto" height="auto" controls>
+                          <source src="https://www.youtube.com/watch?v=1sro7HJg8GM" type="video/mp4">
+                          
+                        Your browser does not support the video tag.
+                        </video>
+      
                       
-                    </tbody>
-                  </table>
-              
-              </div>
+                      
+                      </div>
+                </div>
+              </div> -->
+
+
+      <div class="card shadow">
+        <h3 class="card-header" id="card-header" style="text-align: center;">Large-scale inference of ceRNA networks
+          with sparse partial correlation</h3>
+        <div class="card-body" style="text-align: center;">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/1sro7HJg8GM" frameborder="0"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
       </div>
-      </div>
-    
-    </div>
-    <p></p>
-    <div class="card shadow" id="contact">
-      <h3 class="card-header" id="card-header">Browse Sidebar</h3>
-      <div class="card-body">
-     
-          <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th scope="col" style=" text-align: center;">Nodes & Edges</th>
-                  <th scope="col" style=" text-align: center;">Run Information & Settings</th>
-                  <th scope="col" style=" text-align: center;">Data of visualized run</th>
-                  <th scope="col" style=" text-align: center;">Download original data</th>
-             
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="card-body-dark">
-                  <td scope="row" style="width: 25%;">Here you can find tables of the nodes and edges of the network with detailed information. They are in the same style as the search table and also hold the same functionalities</td>
-                  <td style="width: 25%">This section is for further configuration of the selected cancer set. Define a value to sort by, set a cutoff for the node degree and define the number of nodes with the limit </td>
-                  <td style="width: 25%">Inspect the exact properties of the current network </td>
-                  <td style="width: 25%">Links you to the TCGA website</td>
-                
-        
-                </tr>
-               
-              </tbody>
-            </table>
+      <p> </p>
+
+
+      <div class="row d-flex justify-content-center">
+
+        <div class="col-md">
+          <div class="card shadow">
+            <h3 class="card-header" id="card-header" style="text-align: center;">Home Search Bar</h3>
+            <div class="card-body">
+
+              <p class="card-text" style="text-align: justify;">You can enter a gene symbol or ENSG number to search in the SPONGE database for all
+                corresponding interactions.
+                <br> On the next side you will find tables of the found cancer sets. You can search those tables for
+                other
+                genes or create
+                a network from those table entries by clicking the "Show as Network" Button. You can also select some
+                entries and export only those to the network.<br><br>
+                Search Features: <br>
+
+              </p>
+
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Function </th>
+                    <th scope="col">Effect</th>
+
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Search Box</th>
+                    <td>Search for a ENSG number or Gene Symbol. Check the box to only obtain significant results</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Result Boxes</th>
+                    <td>Lists the cancer datasets, which contain interactions with the searched value. The tables
+                      visualize values such as mscor, pvalue, correlation and ids</td>
+                    <!--browser version-->
+                  </tr>
+                  <tr>
+                    <th scope="row">Options Button</th>
+                    <td>Set a range for the Mscore or adjusted p-value. You dont have to submit your entry, it will be
+                      applied automatically</td>
+                    <!--browser version-->
+                  </tr>
+                  <tr>
+                    <th scope="row">Hallmarks</th>
+                    <td>Associated cancer hallmarks.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Show as Network Button</th>
+                    <td>Exports selected table entries or default ones to create a interaction network.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Gene Enrichment Button</th>
+                    <td>If no gene is selected, all genes will be used for gene enrichment analysis. Otherwise the
+                      selected entries will be used for a default query on g:Profiler. </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">WikiPathways</th>
+                    <td>Brings you to a pathway visualization on WikiPathways. </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">GeneCard</th>
+                    <td>Displays further information of the gene with help of GeneCards.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Gene Ontology</th>
+                    <td>All associating GO numbers will be displayed for the gene and link to their entry on QuickGO.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
           </div>
         </div>
-     
 
-     <p></p>
-        <div class="card shadow" id="contact">
-          <h3 class="card-header" id="card-header">Browser Compabilities</h3>
-          <div class="card-body">
+        <div class="col-md">
+          <div class="card shadow">
+            <h3 class="card-header" id="card-header" style="text-align: center;">Browse functionalities explained</h3>
+            <div class="card-body">
+
+              <p class="card-text" style="text-align: justify;"> On the browse site you can create different interaction networks and investigate
+                which
+                genes/miRNAs affect each other.
+                The node sizes and edge thicknes is corresponding to the Mscore and node degree. When loading a new
+                cancer
+                set, also a expression heatmap will be produced. <br><br>
+                Network-Features: <br>
+
+              </p>
+
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">Function </th>
+                    <th scope="col">Effect</th>
+
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Title Banner Select</th>
+                    <td>Select one of the cancer sets, which should be used for a network</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Click on a Node</th>
+                    <td>Survival Analysis (Kaplan-Meier Plot) will be displaied for the Node</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Hover over Node/Edge</th>
+                    <td>Values such as Mscor, pvalue, betweenes, correlation and gene ids will be displayed in a side
+                      table</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Search under network</th>
+                    <td>Select a ENSG number or interaction of interest (number) and it will be colored and focused on
+                      in
+                      the network</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Save as</th>
+                    <td>You can save & download the plot as .jpg or .png.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Reset camera</th>
+                    <td>Reset the viewpoint of the network after zooming or focusing on a node</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width: 30%">Force atlas 2/ start layout</th>
+                    <td>Start a layout for a better visualization of the network</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Reset Colors</th>
+                    <td>Deselect clicked nodes</td>
+                  </tr>
+
+
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <p></p>
+      <div class="card shadow" id="contact">
+        <h3 class="card-header" id="card-header">Browse Sidebar</h3>
+        <div class="card-body">
+
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col" style=" text-align: center;">Nodes & Edges</th>
+                <th scope="col" style=" text-align: center;">Run Information & Settings</th>
+                <th scope="col" style=" text-align: center;">Data of visualized run</th>
+                <th scope="col" style=" text-align: center;">Download original data</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="card-body-dark">
+                <td scope="row" style="width: 25%;">Here you can find tables of the nodes and edges of the network with
+                  detailed information. They are in the same style as the search table and also hold the same
+                  functionalities</td>
+                <td style="width: 25%">This section is for further configuration of the selected cancer set. Define a
+                  value to sort by, set a cutoff for the node degree and define the number of nodes with the limit </td>
+                <td style="width: 25%">Inspect the exact properties of the current network </td>
+                <td style="width: 25%">Links you to the TCGA website</td>
+
+
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <p></p>
+      <div class="card shadow" id="contact">
+        <h3 class="card-header" id="card-header">Browser Compabilities</h3>
+        <div class="card-body">
           <p class="card-text">
             The following table displays all tested browser and os versions.
           </p>
-         
-              <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th scope="col">OS</th>
-                      <th scope="col" style=" text-align: center;">Version</th>
-                      <th scope="col" style=" text-align: center;">Chrome</th>
-                      <th scope="col" style=" text-align: center;">Opera</th>
-                      <th scope="col" style=" text-align: center;">Firefox</th>
-                      <th scope="col" style=" text-align: center;">Microsoft Edge</th>
-                      <th scope="col" style="text-align: center;">Safari</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="card-body-dark">
-                      <th scope="row">Linux</th>
-                      <td id="td-centered">Ubuntu 18.04.3</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">65.0.3467.62</td>
-                      <td id="td-centered">71.0</td>
-                      <td id="td-centered">n/a</td>
-                      <td id="td-centered">n/a</td>
-            
-                    </tr>
-                    <tr>
-                      <th scope="row">Windows</th>
-                      <td id="td-centered">10</td> <!--browser version-->
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">71.0</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">n/a</td>
-                      
-                    </tr>
-                    <tr class="card-body-dark">
-                      <th scope="row">MacOS</th>
-                      <td id="td-centered">Mojave</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">not tested</td>
-                      <td id="td-centered">n/a</td>
-                      <td id="td-centered">12.1</td>
-                    
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-         </div>
-    
-         
-</div>
-</section> 
+
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">OS</th>
+                <th scope="col" style=" text-align: center;">Version</th>
+                <th scope="col" style=" text-align: center;">Chrome</th>
+                <th scope="col" style=" text-align: center;">Opera</th>
+                <th scope="col" style=" text-align: center;">Firefox</th>
+                <th scope="col" style=" text-align: center;">Microsoft Edge</th>
+                <th scope="col" style="text-align: center;">Safari</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="card-body-dark">
+                <th scope="row">Linux</th>
+                <td id="td-centered">Ubuntu 18.04.3</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">65.0.3467.62</td>
+                <td id="td-centered">71.0</td>
+                <td id="td-centered">n/a</td>
+                <td id="td-centered">n/a</td>
+
+              </tr>
+              <tr>
+                <th scope="row">Windows</th>
+                <td id="td-centered">10</td>
+                <!--browser version-->
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">71.0</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">n/a</td>
+
+              </tr>
+              <tr class="card-body-dark">
+                <th scope="row">MacOS</th>
+                <td id="td-centered">Mojave</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">not tested</td>
+                <td id="td-centered">n/a</td>
+                <td id="td-centered">12.1</td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</section>
 <!--Background color for the page ? #D5DCE6
 https://publicdomainvectors.org/de/kostenlose-vektorgrafiken/Scroll-Symbol/52635.html schriftrolle
 -->

@@ -1044,23 +1044,32 @@ export class SearchComponent implements OnInit {
           buttons: [
             {
                 extend: 'copyHtml5',
-                title: filename
+                title: filename,
+                exportOptions: {
+                  columns: [0, 1, 2, 3, 4, 5, 6]
+              }
             },
             {
                 extend: 'csvHtml5',
-                title: filename
+                title: filename,
+                exportOptions: {
+                  columns: [0, 1, 2, 3, 4, 5, 6]
+              }
             },
             {
               extend: 'excelHtml5',
-              title: filename
+              title: filename,
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4, 5, 6]
+              }
             },
-            // { removed due to bad formation of default pdf file
-            //   extend: 'pdfHtml5',
-            //   title: filename
-            // },
+
             {
               extend: 'print',
-              title: filename
+              title: filename,
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4, 5, 6]
+              }
             },
           ],
           orderCellsTop: true,

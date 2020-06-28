@@ -327,6 +327,42 @@ export class BrowseComponent implements OnInit {
 
       }
     }
+
+    const _get_mirna_col_ = function(edge_table, disease_name) {
+      let mirna_promises = []
+      // load mirnas
+      edge_table.rows().every(function ( rowIdx, tableLoop, rowLoop ) {
+        const data = this.data();
+        if (data[6].length == 0) {
+          let p = new Promise(resolve => {
+              controller.get_miRNA_by_ceRNA({
+              disease_name: disease_name,
+              ensg_number: [data[0], data[1]],
+              between: true,
+              callback: (response) => {
+
+                // there can be duplicates
+                let mirnas = {}
+                for (let entry of response) {
+                  mirnas[entry.mirna.hs_nr + ` (${entry.mirna.mir_ID})`] = true
+                }
+
+                let mirnas_string = Object.keys(mirnas).join(',<br />')
+                edge_table.cell({row: rowIdx, column: 6}).data(mirnas_string)
+                return resolve()
+              },
+              error: () => {
+                edge_table.cell({row: rowIdx, column: 6}).data('-')
+                return resolve()
+              }
+            })
+          })
+          mirna_promises.push(p)
+        }
+        
+      })
+      return mirna_promises
+    }
     
 
     function load_edges(disease_trimmed, nodes, callback?) {
@@ -393,6 +429,7 @@ export class BrowseComponent implements OnInit {
               ordered_entry['MScor'] = entry['mscor']
               ordered_entry['adjusted p-value'] = entry['p_value']
               ordered_entry['ID'] = i
+              ordered_entry['miRNAs'] = ``
               ordered_data.push(ordered_entry)
             }
 
@@ -439,31 +476,60 @@ export class BrowseComponent implements OnInit {
                         return numb
                         },
                     targets: [ index_correlation, index_mscor, index_p_value ] }, 
-                   
-                
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
               buttons: [
                 {
-                    extend: 'copyHtml5',
-                    title: filename
+                    text: 'Copy',
+                    // to make sure that all mirnas have been loaded
+                    action: function(e, dt, button, config) {
+                      const button_this = this
+
+                      button_this.processing(true); // show indicator on button
+                      let mirna_promises = _get_mirna_col_(dt, disease_name)            
+                      config.filename = filename; // set filename
+                      Promise.all(mirna_promises).then(function(values) {
+                        $.fn.dataTable.ext.buttons.copyHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        button_this.processing(false); // hide indicator on button
+                      });
+                    }
                 },
                 {
-                    extend: 'csvHtml5',
-                    title: filename
+                    extend: 'csv',
+                    text: 'CSV',
+                    // to make sure that all mirnas have been loaded
+                    action: function(e, dt, button, config) {
+                      const button_this = this
+
+                      button_this.processing(true); // show indicator on button
+                      let mirna_promises = _get_mirna_col_(dt,disease_name)
+                      config.filename = filename; // set filename
+                      Promise.all(mirna_promises).then(function(values) {
+                        $.fn.dataTable.ext.buttons.csvHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        button_this.processing(false); // hide indicator on button
+                      });
+                    }
                 },
                 {
-                  extend: 'excelHtml5',
-                  title: filename
+                  text: 'Excel',
+                  // to make sure that all mirnas have been loaded
+                  action: function(e, dt, button, config) {
+                      const button_this = this
+
+                      button_this.processing(true); // show indicator on button
+                      let mirna_promises = _get_mirna_col_(dt,disease_name)
+                      config.filename = filename + '.xlsx'; // set filename
+                      Promise.all(mirna_promises).then(function(values) {
+                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        button_this.processing(false); // hide indicator on button
+                      });
+                    }
                 },
                 // { removed due to bad formation of default pdf file
                 //   extend: 'pdfHtml5',
                 //   title: filename
                 // },
-                {
-                  extend: 'print',
-                  title: filename
-                },
+                
               ],
               
               responsive:true,
@@ -853,7 +919,6 @@ export class BrowseComponent implements OnInit {
                 helper.mark_edges_network(network, selected_edges)
               }
 
-
               // go to network
               $('[aria-controls=nav-overview]').click()
 
@@ -864,7 +929,7 @@ export class BrowseComponent implements OnInit {
 
             })
             
-                    /*Gene Enrichment Button*/
+            /*Gene Enrichment Button*/
             $('#export_gene_enrichment').click(() =>{
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
@@ -985,6 +1050,11 @@ export class BrowseComponent implements OnInit {
             disease_selector.attr('disabled', false)
             $('#loading_spinner').addClass('hidden') 
 
+            // load mirnas in background
+            let mirna_promises = _get_mirna_col_(edge_table, this.disease_trimmed)
+            Promise.all(mirna_promises).then(function(values) {
+              edge_table.draw()
+            });
           })
         })
       })
@@ -1053,15 +1123,24 @@ export class BrowseComponent implements OnInit {
         buttons: [
           {
               extend: 'copyHtml5',
-              title: filename
+              title: filename,
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4]
+            }
           },
           {
               extend: 'csvHtml5',
-              title: filename
+              title: filename,
+              exportOptions: {
+                columns: [0, 1, 2, 3, 4]
+            }
           },
           {
             extend: 'excelHtml5',
-            title: filename
+            title: filename,
+            exportOptions: {
+              columns: [0, 1, 2, 3, 4]
+          }
           },
           // { removed due to bad formation of default pdf file
           //   extend: 'pdfHtml5',

@@ -573,7 +573,7 @@
 
    .network-control{
      min-width: 200px; //600
-     width: 280px;
+     width: 255px;
      margin-right: 0;
      left: -20px;
 
@@ -588,6 +588,23 @@
     
    }
 
+   .info-tooltip .info-tooltiptext {
+    visibility: hidden;
+    width: 540px;
+    background-color: #B8FFFF;
+    color: black;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 10px;
+  
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .info-tooltip:hover .info-tooltiptext {
+    visibility: visible;
+  }
    
 }
 

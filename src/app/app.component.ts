@@ -12,7 +12,7 @@ export class AppComponent {
   TS CODE HERE WILL BE EXECUTED IN EVERY COMPONENT
   */
  constructor(@Inject(APP_BASE_HREF) public baseHref: string) {  }
-  title = 'SPONGE-web-frontend';
+  title = 'SPONGEdb';
 
  /* constructor() {
   }*/
