@@ -171,6 +171,20 @@ export class BrowseComponent implements OnInit {
       $('#disease_selectpicker').selectpicker('refresh');
     })
 
+    $('#edge_table_toggle_mirnas').click(function() {
+      let column = edge_table.column(6)
+      // Toggle the visibility
+      $('#interactions-edges-table thead th.sorting').last().toggleClass('hidden')
+      column.visible( ! column.visible() );
+
+      // now change button text accordingly
+      if (column.visible()) {
+        $(this).text('Hide miRNAs')
+      } else {
+        $(this).text('Show miRNAs')
+      }
+    })
+
     $(document).on('click', '#show_more', function() {
       if($(this).closest('#show_more').attr('aria-expanded')==='true'){
       $(this).closest('#show_more').text("Show less")
@@ -344,7 +358,7 @@ export class BrowseComponent implements OnInit {
                 // there can be duplicates
                 let mirnas = {}
                 for (let entry of response) {
-                  mirnas[entry.mirna.hs_nr + ` (${entry.mirna.mir_ID})`] = true
+                  mirnas[entry.mirna.hs_nr + `&nbsp;(${entry.mirna.mir_ID})`] = true
                 }
 
                 let mirnas_string = Object.keys(mirnas).join(',<br />')
@@ -467,6 +481,7 @@ export class BrowseComponent implements OnInit {
             const filename = `SPONGE Interactions ${disease_name} ${search_key}`
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
+                { "width": "20%", "targets": 6 },
                 { render: function ( ordered_data, type, row ) {
                         let numb = parseFloat(ordered_data).toFixed(4)
                         if (parseFloat(numb)===0 && numb.length > 1){
@@ -546,6 +561,9 @@ export class BrowseComponent implements OnInit {
             } );
             // colsearch for table
             helper.colSearch('interactions-edges-table', edge_table)
+
+            // hide mirna column on opening for layout reasons
+            $('#edge_table_toggle_mirnas').click()
 
             const edges_raw = edge_table.data()
             

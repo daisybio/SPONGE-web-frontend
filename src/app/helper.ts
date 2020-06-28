@@ -1377,6 +1377,8 @@ export class Helper {
     $('#reset_graph').unbind()
     $('#reset_graph').click(() => {
       this.clear_colors(network);
+      $('#node_information_content').empty()
+      $('#edge_information_content').empty()
       if (node_table) this.clear_table(node_table)  // no node table in search
       if (edge_table) this.clear_table(edge_table)  // no edge table in search
       session.update_url()
