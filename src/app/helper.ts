@@ -383,7 +383,7 @@ export class Helper {
                 if (td.textContent == null || td.textContent == "" || td.textContent == "go") {
                   var go = document.createElement("a");
                   go.setAttribute("id", "go" + row.cells[0].textContent)
-                  go.textContent = "No GO terms with given parameters found!"
+                  go.textContent = "-"
                   td.appendChild(go)
                 }
 
