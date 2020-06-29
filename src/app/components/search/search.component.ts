@@ -495,7 +495,7 @@ export class SearchComponent implements OnInit {
           }
           var mscor_min = parseFloat($('#mscor_min_' + table_id).val().toString());
           var mscor_max = parseFloat($('#mscor_max_' + table_id).val().toString());
-          var mscor = parseFloat(data[6]) || 0; // use data for the mscor column
+          var mscor = parseFloat(data[5]) || 0; // use data for the mscor column
           if ((isNaN(mscor_min) && isNaN(mscor_max)) ||
             (isNaN(mscor_min) && mscor <= mscor_max) ||
             (mscor_min <= mscor && isNaN(mscor_max)) ||
@@ -511,7 +511,7 @@ export class SearchComponent implements OnInit {
           }
           var pvalue_min = parseFloat($('#pvalue_min_' + table_id).val().toString());
           var pvalue_max = parseFloat($('#pvalue_max_' + table_id).val().toString());
-          var pvalue = parseFloat(data[7]) || 0; // use data for the pvalue column
+          var pvalue = parseFloat(data[6]) || 0; // use data for the pvalue column
           if ((isNaN(pvalue_min) && isNaN(pvalue_max)) ||
             (isNaN(pvalue_min) && pvalue <= pvalue_max) ||
             (pvalue_min <= pvalue && isNaN(pvalue_max)) ||
@@ -527,7 +527,7 @@ export class SearchComponent implements OnInit {
           }
           var correlation_min = parseFloat( $('#correlation_min_' + table_id).val().toString());
           var correlation_max = parseFloat( $('#correlation_max_' + table_id).val().toString());
-          var correlation = parseFloat( data[5] ) || 0; // use data for the correlation column
+          var correlation = parseFloat( data[4] ) || 0; // use data for the correlation column
           if (( isNaN( correlation_min ) && isNaN( correlation_max ) ) ||
             ( isNaN( correlation_min ) && correlation <= correlation_max ) ||
             ( correlation_min <= correlation && isNaN( correlation_max ) ) ||
