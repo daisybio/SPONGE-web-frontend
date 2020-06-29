@@ -543,6 +543,48 @@ button.export_nodes {
 
 
 /* HOME START */
+#carouselHomeIndicators {
+  margin-top: 100px;
+  .carousel-indicators li{
+    background-color: black;
+  }
+  .carousel-caption {
+    color: black;
+    bottom: -90px;
+  }
+  .carousel-inner {
+    width: 70%;
+    height: 575px;
+    margin: 0 auto;
+    background-color: white;
+    img {
+      width: 80%;
+      margin: 0 auto;
+    }
+  }
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon {
+    height: 100px;
+    width: 100px;
+    outline: black;
+    background-size: 100%, 100%;
+    background-image: none;
+  }
+
+  .carousel-control-next-icon:after
+  {
+    content: '>';
+    font-size: 55px;
+    color: black;
+  }
+
+  .carousel-control-prev-icon:after {
+    content: '<';
+    font-size: 55px;
+    color: black;
+}
+}
+
 #home_search_key_table {
   width: auto;
   tr{

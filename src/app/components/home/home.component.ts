@@ -103,6 +103,8 @@ export class HomeComponent implements OnInit {
       
       },
       showlegend: true,
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
       legend: {
         x:0.13,
         y:1.04,
