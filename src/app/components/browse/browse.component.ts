@@ -478,7 +478,7 @@ export class BrowseComponent implements OnInit {
 
             const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
             const disease_name = $('#disease_selectpicker').val()
-            const filename = `SPONGE Interactions ${disease_name} ${search_key}`
+            const filename = `SPONGEdb Interactions ${disease_name} ${search_key}`
             edge_table = $('#interactions-edges-table').DataTable({
               columnDefs: [
                 { "width": "20%", "targets": 6 },
@@ -1129,7 +1129,7 @@ export class BrowseComponent implements OnInit {
 
       const search_key = shared_data != undefined ? shared_data['search_keys'] : ''
       const disease_name = $('#disease_selectpicker').val()
-      const filename = `SPONGE Genes ${disease_name} ${search_key}`
+      const filename = `SPONGEdb Genes ${disease_name} ${search_key}`
       node_table = $('#interactions-nodes-table').DataTable( {
         columnDefs: [
           { render: function ( ordered_data, type, row ) {

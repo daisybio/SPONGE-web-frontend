@@ -1034,7 +1034,7 @@ export class SearchComponent implements OnInit {
         push_interaction_filters(table_id)
       
         const disease_first_letter_uppercase = disease.charAt(0).toUpperCase() + disease.substring(1);
-        const filename = `SPONGE Interactions ${disease_first_letter_uppercase} ${search_key}`
+        const filename = `SPONGEdb Interactions ${disease_first_letter_uppercase} ${search_key}`
         // define table settings based on search key length
         let datatable_settings = {
           dom: '<"top"Bf>rt<"bottom"lip>',
