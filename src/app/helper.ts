@@ -980,6 +980,9 @@ export class Helper {
             // build a table to display json
             let table = `<table class='table table-striped table-hover '>`
             for (let attribute in data[entry]) {
+              if (attribute === 'miRNAs'){
+                continue;
+              }
               let row = "<tr>"
               row += "<td>" + attribute + ": </td>"
               row += "<td>" + data[entry][attribute] + "</td>"
