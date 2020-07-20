@@ -59,6 +59,7 @@ export class HomeComponent implements OnInit {
             x: dnl,
             y: interactions,
             type: 'bar',
+            visible: 'legendonly',
             name: 'Count of predicted interactions',
             marker: {
               color: 'rgb(7,117,218)',
