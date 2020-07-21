@@ -1,6 +1,7 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from 'src/app/control';
 import { Helper } from 'src/app/helper';
+import { analyzeAndValidateNgModules } from '@angular/compiler';
 declare var Plotly: any;
 declare var $: any;
 
@@ -35,15 +36,33 @@ export class HomeComponent implements OnInit {
           var interactions=[]
           var interactions_sig=[]
           var shared_mirnas=[]
+          var sorted_interactions_sig=[]
+          var sorted_interactions=[]
+
+          var sign_tmp=[]
+          var interactions_tmp=[]
+
           for (let e in response) {
             let disease = response[e]          
-            dnl.push(disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1))
-            interactions.push(disease['count_interactions'])
-            interactions_sig.push(disease['count_interactions_sign'])
+          
+          //  dnl.push(disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1))
+          //  interactions.push(disease['count_interactions'])
+          //  interactions_sig.push(disease['count_interactions_sign'])
             shared_mirnas.push(disease['count_shared_miRNAs'])
+            sorted_interactions_sig.push([disease['count_interactions_sign'],disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1)])
+            sorted_interactions.push([disease['count_interactions'],disease['disease_name'].charAt(0).toUpperCase() + disease['disease_name'].slice(1)])
 
           }
-
+         
+         
+       sign_tmp= insertionSort(sorted_interactions_sig)
+       interactions_tmp = insertionSort(sorted_interactions)
+       interactions_sig = subArray(sign_tmp,0);
+       interactions = subArray(interactions_tmp,0)
+       dnl = subArray(sign_tmp,1)
+       let dnl_insig = subArray(interactions_tmp,1)
+              
+        
           var miRNAs2=  {
             x: dnl,
             y: shared_mirnas,
@@ -56,7 +75,7 @@ export class HomeComponent implements OnInit {
           };
 
           var correlations_pred=  {
-            x: dnl,
+            x: dnl_insig,
             y: interactions,
             type: 'bar',
             visible: 'legendonly',
@@ -144,6 +163,38 @@ export class HomeComponent implements OnInit {
     
   
     }
+
+    //sorts home plot data
+    let insertionSort = (inputArr) => {
+           
+      let length = inputArr.length;
+      for (let i = 1; i < length; i++) {
+          let key = inputArr[i][0];
+          let key2 = inputArr[i][1];
+
+          let j = i - 1;
+          while (j >= 0 && inputArr[j][0] > key) {
+              inputArr[j + 1][0] = inputArr[j][0];
+              inputArr[j + 1][1] = inputArr[j][1];
+
+              j = j - 1;
+          }
+          inputArr[j + 1][0] = key;
+          inputArr[j + 1][1] = key2;
+
+      }
+      return inputArr;
+  };
+
+  //For the homeplot, splits the 2D array and reverses the order
+  let subArray= (inputArr,pos) => {
+    var outArr = []
+    for (let z = 0; z < inputArr.length; z++) {
+      outArr.push(inputArr[z][pos])
+      
+    }
+    return outArr.reverse();
+  };
 
     processData(mRNAcsv,Coorelationcsv);
 
