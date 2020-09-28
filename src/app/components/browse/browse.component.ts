@@ -45,6 +45,7 @@ export class BrowseComponent implements OnInit {
     
     let node_table
     let edge_table
+    let number_nodes_after_request = 0
     const default_node_limit = 25
     $('#input_limit').val(default_node_limit)
     
@@ -271,6 +272,7 @@ export class BrowseComponent implements OnInit {
           descending: true,
           callback: data => {
             let nodes = parse_node_data(data)
+            number_nodes_after_request = nodes.length
             return callback(nodes)
             },
             error: (response) => {
@@ -319,7 +321,7 @@ export class BrowseComponent implements OnInit {
                       <!-- Info Alert -->
                       <div class="alert alert-info alert-dismissible fade show alert-nodes">
                           <strong>N.B.</strong> ${genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length} genes 
-                          were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press go.
+                          were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press "Go".
                           <button type="button" class="close" data-dismiss="alert">&times;</button>
                       </div>
                       `)
@@ -886,23 +888,51 @@ export class BrowseComponent implements OnInit {
 
             } // end of degree cutoff filter
 
-          
+
             if (Object.keys(edges).length > user_limit) {
               if (!$('#network_messages .alert-edges').length) {
                 $('#network_messages').append(
                   `
                   <!-- Info Alert -->
                   <div class="alert alert-info alert-dismissible fade show alert-edges">
-                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press go.
+                      <strong>N.B.</strong> We found ${edges.length} interactions, the current limit for the network is ${user_limit}. If you want to display more, increase the limit and press "Go".
                       <button type="button" class="close" data-dismiss="alert">&times;</button>
                   </div>
                   `
                 )
               } 
-            } else {
-              // alert-nodes is there
-              $('#network_messages .alert-edges').remove()
-            }
+            } else if (Object.keys(nodes).length === 0) {
+              if (!$('#network_messages .alert-edges').length) {
+                $('#network_messages').append(
+                  `
+                  <!-- Info Alert -->
+                  <div class="alert alert-info alert-dismissible fade show alert-edges">
+                      <strong>N.B.</strong> We found no nodes fitting the search.
+                      Perhaps the search parameters (left hand side) are too strict for your search results, likely adjusting the MScor and adjusted p-value threshold will help. 
+                      Press "Go" to update your view.
+                      <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  </div>
+                  `
+                )
+              } 
+            } else if (number_nodes_after_request == $('#input_limit').val()) {
+                if (!$('#network_messages .alert-edges').length) {
+                  $('#network_messages').append(
+                    `
+                    <!-- Info Alert -->
+                    <div class="alert alert-info alert-dismissible fade show alert-edges">
+                        <strong>N.B.</strong> Due to long loading times, we cannot show all results in the network.
+                        If you want to see more, you can increase the threshold parameters (left hand side) and press "Go" again.
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                    `
+                  )
+                } 
+              }
+              else {
+                // clear old messages
+                $('#network_messages .alert-edges').remove()
+              }
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
