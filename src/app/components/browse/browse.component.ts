@@ -42,13 +42,13 @@ export class BrowseComponent implements OnInit {
     let url_storage;  // save here which nodes and edges to mark while API data is loading
 
     run_information()
-    
+
     let node_table
     let edge_table
     let number_nodes_after_request = 0
     const default_node_limit = 25
     $('#input_limit').val(default_node_limit)
-    
+
     let session = null
 
 
@@ -75,7 +75,7 @@ export class BrowseComponent implements OnInit {
         {
             return true;
         }
-        return false;  
+        return false;
       },
       //  filter for pvalue
       function( settings, data, dataIndex ) {
@@ -113,11 +113,11 @@ export class BrowseComponent implements OnInit {
           }
     );
     /* end of configurations */
-    
+
     $('#selected_disease').on('click', function() {
       $('#v-pills-run_information-tab')[0].click();
     });
-  
+
     $("#v-pills-interactions-tab").on('click',function(){
       if($('#v-pills-run_information-tab').hasClass('active')){
         $('#v-pills-run_information-tab').removeClass('active')
@@ -138,10 +138,10 @@ export class BrowseComponent implements OnInit {
         $(this).removeClass('active')}
       if($('#nav-nodes-tab').hasClass('active')){
         $('#nav-nodes-tab').removeClass('active')
-      }   
+      }
       if($('#nav-overview-tab').hasClass('active')){
         $('#nav-overview-tab').removeClass('active')
-      }            
+      }
     })
 
     $("#nav-nodes-tab").on('click',function(){
@@ -150,10 +150,10 @@ export class BrowseComponent implements OnInit {
         $(this).removeClass('active')}
       if($('#nav-edges-tab').hasClass('active')){
         $('#nav-edges-tab').removeClass('active')
-      }   
+      }
       if($('#nav-overview-tab').hasClass('active')){
         $('#nav-overview-tab').removeClass('active')
-      }            
+      }
     })
 
     $("#nav-overview-tab").on('click',function(){
@@ -161,10 +161,10 @@ export class BrowseComponent implements OnInit {
       $(this).removeClass('active')}
       if($('#nav-edges-tab').hasClass('active')){
         $('#nav-edges-tab').removeClass('active')
-      }   
+      }
       if($('#nav-nodes-tab').hasClass('active')){
         $('#nav-nodes-tab').removeClass('active')
-      }            
+      }
     })
 
     $('#disease_selectpicker').on('change', function(){
@@ -233,7 +233,7 @@ export class BrowseComponent implements OnInit {
         }
       })
 
-    } 
+    }
     //##################################################################################
 
     $('#load_disease').click()
@@ -255,7 +255,7 @@ export class BrowseComponent implements OnInit {
           sort_by = 'eigenvector'
           break
         }
-      } 
+      }
 
       const cutoff_betweenness = $('#input_cutoff_betweenness').val()
       const cutoff_eigenvector = $('#input_cutoff_eigenvector').val()
@@ -301,7 +301,7 @@ export class BrowseComponent implements OnInit {
               let nodes = parse_node_data(data1)
               return callback(nodes)
             }
-            
+
             controller.get_ceRNA({
               disease_name: disease_trimmed,
               ensg_number: genes_without_keys_or_marked,
@@ -312,23 +312,23 @@ export class BrowseComponent implements OnInit {
               descending: true,
               callback: data2 => {
                 const all_data = data1.concat(data2)
+                let nodes = parse_node_data(all_data)
 
                 if ((genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length) > limit) {
-                  // create info message 
+                  // create info message
                   if (!$('#network_messages .alert-nodes').length) {
                     $('#network_messages').append(
                       `
                       <!-- Info Alert -->
                       <div class="alert alert-info alert-dismissible fade show alert-nodes">
-                          <strong>N.B.</strong> ${genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length} genes 
-                          were found for your filter options, the current limit is ${limit}. If you want to display more, increase the limit and press "Go".
+                          <strong>N.B.</strong> ${genes_without_keys_or_marked.length + shared_data['search_keys'].length + shared_data['nodes_marked'].length} genes
+                          were found in your search, the current displaying limit is ${limit}. If you want to display more, increase the limit and press "Go".
                           <button type="button" class="close" data-dismiss="alert">&times;</button>
                       </div>
                       `)
-                  } 
-                }  
+                  }
+                }
 
-                let nodes = parse_node_data(all_data)
                 return callback(nodes)
                 },
               error: (response) => {
@@ -375,11 +375,11 @@ export class BrowseComponent implements OnInit {
           })
           mirna_promises.push(p)
         }
-        
+
       })
       return mirna_promises
     }
-    
+
 
     function load_edges(disease_trimmed, nodes, callback?) {
       // API batch limit is 1000 interactions, iterating until we got all batches
@@ -398,10 +398,10 @@ export class BrowseComponent implements OnInit {
       function __get_batches_recursive(offset=0) {
 
         controller.get_ceRNA_interactions_specific({
-          'disease_name':disease_trimmed, 
-          'ensg_number':nodes, 
-          'limit': limit, 
-          'offset': offset, 
+          'disease_name':disease_trimmed,
+          'ensg_number':nodes,
+          'limit': limit,
+          'offset': offset,
           'pValue': p_value,
           'pValueDirection': '<',
         'callback':data => {
@@ -430,7 +430,7 @@ export class BrowseComponent implements OnInit {
 
               if (shared_data != undefined && shared_data['search_keys']) {
                 if (!(
-                  shared_data['search_keys'].includes(entry['gene1']['ensg_number']) || 
+                  shared_data['search_keys'].includes(entry['gene1']['ensg_number']) ||
                   shared_data['search_keys'].includes(entry['gene2']['ensg_number'])
                   )) {
                     // interaction has no direct connection to search keys, ignore interaction
@@ -458,7 +458,7 @@ export class BrowseComponent implements OnInit {
 
             let column_names = Object.keys(ordered_data[0]);
             $("#interactions-edges-table-container").append(helper.buildTable(ordered_data,'interactions-edges-table', column_names))
-            
+
             // find index positions from columns to round
             var index_correlation = column_names.indexOf('Correlation');
             var index_mscor = column_names.indexOf('MScor');
@@ -492,7 +492,7 @@ export class BrowseComponent implements OnInit {
                         }
                         return numb
                         },
-                    targets: [ index_correlation, index_mscor, index_p_value ] }, 
+                    targets: [ index_correlation, index_mscor, index_p_value ] },
               ],
               dom: '<"top"Bf>rt<"bottom"lip>',
               buttons: [
@@ -503,10 +503,10 @@ export class BrowseComponent implements OnInit {
                       const button_this = this
 
                       button_this.processing(true); // show indicator on button
-                      let mirna_promises = _get_mirna_col_(dt, disease_name)            
+                      let mirna_promises = _get_mirna_col_(dt, disease_name)
                       config.filename = filename; // set filename
                       Promise.all(mirna_promises).then(function(values) {
-                        $.fn.dataTable.ext.buttons.copyHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        $.fn.dataTable.ext.buttons.copyHtml5.action.call(button_this, e, dt, button, config); // call export-action
                         button_this.processing(false); // hide indicator on button
                       });
                     }
@@ -522,7 +522,7 @@ export class BrowseComponent implements OnInit {
                       let mirna_promises = _get_mirna_col_(dt,disease_name)
                       config.filename = filename; // set filename
                       Promise.all(mirna_promises).then(function(values) {
-                        $.fn.dataTable.ext.buttons.csvHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        $.fn.dataTable.ext.buttons.csvHtml5.action.call(button_this, e, dt, button, config); // call export-action
                         button_this.processing(false); // hide indicator on button
                       });
                     }
@@ -537,7 +537,7 @@ export class BrowseComponent implements OnInit {
                       let mirna_promises = _get_mirna_col_(dt,disease_name)
                       config.filename = filename + '.xlsx'; // set filename
                       Promise.all(mirna_promises).then(function(values) {
-                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(button_this, e, dt, button, config); // call export-action  
+                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(button_this, e, dt, button, config); // call export-action
                         button_this.processing(false); // hide indicator on button
                       });
                     }
@@ -546,18 +546,18 @@ export class BrowseComponent implements OnInit {
                 //   extend: 'pdfHtml5',
                 //   title: filename
                 // },
-                
+
               ],
-              
+
               responsive:true,
               // scrollX:  true,
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
               order: [[ order_by, order_by_asc_des ]]
             });
-            edge_table.draw() 
+            edge_table.draw()
             $('#interactions-edges-table tbody').on( 'click', 'tr', function () {
               $(this).toggleClass('selected');
-            } ); 
+            } );
             $('#filter_edges :input').keyup( function() {
               edge_table.draw();
             } );
@@ -568,7 +568,7 @@ export class BrowseComponent implements OnInit {
             $('#edge_table_toggle_mirnas').click()
 
             const edges_raw = edge_table.data()
-            
+
             let edges = [];
             for (let i=0; i < edges_raw.length; i++) {
               const interaction = edges_raw[i]
@@ -578,15 +578,15 @@ export class BrowseComponent implements OnInit {
               const size = Math.abs(20*interaction[3])  // MScor
               const color = helper.choose_edge_color(interaction[4])  // p-value
               edges.push({
-                id: id, 
-                source: source, 
-                target: target, 
-                size: size, 
-                color: color, 
+                id: id,
+                source: source,
+                target: target,
+                size: size,
+                color: color,
               })
-              
+
             }
-  
+
             $('#edge_data').text(JSON.stringify(ordered_data))
             return callback(edges)
           }
@@ -595,7 +595,7 @@ export class BrowseComponent implements OnInit {
           //helper.msg("Something went wrong while loading the interactions.", true)
           return(callback([]))
         }
-      })  
+      })
       }
     }
 
@@ -609,7 +609,7 @@ export class BrowseComponent implements OnInit {
 
       let disease_selector = $('#disease_selectpicker');
       let selected_disease_result = $('#selector_disease_result')
-     
+
       // takes care of button with link to download page
       // loads specific run information
       $('#load_disease').click(function() {
@@ -620,7 +620,7 @@ export class BrowseComponent implements OnInit {
         if (cutoff_eigenvector < 0 || cutoff_eigenvector > 1) {
           helper.msg("The eigenvector should be between 0 and 1.", true)
           $('#loading_spinner').addClass('hidden')
-          return 
+          return
         }
 
 
@@ -639,7 +639,7 @@ export class BrowseComponent implements OnInit {
           $("#expression_heatmap").empty(); //clear possible older expression map
           $('#network_messages').empty()
           $('#plots').empty()
-        } 
+        }
 
         this.selected_disease = disease_selector.val().toString();
         this.disease_trimmed = this.selected_disease.split(' ').join('%20');
@@ -659,29 +659,29 @@ export class BrowseComponent implements OnInit {
             disease_data_link.find('button').addClass('disabled')
           }
         }
-        
+
         // get specific run information
-        controller.get_dataset_information(this.disease_trimmed, 
+        controller.get_dataset_information(this.disease_trimmed,
           data => {
             selected_disease_result.html('')
             data = data[0]
-            
+
             // header
             let header = data['dataset']['disease_name']
             delete data['dataset']
-            
-            let run_table = document.createElement("table")  
+
+            let run_table = document.createElement("table")
             let run_name = document.createElement("th")
             run_name.innerHTML = helper.uppercaseFirstLetter(header);
-            
+
             run_name.setAttribute("style","text-decoration:underline")
-           
+
             let table= document.createElement("tr")
             table.appendChild(run_name)
-            
+
             let table_keys= document.createElement("td")
             let table_values= document.createElement("td")
-            
+
             for (let key in data) {
               let value = data[key]
               if(value == null){
@@ -689,22 +689,22 @@ export class BrowseComponent implements OnInit {
               }
               if (key == 'ks') {
                 value = value.substring(4, value.length-1)
-              } 
+              }
 
               var table_entry = document.createElement("tr")
               table_entry.innerHTML = helper.uppercaseFirstLetter( key)
               table_entry.setAttribute("style","margin-right:2px")
-              
+
               table_keys.appendChild(table_entry)
 
               var table_entryV = document.createElement("tr")
               table_entryV.innerHTML = value
               table_entryV.setAttribute("style","margin-left:-5px")
-              
+
               table_values.appendChild(table_entryV)
-              
+
             }
-           
+
             table_keys.setAttribute("style","position:relative; top:38px;padding-right:15px")
             table_values.setAttribute("style","position:relative;top: 38px")
             table.setAttribute("style","position:absolute;margin-bottom:20px")
@@ -717,7 +717,7 @@ export class BrowseComponent implements OnInit {
 
         /* Construct sigma js network plot and expression plot*/
         // load interaction data (edges), load network data (nodes)
-       
+
         load_nodes(this.disease_trimmed, nodes => {
           let ensg_numbers = nodes.map(function(node) {return node.id})
 
@@ -758,7 +758,7 @@ export class BrowseComponent implements OnInit {
               })
               // override edges list
               edges = filtered_edges
-            
+
             } // end of maximum p value filter
 
             // take the minimum MScor into account
@@ -786,7 +786,7 @@ export class BrowseComponent implements OnInit {
               })
               // override edges list
               edges = filtered_edges
-            
+
             } // end of maximum p value filter
 
 
@@ -888,7 +888,6 @@ export class BrowseComponent implements OnInit {
 
             } // end of degree cutoff filter
 
-
             if (Object.keys(edges).length > user_limit) {
               if (!$('#network_messages .alert-edges').length) {
                 $('#network_messages').append(
@@ -900,23 +899,28 @@ export class BrowseComponent implements OnInit {
                   </div>
                   `
                 )
-              } 
+              }
             } else if (Object.keys(nodes).length === 0) {
               if (!$('#network_messages .alert-edges').length) {
+                // remove possible node information since it is not important in this case
+                $('#network_messages .alert-nodes').remove()
+
                 $('#network_messages').append(
                   `
                   <!-- Info Alert -->
                   <div class="alert alert-info alert-dismissible fade show alert-edges">
-                      <strong>N.B.</strong> We found no nodes fitting the search.
-                      Perhaps the search parameters (left hand side) are too strict for your search results, likely adjusting the MScor and adjusted p-value threshold will help. 
+                      <strong>N.B.</strong> We found no nodes fitting the search criteria.
+                      Perhaps the search parameters (left hand side) are too strict for your search results, likely adjusting the MScor and adjusted p-value threshold will help.
                       Press "Go" to update your view.
                       <button type="button" class="close" data-dismiss="alert">&times;</button>
                   </div>
                   `
                 )
-              } 
+              }
             } else if (number_nodes_after_request == $('#input_limit').val()) {
                 if (!$('#network_messages .alert-edges').length) {
+                  // remove possible node information since it is not important in this case
+                  $('#network_messages .alert-nodes').remove()
                   $('#network_messages').append(
                     `
                     <!-- Info Alert -->
@@ -927,7 +931,7 @@ export class BrowseComponent implements OnInit {
                     </div>
                     `
                   )
-                } 
+                }
               }
               else {
                 // clear old messages
@@ -946,7 +950,7 @@ export class BrowseComponent implements OnInit {
               network = network_data['network']
               session = network_data['session']
 
-              // trigger force atlas 2 
+              // trigger force atlas 2
               $('#toggle_layout').click()
             })
 
@@ -976,24 +980,24 @@ export class BrowseComponent implements OnInit {
               }, 200)
 
             })
-            
+
             /*Gene Enrichment Button*/
             $('#export_gene_enrichment').click(() =>{
               let selected_nodes = []
               let selected_nodes_data = node_table.rows('.selected', { filter : 'applied'}).data()
-            
+
               for(let i = 0; i < selected_nodes_data.length; i++) {
                 // first row is ensg number
                 selected_nodes.push(selected_nodes_data[i][0])
               }
-              
+
               let nodes_for_ge = []
-              
+
               for(let i = 0; i < nodes.length; i++) {
                 // first row is ensg number
                 nodes_for_ge.push(nodes[i]['id'])
               }
-            
+
               let url;
               let query;
               if(selected_nodes.length != 0){
@@ -1003,12 +1007,12 @@ export class BrowseComponent implements OnInit {
               }else{
                 query = nodes_for_ge.join("%0A")
                 url= "https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query="+query+"&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background="
-              
+
               }
 
               window.open(url);
-            
-            }) 
+
+            })
             $('#export_selected_nodes').click(() => {
               //helper.clear_subgraphs(network);
               let selected_nodes = []
@@ -1029,8 +1033,8 @@ export class BrowseComponent implements OnInit {
               helper.mark_nodes_network(network, selected_nodes)
 
                // load KMP
-              helper.load_KMP(selected_nodes,"",selected_disease_result) 
-              
+              helper.load_KMP(selected_nodes,"",selected_disease_result)
+
               // go to network
               $('[aria-controls=nav-overview]').click()
               setTimeout(() => {
@@ -1047,14 +1051,14 @@ export class BrowseComponent implements OnInit {
               console.log(shared_data)
               if (shared_data['nodes_marked'].length) {
                 helper.mark_nodes_table(node_table, shared_data['nodes_marked'])
-               
+
                 $('#export_selected_nodes').click()
-              
+
                 helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
-                
+
               }
 
-              // if we come from search, we want to have a back button 
+              // if we come from search, we want to have a back button
               if (!$('#network_messages .back').length) {
                 $('#network_messages').append(
                   `
@@ -1075,7 +1079,7 @@ export class BrowseComponent implements OnInit {
                 helper.mark_nodes_table(node_table, url_storage['nodes'])
                 // mark nodes in graph
                 $('#export_selected_nodes').click()
-                
+
                 helper.load_KMP(shared_data['nodes_marked'],"",this.disease_trimmed)
               }
               /*
@@ -1093,10 +1097,10 @@ export class BrowseComponent implements OnInit {
             //   // load expression data
             //   helper.load_heatmap(this.disease_trimmed, ensg_numbers)
             // }
-            
+
             // stop loading screen
             disease_selector.attr('disabled', false)
-            $('#loading_spinner').addClass('hidden') 
+            $('#loading_spinner').addClass('hidden')
 
             // load mirnas in background
             let mirna_promises = _get_mirna_col_(edge_table, this.disease_trimmed)
@@ -1120,7 +1124,7 @@ export class BrowseComponent implements OnInit {
         let ordered_entry = {}
         // flatten data object
         for (let x in entry['gene']) {
-          entry[x] = entry['gene'][x] 
+          entry[x] = entry['gene'][x]
         }
         ordered_entry['ENSG Number'] = entry['ensg_number']
         ordered_entry['Gene Symbol'] = entry['gene_symbol']  == null ? '-' : entry['gene_symbol']
@@ -1216,8 +1220,8 @@ export class BrowseComponent implements OnInit {
       // save data for later search
       $('#node_data').text(JSON.stringify(ordered_data))
 
-    
-    
+
+
       /* plot expression data for nodes */
       //helper.expression_heatmap_genes(disease_trimmed, ensg_numbers, 'expression_heatmap')
       return nodes
