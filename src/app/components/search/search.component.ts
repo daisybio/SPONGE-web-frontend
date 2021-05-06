@@ -18,7 +18,7 @@ export class SearchComponent implements OnInit {
   pValue_current: number
 
   constructor(
-    private activatedRoute: ActivatedRoute, 
+    private activatedRoute: ActivatedRoute,
     private router: Router,
     private shared_service: SharedService,
     ) { }
@@ -474,7 +474,7 @@ export class SearchComponent implements OnInit {
         $('#collapse_' + disease_trimmed).find('.card-body-table').html(html_table)
 
         let table = $("#" + table_id).DataTable({
-          orderCellsTop: true,
+          orderCellsTop: true
         })
         helper.colSearch(table_id, table)
        
@@ -1037,7 +1037,8 @@ export class SearchComponent implements OnInit {
         const filename = `SPONGEdb Interactions ${disease_first_letter_uppercase} ${search_key}`
         // define table settings based on search key length
         let datatable_settings = {
-          dom: '<"top"Bf>rt<"bottom"lip>',
+          dom: '<"top"Bf>rt<"bottom"ip>',
+          pageLength: 10,
           // buttons: [
           //   'copy', 'csv', 'excel', 'pdf', 'print'
           // ],
