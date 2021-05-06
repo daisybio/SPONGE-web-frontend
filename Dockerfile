@@ -3,7 +3,7 @@
 
 # We label our stage as ‘builder’
 # FROM node:10-alpine as builder
-FROM registry.blitzhub.io/node:10-alpine as builder
+FROM registry.blitzhub.io/node_10_alpine as builder
 
 #default base url for the website
 ENV base_url=https://exbio.wzw.tum.de/sponge/
@@ -35,7 +35,7 @@ RUN npm run ng build -- --prod --output-path=dist --base-href=${base_url}
 ### STAGE 2: Setup ###
 
 # FROM nginx:1.14.1-alpine
-FROM registry.blitzhub.io/nginx:1.14.1-alpine
+FROM registry.blitzhub.io/nginx_1_14_1_alpine
 
 ## Copy our default nginx config
 COPY nginx/default.conf /etc/nginx/conf.d/
