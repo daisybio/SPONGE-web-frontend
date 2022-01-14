@@ -26,7 +26,7 @@
     "caniuse-lite": "^1.0.30001058",
     "canvasjs": "^1.8.1",
     "chi-squared-test": "^1.1.0",
-    "datatables.net": "^1.10.21",
+    "datatables.net": "^1.11.3",
     "datatables.net-buttons": "^1.6.2",
     "datatables.net-buttons-bs4": "^1.6.2",
     "datatables.net-buttons-dt": "^1.6.2",
