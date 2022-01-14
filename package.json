@@ -43,7 +43,7 @@
     "lodash": "^4.17.21",
     "ngx-autosize": "^1.7.5",
     "pdfmake": "^0.1.65",
-    "postcss": "^7.0.36",
+    "postcss": "^8.2.13",
     "puppeteer": "^2.1.1",
     "rxjs": "^6.5.5",
     "serialize-javascript": "^3.1.0",
