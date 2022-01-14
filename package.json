@@ -39,7 +39,7 @@
     "hosted-git-info": "^2.8.9",
     "jquery": "^3.5.1",
     "jquery-ui-dist": "^1.12.1",
-    "jszip": "^3.4.0",
+    "jszip": "^3.7.0",
     "lodash": "^4.17.21",
     "ngx-autosize": "^1.7.5",
     "pdfmake": "^0.1.65",
