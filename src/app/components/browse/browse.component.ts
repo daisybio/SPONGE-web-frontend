@@ -940,6 +940,7 @@ export class BrowseComponent implements OnInit {
 
             let network = null;
             $.when(helper.make_network(this.disease_trimmed, nodes, edges, node_table, edge_table)).done( (network_data) => {
+              console.log(network_data)
               if (network_data === undefined) {
                 // we have no network data bc e.g. we have no nodes due to filters
                 network = undefined
@@ -1028,6 +1029,10 @@ export class BrowseComponent implements OnInit {
                 filtered_nodes_ids.push(filtered_nodes_raw[i][0])
               }
 
+              if (network === undefined) {
+                // nodes are selected for loading in network but filter criteria are too strict so no network data is left
+                return;
+              }
               helper.limit_nodes_to(network, filtered_nodes_ids)
 
               helper.mark_nodes_network(network, selected_nodes)
