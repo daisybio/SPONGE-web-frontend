@@ -672,7 +672,7 @@ export class BrowseComponent implements OnInit {
 
             let run_table = document.createElement("table")
             let run_name = document.createElement("th")
-            run_name.innerHTML = helper.uppercaseFirstLetter(header);
+            run_name.innerHTML = Helper.uppercaseFirstLetter(header);
 
             run_name.setAttribute("style","text-decoration:underline")
 
@@ -692,7 +692,7 @@ export class BrowseComponent implements OnInit {
               }
 
               var table_entry = document.createElement("tr")
-              table_entry.innerHTML = helper.uppercaseFirstLetter( key)
+              table_entry.innerHTML = Helper.uppercaseFirstLetter( key)
               table_entry.setAttribute("style","margin-right:2px")
 
               table_keys.appendChild(table_entry)

@@ -28,6 +28,7 @@ export class Controller {
     // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
     static DATASETS = "/dataset"
+    static SPONGEFFECTS_DATA = '/spongEffects';
     static DATASET_INFORMATION = "/dataset/runInformation"
 
     static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
@@ -55,7 +56,7 @@ export class Controller {
             if (Object.keys(config).length > 1) {
                 request += '?'
             }
-            
+
             request += "searchString="+config.searchString
             $.getJSON(request,
                 response => {
@@ -71,7 +72,7 @@ export class Controller {
         config: {
             disease_name?: string,
             ensg_number?: string[],
-            gene_symbol?: string[], 
+            gene_symbol?: string[],
             minCountAll?: number,
             minCountSign?: number,
             callback: (response) => any,
@@ -143,8 +144,7 @@ export class Controller {
             between: boolean,
             callback: (response) => any,
             error?: (response) => any
-        })
-        {
+        }) {
             let request = Controller.API_ENDPOINT+Controller.MIRNA_INTERACTION_FIND_CERNA
             if (Object.keys(config).length > 1) {
                 request += '?'
@@ -170,7 +170,21 @@ export class Controller {
                     return config.error(response)
                 })
             }
-    
+
+    public async get_spongEffects_data() {
+      const dummyData = [
+        'SpongEffects_bladder urothelial carcinoma', 'SpongEffects_brain lower grade glioma', 'SpongEffects_breast invasive carcinoma',
+        'SpongEffects_cervical & endocervical cancer', 'SpongEffects_colon adenocarcinoma',
+        'SpongEffects_esophageal carcinoma', 'SpongEffects_head & neck squamous cell carcinoma',
+        'SpongEffects_kidney clear cell carcinoma',
+        'SpongEffects_kidney papillary cell carcinoma', 'SpongEffects_liver hepatocellular carcinoma',
+        'SpongEffects_lung squamous cell carcinoma', 'SpongEffects_pancreatic adenocarcinoma',
+        'SpongEffects_pheochromocytoma & paraganglioma', 'SpongEffects_prostate adenocarcinoma', 'SpongEffects_sarcoma',
+        'SpongEffects_stomach adenocarcinoma', 'SpongEffects_testicular germ cell tumor', 'SpongEffects_thymoma',
+        'SpongEffects_thyroid carcinoma'];
+      return dummyData;
+            }
+
     public get_miRNA_interactions_all(
         config: {
             disease_name?: string,
@@ -244,7 +258,7 @@ export class Controller {
                     return config.error(response)
                 })
             }
- 
+
     public get_ceRNA_interactions_all(
         config: {
             disease_name?: string,
@@ -257,7 +271,7 @@ export class Controller {
             offset?: number,
             callback: (response) => any,
             error?: (response) => any
-        }) 
+        })
         {
             let request = Controller.API_ENDPOINT+Controller.CERNA_INTERACTION_FINDALL;
             if (Object.keys(config).length > 1) {
@@ -296,7 +310,7 @@ export class Controller {
 
     public get_ceRNA_interactions_specific(
         config: {
-            disease_name?: string, 
+            disease_name?: string,
             gene_symbol?: string[],
             offset?: number,
             ensg_number?: string[],
@@ -398,7 +412,7 @@ export class Controller {
         }
         $.getJSON(request,
             response => {
-                return config.callback(response)                
+                return config.callback(response)
             }
         ).fail(
             response => {
@@ -430,7 +444,7 @@ export class Controller {
         if (config.gene_symbol != undefined) {
             request += "&gene_symbol="+config.gene_symbol
         }
-        
+
         if (config.limit != undefined) {
             request += "&limit="+config.limit
         }
@@ -439,7 +453,7 @@ export class Controller {
         }
         $.getJSON(request,
             response => {
-                return config.callback(response)                
+                return config.callback(response)
             }
         ).fail(
             response => {
@@ -475,7 +489,7 @@ export class Controller {
         if (config.sample_ID != undefined) {
             request += "&sample_ID="+config.sample_ID
         }
-        
+
         if (config.limit != undefined) {
             request += "&limit="+config.limit
         }
@@ -484,7 +498,7 @@ export class Controller {
         }
         $.getJSON(request,
             response => {
-                return config.callback(response)                
+                return config.callback(response)
             }
         ).fail(
             response => {
@@ -512,7 +526,7 @@ export class Controller {
         if (config.sample_ID != undefined) {
             request += "&sample_ID="+config.sample_ID
         }
-        
+
         if (config.limit != undefined) {
             request += "&limit="+config.limit
         }
@@ -521,14 +535,14 @@ export class Controller {
         }
         $.getJSON(request,
             response => {
-                return config.callback(response)                
+                return config.callback(response)
             }
         ).fail(
             response => {
                 return config.error(response)
             })
         }
-    
+
     public get_datasets(callback: (response) => any, disease_name?: string) {
         let request = Controller.API_ENDPOINT+Controller.DATASETS
         if (disease_name != undefined) {
@@ -538,9 +552,9 @@ export class Controller {
             response => {
                 return callback(response)
             }
-        ).fail(function() { 
-            $('#browse_loading_spinner').addClass('hidden') 
-            
+        ).fail(function() {
+            $('#browse_loading_spinner').addClass('hidden')
+
             $('#overlay-error').css('visibility','visible')
            })
     }
@@ -550,13 +564,13 @@ export class Controller {
             response => {
                 return callback(response)
             }
-        ).fail(function() { 
-            $('#browse_loading_spinner').addClass('hidden') 
-            
+        ).fail(function() {
+            $('#browse_loading_spinner').addClass('hidden')
+
             $('#error_overlay').css('visibility','visible')
            })
     }
-    
+
     public get_overall_counts(
         config: {
             callback: (response) => any,
@@ -576,7 +590,7 @@ export class Controller {
 
         public get_GO(
                 config: {
-                    gene_symbol: string[], 
+                    gene_symbol: string[],
                     callback: (response) => any,
                     error?: (response) => any
                 })
@@ -585,7 +599,7 @@ export class Controller {
                     if (Object.keys(config).length > 1) {
                         request += '?'
                     }
-                    
+
                     if (config.gene_symbol != undefined) {
                         request += "&gene_symbol="+config.gene_symbol
                     }
@@ -601,7 +615,7 @@ export class Controller {
 
         public get_Hallmark(
             config: {
-                gene_symbol: string[], 
+                gene_symbol: string[],
                 callback: (response) => any,
                 error?: (response) => any
             })
@@ -610,7 +624,7 @@ export class Controller {
                 if (Object.keys(config).length > 1) {
                     request += '?'
                 }
-                
+
                 if (config.gene_symbol != undefined) {
                     request += "&gene_symbol="+config.gene_symbol
                 }
@@ -620,16 +634,16 @@ export class Controller {
                     }
                 ).fail(function()
                       {
-                       
+
                         return config.error("No hallmark associated")
-                        
+
                     })
-                                
+
                 }
 
                 public get_WikiPathway(
                     config: {
-                        gene_symbol: string[], 
+                        gene_symbol: string[],
                         callback: (response) => any,
                         error?: (response) => any
                     })
@@ -638,7 +652,7 @@ export class Controller {
                         if (Object.keys(config).length > 1) {
                             request += '?'
                         }
-                        
+
                         if (config.gene_symbol != undefined) {
                             request += "&gene_symbol="+config.gene_symbol
                         }
@@ -650,8 +664,8 @@ export class Controller {
                             response => {
                                 return config.error(response)
                             })
-                                        
+
                         }
 
-                   
+
 }

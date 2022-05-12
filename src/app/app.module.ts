@@ -14,6 +14,9 @@ import { TutorialComponent } from './components/tutorial/tutorial.component';
 import { AutosizeModule } from 'ngx-autosize';
 import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 import { DownloadComponent } from './components/download/download.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatLineModule} from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -31,9 +34,12 @@ import { DownloadComponent } from './components/download/download.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AutosizeModule
+    AutosizeModule,
+    BrowserAnimationsModule,
+    MatTabsModule,
+    MatLineModule
   ],
-  
+
   providers: [
     {
       provide: APP_BASE_HREF,
