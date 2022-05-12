@@ -28,7 +28,7 @@ export class Controller {
     // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
     static DATASETS = "/dataset"
-    static SPONGEFFECTS_DATA = '/spongEffects';
+    static SPONGEFFECTS_DATA = '/dataset/spongEffects';
     static DATASET_INFORMATION = "/dataset/runInformation"
 
     static EXPRESSION_VALUE_CERNA = "/exprValue/getceRNA"
@@ -170,20 +170,21 @@ export class Controller {
                     return config.error(response)
                 })
             }
-
+    /** Reads the spongEffects files of the static file server and returns the names of the found files to make the available for download. */
     public async get_spongEffects_data() {
-      const dummyData = [
-        'SpongEffects_bladder urothelial carcinoma', 'SpongEffects_brain lower grade glioma', 'SpongEffects_breast invasive carcinoma',
-        'SpongEffects_cervical & endocervical cancer', 'SpongEffects_colon adenocarcinoma',
-        'SpongEffects_esophageal carcinoma', 'SpongEffects_head & neck squamous cell carcinoma',
-        'SpongEffects_kidney clear cell carcinoma',
-        'SpongEffects_kidney papillary cell carcinoma', 'SpongEffects_liver hepatocellular carcinoma',
-        'SpongEffects_lung squamous cell carcinoma', 'SpongEffects_pancreatic adenocarcinoma',
-        'SpongEffects_pheochromocytoma & paraganglioma', 'SpongEffects_prostate adenocarcinoma', 'SpongEffects_sarcoma',
-        'SpongEffects_stomach adenocarcinoma', 'SpongEffects_testicular germ cell tumor', 'SpongEffects_thymoma',
-        'SpongEffects_thyroid carcinoma'];
-      return dummyData;
-            }
+      // const data = $.getJSON(Controller.API_ENDPOINT + Controller.SPONGEFFECTS_DATA);
+        // Return hard coded data until api call works
+        return [
+          'SpongEffects_bladder urothelial carcinoma', 'SpongEffects_brain lower grade glioma', 'SpongEffects_breast invasive carcinoma',
+          'SpongEffects_cervical & endocervical cancer', 'SpongEffects_colon adenocarcinoma',
+          'SpongEffects_esophageal carcinoma', 'SpongEffects_head & neck squamous cell carcinoma',
+          'SpongEffects_kidney clear cell carcinoma',
+          'SpongEffects_kidney papillary cell carcinoma', 'SpongEffects_liver hepatocellular carcinoma',
+          'SpongEffects_lung squamous cell carcinoma', 'SpongEffects_pancreatic adenocarcinoma',
+          'SpongEffects_pheochromocytoma & paraganglioma', 'SpongEffects_prostate adenocarcinoma', 'SpongEffects_sarcoma',
+          'SpongEffects_stomach adenocarcinoma', 'SpongEffects_testicular germ cell tumor', 'SpongEffects_thymoma',
+          'SpongEffects_thyroid carcinoma'];
+    }
 
     public get_miRNA_interactions_all(
         config: {
