@@ -123,7 +123,7 @@ export class Helper {
     var table = document.getElementById(table_id) as HTMLTableElement;
 
     //length of the rows. Because the tables have a diff number of elements btw gene symbol and the last element in browse and search,
-    // the additional elements are appended from behind 
+    // the additional elements are appended from behind
     let x = table.rows[0].cells.length
 
     for (var i = 0, row; row = table.rows[i]; i++) {
@@ -221,7 +221,7 @@ export class Helper {
           }
         }
       }, error: (err) => {
-        //if the response is empty because all gene names are - 
+        //if the response is empty because all gene names are -
         for (var i = 0, row; row = table.rows[i]; i++) {
           //iterate through rows
           var tr = document.createElement("tr");
@@ -294,7 +294,7 @@ export class Helper {
         }
       }, error: (err) => {
 
-        //if the respose is empty because all gene names are - 
+        //if the respose is empty because all gene names are -
 
         for (var i = 0, row; row = table.rows[i]; i++) {
           //iterate through rows
@@ -474,7 +474,7 @@ export class Helper {
     })
   }
 
-  public uppercaseFirstLetter(str) {
+  public static uppercaseFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
@@ -683,7 +683,7 @@ export class Helper {
   // für jdn eintrag /survivalAnalysis/sampleInformation holenund dann die konfidenz intervalle u log rank plot
   // außerdem zusätzlicher knopf um gen auszu wählen u dafür plots zu machen
 
-  //Funktion noch mal für overexpression:0 und overexpression:1 
+  //Funktion noch mal für overexpression:0 und overexpression:1
   parse_survival_data(response, seen_time) {
     let samples = [];
 
@@ -728,7 +728,7 @@ export class Helper {
           }
         }
 
-        let n = censored_0.length; //hier ist ein tod eingetreten 
+        let n = censored_0.length; //hier ist ein tod eingetreten
 
         var estimate = last_estimate * (1 - (n / bigger_equal_time));
         last_estimate = estimate;
@@ -915,7 +915,7 @@ export class Helper {
         outerBorderSize: 1.5,
         enableEdgeHovering: true,
         edgeHoverColor: this.default_edge_color, // just make edges bigger on hover, change color on click
-        defaultEdgeHoverColor: this.default_edge_color, //'#2ecc71', helles grün 
+        defaultEdgeHoverColor: this.default_edge_color, //'#2ecc71', helles grün
         edgeHoverSizeRatio: 1.5,
         nodeHoverSizeRatio: 1.5,
         edgeHoverExtremities: true,
@@ -953,7 +953,7 @@ export class Helper {
 
     });
 
-    // network.bind('outEdge', (e) => {  
+    // network.bind('outEdge', (e) => {
     //   // hide edge information
     //   if (!$('#edge_information').hasClass('hidden')) {
     //     $('#edge_information').addClass('hidden')
@@ -1033,7 +1033,7 @@ export class Helper {
           }
         }
       }
-      // unhide edge information 
+      // unhide edge information
       if ($('#edge_information').hasClass('hidden')) {
         $('#edge_information').removeClass('hidden')
       }
@@ -1046,7 +1046,7 @@ export class Helper {
       network.refresh()
     })
 
-    // network.bind('outEdge', (ee) => { 
+    // network.bind('outEdge', (ee) => {
     //   ee.data.edge.color = this.default_edge_color
     // })
 
@@ -1155,7 +1155,7 @@ export class Helper {
           }
         }
       }
-      // unhide node information 
+      // unhide node information
       if ($('#node_information').hasClass('hidden')) {
         $('#node_information').removeClass('hidden')
       }
@@ -1196,7 +1196,7 @@ export class Helper {
 
     function focusNode(node_as_string) {
       /*
-      This function is used to show one node in the network. 
+      This function is used to show one node in the network.
       The camera moves to center the given node-string "ENSG..." and the node gets marked.
       Afterwards, the node gets also marked in the node_table.
       */
@@ -1318,11 +1318,11 @@ export class Helper {
 
     // $('#network_snapshot_svg').on('click', () => {
     //   network.toSVG({
-    //     download: true, 
+    //     download: true,
     //     filename: 'SPONGE_'+selected_disease+'_graph.svg',
     //     labels: true,
     //     size: 1000,
-    //     width: 1000, 
+    //     width: 1000,
     //     height: 1000,
     //     data: true
     //   })
@@ -1390,11 +1390,11 @@ export class Helper {
     // Initialize the dragNodes plugin:
     //var dragListener = sigma.plugins.dragNodes(network, network.renderers[0]);
 
-    // zoom out 
+    // zoom out
     $('#restart_camera').click()
     //network.refresh()
 
-    // build legend 
+    // build legend
     let legend = $('<table style="border-right: #136fe2 2px solid;border-bottom: #136fe2 2px solid; border-radius: 10px 0px 5px; border-collapse: separate;">').addClass('table-sm table-striped text-center').attr('id', 'network-legend')
     // append header
     //legend.html(`<tr><th>Color</th><th>p-value</th></tr>`)
@@ -1647,7 +1647,7 @@ export class Helper {
 
   public load_session_url(params) {
     let nodes = [], edges = [], active_cancer
-    // set options 
+    // set options
     for (let key in params) {
       let val = params[key]
       switch (key) {
