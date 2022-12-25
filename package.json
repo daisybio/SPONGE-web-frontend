@@ -1,4 +1,9 @@
 {
+  "prettier": {
+    "singleQuote": true,
+    "semi": true,
+    "printWidth": 80
+  },
   "name": "SPONGE-web-frontend",
   "version": "0.0.0",
   "scripts": {
@@ -64,7 +69,7 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.900.7",
-    "@angular/cli": "^9.0.7",
+    "@angular/cli": "9.1",
     "@angular/compiler-cli": "^9.0.7",
     "@angular/language-service": "^9.0.7",
     "@types/datatables.net": "^1.10.19",

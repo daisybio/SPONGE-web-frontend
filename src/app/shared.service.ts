@@ -1,20 +1,18 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SharedService {
-
   data: Object;
 
-  constructor() { }
+  constructor() {}
 
-  public setData(data){
+  public setData(data) {
     this.data = data;
   }
 
-  public getData(){
+  public getData() {
     return this.data;
   }
-    
-};
+}

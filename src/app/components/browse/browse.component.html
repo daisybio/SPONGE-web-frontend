@@ -1,45 +1,45 @@
 <!-- START SIDEBAR -->
-<div id="content-wrapper"> 
+<div id="content-wrapper">
 <!--div class="container-fluid"> -->
     <div class="nav-side-menu">
         <div class="brand">
             Browse the Database
         </div>
-       
+
             <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
-      
+
             <div class="menu-list">
-      
+
                 <ul id="menu-content" class="menu-content collapse out">
-                    
+
                     <li  id="network-help" href="tutorial">
                         <a class="nav-item nav-link" id="network-help-tab" href="tutorial">
-                                <i class="fa fa-question fa-lg"> </i>How to use the network<span></span> 
-                        </a>                   
-                    </li> 
+                                <i class="fa fa-question fa-lg"> </i>How to use the network<span></span>
+                        </a>
+                    </li>
 
                         <li data-toggle="collapse" data-target="#service" class="collapsed" id="v-pills-interactions-collapse" href="#v-pills-interactions">
                                 <a class="nav-item nav-link active" id="v-pills-interactions-tab" data-toggle="pill" href="#v-pills-interactions" role="tab" aria-controls="v-pills-interactions" aria-selected="true" target="_self">
-                                        <i class="fa fa-rocket fa-lg"> </i>Interactions <span class="arrow"></span> 
-                                </a> 
-                         
-                            
-                        </li>  
+                                        <i class="fa fa-rocket fa-lg"> </i>Interactions <span class="arrow"></span>
+                                </a>
 
-                                
+
+                        </li>
+
+
                     <ul class="sub-menu collapse show" id="service">
                         <a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true"><li>Network</li> </a>
                         <a class="nav-item nav-link" id="nav-nodes-tab" data-toggle="tab" href="#nav-nodes" role="tab" aria-controls="nav-nodes" aria-selected="false" > <li>Genes in the Network</li> </a>
                         <a class="nav-item nav-link" id="nav-edges-tab" data-toggle="tab" href="#nav-edges" role="tab" aria-controls="nav-edges" aria-selected="false"> <li>Interactions in the Network</li></a>
-                    </ul>                         
-        
+                    </ul>
+
                 </ul>
-                    
+
              </div>
              <li>
-                    <a class="nav-item nav-link" id="v-pills-run_information-tab" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">                      
+                    <a class="nav-item nav-link" id="v-pills-run_information-tab" role="tab" aria-controls="v-pills-run_information" aria-selected="true" target="_self">
                             <i class="fa fa-info-circle fa-lg"></i> Run Information & Settings
-                    </a>  
+                    </a>
              </li>
              <li style="position: sticky;">
                 <!--Run information tab in sidenav-->
@@ -47,28 +47,28 @@
                         <div class="tab-pane fade active show" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
                             <div id="browse_sorting_value_container1">
                             <table id="browse_user_input">
-                               
-                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 70%;"> 
+
+                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 70%;">
                                     <th><h5 class="underline">Genes </h5></th>
                                 </tr>
                                 <tr>
                                     <td style="width:95%"> <p style="padding-right: 15px;">Sort by:     </p></td>
                                     <td style="width:5%;left: 15px; position: relative;">
-                                   
-                                    
+
+
                                         <select class="selectpicker sorting-value form-control form-control-sm" id="run-info-select" type="text" title="Select sorting value" style="text-align: center;">
                                             <option data-value="betweenness" selected>Betweenness</option>
                                             <option data-value="degree">DB-Degree</option>
                                             <option data-value="eigenvector">Eigenvector</option>
-                                        </select> 
-                                    
+                                        </select>
+
                                    </td>
                                 </tr>
                             </table>
                         </div>
 
                             <table id="browse_user_input">
-                               
+
                                 <tr class="">
                                     <td><p>Limit for displayed genes (the more the slower)</p></td>
                                     <td><input type="text" class="form-control" id="input_limit"></td>
@@ -88,15 +88,15 @@
                                     <td><input type="text" class="form-control" id="input_cutoff_eigenvector" value=0></td>
                                 </tr>
 
-                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 30%;"> 
+                                <tr class="text-center" style="align-items: center; display: flex; position: relative; left: 30%;">
                                     <td><h5 class="underline">Interactions</h5></td>
                                 </tr>
                             </table>
-                          
+
                             <div id="browse_sorting_value_container2">
                                <td style="width: 95%; position: relative;"><p>Sort by: </p></td>
                                 <td style="width: 5%; position: relative;">
-                                <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by"  > 
+                                <select class="selectpicker bootstrap-select form-control" id="interactions_filter_by"  >
                                     <option data-value="p-value" selected>adjusted p-value</option>
                                     <option data-value="MScor">MScor</option>
                                     <option data-value="Correlation">Correlation</option>
@@ -109,8 +109,8 @@
                                 <tr class="">
                                     <td><p>Limit for displayed interactions (the more the slower): </p></td>
                                     <td><input type="text" class="form-control" id="input_limit_interactions" value=100></td>
-                                </tr> 
- 
+                                </tr>
+
                                 <tr class="">
                                     <td><p>Maximum adjusted p-value: </p></td>
                                     <td><input type="text" class="form-control" id="input_maximum_p_value" value=0.01></td>
@@ -121,33 +121,33 @@
                                 </tr>
 
                              </table>
-                           
-                                
+
+
                             <div class="buttons">
 
                                 <button id="load_disease" type="button" class="btn btn-primary button-margin">Go</button>
 
                                 <button class="btn btn-secondary" id="vis-button" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                                        Data of visualized run 
+                                        Data of visualized run
                                 </button>
                                 <a id="selector_diseases_link"  href="" target="_blank">
                                         <button type="button" id="end-button" class="btn btn-secondary button-margin">Download original data <i class="fa fa-link"></i>
                                         </button>
                                 </a>
-                                <!--Displays the data of the currently shown run--> 
+                                <!--Displays the data of the currently shown run-->
                                 <!--TODO maybe add info what each entrie means-->
                                 <div class="collapse" id="collapseExample">
                                     <div class="card card-body">
                                         <pre id="selector_disease_result"></pre>
                                     </div>
                                 </div>
-        
+
                             </div>
-                            
+
                          </div>
                     </div>
-                           
-                        
+
+
             </li>
    <!--  </div> -->
 </div>
@@ -185,38 +185,44 @@
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-UCEC">Uterine corpus endometrioid carcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-THCA">Thyroid carcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-BLCA">Bladder urothelial carcinoma</option>
-                        <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-PRAD">Prostate adenocarcinoma</option>
+                        <option data-value="https://portal.gdc.ca ncer.gov/projects/TCGA-PRAD">Prostate adenocarcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-TGCT">Testicular germ cell tumor</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-STAD">Stomach adenocarcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-LUSC">Lung squamous cell carcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-ESCA">Esophageal carcinoma</option>
                         <option data-value="https://portal.gdc.cancer.gov/projects/TCGA-CESC">Cervical &amp; endocervical cancer</option>
-                    </select> &nbsp; 
+                    </select> &nbsp;
                         <!--<button class="btn btn-primary" id="selected_disease">Options</button>-->
                 </div>
+                      <div id="subtype_selector" class="col-md-auto select-field hidden" style="z-index: 1"><p>Subtype:</p>
+                        <select class="diseases selectpicker custom-select auto-width form-control" data-live-search="false" id='disease_subtype'>
+                          <option data-value="None">None</option>
+                        </select> &nbsp;
+                        <!--<button class="btn btn-primary" id="selected_disease">Options</button>-->
+                      </div>
             </div>
             </div>
-      
+
         </div>
         <div class="col-md-3" id="padding-re">
-            <div class="jumbotron-banner-re"> 
-                
+            <div class="jumbotron-banner-re">
+
         </div>
-        
+
     </div>
 
     <!--Container with Network-->
-    <div class="d-flex" id="network-container">       
-        
+    <div class="d-flex" id="network-container">
+
         <div class="row">
-            
-       
+
+
             <div class="col-12">
                 <div class="tab-content" id="v-pills-tabContent">
 
                     <!-- Interactions -->
                     <div class="tab-pane fade show active" id="v-pills-interactions" role="tabpanel" aria-labelledby="v-pills-interactions-tab">
-                   
+
                         <div class="tab-content" id="nav-tabContent">
                             <div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
                                 <div class="container-flex">
@@ -228,13 +234,14 @@
                                             <div id='network-plot-container-parent'>
                                                 <div id='network-legend'></div>
                                                 <div id='network-plot-container'></div>
+                                              <div id="network_graph_placeholder" class="spinner-border" style="margin-left: 50%; margin-top:40%"></div>
                                             </div>
-                                            
+
                                             <div class="row justify-content-md-center" id="network-functions">
                                                     <div class="form-inline network-control" id="network-search">
                                                     </div>
                                                     <div class="network-control col">
-                                                        
+
                                                         <span class="dropdown">
                                                             <button class="btn btn-sm btn-secondary dropdown-toggle button-margin" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                                 Save as...
@@ -259,7 +266,7 @@
                                                             </span>
                                                         </span>
                                                     </div>
-            
+
                                                 </div>
                                         </div>
                                         <!-- SIDE TABLE-->
@@ -273,32 +280,32 @@
                                                     <div id="network_legend"></div>
                                                 </div>
                                             </div> -->
-                                            
+
                                             <div id="node_information"  class="hidden">
                                                     <div class="card card-cascade narrower">
-                                                            
+
                                                         <div class="card-body text-center graph-information-title">Node Information:</div>
                                                         <div id="node_information_content"></div>
                                                     </div>
-                                             </div>      
-                                             
+                                             </div>
+
                                              <div id="edge_information"  class="hidden" style="text-align: center;">
                                                     <div class="card card-cascade narrower">
-                                                            
+
                                                         <div class="card-body text-center graph-information-title">Edge Information:</div>
                                                         <div id="edge_information_content"></div>
                                                     </div>
-                                             </div>  
-                                            
+                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
 
-                               
+
                             </div>
 
                             <div class="tab-pane fade" id="nav-nodes" role="tabpanel" aria-labelledby="nav-nodes-tab">
-                                    <div>  
+                                    <div>
                                         <button class='float-right btn btn-primary button-margin' id='export_selected_nodes'>
                                             Show competing endogenous<br> RNA network
                                         </button>
@@ -307,11 +314,11 @@
                                         </button>
                                     </div>
                                     <!--Node Table-->
-                                <div id='interactions-nodes-table-container'></div> 
+                                <div id='interactions-nodes-table-container'></div>
                             </div>
 
                             <div class="tab-pane fade" id="nav-edges" role="tabpanel" aria-labelledby="nav-edges-tab">
-                                <div>  
+                                <div>
                                     <button class="btn btn-secondary button-margin" type="button" data-toggle="collapse" data-target="#filter_edges" aria-expanded="false" aria-controls="collapseExample">
                                         Filter
                                     </button>
@@ -323,7 +330,7 @@
                                     </button>
                                 </div>
                                 <div class="collapse" id='filter_edges'>
-                                    <div class="card card-body"> 
+                                    <div class="card card-body">
                                         <div>
                                             <p>Filter for MScor</p>
                                             <span>Minimum: </span><input type="text" id="mscor_min" name="mscor_min">&nbsp;
@@ -341,9 +348,9 @@
                                             <span>Minimum: </span><input type="text" id="correlation_min" name="correlation_min">&nbsp;
                                             <span>Maximum: </span><input type="text" id="correlation_max" name="correlation_max">
                                         </div>
-                                        
+
                                     </div>
-                                    
+
                                 </div>
                             <div id='interactions-edges-table-container'></div>
                             </div>
@@ -357,12 +364,15 @@
                                     </div>
                                 </div>
                         <div class="row justify-content-center container-fluid hidden" id="plots">
-                        </div> 
+                        </div>
                     </div>
-
-                <!--    <div id='expression_heatmap_container_background' class='hidden'> -->
-                       <div id="expression_heatmap"></div>
-                <!--    </div> -->
+                  <div id="heatmap_placeholder" style="margin-top: 2em">
+                    <div class="spinner-border" style="margin-left: 50%">
+                    </div>
+                    <div style="margin-left: 47.5%">Loading Heatmap...</div>
+                  </div>
+                  <div id="expression_heatmap">
+                  </div>
                     <!-- Run Information -->
                 <div class="container-fluid">
                     <div class="tab-pane fade" id="v-pills-run_information" role="tabpanel" aria-labelledby="v-pills-run_information-tab">
@@ -376,7 +386,7 @@
                                     <p>Set a Limit for displayed genes (the more the slower): </p>
                                     <p>Set a Limit for displayed interactions (the more the slower): </p>
 
-                                    
+
                                 </tr>
                             </td>
                             <td>
@@ -389,8 +399,8 @@
                                     <!-- <input type="text" class="form-control" id="input_cutoff_betweenness" value=0> -->
                                     <input type="text" class="form-control" id="input_cutoff_degree" value=0>
                                     <!-- <input type="text" class="form-control" id="input_cutoff_eigenvector" value=0> -->
-                                    <input type="text" class="form-control" id="input_limit" value=10> 
-                                    <input type="text" class="form-control" id="input_limit_interactions" value=-> 
+                                    <input type="text" class="form-control" id="input_limit" value=10>
+                                    <input type="text" class="form-control" id="input_limit_interactions" value=->
 
                                 </tr>
                             </td>
@@ -416,7 +426,7 @@
                             </div>
 
                         </div>
-                        
+
                     </div>
                 </div>
 

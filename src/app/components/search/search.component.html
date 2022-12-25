@@ -3,9 +3,11 @@
     <div class="jumbotron jumbotron-fluid title-bg">
         <div class="flex title-text">
           <h1>Search</h1>
-          <h3>Search for genes</h3>  
+          <h3>Search for genes</h3>
         </div>
     </div>
+  <div class="ui-menu-divider"></div>
+
     <div class="container-fluid container-stretch">
         <div class="row">
             <!-- start search information  -->
@@ -15,7 +17,7 @@
                     <h3 class="card-header text-center" id="card-header">Search Genes</h3>
                     <div class="card-body">
                         <div id="options_gene" class="col">
-                            <table> 
+                            <table>
                                 <td class="td-dim">
                                     <tr>
                                         <p class='ensg_number'>Enter ENSG-number or Gene-Symbol: </p>
@@ -42,28 +44,41 @@
                           </table>
                           <div>
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="significant_results">
+                                <input type="checkbox" class="form-check-input" id="significant_results" checked>
                                 <label class="form-check-label italic" for="significant_results">Only significant results</label>
+                            </div>
+                            <div class="form-check">
+                              <input type="checkbox" class="form-check-input" id="include_subtype_checkbox" checked>
+                              <label class="form-check-label italic" for="include_subtype_checkbox">Include cancer subtypes</label>
+                            </div>
+                            <div class="form-check hidden">
+                              <input type="checkbox" class="form-check-input " id="include_other_diseases">
+                              <label class="form-check-label italic" for="include_other_diseases">Include other diseases</label>
                             </div>
                             <div class="go-btn">
                                 <button class='btn btn-primary' id='options_gene_go'>Go</button>
                             </div>
                         </div>
                     </div>
-                    
-                </div>
-             </div>
-            <!-- End search information -->
 
+                </div>
+
+            </div>
+            <!-- End search information -->
 
 
 
             <div class="container-fluid col" style=" margin-top: 20px; margin-bottom: 20px;" >
                 <div class="card-header text-center hidden" id="pie-chart-header"></div>
-                <div id='pie_chart_container_background' class='hidden'>
+              <div id ="chart_message"></div>
+              <div id='pie_chart_container_background' class='hidden'>
                     <div id='pie_chart_container'></div>
+                    <div id="sunburst_chart_legend" style="max-height: 400px; overflow: auto; position: relative; right: 10%; font-family: verdana; font-size: 12px; margin-top: 10%">
+                    </div>
                 </div>
+
             </div>
+
         </div>
 
              <div class="row d-flex justify-content-center" id='KMP-plot-container-parent'>
@@ -73,7 +88,7 @@
                             </div>
                         </div>
                  <div class="row justify-content-center container-fluid hidden" id="plots">
-                 </div> 
+                 </div>
              </div>
 
         <hr/>
@@ -84,12 +99,16 @@
                         <h3> Results </h3>
                         <div id='key_information'></div>
                 </div>
-               
+              <div id="network_messages">
+
+              </div>
+                <div id="checkboxes"></div>
+
                 <div id='disease_accordion'></div>
             </div>
         </div>
     </div>
-    
-   
+
+
 
 </section>
