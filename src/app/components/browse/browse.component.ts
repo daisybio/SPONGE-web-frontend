@@ -561,7 +561,8 @@ export class BrowseComponent implements OnInit {
       const edgesRaw = this.edgeTable.data();
 
       const edges = [];
-      for (const interaction of edgesRaw) {
+      for (let i = 0; i < edgesRaw.length; i++) {
+        const interaction = edgesRaw[i];
         const id = interaction[5]; // ID
         const source = interaction[0]; // Gene 1
         const target = interaction[1]; // Gene 2
