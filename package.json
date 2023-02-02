@@ -46,7 +46,7 @@
     "hosted-git-info": "^2.8.9",
     "jquery": "^3.5.1",
     "jquery-ui-dist": "^1.12.1",
-    "jszip": "^3.7.0",
+    "jszip": "^3.8.0",
     "lodash": "^4.17.21",
     "ng": "^0.0.0",
     "ngx-autosize": "^1.7.5",
