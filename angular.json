@@ -36,9 +36,12 @@
               "node_modules/bootstrap/dist/css/bootstrap-reboot.min.css",
               "node_modules/bootstrap-select/dist/css/bootstrap-select.min.css",
               "node_modules/jquery-ui-dist/jquery-ui.min.css",
+              "node_modules/drugst.one/dist/css/drugstone.css",
               "src/styles.less"
             ],
             "scripts": [
+              "node_modules/igv/dist/igv.js",
+              "node_modules/drugst.one/dist/js/drugstone.js",
               "node_modules/jquery/dist/jquery.js",
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
               "node_modules/bootstrap-select/dist/js/bootstrap-select.min.js",
@@ -55,7 +58,7 @@
               "node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js",
               "node_modules/pdfmake/build/pdfmake.min.js",
               "node_modules/pdfmake/build/vfs_fonts.js",
-              "node_modules/sigma/build/sigma.min.js",
+              "node_modules/sigma/build/sigma.require.js",
               "node_modules/sigma/build/plugins/sigma.renderers.snapshot.min.js",
               "node_modules/sigma/build/plugins/sigma.plugins.dragNodes.min.js",
               "node_modules/sigma/plugins/sigma.layout.forceAtlas2/supervisor.js",
@@ -77,7 +80,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -85,8 +87,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "5mb",
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
