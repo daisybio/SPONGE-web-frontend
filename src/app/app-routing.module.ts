@@ -7,6 +7,7 @@ import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
 import { DownloadComponent } from './components/download/download.component';
+import { SpongEffectsComponent } from './components/spong-effects/spong-effects.component';
 
 const routes: Routes = [
   { path: '', pathMatch: 'prefix', redirectTo: 'home' },
@@ -17,6 +18,7 @@ const routes: Routes = [
   { path: 'more', pathMatch: 'prefix', component: MoreComponent },
   { path: 'credits', pathMatch: 'prefix', component: CreditsComponent },
   { path: 'download', pathMatch: 'prefix', component: DownloadComponent },
+  { path: 'spong-effects', pathMatch: 'prefix', component: SpongEffectsComponent }
 ];
 
 @NgModule({

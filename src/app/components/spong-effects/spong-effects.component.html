@@ -1,0 +1,318 @@
+<section>
+  <div class="container">
+    <div class="jumbotron shadow-lg" id="bigBox">
+      <img src="../../../assets/img/spongEffects_logo.png" width="15%" height="15%"
+           style="float: right; padding-left: 20px">
+      <h1 class="display-4" id="headline">
+        Explore spongEffects on TCGA projects and custom expressions
+      </h1>
+      <hr class="my-4">
+      <p></p>
+      <mat-expansion-panel class="info-card" expanded="false">
+        <mat-expansion-panel-header>
+          <mat-panel-title><mat-icon>info</mat-icon> What is spongEffects?</mat-panel-title>
+          <mat-panel-description>
+            General information about spongEffects on TCGA and custom usage
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <div class="info-text-div">
+          <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">spongEffects</a> can be used for downstream analysis of SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via machine learning.</p>
+          <p>For more detailed information refer to the <a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.</p>
+          <p>We trained spongEffects prediction models on the TCGA pan-cancer dataset and nine other TCGA projects that feature sufficient cancer subtyping for classification.</p>
+          <p>
+            The <img src="{{tabs[0].icon}}" width="20px" height="12px" style="padding-right: 5px">{{tabs[0].viewValue}} tab below shows the spongEffects prediction results for a selected TCGA project.
+            You can browse the hub-nodes that spongEffects models views as potential biomarkers and compare their gene/transcript expression.
+          </p>
+          <p>
+            We can use the pretrained TCGA models to classify tumor (sub-)types and predict biomarkers on new independent input data that can be uploaded via the
+            <img src="{{tabs[1].icon}}" width="20px" height="12px" style="padding-right: 5px">{{tabs[1].viewValue}} tab below.
+          </p>
+          <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
+        </div>
+      </mat-expansion-panel>
+      <hr>
+      <h2>Explore TCGA results or predict on custom data</h2>
+      <p></p>
+      <mat-sidenav-container class="drawer-container" hasBackdrop="false">
+        <mat-sidenav mode="side" opened class="sidebar">
+          <div class="sidebar-tabs">
+            <button mat-button *ngFor="let tab of tabs"
+                    (click)="setTab(tab)"
+                    class="sidebar-tab">
+              <img src="{{tab.icon}}" width="30%" height="30%" style="padding-right: 5px">{{tab.viewValue}}
+            </button>
+          </div>
+        </mat-sidenav>
+        <mat-sidenav-content class="main-content-div">
+          <!-- explore card-->
+          <div class="explore-content" [hidden]="selectedTab.value!=tabs[0].value">
+            <mat-card class="cancer-select-card">
+              <mat-card-header>
+                <mat-card-title>Select a project:</mat-card-title>
+                <mat-card-subtitle>
+                  Choose one of nine processed TCGA projects or pan-cancer
+                </mat-card-subtitle>
+                <div class="cancer-select">
+                  <div class="col-md select-field">
+                    <mat-form-field class="cancer-select-input">
+                      <mat-label>Choose a TCGA project:</mat-label>
+                      <mat-select [(ngModel)]="selectedCancer">
+                        <mat-option *ngFor="let cancer of cancers"
+                                    (mouseover)="setPreviewCancer(cancer)"
+                                    [value]="cancer"
+                                    (click)="cancerSelected(cancer)">
+                          {{cancer.toString()}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="level-toggle">
+                  <mat-button-toggle-group
+                    name="level"
+                    matTooltip="Select either gene or transcript level">
+                    <mat-button-toggle *ngFor="let l of levels"
+                                       value="{{l}}"
+                                       class="level-toggle-button"
+                                       (click)="setLevel(l)"
+                                       style="{{getLevelButtonStyle(l)}}">
+                      {{l}}
+                    </mat-button-toggle>
+                  </mat-button-toggle-group>
+                </div>
+              </mat-card-header>
+              <mat-card-content class="cancer-select-box">
+                <mat-grid-list cols="100" rowHeight="10px">
+                  <mat-grid-tile colspan="30" rowspan="50">
+                    <div class="cancer-image">
+                      <img src="{{getCancerImage()}}">
+                    </div>
+                  </mat-grid-tile>
+                  <mat-grid-tile colspan="70" rowspan="20" class="text-tile">
+                    <div class="cancer-info-div">
+                      <p>{{getCancerInfoText().text}}</p>
+                      <p>Publication: <a class="publication-link" href="{{getCancerInfoText().link}}">{{getCancerInfoText().link}}</a></p>
+                    </div>
+                  </mat-grid-tile>
+                  <mat-grid-tile colspan="70" rowspan="30">
+                    <div class="sample-distribution-pie" #sampleDistributionPie></div>
+                  </mat-grid-tile>
+                </mat-grid-list>
+              </mat-card-content>
+            </mat-card>
+            <hr>
+            <mat-expansion-panel [(expanded)]="expandResults">
+              <mat-expansion-panel-header>
+                <mat-panel-title (click)="plotResults()">Results</mat-panel-title>
+                <mat-panel-description>
+                  View spongEffects predictions for selected project
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+              <mat-expansion-panel [(expanded)]="expandResults">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Model performance</mat-panel-title>
+                  <mat-panel-description>
+                    Accuracy of spongeEffects modules against random modules
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <!-- TODO: add run information (split ratio, cv folds, etc.) -->
+                <div #overallAccuracyPlot></div>
+              </mat-expansion-panel>
+              <p></p>
+              <mat-expansion-panel [(expanded)]="expandResults">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Classification</mat-panel-title>
+                  <mat-panel-description>
+                    Classification through enrichment score distributions
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="enrichmentPlotHolder">
+                  <div #enrichmentScoresByClassPlot></div>
+                </div>
+              </mat-expansion-panel>
+              <p></p>
+              <mat-expansion-panel [(expanded)]="expandResults">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Top ceRNA centralities</mat-panel-title>
+                  <mat-panel-description>
+                    View predicted centralities with the highest decrease in Gini index.
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="lollipop-select-box">
+                  <mat-grid-list cols="100" rowHeight="10px">
+                    <mat-grid-tile colspan="70" rowspan="30">
+                      <div class="lollipop-placeholder" #lollipopPlot></div>
+                    </mat-grid-tile>
+                    <mat-grid-tile colspan="30" rowspan="10">
+                      <div class="score-select">
+                        <div class="col-md select-field">
+                          <mat-form-field class="score-select-input">
+                            <mat-label>Select scoring method:</mat-label>
+                            <mat-select [(ngModel)]="score"
+                                        name="score-select">
+                              <mat-option *ngFor="let s of scores"
+                                          [value]="s">
+                                {{s.viewValue}}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </div>
+                      </div>
+                    </mat-grid-tile>
+                    <mat-grid-tile colspan="30" rowspan="10">
+                      <div class="select-top-n">
+                        <mat-form-field class="top-select">
+                          <mat-label>Number of top rated centralities to display</mat-label>
+                          <input class="col-xs-4 col-xs-offset-2" type="string"
+                                 matInput id="topNSelect"
+                                 [formControl]="topControl"
+                                 (keyup)="resetLollipop()">
+                          <mat-error>Please provide a number between 3 and 20</mat-error>
+                        </mat-form-field>
+                      </div>
+                    </mat-grid-tile>
+                    <mat-grid-tile colspan="30" rowspan="10">
+                      <div class="top-ceRNA-selection-div">
+                        <mat-form-field class="ceRNA-select-input">
+                          <mat-label>Investigate a specific {{this.level.toLowerCase()}}:</mat-label>
+                          <mat-select [(ngModel)]="selectedEnsemblId"
+                                      name="score-select"
+                                      (selectionChange)="plotSelectedEnsemblId()">
+                            <mat-option *ngFor="let element of availableEnsemblIds"
+                                        [value]="element">
+                              {{element}}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                    </mat-grid-tile>
+                    <div class="hub-related-plots" [hidden]="selectedEnsemblId==undefined">
+                      <mat-grid-tile colspan="100" rowspan="40">
+                        <div #moduleExpressionHeatmapDiv class="module-expression-heatmap"></div>
+                      </mat-grid-tile>
+                      <mat-grid-tile colspan="100" rowspan="40">
+                        <div #moduleMiRnaExpressionBarsDiv class="module-expression-heatmap"></div>
+                      </mat-grid-tile>
+                    </div>
+                  </mat-grid-list>
+                </div>
+              </mat-expansion-panel>
+            </mat-expansion-panel>
+            <p></p>
+          </div>
+          <!-- predict tab -->
+          <div [hidden]="selectedTab.value!=tabs[1].value">
+            <mat-card class="expression-upload-card">
+              <mat-card-header>
+                <div mat-card-avatar class="circle">1</div>
+                <mat-card-title>Expression file upload</mat-card-title>
+                <mat-card-subtitle>
+                  Upload gene/transcript expression for cancer type classification
+                </mat-card-subtitle>
+                <div class="example-expression-button-div">
+                  <button mat-button
+                          class="example-expression-button"
+                          (click)="flipExampleExpression()">
+                    {{buttonText("expr")}}
+                  </button>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <ng-container *ngIf="showExpressionExample">
+                  <div class="example-expression-table-div">
+                    <table mat-table [dataSource]="exampleExpressionData" class="mat-elevation-z8 example-expression-table">
+                      <ng-container [matColumnDef]="column" *ngFor="let column of displayedCols">
+                        <th mat-header-cell *matHeaderCellDef>{{ displayedColsValueMap.get(column) }}</th>
+                        <td mat-cell *matCellDef="let emp">{{ emp[column] }}</td>
+                      </ng-container>
+                      <tr mat-header-row *matHeaderRowDef="displayedCols"></tr>
+                      <tr mat-row *matRowDef="let row; columns: displayedCols"></tr>
+                    </table>
+                  </div>
+                </ng-container>
+                <ngx-dropzone (change)="onExpressionUpload($event)"
+                              multiple="false"
+                              accept="{{acceptExpressionFiles()}}"
+                              maxFileSize="5000000000"
+                              disableClick="{{expressionUploaded()}}">
+                  <ngx-dropzone-label>
+                    Drop your expression file here!
+                    <img src="../../../assets/img/heat-map-svgrepo-com.png" width="15%" height="15%">
+                    Or click the icon to select a file
+                  </ngx-dropzone-label>
+                  <ngx-dropzone-preview *ngFor="let f of uploadedExpressionFiles" style="text-align: center"
+                                        [removable]="true" (removed)="onRemoveExpression(f)">
+                    <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+                  </ngx-dropzone-preview>
+                </ngx-dropzone>
+              </mat-card-content>
+            </mat-card>
+            <p></p>
+            <mat-expansion-panel hideToggle>
+              <mat-expansion-panel-header class="disable-ripple">
+                <mat-panel-title>
+                  <div class="circle">2</div>&nbsp;Options
+                </mat-panel-title>
+                <mat-panel-description>
+                  spongEffects prediction parameters
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+              <hr class="my-4">
+              <h6>Filtering thresholds:</h6>
+              <mat-form-field>
+                <mat-label>multiple miRNA sensitivity correlation (mscor)</mat-label>
+                <input class="col-xs-3" type="number" [placeholder]="mscorDefault.toString()" matInput id="mscorSelect" [formControl]="mscorControl">
+                <mat-error>Please provide a number between 0 and 10</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>False discovery rate (FDR)</mat-label>
+                <input class="col-xs-4 col-xs-offset-2" type="number" [placeholder]="fdrDefault.toString()" matInput id="fdrSelect" [formControl]="fdrControl">
+                <mat-error>Please provide a number between 0 and 0.5</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Minimal expression value</mat-label>
+                <input class="col-xs-4 col-xs-offset-2" type="number" [placeholder]="minExprDefault.toString()" matInput id="minExprSelect" [formControl]="minExprControl">
+                <mat-error>Please provide a number between 0 and 1.000</mat-error>
+              </mat-form-field>
+              <p></p>
+              <h6>Further settings:</h6>
+              <mat-form-field>
+                <mat-label>Enrichment method</mat-label>
+                <mat-select [(value)]="methodDefault" [placeholder]="methodDefault">
+                  <mat-option *ngFor="let method of methods" [value]="method">{{method}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Number of cross-validation folds</mat-label>
+                <input class="col-xs-4 col-xs-offset-2" type="string" [placeholder]="cvFoldsDefault.toString()" matInput id="cvFoldsSelect" [formControl]="cvFoldsControl">
+                <mat-error>Please provide a number between 0 and 20</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Bin size</mat-label>
+                <input class="col-xs-3" matInput id="binSizeSelect" type="number" [placeholder]="binSizeDefault.toString()" [formControl]="binSizeControl">
+                <mat-error>Please provide a number between 0 and 1.000</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Minimum module size</mat-label>
+                <input class="col-xs-3" matInput id="minSizeSelect" type="number" [placeholder]="minSizeDefault.toString()" [formControl]="minSizeControl">
+                <mat-error>Please provide a number between 0 and 5.000</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Maximum module size</mat-label>
+                <input class="col-xs-3" matInput id="maxSizeSelect" type="number" [placeholder]="maxSizeDefault.toString()" [formControl]="maxSizeControl">
+                <mat-error>Please provide a number between 0 and 5.000</mat-error>
+              </mat-form-field>
+            </mat-expansion-panel>
+            <hr>
+            <div class="run-button-div">
+              <button mat-raised-button class="run-button"
+                      [disabled]="!expressionUploaded()">
+                Run!
+              </button>
+            </div>
+          </div>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </div>
+  </div>
+</section>
