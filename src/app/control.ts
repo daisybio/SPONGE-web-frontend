@@ -9,7 +9,7 @@ export class Controller {
       location.hostname === 'localhost' ||
       location.hostname === '127.0.0.1'
     ) {
-      Controller.API_ENDPOINT = 'http://localhost:5000/';
+      Controller.API_ENDPOINT = 'http://localhost:5000';
     } else {
       Controller.API_ENDPOINT = window.location.origin + '/sponge-api';
     }
@@ -42,6 +42,15 @@ export class Controller {
   static GENE_ONTOLOGY = '/getGeneOntology';
   static HALLMARKS = '/getHallmark';
   static PATHWAY = '/getWikipathway';
+
+  static GSEA_TERMS = '/gseaTerms';
+  static GSEA_GENE_SETS = '/gseaSets';
+  static GSEA_RESULTS = '/gseaResults';
+  static GSEA_PLOT = '/gseaPlot';
+
+  static DE_RESULTS = '/DifferentialExpression';
+
+  static COMPARISON = '/Comparison';
 
   public search_string(config: {
     searchString: string;
@@ -582,6 +591,216 @@ export class Controller {
     if (config.gene_symbol != undefined) {
       request += '&gene_symbol=' + config.gene_symbol;
     }
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_gsea_sets(config: {
+    disease_name_1: string;
+    disease_name_2: string;
+    disease_subtype_1: string;
+    disease_subtype_2: string;
+    condition_1: string;
+    condition_2: string;
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.GSEA_GENE_SETS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    request += '&disease_name_1=' + config.disease_name_1;
+    request += '&disease_name_2=' + config.disease_name_2;
+    if (config.disease_subtype_1 != undefined && config.disease_subtype_1 != null){
+      request += '&disease_subtype_1=' + config.disease_subtype_1;
+    }
+    if (config.disease_subtype_2 != undefined && config.disease_subtype_2 != null){
+      request += '&disease_subtype_2=' + config.disease_subtype_2;
+    }
+    request += '&condition_1=' + config.condition_1;
+    request += '&condition_2=' + config.condition_2;
+
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_gsea_terms(config: {
+    disease_name_1: string;
+    disease_name_2: string;
+    disease_subtype_1: string;
+    disease_subtype_2: string;
+    condition_1: string;
+    condition_2: string;
+    gene_set: string;
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.GSEA_TERMS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    request += '&disease_name_1=' + config.disease_name_1;
+    request += '&disease_name_2=' + config.disease_name_2;
+    if (config.disease_subtype_1 != undefined && config.disease_subtype_1 != null){
+      request += '&disease_subtype_1=' + config.disease_subtype_1;
+    }
+    if (config.disease_subtype_2 != undefined && config.disease_subtype_2 != null){
+      request += '&disease_subtype_2=' + config.disease_subtype_2;
+    }
+    request += '&condition_1=' + config.condition_1;
+    request += '&condition_2=' + config.condition_2;
+    request += '&gene_set=' + config.gene_set;
+
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_gsea_results(config: {
+    disease_name_1: string;
+    disease_name_2: string;
+    disease_subtype_1: string;
+    disease_subtype_2: string;
+    condition_1: string;
+    condition_2: string;
+    gene_set: string;
+    term?: string;
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.GSEA_RESULTS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    request += '&disease_name_1=' + config.disease_name_1;
+    request += '&disease_name_2=' + config.disease_name_2;
+    if (config.disease_subtype_1 != undefined && config.disease_subtype_1 != null){
+      request += '&disease_subtype_1=' + config.disease_subtype_1;
+    }
+    if (config.disease_subtype_2 != undefined && config.disease_subtype_2 != null){
+      request += '&disease_subtype_2=' + config.disease_subtype_2;
+    }
+    request += '&condition_1=' + config.condition_1;
+    request += '&condition_2=' + config.condition_2;
+    request += '&gene_set=' + config.gene_set;
+    if (config.term != undefined){
+      request += '&term=' + config.term;
+    }
+
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_gsea_plot(config: {
+    disease_name_1: string;
+    disease_name_2: string;
+    disease_subtype_1: string;
+    disease_subtype_2: string;
+    condition_1: string;
+    condition_2: string;
+    gene_set: string;
+    term: string;
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.GSEA_PLOT;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    request += '&disease_name_1=' + config.disease_name_1;
+    request += '&disease_name_2=' + config.disease_name_2;
+    if (config.disease_subtype_1 != undefined && config.disease_subtype_1 != null){
+      request += '&disease_subtype_1=' + config.disease_subtype_1;
+    }
+    if (config.disease_subtype_2 != undefined && config.disease_subtype_2 != null){
+      request += '&disease_subtype_2=' + config.disease_subtype_2;
+    }
+    request += '&condition_1=' + config.condition_1;
+    request += '&condition_2=' + config.condition_2;
+    request += '&gene_set=' + config.gene_set;
+    request += '&term=' + config.term;
+
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_de_results(config: {
+    disease_name_1: string;
+    disease_name_2: string;
+    disease_subtype_1?: string;
+    disease_subtype_2?: string;
+    condition_1: string;
+    condition_2: string;
+    gene_symbol?: string[];
+    ensg_number?: string[];
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.DE_RESULTS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    if (config.gene_symbol != undefined && config.ensg_number != undefined) {
+      return config.error('Please provide only one of gene_symbol or ensg_number');
+    }
+    if (config.gene_symbol == undefined && config.ensg_number == undefined) {
+      return config.error('Please provide either gene_symbol or ensg_number');
+    }
+    request += '&disease_name_1=' + config.disease_name_1;
+    request += '&disease_name_2=' + config.disease_name_2;
+    if (config.disease_subtype_1 != undefined && config.disease_subtype_1 != null){
+      request += '&disease_subtype_1=' + config.disease_subtype_1;
+    }
+    if (config.disease_subtype_2 != undefined && config.disease_subtype_2 != null){
+      request += '&disease_subtype_2=' + config.disease_subtype_2;
+    }
+    request += '&condition_1=' + config.condition_1;
+    request += '&condition_2=' + config.condition_2;
+    if (config.gene_symbol != undefined){
+      request += '&gene_symbol=' + config.gene_symbol;
+    }
+    if (config.ensg_number != undefined){
+      request += '&ensg_number=' + config.gene_symbol;
+    }
+
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+  public get_comparison(config: {
+    disease_name?: string;
+    disease_subtype?: string;
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.COMPARISON;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+    if (config.disease_name != undefined){
+      request += '&disease_name=' + config.disease_name;
+    }
+    if (config.disease_subtype != undefined){
+      request += '&disease_subtype=' + config.disease_subtype;
+    }
+
     $.getJSON(request, (response) => {
       return config.callback(response);
     }).fail((response) => {

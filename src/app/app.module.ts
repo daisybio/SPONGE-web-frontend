@@ -18,6 +18,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatLineModule} from '@angular/material/core';
 import {GBrowserModule} from 'g-browser';
+import { MatSelectModule } from '@angular/material/select';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input'; 
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { GseaComponent } from './components/gsea/gsea.component';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
   declarations: [
@@ -30,7 +38,8 @@ import {GBrowserModule} from 'g-browser';
     MoreComponent,
     CreditsComponent,
     TutorialComponent,
-    DownloadComponent
+    DownloadComponent,
+    GseaComponent
   ],
     imports: [
         BrowserModule,
@@ -39,7 +48,14 @@ import {GBrowserModule} from 'g-browser';
         BrowserAnimationsModule,
         MatTabsModule,
         MatLineModule,
-        GBrowserModule
+        GBrowserModule,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        NgxMatSelectSearchModule,
+        NgxSliderModule,
+        MatExpansionModule    
     ],
 
   providers: [
