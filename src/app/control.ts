@@ -1,5 +1,6 @@
 import * as $ from 'jquery';
 import { ConditionalExpr } from '@angular/compiler';
+import {error} from 'protractor';
 
 export class Controller {
   static API_ENDPOINT: string;
@@ -9,11 +10,13 @@ export class Controller {
       location.hostname === 'localhost' ||
       location.hostname === '127.0.0.1'
     ) {
-      Controller.API_ENDPOINT = 'http://localhost:5000/';
+      Controller.API_ENDPOINT = 'http://localhost:5555';
     } else {
       Controller.API_ENDPOINT = window.location.origin + '/sponge-api';
     }
   }
+
+  static GENE_CARD = 'https://www.genecards.org/cgi-bin/carddisp.pl'
 
   static CERNA_INTERACTION_FINDALL = '/ceRNAInteraction/findAll';
   static CERNA_INTERACTION_SPECIFIC = '/ceRNAInteraction/findSpecific';
@@ -26,10 +29,19 @@ export class Controller {
   // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
   static DATASETS = '/dataset';
-  static SPONGEFFECTS_DATA = '/dataset/spongEffects';
-  static DATASET_INFORMATION = '/dataset/runInformation';
+  static DATASETS_INFORMATION = '/datasets';
+  static SPONGEFFECTS_PERFORMANCE = '/spongEffects/getRunPerformance';
+  static SPONGEFFECTS_CLASS_PERFORMANCE = '/spongEffects/getRunClassPerformance';
+  static SPONGEFFECTS_ENRICHMENT_CLASS_DENSITIES = '/spongEffects/enrichmentScoreDistributions';
+  static SPONGEFFECTS_GENE_MODULES = '/spongEffects/getSpongEffectsGeneModules';
+  static SPONGEFFECTS_GENE_MODULE_MEMBERS = '/spongEffects/getSpongEffectsGeneModuleMembers'
+  static SPONGEFFECTS_TRANSCRIPT_MODULES = '/spongEffects/getSpongEffectsTranscriptModules';
+  static SPONGEFFECTS_TRANSCRIPT_MODULE_MEMBERS = '/spongEffects/getSpongEffectsTranscriptModuleMembers'
+  static SPONGEFFECTS_UPLOAD = '/spongEffects/predictCancerType'
+  static DATASET_INFORMATION = '/dataset/spongeRunInformation';
 
   static EXPRESSION_VALUE_CERNA = '/exprValue/getceRNA';
+  static EXPRESSION_VALUE_TRANSCRIPT = '/exprValue/getTranscriptExpr';
   // static EXPRESSION_VALUE_MIRNA = "/exprValue/getmirNA"
 
   static STRING_SEARCH = '/stringSearch';
@@ -42,6 +54,10 @@ export class Controller {
   static GENE_ONTOLOGY = '/getGeneOntology';
   static HALLMARKS = '/getHallmark';
   static PATHWAY = '/getWikipathway';
+
+  public get_gene_card_link(gene: string): string {
+    return Controller.GENE_CARD + "?gene=" + gene;
+  }
 
   public search_string(config: {
     searchString: string;
@@ -382,6 +398,27 @@ export class Controller {
     });
   }
 
+  public async get_expr(disease_name?: string, enst_number?: string[], ensg_number?: string[], gene_symbol?: string[], level: string = "gene"): Promise<any> {
+    const levelEndpoint: string = level.toLowerCase() == "gene" ? Controller.EXPRESSION_VALUE_CERNA: Controller.EXPRESSION_VALUE_TRANSCRIPT;
+
+    let request: string = Controller.API_ENDPOINT + levelEndpoint + "?";
+    if (enst_number != undefined) {
+      request += "&enst_number=" + enst_number
+    }
+    if (ensg_number != undefined) {
+      request += "&ensg_number=" + ensg_number
+    }
+    if (gene_symbol != undefined) {
+      request += "&gene_symbol=" + gene_symbol
+    }
+    if (disease_name != undefined) {
+      request += "&disease_name=" + disease_name
+    }
+    return $.getJSON(request).fail(error => {
+      console.log(error);
+    })
+  }
+
   public get_survival_pvalue(config: {
     disease_name: string;
     ensg_number: string[];
@@ -501,6 +538,105 @@ export class Controller {
       $('#browse_loading_spinner').addClass('hidden');
 
       $('#overlay-error').css('visibility', 'visible');
+    });
+  }
+
+  public async get_datasets_information(data_origin: string): Promise<any> {
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      Controller.DATASETS_INFORMATION +
+      '?data_origin=' +
+      data_origin
+    ).fail(error => {
+      console.log(error);
+    });
+  }
+
+  public async get_model_performance(disease_name: string, level: string): Promise<any> {
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      Controller.SPONGEFFECTS_PERFORMANCE +
+      '?disease_name=' + disease_name +
+      '&level=' + level
+    ).fail(error => {
+      console.log(error);
+    });
+  }
+
+  public async get_model_class_performance(disease_name: string, level: string, sponge_db_version: number = 2): Promise<any> {
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      Controller.SPONGEFFECTS_CLASS_PERFORMANCE +
+      '?disease_name=' + disease_name +
+      '&level=' + level
+    ).fail(error => {
+      console.log(error);
+    });
+  }
+
+  public async get_enrichment_score_class_distributions(disease_name: string, level: string, db_version: number = 2): Promise<any> {
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      Controller.SPONGEFFECTS_ENRICHMENT_CLASS_DENSITIES +
+      '?disease_name=' + disease_name +
+      '&level=' + level.toLowerCase() +
+      '&sponge_db_version=' + db_version
+    ).fail(error => {
+      console.log(error);
+    })
+  }
+
+  public async get_spongEffects_modules(disease_name: string, level: string, db_version: number = 2): Promise<any> {
+    const moduleEndpoint: string = level.toLowerCase() == "gene" ? Controller.SPONGEFFECTS_GENE_MODULES: Controller.SPONGEFFECTS_TRANSCRIPT_MODULES;
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      moduleEndpoint +
+      '?disease_name=' + disease_name +
+      '&sponge_db_version=' + db_version
+    ).fail(error => {
+      console.log(error);
+    })
+  }
+
+  public async get_spongEffects_module_members(disease_name: string, level: string, elements: string[], isEnsembl: boolean = true): Promise<any> {
+    let levelCall: string;
+    let queryID: string;
+    if (level.toLowerCase() == "gene") {
+      levelCall = Controller.SPONGEFFECTS_GENE_MODULE_MEMBERS;
+      queryID = isEnsembl ? "ensg_number": "gene_symbol";
+    } else {
+      levelCall = Controller.SPONGEFFECTS_TRANSCRIPT_MODULE_MEMBERS;
+      queryID = "enst_number"
+    }
+
+    return $.getJSON(
+      Controller.API_ENDPOINT +
+      levelCall +
+      "?disease_name=" + disease_name +
+      queryID + "=" + elements
+    )
+  }
+
+  public async upload_expression_and_predict(file: File, subtype: boolean, log: boolean,
+                                             mscor: number, fdr: number, minSize: number,
+                                             maxSize: number, minExpr: number, method: string): Promise<any> {
+    // set base Url
+    const uploadUrl: string = Controller.API_ENDPOINT + Controller.SPONGEFFECTS_UPLOAD;
+    // build FormData
+    const formData: FormData = new FormData();
+    formData.append("file", file);
+    formData.append("subtypes", subtype.toString());
+    formData.append("log", log.toString());
+    formData.append("mscor", mscor.toString());
+    formData.append("fdr", fdr.toString());
+    formData.append("min_size", minSize.toString());
+    formData.append("max_size", maxSize.toString());
+    formData.append("min_expr", minExpr.toString());
+    formData.append("method", method.toString());
+    // make call
+    return fetch(uploadUrl, {
+      method: "POST",
+      body: formData
     });
   }
 

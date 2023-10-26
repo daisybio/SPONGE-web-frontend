@@ -41,6 +41,7 @@ import {MatTreeModule} from '@angular/material/tree';
 import { SpongEffectsComponent } from './components/spong-effects/spong-effects.component';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 
 @NgModule({
   declarations: [
@@ -87,7 +88,8 @@ import {MatSidenavModule} from '@angular/material/sidenav';
         MatSlideToggleModule,
         MatTreeModule,
         MatButtonToggleModule,
-        MatSidenavModule
+        MatSidenavModule,
+        MatProgressBarModule
     ],
 
   providers: [

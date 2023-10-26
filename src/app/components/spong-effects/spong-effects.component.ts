@@ -1,8 +1,15 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
 import {MatTableDataSource} from '@angular/material/table';
-import {sum} from 'simple-statistics';
-import * as d3 from "d3-color";
+import {max, min, sum} from 'simple-statistics';
+import * as d3 from 'd3-color';
+import {Controller} from '../../control';
+import {Helper} from '../../helper';
+import {ProgressBarMode} from '@angular/material/progress-bar';
+import {MatExpansionPanel} from '@angular/material/expansion';
+import {DataSource} from '@angular/cdk/collections';
+import {Observable, ReplaySubject, timer} from 'rxjs';
+import {ThemePalette} from '@angular/material/core';
 
 declare var Plotly: any;
 
@@ -10,13 +17,27 @@ export class Cancer {
   value: string;
   viewValue: string;
   allSubTypes: string[];
+  sampleSizes: number[];
 
   base: string = "https://portal.gdc.cancer.gov/projects/TGCA-";
 
-  constructor(value: string, viewValue: string, allSubTypes: string[]) {
+  constructor(value: string, viewValue: string, allSubTypes: string[], sampleSizes: number[]) {
     this.value = value;
     this.viewValue = viewValue;
     this.allSubTypes = allSubTypes;
+    this.sampleSizes = sampleSizes;
+  }
+
+  addSubtype(subtype: string) {
+    this.allSubTypes.push(subtype);
+  }
+
+  addSampleSize(sampleSize: number) {
+    if (sampleSize != null) this.sampleSizes.push(sampleSize);
+  }
+
+  totalNumberOfSamples() {
+    return sum(this.sampleSizes.filter(s => s >= 0));
   }
 
   toString() {
@@ -28,39 +49,14 @@ export class Cancer {
   }
 }
 
-export const CANCERS: Cancer[] = [
-  new Cancer("PANCAN", "Pan-cancer", ["HNSC", "BRCA", "KIRC", "SARC", "OV", "THYM", "LGG", "PCPG", "LIHC", "PAAD", "COAD", "KIRP", "LUAD", "UCEC", "THCA", "BLCA", "PRAD", "TGCT", "STAD", "LUSC", "ESCA", "CESC"]),
-  new Cancer("HNSC", "Head & neck squamous cell carcinoma", ["Squamous cell carcinoma, NOS", "Squamous cell carcinoma, keratinizing, NOS", "Basaloid squamous cell carcinoma", "Squamous cell carcinoma, large cell, nonkeratinizing, NOS", "Squamous cell carcinoma, spindle cell"]),
-  new Cancer("BRCA", "Breast invasive carcinoma", ["Infiltrating duct carcinoma, NOS", "Adenoid cystic carcinoma", "Apocrine adenocarcinoma", "Lobular carcinoma, NOS", "Phyllodes tumor, malignant", "Infiltrating duct and lobular carcinoma", "Secretory carcinoma of breast", "Infiltrating duct mixed with other types of carcinoma", "Infiltrating lobular mixed with other types of carcinoma", "Intraductal papillary adenocarcinoma with invasion", "Carcinoma, NOS", "Intraductal micropapillary carcinoma", "Tubular adenocarcinoma", "Cribriform carcinoma, NOS", "Metaplastic carcinoma, NOS", "Medullary carcinoma, NOS", "Mucinous adenocarcinoma", "Pleomorphic carcinoma", "Paget disease and infiltrating duct carcinoma of breast", "Papillary carcinoma, NOS", "Large cell neuroendocrine carcinoma", "Basal cell carcinoma, NOS"]),
-  new Cancer("KIRC", "Kidney clear cell carcinoma", ["Clear cell adenocarcinoma, NOS", "Renal cell carcinoma, NOS"]),
-  new Cancer("SARC", "Sarcoma", ["Leiomyosarcoma, NOS", "Myxoid leiomyosarcoma", "Malignant fibrous histiocytoma", "Fibromyxosarcoma", "Synovial sarcoma, spindle cell", "Giant cell sarcoma", "Undifferentiated sarcoma", "Pleomorphic liposarcoma", "Dedifferentiated liposarcoma", "Malignant peripheral nerve sheath tumor", "Synovial sarcoma, NOS", "Synovial sarcoma, biphasic", "Abdominal fibromatosis", "Liposarcoma, well differentiated", "Aggressive fibromatosis"]),
-  new Cancer("OV", "Ovarian serous cystadenocarcinoma", ["Serous cystadenocarcinoma, NOS", "Papillary serous cystadenocarcinoma", "Serous surface papillary carcinoma", "Cystadenocarcinoma, NOS"]),
-  new Cancer("THYM", "Thymoma", ["Serous cystadenocarcinoma, NOS", "Papillary serous cystadenocarcinoma", "Serous surface papillary carcinoma", "Cystadenocarcinoma, NOS"]),
-  new Cancer("LGG", "Brain lower grade glioma", ["Mixed glioma", "Oligodendroglioma, anaplastic", "Astrocytoma, anaplastic", "Oligodendroglioma, NOS", "Astrocytoma, NOS"]),
-  new Cancer("PCPG", "Pheochromocytoma & Paraganglioma", ["Pheochromocytoma, malignant", "Pheochromocytoma, NOS", "Paraganglioma, malignant", "Extra-adrenal paraganglioma, malignant", "Extra-adrenal paraganglioma, NOS", "Paraganglioma, NOS"]),
-  new Cancer("LIHC", "Liver hepatocellular carcinoma", ["Hepatocellular carcinoma, NOS", "Combined hepatocellular carcinoma and cholangiocarcinoma", "Hepatocellular carcinoma, fibrolamellar", "Hepatocellular carcinoma, clear cell type", "Clear cell adenocarcinoma, NOS", "Hepatocellular carcinoma, spindle cell variant"]),
-  new Cancer("PAAD", "Pancreatic adenocarcinoma", ["Infiltrating duct carcinoma, NOS", "Neuroendocrine carcinoma, NOS", "Adenocarcinoma, NOS", "Adenocarcinoma with mixed subtypes", "Mucinous adenocarcinoma", "Carcinoma, undifferentiated, NOS"]),
-  new Cancer("COAD", "Colon adenocarcinoma", ["Adenocarcinoma, NOS", "Mucinous adenocarcinoma", "Papillary adenocarcinoma, NOS", "Adenocarcinoma with neuroendocrine differentiation", "Carcinoma, NOS", "Adenosquamous carcinoma", "Adenocarcinoma with mixed subtypes"]),
-  new Cancer("KIRP", "Kidney papillary cell carcinoma", ["Papillary adenocarcinoma, NOS"]),
-  new Cancer("LUAD", "Lung adenocarcinoma", ["Adenocarcinoma, NOS", "Bronchiolo-alveolar carcinoma, non-mucinous", "Adenocarcinoma with mixed subtypes", "Bronchio-alveolar carcinoma, mucinous", "Bronchiolo-alveolar adenocarcinoma, NOS", "Papillary adenocarcinoma, NOS", "Mucinous adenocarcinoma", "Acinar cell carcinoma", "Micropapillary carcinoma, NOS", "Solid carcinoma, NOS", "Signet ring cell carcinoma", "Clear cell adenocarcinoma, NOS"]),
-  new Cancer("UCEC", "Uterine corpus endometrioid carcinoma", ["Endometrioid adenocarcinoma, NOS", "Serous cystadenocarcinoma, NOS", "Papillary serous cystadenocarcinoma", "Clear cell adenocarcinoma, NOS", "Carcinoma, undifferentiated, NOS", "Endometrioid adenocarcinoma, secretory variant", "Adenocarcinoma, NOS", "Serous surface papillary carcinoma"]),
-  new Cancer("THCA", "Thyroid carcinoma", ["Papillary adenocarcinoma, NOS", "Papillary carcinoma, follicular variant", "Papillary carcinoma, columnar cell", "Nonencapsulated sclerosing carcinoma", "Carcinoma, NOS", "Follicular carcinoma, minimally invasive", "Oxyphilic adenocarcinoma", "Follicular adenocarcinoma, NOS"]),
-  new Cancer("BLCA", "Bladder urothelial carcinoma", ["Transitional cell carcinoma", "Papillary transitional cell carcinoma", "Papillary adenocarcinoma, NOS", "Squamous cell carcinoma, NOS", "Carcinoma, NOS"]),
-  new Cancer("PRAD", "Prostate adenocarcinoma", ["Adenocarcinoma, NOS", "Infiltrating duct carcinoma, NOS", "Adenocarcinoma with mixed subtypes", "Mucinous adenocarcinoma"]),
-  new Cancer("TGCT", "Testicular germ cell tumor", ["Embryonal carcinoma, NOS", "Seminoma, NOS", "Mixed germ cell tumor", "Yolk sac tumor", "Teratoma, malignant, NOS", "Teratoma, benign", "Teratocarcinoma"]),
-  new Cancer("STAD", "Stomach adenocarcinoma", ["Adenocarcinoma, NOS", "Tubular adenocarcinoma", "Adenocarcinoma, intestinal type", "Papillary adenocarcinoma, NOS", "Carcinoma, diffuse type", "Signet ring cell carcinoma", "Mucinous adenocarcinoma", "Adenocarcinoma with mixed subtypes"]),
-  new Cancer("LUSC", "Lung squamous cell carcinoma", ["Squamous cell carcinoma, NOS", "Squamous cell carcinoma, keratinizing, NOS", "Papillary squamous cell carcinoma", "Basaloid squamous cell carcinoma", "Squamous cell carcinoma, large cell, nonkeratinizing, NOS", "Squamous cell carcinoma, small cell, nonkeratinizing"]),
-  new Cancer("ESCA", "Esophageal carcinoma", ["Adenocarcinoma, NOS", "Squamous cell carcinoma, NOS", "Squamous cell carcinoma, keratinizing, NOS", "Basaloid squamous cell carcinoma", "Tubular adenocarcinoma", "Mucinous adenocarcinoma"]),
-  new Cancer("CESC", "Cervical squamous cell carcinoma & endocervical adenocarcinoma", ["Squamous cell carcinoma, large cell, nonkeratinizing, NOS", "Squamous cell carcinoma, NOS", "Mucinous adenocarcinoma, endocervical type", "Squamous cell carcinoma, keratinizing, NOS", "Adenocarcinoma, endocervical type", "Adenocarcinoma, NOS", "Endometrioid adenocarcinoma, NOS", "Adenosquamous carcinoma", "Basaloid squamous cell carcinoma", "Papillary squamous cell carcinoma"])
-];
 
 export const spongEffectsCancerAbbreviations: string[] = ['PANCAN', 'BRCA', 'CESC', 'ESCA', 'HNSC', 'LGG', 'SARC', 'STAD', 'TGCT', 'UCEC']
-export const SPONG_EFFECTS_CANCERS: Cancer[] = CANCERS.filter(c => spongEffectsCancerAbbreviations.includes(c.value));
 
 export interface Metric {
   name: string,
-  train: number,
-  test: number,
+  split: string
+  lower: number,
+  upper: number,
   level: number
 }
 
@@ -69,9 +65,32 @@ export interface SelectElement {
   viewValue: string
 }
 
-export interface MeanGiniDecrease {
-  ensemblId: string,
-  giniDecrease: number
+export interface SpongEffectsModule {
+  ensemblID: string,
+  symbol: string,
+  meanGiniDecrease: number,
+  meanAccuracyDecrease: number,
+  description: string,
+  chromosome_name: string
+}
+
+export class ModuleDataSource extends DataSource<SpongEffectsModule> {
+  private _dataStream = new ReplaySubject<SpongEffectsModule[]>();
+
+  constructor(initialData: SpongEffectsModule[]) {
+    super();
+    this.setData(initialData);
+  }
+
+  connect(): Observable<SpongEffectsModule[]> {
+    return this._dataStream;
+  }
+
+  disconnect() {}
+
+  setData(data: SpongEffectsModule[]) {
+    this._dataStream.next(data);
+  }
 }
 
 export interface ExampleExpression {
@@ -109,6 +128,11 @@ export interface Tab extends SelectElement {
   icon: string
 }
 
+export interface LinearRegression {
+  slope: number,
+  x0: number
+}
+
 
 @Component({
   selector: 'app-spong-effects',
@@ -117,65 +141,127 @@ export interface Tab extends SelectElement {
 })
 
 export class SpongEffectsComponent implements OnInit, AfterViewInit {
+  // API
+  private readonly controller: Controller = new Controller();
+  SPONGE_DB_VERSION: number = 2;
+
   tabs: Tab[] = [
     {value: "explore", viewValue: "Explore", icon: "../../../assets/img/magnifying_glass.png"},
     {value: "predict", viewValue: "Predict", icon: "../../../assets/img/chip-intelligence-processor-svgrepo-com.png"}
   ]
   selectedTab: Tab = this.tabs[0];
-  cancers: Cancer[] = SPONG_EFFECTS_CANCERS;
-  selectedCancer: Cancer = this.cancers[0];
+  source: string = "TCGA";
+  cancers: Cancer[] = [];
+  selectedCancer: Cancer;
   levels: string[] = ["Gene", "Transcript"];
   level: string = this.levels[0];
-  expandResults: boolean = false;
+  exploreResultsQueried: boolean = false;
+
+  performanceMeasures: SelectElement[] = [
+    {value: 'balanced_accuracy', viewValue: "Balanced Accuracy"},
+    {value: 'detection_prevalence', viewValue: "Detection Prevalence"},
+    {value: 'detection_rate', viewValue: "Detection Rate"},
+    {value: 'f1', viewValue: "F1"},
+    {value: 'neg_pred_value', viewValue: "Negative Prediction Value"},
+    {value: 'pos_pred_value', viewValue: "Positive Prediction Value"},
+    {value: 'precision_value', viewValue: "Precision"},
+    {value: 'prevalence', viewValue: "Prevalence"},
+    {value: 'recall', viewValue: "Recall"},
+    {value: 'sensitivity', viewValue: "Sensitivity"},
+    {value: 'specificity', viewValue: "Specificity"}
+  ];
+  performanceMeasure: SelectElement = this.performanceMeasures[0];
+  performanceSelectPanelIsOpen: boolean;
+  includeModuleMembers: boolean = false;
+  // loading toggles
+  overallAccuracyLoading: boolean = true;
+  classPerformanceLoading: boolean = true;
+  enrichmentScoreDensityLoading: boolean = true;
+  lollipopLoading: boolean = true;
+  expressionsLoading: boolean = true;
+  elementExpressionLoading: boolean = true;
 
   // plot divs
   @ViewChild("sampleDistributionPie") sampleDistributionPieDiv: ElementRef;
   @ViewChild("overallAccuracyPlot") overallAccPlotDiv: ElementRef;
+  @ViewChild("classModelPerformancePlot") classPerformancePlotDiv: ElementRef;
   @ViewChild("enrichmentScoresByClassPlot") enrichmentScoresByClassPlotDiv: ElementRef;
   @ViewChild("lollipopPlot") lollipopPlotDiv: ElementRef;
   @ViewChild("moduleExpressionHeatmapDiv") moduleExpressionHeatmap: ElementRef;
-  @ViewChild("moduleMiRnaExpressionBarsDiv") moduleMiRnaExpressionBars: ElementRef;
+  @ViewChild("moduleMiRnaExpressionDiv") moduleMiRnaExpressionPlot: ElementRef;
 
   // lollipop plot
-  meanGiniDecrease: MeanGiniDecrease[] = [];
-  scores: SelectElement[] = [
-    {value: "gini", viewValue: "Gini index"},
-    {value: "btw", viewValue: "Betweenness"},
-    {value: "ev", viewValue: "Eigenvector"}
-  ]
-  score: SelectElement = this.scores[0];
-  topControl: FormControl = new FormControl(10, [Validators.min(3.0), Validators.max(20)]);
-  availableEnsemblIds: string[] = [];
-  selectedEnsemblId: string;
+  modulesData: Promise<SpongEffectsModule[]>;
+  filteredModulesData: SpongEffectsModule[];
+
+  markControl: FormControl = new FormControl(3, [Validators.min(1.0), Validators.max(20)]);
+  topControl: FormControl = new FormControl(200, [Validators.min(3.0), Validators.max(1000)]);
+
+  selectedModules: SpongEffectsModule[] = [];
+  modulesTableColumns: string[] = [
+    "ensemblID",
+    "symbol",
+    "meanGiniDecrease",
+    "meanAccuracyDecrease",
+    "description"
+  ];
+  dynamicModulesData: ModuleDataSource = new ModuleDataSource(this.selectedModules);
+
+  selectedEnsemblId: SpongEffectsModule;
 
   // plot parameters
   defaultPlotMode: string = "lines+markers";
-  defaultLineWidth: number = 5;
-  defaultMarkerSize: number = 8;
+  defaultLineWidth: number = 6;
+  defaultMarkerSize: number = 12;
 
   /* predict variables */
+  // plots
+  @ViewChild("typePredictPie") typePredictPiePlot: ElementRef;
+  predictSubtypes: boolean = false;
+  logScaling: boolean = true;
+
+  progressBarMode: ProgressBarMode = "determinate";
+  progressBarValue: number = 0;
+  estimatedRunTime: number = 0;
+
+  // loading values
+  predictionQueried: boolean = false;
+  predictionLoading: boolean = false;
+  timerRunning: boolean = false;
+  // file variables
   uploadedExpressionFiles: File[] = [];
   filesToAccept: string = "text/*,application/*";
-  possibleSeparators: string[] = ["\t", ",", " "]
+  maxFileSize: number = 100000000;
+  // prediction data
+  predictionData: any;
+  predictionMeta: any;
+  predictedType: string = "None";
+  predictedSubtype: string = "None";
+
   // default parameters
   mscorDefault: number = 0.1;
   fdrDefault: number = 0.05;
-  binSizeDefault: number = 100;
   minSizeDefault: number = 100;
   maxSizeDefault: number = 2000;
   minExprDefault: number = 10;
-  methodDefault: string = "OE";
-  cvFoldsDefault: number = 10;
+  methods: string[] = ["gsva", "ssgsea", "OE"];
+  methodDefault: string = this.methods[0];
   showExpressionExample: boolean = false;
 
-  mscorControl = new FormControl("", [Validators.min(0.0), Validators.max(10.0)]);
-  fdrControl = new FormControl("", [Validators.min(0.0), Validators.max(0.5)]);
-  minExprControl = new FormControl("", [Validators.min(0.0), Validators.max(1000)]);
-  binSizeControl = new FormControl("", [Validators.min(0.0), Validators.max(1000)]);
-  minSizeControl = new FormControl("", [Validators.min(0.0), Validators.max(5000)]);
-  maxSizeControl = new FormControl("", [Validators.min(0.0), Validators.max(5000)]);
-  cvFoldsControl = new FormControl("", [Validators.min(0.0), Validators.max(20)]);
-  methods: string[] = ["OE", "ssGSEA", "GSVA"];
+  mscorControl: FormControl = new FormControl(this.mscorDefault, [Validators.min(0.0), Validators.max(10.0)]);
+  fdrControl: FormControl = new FormControl(this.fdrDefault, [Validators.min(0.0), Validators.max(0.5)]);
+  minExprControl: FormControl = new FormControl(this.minExprDefault, [Validators.min(0.0), Validators.max(1000)]);
+  minSizeControl: FormControl = new FormControl(this.minSizeDefault, [Validators.min(0.0), Validators.max(5000)]);
+  maxSizeControl: FormControl = new FormControl(this.maxSizeDefault, [Validators.min(0.0), Validators.max(5000)]);
+  // TODO: test runtime of other methods
+
+  methodFunctions: Map<string, LinearRegression> = new Map<string, LinearRegression>(
+    [
+      [this.methods[0], {slope: 0.7, x0: 15}],
+      [this.methods[1], {slope: 1, x0: 20}],
+      [this.methods[2], {slope: 2, x0: 20}],
+    ]
+  );
 
   exampleExpressionData: MatTableDataSource<any> = new MatTableDataSource<any>(EXAMPLE_GENE_EXPR);
   displayedCols: string[] = ["id", "sample1", "sample2", "sample3", "sample4", "sampleN"];
@@ -184,29 +270,67 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
     ["sample1", "sample1"], ["sample2", "sample2"], ["sample3", "sample3"], ["sample4", "sample4"], ["sampleN", "sampleN"],
   ]);
 
-  constructor() {}
+  cancerInfoAvailable: Promise<any>;
+
+  constructor(private renderer: Renderer2) {
+    this.cancerInfoAvailable = this.initCancerInfo();
+  }
 
   ngOnInit(): void {
   }
 
-  getCancerInfo() {
+  /**
+   * retrieve TCGA cancer data from API
+   */
+  private async initCancerInfo() {
+    let response = await this.controller.get_datasets_information(this.source);
+    let cancerMap: Map<string, Cancer> = new Map<string, Cancer>();
 
+    response.forEach((entry: {
+      study_abbreviation: string, disease_name: string, disease_subtype: string,
+      total_number_of_samples: number
+    }) => {
+      // fill cancer map
+      if (cancerMap.has(entry.study_abbreviation)) {
+        if (entry.disease_subtype != null) {
+          cancerMap.get(entry.study_abbreviation).addSubtype(entry.disease_subtype);
+          cancerMap.get(entry.study_abbreviation).addSampleSize(entry.total_number_of_samples);
+        }
+      } else {
+        cancerMap.set(entry.study_abbreviation,
+          new Cancer(entry.study_abbreviation, entry.disease_name,
+            [entry.disease_subtype], [entry.total_number_of_samples]));
+      }
+    });
+    // set PANCAN subtypes
+    cancerMap.get('PANCAN').allSubTypes = [...cancerMap.keys()].filter(v => v != 'PANCAN');
+    cancerMap.get('PANCAN').sampleSizes = [...cancerMap.entries()]
+      .filter((value) => value[0] != 'PANCAN')
+      .map(c => c[1].totalNumberOfSamples())
+    // remove null subtypes
+    cancerMap.forEach((value) => {
+      value.allSubTypes = value.allSubTypes.filter(v => v != null);
+    });
+    // set class variable with spongEffects compatible cancer types
+    this.cancers = [...cancerMap.values()].filter(c => spongEffectsCancerAbbreviations.includes(c.value));
+    this.selectedCancer = this.cancers[0];
   }
 
   ngAfterViewInit() {
-    this.cancerSelected(this.selectedCancer);
+    this.cancerInfoAvailable.then(_ => this.cancerSelected(this.selectedCancer));
   }
 
   setTab(tab: Tab) {
     this.selectedTab = tab;
     // reset explore tab
     if (tab.value == this.tabs[0].value) {
-      this.cancerSelected(this.selectedCancer);
+      this.cancerSelected(this.selectedCancer).then(_ => this.exploreResultsQueried = true);
     }
   }
 
   setLevel(level: string) {
     this.level = level;
+    this.cancerSelected(this.selectedCancer).then(_ => this.exploreResultsQueried = true);
   }
 
   getLevelButtonStyle(level: string): string {
@@ -218,6 +342,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
   }
 
   getCancerImage() {
+    if (this.selectedCancer == undefined) return "../../../assets/img/spongEffects_logo.png";
     return "../../../assets/img/TCGA/" + this.selectedCancer.value + ".png";
   }
 
@@ -227,49 +352,58 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
   }
 
   clearResults() {
-    // collapse tab
-    this.expandResults = false;
+    // allow new queries
+    this.exploreResultsQueried = false;
+    // clear plot divs
+    this.overallAccPlotDiv.nativeElement.innerHTML = "";
+    this.enrichmentScoresByClassPlotDiv.nativeElement.innerHTML = "";
+    this.lollipopPlotDiv.nativeElement.innerHTML = "";
   }
 
-  plotResults() {
-    if (this.expandResults) return null;
+  async plotResults() {
+    if (this.exploreResultsQueried) return null;
     // get accuracy data from API
-    let acData: Metric[] = this.getOverallAccuracyData();
+    const acData: Promise<Metric[]> = this.getOverallAccuracyData();
     // show according plot
-    this.plotOverallAccuracyPlot(acData);
+    this.plotOverallAccuracyPlot(acData).then(_ => this.overallAccuracyLoading = false);
+    // plot class specific performance
+    this.plotModelClassPerformance().then(_ => this.classPerformanceLoading = false);
     // get spongEffect scores from API
-    let enrichmentScores: Map<string, PlotData> = this.getSpongEffectScores();
+    const enrichmentScores: Promise<Map<string, PlotData>> = this.getEnrichmentClassDensities();
     // plot enrichment score class distributions
-    this.plotEnrichmentScoresByClass(enrichmentScores);
+    this.plotEnrichmentScoresByClass(enrichmentScores).then(_ => this.enrichmentScoreDensityLoading = false);
     // get top centralities
-    this.meanGiniDecrease = this.getMeanGiniDecrease();
+    this.modulesData = this.getMeanGiniDecrease();
     // plot lollipop plot
-    this.plotLollipop(this.meanGiniDecrease, this.topControl.value);
-    // plot module heatmap and miRNA counts for selected ensembl id
-    this.plotSelectedEnsemblId();
+    this.plotLollipop(this.topControl.value).then(_ => this.lollipopLoading = false);
   }
 
-  cancerSelected(cancer: Cancer) {
+  async clearSelection() {
+    this.selectedModules = [];
+    this.resetLollipop();
+    this.dynamicModulesData.setData(this.selectedModules);
+  }
+
+  async exploreExpression() {
+    // plot module expression
+    this.getModulesExpression()
+      .then(config => this.plotModuleExpression(config))
+      .then(_ => this.expressionsLoading = false);
+  }
+
+  async cancerSelected(cancer: Cancer) {
+    this.clearResults();
     this.selectedCancer = cancer;
     this.selectedEnsemblId = undefined;
     // load sample distribution
     let sampleDistData: PlotlyData = this.getSampleDistributionData();
     // plot sample distribution pie
     this.plotSampleDistribution(sampleDistData);
-    this.clearResults();
+    this.plotResults().then(_ => this.exploreResultsQueried = true);
   }
 
-  resetLollipop() {
-    this.plotLollipop(this.meanGiniDecrease, this.topControl.value);
-  }
-
-  plotSelectedEnsemblId() {
-    // TODO: split samples into conditions
-    // module expression heatmap
-    let config: PlotlyData = this.getModuleExpressionDataTest(this.selectedEnsemblId);
-    this.plotModuleExpression(config);
-    // miRNA expression bar charts
-    // this.plotModuleMiRnaExpression(this.getModuleMiRnaExpressionDataTest(this.selectedEnsemblId));
+  async resetLollipop() {
+    this.plotLollipop(this.topControl.value).then(_ => this.lollipopLoading = false);
   }
 
   getRandomID(l: number): string {
@@ -316,7 +450,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
   getSampleDistributionData(): PlotlyData {
     let data = [
       {
-        values: this.selectedCancer.allSubTypes.map(() => this.getRandomValue(10, 200, true)),
+        values: this.selectedCancer.sampleSizes,
         labels: this.selectedCancer.allSubTypes,
         type: "pie",
         hoverinfo: 'label+value+percent',
@@ -334,7 +468,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
         t: 50
       },
       title: {
-        text: "Sample distribution of " + this.selectedCancer.value + " (" + sum(data[0].values) + " samples)",
+        text: "Sample distribution of " + this.selectedCancer.value + " (" + this.selectedCancer.totalNumberOfSamples() + " samples)",
         font: {
           size: 14
         }
@@ -346,85 +480,267 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
     return {data: data, layout: layout, config: config};
   }
 
-  getOverallAccuracyData(): Metric[] {
-    let testData: Metric[] = [];
-    let models: string[] = ["Random modules", "SpongEffects modules", "Central genes"];
-    // generate random stats
-    models.forEach((model, i) => {
-      testData.push({
-        name: model, train: this.getRandomValue(0.5, 1), test: this.getRandomValue(0.5, 1), level: i
-      })
-    })
-    return testData;
-  }
-
-  getSpongEffectScores(): Map<string, PlotData> {
-    let spongEffectsScores: Map<string, PlotData> = new Map<string, PlotData>();
-    let subtypes: string[] = this.selectedCancer.allSubTypes;
-    let n: number = 6;
-    let start: number = 0;
-    let stop: number = 14;
-    // generate distribution for each subtype
-    for (let i of Array.from(Array(subtypes.length).keys())) {
-      let min: number = start + i;
-      let max: number = stop + i;
-      let type: string = subtypes[i];
-      let x: number[] = Array.from(Array(n).keys());
-      let y: number[] = [];
-      // generate random dummy scores
-      for (let i = 0; i < n; i++) {
-        const randomValue: number = Math.random();
-        const scaled: number = (max - (min)) * randomValue + (min);
-        y.push(scaled);
+  async getOverallAccuracyData(): Promise<Metric[]> {
+    this.overallAccuracyLoading = true;
+    const modelPerformances = await this.controller.get_model_performance(this.selectedCancer.viewValue, this.level);
+    return modelPerformances.map((entry, idx) => {
+      return {
+        name: entry.model_type, split: entry.split_type,
+        lower: entry.accuracy_lower, upper: entry.accuracy_upper, level: idx
       }
-      spongEffectsScores.set(
-        type,
-        {x: x, y: y}
-      )
-    }
-    return spongEffectsScores;
-  }
-
-  getMeanGiniDecrease(): MeanGiniDecrease[] {
-    let meanGiniDecrease: MeanGiniDecrease[] = [];
-    let genes: string[] = this.getRandomElements(10, this.level.toLowerCase());
-    for (let gene of genes) {
-      meanGiniDecrease.push({ensemblId: gene, giniDecrease: this.getRandomValue(5, 15)});
-    }
-    return meanGiniDecrease;
-  }
-
-  getModuleExpressionData(hubId: string): PlotlyData {
-    let apiResponse = [
-      {
-        "dataset": "testicular germ cell tumor",
-        "expr_value": -9.9658,
-        "gene": {
-          "ensg_number": "ENSG00000259090",
-          "gene_symbol": "SEPT7P1"
-        },
-        "sample_ID": "TCGA-SN-A6IS-01",
-        "disease_subtype": "Semninoma"
-      },
-      {
-        "dataset": "testicular germ cell tumor",
-        "expr_value": -9.9658,
-        "gene": {
-          "ensg_number": "ENSG00000259090",
-          "gene_symbol": "SEPT7P1"
-        },
-        "sample_ID": "TCGA-2G-AAG5-01",
-        "disease_subtype": "Semninoma"
-      }];
-    let xSamples: string[] = [];
-    let yElements: string[] = [];
-    let zValues: number[][] = [[]];
-    apiResponse.forEach((data, i) => {
-      xSamples.push(data.sample_ID);
-      yElements.push(data.gene.gene_symbol);
-      zValues[i].push(data.expr_value);
     });
-    return {data: null};
+  }
+
+  async cancelClick(event: any) {
+    event.stopPropagation();
+  }
+
+  async rePlotModelClassPerformance(): Promise<any> {
+    this.plotModelClassPerformance().then(_ => this.classPerformanceLoading = false);
+  }
+
+  async plotModelClassPerformance(): Promise<any> {
+    this.classPerformanceLoading = true;
+    // get data
+    const performanceData = await this.controller.get_model_class_performance(this.selectedCancer.viewValue, this.level, this.SPONGE_DB_VERSION);
+    // transform data
+    const data: PlotlyData = await this.getModelClassPerformancePlotData(performanceData);
+    // plot data
+    Plotly.newPlot(this.classPerformancePlotDiv.nativeElement, data.data, data.layout, data.config);
+  }
+
+  async togglePanel(event: MouseEvent, panel: MatExpansionPanel) {
+    event.stopPropagation();
+    if (this.performanceSelectPanelIsOpen) {
+      panel.open()
+      this.resetClassAccPlot();
+    } else {
+      panel.close()
+    }
+  }
+
+  async getModelClassPerformancePlotData(performanceData): Promise<PlotlyData> {
+    // group the data by model type
+    const traceGroups = {};
+    performanceData.forEach(entry => {
+      const modelType = entry.spongEffects_run.model_type;
+      if (!traceGroups[modelType]) {
+        traceGroups[modelType] = [];
+      }
+      traceGroups[modelType].push(entry);
+    });
+    // build actual traces
+    const traces = [];
+    for (const modelType in traceGroups) {
+      if (traceGroups.hasOwnProperty(modelType)) {
+        const group = traceGroups[modelType];
+
+        const trace = {
+          x: group.map(entry => entry.prediction_class),
+          y: group.map(entry => entry[this.performanceMeasure.value]),
+          type: 'bar',
+          name: modelType,
+        };
+
+        traces.push(trace);
+      }
+    }
+    const meanTextLength: number = Math.round(sum(traces[0].x.map(d => d.length))/traces[0].x.length);
+    const textPad: number = meanTextLength*10.5;
+    const containerWidth = this.renderer.selectRootElement(this.classPerformancePlotDiv.nativeElement).offsetWidth;
+    const angle: number = meanTextLength > 15 ? 90: 0;
+    const layout = {
+      barmode: 'group',
+      autosize: true,
+      width: containerWidth,
+      xaxis: {
+        autosize: true,
+        tickangle: angle
+      },
+      yaxis: {
+        title: this.performanceMeasure.viewValue
+      },
+      margin: {
+        t: 25,
+        b: textPad,
+        l: 50,
+        r: 0
+      },
+      legend: {
+        orientation: "h",
+        x: 0.5,
+        y: 1.25
+      }
+    };
+    const config = { responsive: true };
+    return {data: traces, layout: layout, config: config};
+  }
+
+  async resetClassAccPlot() {
+    Plotly.update(this.classPerformancePlotDiv.nativeElement);
+  }
+
+  private async getEnrichmentClassDensities(): Promise<Map<string, PlotData>> {
+    this.enrichmentScoreDensityLoading = true;
+    const queryResponse = await this.controller.get_enrichment_score_class_distributions(this.selectedCancer.viewValue, this.level, this.SPONGE_DB_VERSION);
+    const classDensities: Map<string, PlotData> = new Map<string, PlotData>();
+    queryResponse.forEach(entry => {
+      if (classDensities.has(entry.prediction_class)) {
+        classDensities.get(entry.prediction_class).x.push(entry.enrichment_score)
+        classDensities.get(entry.prediction_class).y.push(entry.density)
+      } else {
+        classDensities.set(entry.prediction_class, {
+          x: [entry.enrichment_score], y: [entry.density]
+        });
+      }
+    });
+    return classDensities;
+  }
+
+  get_gene_card(gene: string): string {
+    return this.controller.get_gene_card_link(gene);
+  }
+
+  async getMeanGiniDecrease(): Promise<SpongEffectsModule[]> {
+    this.lollipopLoading = true;
+    const query = await this.controller.get_spongEffects_modules(this.selectedCancer.viewValue, this.level, this.SPONGE_DB_VERSION);
+    // transform data
+    return query.map(entry => {
+      const id: string = this.level.toLowerCase() == "gene" ? entry.ensg_number: entry.enst_number;
+      return {
+        ensemblID: id,
+        symbol: entry.gene_symbol,
+        meanGiniDecrease: entry.mean_gini_decrease,
+        meanAccuracyDecrease: entry.mean_accuracy_decrease,
+        description: entry.description.split("[")[0],
+        chromosome_name: entry.chromosome_name
+      }
+    });
+  }
+
+  async getModuleMembers(): Promise<Map<string, string[]>> {
+    const response = await this.controller.get_spongEffects_module_members(
+      this.selectedCancer.viewValue,
+      this.level.toLowerCase(),
+      this.selectedModules.map(s => s.ensemblID)
+    )
+    const key: string = this.level.toLowerCase() == "gene" ? "hub_ensg_number": "hub_enst_number";
+    const members: Map<string, string[]> = new Map<string, string[]>();
+    response.forEach(e => {
+      if (!members.has(e[key])) members.set(e[key], []);
+      const toPush: string[] = [e.member_ensg_number, e.member_gene_symbol]
+      if (this.level.toLowerCase() == "transcript") toPush.push(e.member_enst_number);
+      members.get(e[key]).push(...toPush);
+    });
+    return members;
+  }
+
+  async getModulesExpression(): Promise<PlotlyData> {
+    this.expressionsLoading = true;
+    let apiCall: any;
+    let key: string;
+    let elements: string[] = this.selectedModules.map(s => s.ensemblID);
+    // include module members in heatmap
+    if (this.includeModuleMembers) {
+      const members: Map<string, string[]> = await this.getModuleMembers();
+      const memberValues: string[] = [].concat([...members.values()]);
+      elements.push(...memberValues);
+    }
+
+    if (this.level.toLowerCase() == "gene") {
+      key = "ensg_number";
+      apiCall = this.controller.get_expr(this.selectedCancer.viewValue,
+        undefined, elements, undefined, this.level);
+    } else {
+      key = "enst_number";
+      apiCall = this.controller.get_expr(this.selectedCancer.viewValue,
+        elements, undefined, undefined, this.level);
+    }
+    // await apiCall
+    const apiResponse = await apiCall;
+    // split into (sub-)types
+    const typeSplit: Map<string, any[]> = new Map<string, any[]>();
+    apiResponse.forEach(entry => {
+      const dataset: string = entry.dataset;
+      if (!typeSplit.has(dataset)) {
+        typeSplit.set(dataset, []);
+      }
+      typeSplit.get(dataset).push(entry);
+    });
+
+    // build traces for each dataset
+    let data: any[] = [];
+    typeSplit.forEach((entry: any[], dataset: string) => {
+      // transform data of entries
+      let xSamples: string[] = [];
+      const xSet: Set<string> = new Set<string>();
+      let nX: number = -1;
+      let yElements: string[] = [];
+      const ySet: Set<string> = new Set<string>();
+      let nY: number = -1;
+      let zValues: number[][] = [[]];
+
+      entry.forEach(e => {
+        if (!xSet.has(e.sample_ID)) {
+          xSamples.push(e.sample_ID);
+          nX += 1;
+        }
+        if (!ySet.has(e.gene[key])) {
+          yElements.push(e.gene.gene_symbol + " (" + e.gene[key] + ")");
+          nY += 1;
+        }
+        zValues[nY][nX] = e.expr_value;
+      });
+      // add trace
+      data.push({
+        z: zValues,
+        x: xSamples,
+        y: yElements,
+        type: "heatmap",
+        hoverongaps: false,
+        name: dataset,
+        showscale: false
+      });
+    });
+    // only show scale on last heatmap
+    data[-1].showscale = true;
+    // add x-axis subplot for each trace
+    data.slice(1).forEach((d, i) => {
+      let idx: string = (i+2).toString();
+      d.xaxis = 'x' + idx
+    });
+    // set layout options
+    const layout = {
+      autosize: true,
+      showlegend: true,
+      legend: {orientation: "h"},
+      xaxis: {
+        showgrid: false,
+        showticklabels: false,
+        showticks: false
+      },
+      margin: {
+        b: 125,
+        l: 125,
+        r: 50,
+        t: 50
+      },
+      title: {
+        text: "Module expression of selected modules",
+        font: {
+          size: 14
+        }
+      },
+      grid: {
+        rows: 1,
+        columns: data.length
+      },
+      annotations: []
+    };
+    let config = {
+      responsive: true
+    }
+    return {data: data, layout: layout, config: config};
   }
 
   getColors(n: number): string[] {
@@ -475,7 +791,6 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
     const layout = {
       autosize: true,
       showlegend: true,
-      // legend: {orientation: "h"},
       xaxis: {
         showgrid: false,
         showticklabels: false,
@@ -500,7 +815,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
     }
     // add type groups to heatmap
     const traceColors: string[] = this.getColors(this.selectedCancer.allSubTypes.length);
-    const yGap: number = 0.25;
+    const yGap: number = 0.1;
     const boxHeight: number = 20;
     const widthPerSample: number = 2;
 
@@ -566,32 +881,24 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
   }
 
   plotModuleMiRnaExpression(config: PlotlyData) {
-    Plotly.newPlot(this.moduleMiRnaExpressionBars.nativeElement, config.data, config.layout, config.config);
+    Plotly.newPlot(this.moduleMiRnaExpressionPlot.nativeElement, config.data, config.layout, config.config);
   }
 
-  plotOverallAccuracyPlot(metricData: Metric[]) {
+  async plotOverallAccuracyPlot(metricData: Promise<Metric[]>) {
     // set main layout options
     let layout = {
+      autosize: true,
       yaxis: {
         showline: false,
         showticklabels: false
       },
+      margin: {
+        t: 0,
+        b: 40,
+        l: 30,
+        r: 20
+      },
       annotations: [
-        // main title
-        {
-          xref: "paper",
-          yref: "paper",
-          x: 0.5,
-          y: 1.05,
-          xanchor: "center",
-          yanchor: "bottom",
-          text: "Prediction performance of spongEffects models",
-          font:{
-            family: "Arial",
-            size: 20
-          },
-          showarrow: false
-        },
         // x-axis label
         {
           xref: "paper",
@@ -603,32 +910,49 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
           text: "Overall model accuracy",
           showarrow: false
         }
-      ]
+      ],
+      legend: {
+        traceorder: "reversed"
+      }
     };
-    let data = metricData.map(metric => {
+    let metrics: Metric[] = await metricData;
+    let data = metrics.map(metric => {
+      const col: string = metric.name == "modules" ? "green": "orange"
       // data points
       return {
-        x: [metric.train, metric.test],
+        x: [metric.lower, metric.upper],
         y: [metric.level, metric.level],
         mode: this.defaultPlotMode,
-        name: metric.name,
-        text: ["Train", "Test"],
+        name: metric.name + " ("  + metric.split + ")",
+        text: ["Lower Bound (Accuracy)", "Upper Bound (Accuracy)"],
         hovertemplate: "<i>%{text}: %{x:.2f}</i>",
-        line: {width: this.defaultLineWidth},
+        line: {
+          width: this.defaultLineWidth,
+          color: col,
+          dash: metric.split == "train" ? "solid": "dash"
+        },
         marker: {
           size: this.defaultMarkerSize,
-          symbol: ['circle', 'diamond']
-        }
+          symbol: ['circle', 'diamond'],
+          color: col
+        },
+        showlegend: true
       }
     });
-    // data labels
-    Plotly.newPlot(this.overallAccPlotDiv.nativeElement, data, layout);
+    const config = { responsive: true };
+    // remove loading spinner and show plot
+    Plotly.newPlot("overall-acc", data, layout, config);
   }
 
-  plotEnrichmentScoresByClass(enrichmentData: Map<string, PlotData>) {
+  async resetOverallAccPlot() {
+    Plotly.update(this.overallAccPlotDiv.nativeElement)
+  }
+
+  async plotEnrichmentScoresByClass(enrichmentData: Promise<Map<string, PlotData>>) {
     // fill subtype specific data
     let data: any[] = [];
-    enrichmentData.forEach((plotData, subtype) => {
+    const enrichmentDataResponse = await enrichmentData;
+    enrichmentDataResponse.forEach((plotData, subtype) => {
       // push trace for each subtype
       data.push({
         x: plotData.x,
@@ -640,87 +964,157 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
         name: subtype
       });
     });
-    // set layout options
+    // add subplot for each trace
+    data.slice(1).forEach((d, i) => {
+      let idx: string = (i+2).toString();
+      d.xaxis = 'x' + idx
+      d.yaxis = 'y' + idx
+    });
+    // determine range of display
+    let minScore: number = Math.round(min(data.map(d => min(d.x))));
+    let maxScore: number = Math.round(max(data.map(d => max(d.x))));
+    const plot_height: number = data.length * 50;
+    // set general layout options
     let layout = {
-      showlegend: true,
-      height: 300,
-      xaxis: {
+      showlegend: false,
+      autosize: true,
+      legend: {"orientation": "h"},
+      grid: {
+        rows: data.length,
+        columns: 1,
+        pattern: 'independent',
+        roworder: 'bottom to top'
+      },
+      height: plot_height,
+      title: "spongEffects enrichment score density for predictive classes"
+    };
+    // set constant y axis layout
+    const y_axis_layout = {
+      showgrid: false,
+      automargin: true,
+      showticklabels: false,
+    };
+    const annotations = [];
+    // add layout to each trace
+    data.forEach((d, index) => {
+      let x_axis_layout_i = {
+        range: [minScore, maxScore],
         showgrid: false,
         showticklabels: false
-      },
-      yaxis: {
-        showgrid: false,
-        automargin: true,
-        showticklabels: false,
-      },
-      legend: {"orientation": "h"}
-    };
-    Plotly.newPlot(this.enrichmentScoresByClassPlotDiv.nativeElement, data, layout);
-  }
-
-  plotLollipop(giniData: MeanGiniDecrease[], n: number) {
-    // sort for now but don't need to later, will be sorted by api / saved as sorted entries
-    giniData = giniData.sort((a,b) => a.giniDecrease - b.giniDecrease);
-    // only use selected number of top genes
-    let idx: number = n > giniData.length ? 0 : giniData.length - n;
-    giniData = giniData.slice(idx, giniData.length);
-    let data: any[] = [];
-    let candidates: string[] = [];
-    giniData.forEach((g, i) => {
-      candidates.push(g.ensemblId);
-      data.push({
-        x: [0, g.giniDecrease],
-        y: [i, i],
-        mode: this.defaultPlotMode,
-        name: g.ensemblId,
-        line: {
-          width: this.defaultLineWidth,
-          color: i==giniData.length-1 ? "red": "grey"
-        },
-        marker: {size: this.defaultMarkerSize}
+      };
+      let x_key: string = "xaxis";
+      let y_key: string = "yaxis";
+      let x: string = "x";
+      let y: string = "y";
+      if (index != 0) {
+        x_key = x_key + (index + 1).toString();
+        y_key = y_key + (index + 1).toString();
+        x = x + (index + 1).toString();
+        y = y + (index + 1).toString();
+      } else {
+        x_axis_layout_i["title"] = "spongEffects enrichment score";
+        x_axis_layout_i.showticklabels = true;
+      }
+      layout[x_key] = x_axis_layout_i;
+      layout[y_key] = y_axis_layout;
+      // add class annotation
+      annotations.push({
+        xref: x,
+        yref: y,
+        x: minScore + 1.5,
+        y: 0.5,
+        text: d.name,
+        align: "left",
+        showarrow: false,
+        width: 250
       })
     });
+    layout["annotations"] = annotations;
+    const config = { responsive: true }
+    Plotly.newPlot(this.enrichmentScoresByClassPlotDiv.nativeElement, data, layout, config);
+  }
+
+  async resetEnrichmentScoreByClass() {
+    Plotly.update(this.enrichmentScoresByClassPlotDiv.nativeElement);
+  }
+
+  async plotLollipop(n: number) {
+    let giniData: SpongEffectsModule[] = await this.modulesData;
+    const redNodes: number = this.markControl.value;
+    // only use selected number of top genes
+    let idx: number = n > giniData.length ? giniData.length: n;
+    giniData = giniData.slice(0, idx);
+    // set selected elements
+    this.addModules(giniData.slice(0, redNodes))
+
+    // selected elements
+    this.filteredModulesData = giniData;
+
+    // set main layout options
+    let data: any[] = [{
+      x: giniData.map(g => g.meanGiniDecrease),
+      y: giniData.map(g => g.meanAccuracyDecrease),
+      mode: "markers",
+      type: "scatter",
+      name: giniData.map(g => g.symbol),
+      text: giniData.map(g => g.symbol),
+      marker: {
+        size: this.defaultMarkerSize,
+        color: giniData.map(g => this.selectedModules.includes(g) ? "red": "grey")
+      }
+    }];
     // set main layout options
     let layout = {
       showlegend: false,
-      hovermode: false,
       autosize: true,
+      hovermode: "closest",
       margin: {
         b: 50,
-        l: 125,
-        r: 5,
-        t: 50
+        l: 75,
+        r: 25,
+        t: 0
+      },
+      xaxis: {
+        title: "Mean decrease in Gini-index"
       },
       yaxis: {
-        tickmode: "array",
-        tickvals: Array.from(Array(giniData.length).keys()),
-        ticktext: giniData.map(g => g.ensemblId),
-        automargin: true
-      },
-      annotations: [
-        // x-axis label
-        {
-          xref: "paper",
-          yref: "paper",
-          x: 0.5,
-          y: -0.1,
-          xanchor: "center",
-          yanchor: "top",
-          text: "Mean decrease in Gini-index",
-          showarrow: false
-        }
-      ]
-    };
+        title: "Mean decrease in accuracy"
+      }
+    }
     let config = {
       responsive: true
     }
     Plotly.newPlot(this.lollipopPlotDiv.nativeElement, data, layout, config);
+
     // add click handler
     this.lollipopPlotDiv.nativeElement.on("plotly_click", (eventData) => {
-
+      const clickedSymbol: string = eventData.points[0].text;
+      // get modules with clicked element
+      const modules: SpongEffectsModule[] = giniData.filter(c => c.symbol == clickedSymbol);
+      this.addModules(modules, clickedSymbol);
+      // toggle color of clicked point
+      const updatedData = this.lollipopPlotDiv.nativeElement.data;
+      updatedData[0].marker.color = giniData.map(g => this.selectedModules.includes(g) ? "red": "grey");
+      // update plot
+      Plotly.redraw(this.lollipopPlotDiv.nativeElement, updatedData, layout, config);
     });
-    // set available options
-    this.availableEnsemblIds = candidates.reverse();
+  }
+
+  addModules(modules: SpongEffectsModule[], clickedSymbol?: string) {
+    if (clickedSymbol == undefined) {
+      this.selectedModules = modules;
+    } else {
+      // modules are not inserted yet
+      if (this.selectedModules.filter(s => s.symbol == clickedSymbol).length == 0) {
+        // add new modules
+        this.selectedModules.push(...modules);
+      } else {
+        // remove clicked modules
+        this.selectedModules = this.selectedModules.filter(s => s.symbol != clickedSymbol);
+      }
+    }
+    // update dynamic table data
+    this.dynamicModulesData.setData(this.selectedModules);
   }
 
   // predict functions
@@ -735,6 +1129,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
 
   onRemoveExpression(event) {
     this.uploadedExpressionFiles.splice(this.uploadedExpressionFiles.indexOf(event), 1);
+    this.predictionQueried = false;
   }
 
   acceptExpressionFiles(): string {
@@ -745,6 +1140,158 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
     this.showExpressionExample = !this.showExpressionExample;
   }
 
+  estimateRunTime() {
+    const fileSize: number = this.uploadedExpressionFiles[0].size / (1024**2);
+    const refSlope: number = 0.7;
+    const x0: number = 17;
+    const st: number = this.predictSubtypes ? 4 : 1;
+    return refSlope * fileSize + x0;
+  }
+
+  async getPredictionData(): Promise<any> {
+    const uploadedFile: File = this.uploadedExpressionFiles[0];
+    // send file and parameters to API and return response
+    return this.controller.upload_expression_and_predict(
+      uploadedFile, this.predictSubtypes, this.logScaling,
+      this.mscorControl.value, this.fdrControl.value, this.minSizeControl.value,
+      this.maxSizeControl.value, this.minExprControl.value, this.methodDefault
+    )
+  }
+
+
+  getColorForValue(value: number): string {
+    let g: number = 140;
+    let r: number = value >= 0.5 ? Math.round(255*2 * (1 - value)): 255;
+    const b: number = 0;
+    return `rgb(${r},${g},${b})`;
+  }
+
+  async extractPredictions(responseJson: any): Promise<PlotlyData> {
+    const typeGroups: Map<string, string[]> = new Map<string, string[]>();
+    // group predictions by type
+    responseJson.data.forEach(entry => {
+      if (!typeGroups.has(entry.typePrediction)) typeGroups.set(entry.typePrediction, []);
+      typeGroups.get(entry.typePrediction).push(entry.subtypePrediction);
+    });
+
+    const typeCounts: Map<string, number> = new Map([...typeGroups.entries()].map(entry => {
+      return [entry[0], entry[1].length];
+    }));
+    // sort by amount of samples
+    const sortedTypeCounts: Map<string, number> = new Map([...typeCounts.entries()].sort((a, b) => a[1] - b[1]));
+    let x: number[] = [...sortedTypeCounts.values()];
+    let y: string[] = [...sortedTypeCounts.keys()];
+    // add model accuracy
+    let classPerformanceData = this.classPerformancePlotDiv.nativeElement.data;
+    // get modules data
+    classPerformanceData = classPerformanceData.filter(d => d.name == "modules")[0];
+    // create map to value
+    const classToMeasure: Map<string, number> = new Map<string, number>();
+    for (let i = 0; i < classPerformanceData.x.length; i++) {
+      classToMeasure.set(classPerformanceData.x[i], classPerformanceData.y[i]);
+    }
+    const accValues: number[] = y.map(x_v=> classToMeasure.get(x_v));
+    // color based on balanced accuracy
+    const barColors: string[] = accValues.map(v => this.getColorForValue(v));
+    // transform data
+    let data = [{
+      x: x,
+      y: y,
+      text: accValues.map(v => "Balanced accuracy: " + v.toString()),
+      type: "bar",
+      name: "type",
+      orientation: "h",
+      marker: {
+        color: barColors
+      }
+    }];
+
+    // add subtype traces
+    if (this.predictSubtypes) {
+      const subtypeTraces: any[] = [...typeGroups.values()].map(sv => {
+        return {
+          x: sv.length,
+          y: y,
+          text: sv,
+          name: "subtypes",
+          orientation: "h"
+        }
+      });
+      data.push(...subtypeTraces);
+    }
+
+    const layout = {
+      paper_bgcolor: "white",
+      autosize: true,
+      barmode: "group",
+      margin: {
+        l: 250,
+        r: 25,
+        t: 50,
+        b: 50
+      },
+      xaxis: {
+        title: "Number of samples classified"
+      }
+    };
+    const config = {
+      responsive: true
+    }
+    return {data: data, layout: layout, config: config};
+  }
+
+  async plotPredictions(plotlyData: PlotlyData): Promise<void> {
+    Plotly.newPlot(this.typePredictPiePlot.nativeElement, plotlyData.data, plotlyData.layout, plotlyData.config);
+  }
+
+  async processPredictions(predictionResponse: any): Promise<any> {
+    // check response
+    if (!predictionResponse.ok) {
+      throw new Error(`File upload failed with status code: ${predictionResponse.status}`);
+    }
+    // save results
+    const predictionData = await predictionResponse.json();
+    this.predictionData = predictionData.data;
+    this.predictionMeta = predictionData.meta[0];
+    this.predictedType = predictionData.meta[0].type_predict;
+    this.predictedSubtype = predictionData.meta[0].subtype_predict;
+    // plot predictions
+    this.extractPredictions(predictionData)
+      .then(data => this.plotPredictions(data));
+  }
+
+  async startTimer(): Promise<any> {
+    this.timerRunning = true;
+    this.progressBarValue = 0;
+    const totalRunTime: number = this.estimateRunTime();
+    this.estimatedRunTime = totalRunTime;
+    const interval: number = (1000 * totalRunTime) / 100;
+    const progressBarTimer = timer(0, interval);
+    progressBarTimer.subscribe(() => {
+      this.estimatedRunTime = totalRunTime * (100-this.progressBarValue)/100;
+      if (this.progressBarValue < 100) this.progressBarValue++;
+    });
+  }
+
+  runButtonDisabled(): boolean {
+    return !this.expressionUploaded() || this.predictionLoading;
+  }
+
+  estimatedRunTimeText(): string {
+    return this.estimatedRunTime > 0 ? Math.round(this.estimatedRunTime).toString()+"s": "Any moment...hopefully"
+  }
+
+  async predict() {
+    this.predictionQueried = true;
+    this.predictionLoading = true;
+    // start timer of estimated run time
+    this.startTimer().then(_ => this.timerRunning = false);
+    // start workflow
+    this.getPredictionData()
+      .then(data => this.processPredictions(data))
+      .then(_ => this.predictionLoading = false);
+  }
+
   buttonText(btn: string) {
     if (btn == "expr") {
       return this.showExpressionExample ? "Hide example file" : "Show example file";
@@ -752,6 +1299,7 @@ export class SpongEffectsComponent implements OnInit, AfterViewInit {
   }
 
   getCancerInfoText(): CancerInfo {
+    if (this.selectedCancer == undefined) return {text: ["loading DB data..."], link: ""};
     let cancerInfo: CancerInfo;
     switch (this.selectedCancer.value) {
       case "PANCAN": {
