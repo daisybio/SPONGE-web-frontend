@@ -18,6 +18,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatLineModule} from '@angular/material/core';
 import {GBrowserModule} from 'g-browser';
+import { NetworkResultsComponent } from './components/network-results/network-results.component';
+import {MatExpansionModule} from "@angular/material/expansion";
 
 @NgModule({
   declarations: [
@@ -30,7 +32,8 @@ import {GBrowserModule} from 'g-browser';
     MoreComponent,
     CreditsComponent,
     TutorialComponent,
-    DownloadComponent
+    DownloadComponent,
+    NetworkResultsComponent
   ],
     imports: [
         BrowserModule,
@@ -39,7 +42,8 @@ import {GBrowserModule} from 'g-browser';
         BrowserAnimationsModule,
         MatTabsModule,
         MatLineModule,
-        GBrowserModule
+        GBrowserModule,
+        MatExpansionModule
     ],
 
   providers: [

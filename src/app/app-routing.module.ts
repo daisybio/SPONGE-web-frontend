@@ -7,6 +7,7 @@ import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
 import { DownloadComponent } from './components/download/download.component';
+import { NetworkResultsComponent } from './components/network-results/network-results.component';
 
 const routes: Routes = [
   { path: '', pathMatch: 'prefix', redirectTo: 'home' },
@@ -17,6 +18,7 @@ const routes: Routes = [
   { path: 'more', pathMatch: 'prefix', component: MoreComponent },
   { path: 'credits', pathMatch: 'prefix', component: CreditsComponent },
   { path: 'download', pathMatch: 'prefix', component: DownloadComponent },
+  { path: 'network-result', pathMatch: 'prefix', component: NetworkResultsComponent },
 ];
 
 @NgModule({

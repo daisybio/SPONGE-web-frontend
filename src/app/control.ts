@@ -9,11 +9,13 @@ export class Controller {
       location.hostname === 'localhost' ||
       location.hostname === '127.0.0.1'
     ) {
-      Controller.API_ENDPOINT = 'http://localhost:5000/';
+      Controller.API_ENDPOINT = 'http://172.27.74.205:5000';
     } else {
       Controller.API_ENDPOINT = window.location.origin + '/sponge-api';
     }
   }
+
+  static NETWORK_RESULTS = '/networkResults';
 
   static CERNA_INTERACTION_FINDALL = '/ceRNAInteraction/findAll';
   static CERNA_INTERACTION_SPECIFIC = '/ceRNAInteraction/findSpecific';
@@ -581,6 +583,28 @@ export class Controller {
 
     if (config.gene_symbol != undefined) {
       request += '&gene_symbol=' + config.gene_symbol;
+    }
+    $.getJSON(request, (response) => {
+      return config.callback(response);
+    }).fail((response) => {
+      return config.error(response);
+    });
+  }
+
+   public get_networkResults(config: {
+    disease_name: string[];
+    level: string[];
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.NETWORK_RESULTS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+
+    if (config.disease_name != undefined && config.level != undefined) {
+      request += '&disease_name=' + config.disease_name;
+      request += '&level=' + config.level;
     }
     $.getJSON(request, (response) => {
       return config.callback(response);
