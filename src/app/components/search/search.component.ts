@@ -158,6 +158,14 @@ export class SearchComponent implements OnInit {
       '</div>' +
       "<div class='card-body-table'></div>" +
       '</div>' +
+      "<div id='gsea_"+disease_trimmed+"'>"+
+      '<mat-expansion-panel expanded="false">' +
+      '<mat-expansion-panel-header>'+
+      '<mat-panel-title>Gene Set Enrichment Analysis</mat-panel-title>'+
+      '</mat-expansion-panel-header>'+
+      '<app-gsea [input_disease_name_1]="\''+disease_label+'\'" [input_disease_name_2]="\''+disease_label+'\'" [input_disease_subtype_1]="\'Main Type\'" [input_disease_subtype_2]="\'Main Type\'" [input_condition_1]="\'normal\' [input_condition_2]="\'disease\'""></app-gsea>'+
+      '</mat-expansion-panel>'+
+      '</div>'+
       '</div>'
     );
   }
@@ -467,6 +475,7 @@ export class SearchComponent implements OnInit {
         parsed_search_result.diseases = {};
         parsed_search_result.key = undefined;
 
+        console.log(classify_searchKey(search_key[0]));
         // load pie chart for gene
         const type =
           classify_searchKey(search_key[0]) == 'GENE'
@@ -489,19 +498,22 @@ export class SearchComponent implements OnInit {
           callback: (data) => {
             const values = new Map();
             const parents = [];
-            if (!$('#include_subtype_checkbox').prop('checked')) {
-              data = data.filter(
-                (result) => result.run.dataset.disease_type !== 'Cancer_Subtype'
-              );
-            }
-            if (!$('#include_other_diseases').prop('checked')) {
-              data = data.filter(
-                (result) =>
-                  result.run.dataset.disease_type === 'Cancer_Subtype' ||
-                  result.run.dataset.disease_type === 'cancer'
-              );
-            }
+            console.log(data);
+            //TODO: Maybe find out why this is here (when result.run.dataset.disease_type does not exist)
+            // if (!$('#include_subtype_checkbox').prop('checked')) {
+            //   data = data.filter(
+            //     (result) => result.run.dataset.disease_type !== 'Cancer_Subtype'
+            //   );
+            // }
+            // if (!$('#include_other_diseases').prop('checked')) {
+            //   data = data.filter(
+            //     (result) =>
+            //       result.run.dataset.disease_type === 'Cancer_Subtype' ||
+            //       result.run.dataset.disease_type === 'cancer'
+            //   );
+            // }
             count_object = data;
+            console.log(data);
             data.map(function (node) {
               const value = minCountSign ? node.count_sign : node.count_all;
               if (
@@ -554,6 +566,8 @@ export class SearchComponent implements OnInit {
               }
             });
 
+            console.log([...values.values()]);
+            console.log([...values.keys()]);
             const plot_data = [
               {
                 parents,
@@ -568,7 +582,9 @@ export class SearchComponent implements OnInit {
                 marker: { line: { width: 2 } },
               },
             ];
-
+            console.log("_")
+            console.log(plot_data);
+            console.log("_");
             const layout = {
               autosize: false,
               height: 600,
@@ -1319,7 +1335,6 @@ export class SearchComponent implements OnInit {
           return node.id;
         });
 
-        console.log(nodes);
         // append search note to network
         const search_keys_ensg = [];
 
@@ -1334,7 +1349,6 @@ export class SearchComponent implements OnInit {
                   break;
                 }
               }
-
               if (
                 [...new Set(search_keys_ensg)].length ==
                 [...new Set(search_key)].length
