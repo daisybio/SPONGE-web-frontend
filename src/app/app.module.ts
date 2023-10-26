@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -18,14 +17,37 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatLineModule} from '@angular/material/core';
 import {GBrowserModule} from 'g-browser';
-import { MatSelectModule } from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input'; 
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { GseaComponent } from './components/gsea/gsea.component';
+import {ClipboardModule} from '@angular/cdk/clipboard';
+import {NgxDropzoneModule} from 'ngx-dropzone';
 import {MatExpansionModule} from '@angular/material/expansion';
+import {MatSliderModule} from '@angular/material/slider';
+import {MatInputModule} from '@angular/material/input';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatSelectModule} from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatCardModule} from '@angular/material/card';
+import {MatTableModule} from '@angular/material/table';
+import {MatIconModule} from '@angular/material/icon';
+import {MatGridListModule} from '@angular/material/grid-list';
+import {MatListModule} from '@angular/material/list';
+import {MatChipsModule} from '@angular/material/chips';
+import {DragDropModule} from '@angular/cdk/drag-drop';
+import {MatSortModule} from '@angular/material/sort';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatTreeModule} from '@angular/material/tree';
+import { SpongEffectsComponent } from './components/spong-effects/spong-effects.component';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+
 
 @NgModule({
   declarations: [
@@ -40,6 +62,7 @@ import {MatExpansionModule} from '@angular/material/expansion';
     TutorialComponent,
     DownloadComponent,
     GseaComponent
+    SpongEffectsComponent
   ],
     imports: [
         BrowserModule,
@@ -49,13 +72,35 @@ import {MatExpansionModule} from '@angular/material/expansion';
         MatTabsModule,
         MatLineModule,
         GBrowserModule,
-        MatSelectModule,
         MatFormFieldModule,
-        MatInputModule,
         ReactiveFormsModule,
         NgxMatSelectSearchModule,
         NgxSliderModule,
-        MatExpansionModule    
+        ClipboardModule,
+        NgxDropzoneModule,
+        MatExpansionModule,
+        MatSliderModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        FormsModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatCardModule,
+        MatTableModule,
+        MatIconModule,
+        MatGridListModule,
+        MatListModule,
+        MatChipsModule,
+        DragDropModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatCheckboxModule,
+        MatSlideToggleModule,
+        MatTreeModule,
+        MatButtonToggleModule,
+        MatSidenavModule,
+        MatProgressBarModule
     ],
 
   providers: [
