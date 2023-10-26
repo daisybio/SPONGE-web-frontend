@@ -745,15 +745,21 @@ export class Controller {
     callback: (response) => any;
     error?: (response) => any;
   }) {
-    let request = Controller.API_ENDPOINT + Controller.NETWORK_RESULTS;
-    if (Object.keys(config).length > 1) {
-      request += '?';
-    }
+     let request = Controller.API_ENDPOINT + Controller.NETWORK_RESULTS;
+     if (Object.keys(config).length > 1) {
+       request += '?';
+     }
 
-    if (config.disease_name != undefined && config.level != undefined) {
-      request += '&disease_name=' + config.disease_name;
-      request += '&level=' + config.level;
-    }
+     if (config.disease_name != undefined && config.level != undefined) {
+       request += '&disease_name=' + config.disease_name;
+       request += '&level=' + config.level;
+     }
+     $.getJSON(request, (response) => {
+       return config.callback(response);
+     }).fail((response) => {
+       return config.error(response);
+     });
+   }
 
   public get_gsea_sets(config: {
     disease_name_1: string;

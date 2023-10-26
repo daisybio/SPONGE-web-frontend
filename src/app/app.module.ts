@@ -20,7 +20,6 @@ import {GBrowserModule} from 'g-browser';
 import { NetworkResultsComponent } from './components/network-results/network-results.component';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { ReactiveFormsModule } from '@angular/forms';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { GseaComponent } from './components/gsea/gsea.component';
 import {ClipboardModule} from '@angular/cdk/clipboard';
@@ -62,8 +61,8 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
     CreditsComponent,
     TutorialComponent,
     DownloadComponent,
-    NetworkResultsComponent
-    GseaComponent
+    NetworkResultsComponent,
+    GseaComponent,
     SpongEffectsComponent
   ],
     imports: [
