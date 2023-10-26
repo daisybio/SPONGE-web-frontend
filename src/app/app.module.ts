@@ -17,6 +17,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatLineModule} from '@angular/material/core';
 import {GBrowserModule} from 'g-browser';
+import { NetworkResultsComponent } from './components/network-results/network-results.component';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -61,6 +62,7 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
     CreditsComponent,
     TutorialComponent,
     DownloadComponent,
+    NetworkResultsComponent
     GseaComponent
     SpongEffectsComponent
   ],

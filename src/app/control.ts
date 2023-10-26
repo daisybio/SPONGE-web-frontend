@@ -16,6 +16,8 @@ export class Controller {
     }
   }
 
+  static NETWORK_RESULTS = '/networkResults';
+
   static GENE_CARD = 'https://www.genecards.org/cgi-bin/carddisp.pl'
 
   static CERNA_INTERACTION_FINDALL = '/ceRNAInteraction/findAll';
@@ -735,6 +737,23 @@ export class Controller {
       return config.error(response);
     });
   }
+
+
+   public get_networkResults(config: {
+    disease_name: string[];
+    level: string[];
+    callback: (response) => any;
+    error?: (response) => any;
+  }) {
+    let request = Controller.API_ENDPOINT + Controller.NETWORK_RESULTS;
+    if (Object.keys(config).length > 1) {
+      request += '?';
+    }
+
+    if (config.disease_name != undefined && config.level != undefined) {
+      request += '&disease_name=' + config.disease_name;
+      request += '&level=' + config.level;
+    }
 
   public get_gsea_sets(config: {
     disease_name_1: string;

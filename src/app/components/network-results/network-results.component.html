@@ -1,0 +1,44 @@
+<mat-expansion-panel [(expanded)]="expandResults">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Type scores
+    </mat-panel-title>
+    <mat-panel-description>
+      Pairwise hubness scores for all cancer types.
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div id='type_heatmap_container' style="width: 100%;"></div>
+</mat-expansion-panel>
+<mat-expansion-panel [(expanded)]="expandResults">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Type distances
+    </mat-panel-title>
+    <mat-panel-description>
+      MDS plot for all cancer types.
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div id='type_mds_container' style="width: 100%;"></div>
+</mat-expansion-panel>
+<mat-expansion-panel [(expanded)]="expandResults">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Subtype scores
+    </mat-panel-title>
+    <mat-panel-description>
+      Pairwise hubness scores for the cancer type and its subtypes.
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div id='subtype_heatmap_container' style="width: 100%;"></div>
+</mat-expansion-panel>
+<mat-expansion-panel [(expanded)]="expandResults">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Subtype distances
+    </mat-panel-title>
+    <mat-panel-description>
+      MDS plot for the cancer type and its subtypes.
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div id='subtype_mds_container' style="width: 100%;"></div>
+</mat-expansion-panel>
