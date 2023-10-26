@@ -17,6 +17,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular-slider/ngx-slider": "^2.0.4",
     "@angular/animations": "^13.4.0",
     "@angular/cdk": "^13.3.9",
     "@angular/common": "^13.4.0",
@@ -51,6 +52,7 @@
     "lodash": "^4.17.21",
     "ng": "^0.0.0",
     "ngx-autosize": "^1.7.5",
+    "ngx-mat-select-search": "^3.3.3",
     "ngx-dropzone": "^3.1.0",
     "papaparse": "^5.4.1",
     "pdfmake": "^0.2.7",

@@ -26,6 +26,10 @@ export class BrowseComponent implements OnInit {
     private router: Router,
     private location: Location
   ) {}
+
+  cancer_type: string;
+  cancer_subtype: string;
+
   private automaticInteractionValueChange = false;
   private secondIterationAutomaticChange = false;
   private diseaseTrimmed = '';
@@ -699,6 +703,23 @@ export class BrowseComponent implements OnInit {
     }
     // ##################################################################################
     this.runInformation(sharedData, session, urlStorage);
+
+
+    this.cancer_type = $('#disease_selectpicker').val();
+    $('#disease_selectpicker').on('change', () => {
+      this.cancer_type = $('#disease_selectpicker').val();
+      console.log(this.cancer_type);
+    });
+
+    this.cancer_subtype = ($('#disease_subtype').val() == 'None' || $('#disease_subtype').val() == $('#disease_selectpicker').val()) ? 'Main Type' : $('#disease_subtype').val();
+    $('#subtype_selector').on('change', () => {
+      this.cancer_subtype = ($('#disease_subtype').val() == 'None' || $('#disease_subtype').val() == $('#disease_selectpicker').val()) ? 'Main Type' : $('#disease_subtype').val();
+      console.log(this.cancer_subtype);
+    });
+    console.log(this.cancer_type)
+    console.log(this.cancer_subtype)
+
+
   }
   private runInformation(sharedData, session, urlStorage) {
     // ALL TS FOR TAB RUN INFORMATION
@@ -1305,7 +1326,7 @@ export class BrowseComponent implements OnInit {
     this.edgeTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
       const data = this.data();
       if (data[6].length === 0) {
-        const p = new Promise((resolve) => {
+        const p = new Promise<void>((resolve) => {
           controller.get_miRNA_by_ceRNA({
             disease_name,
             ensg_number: [data[0], data[1]],
@@ -1325,7 +1346,7 @@ export class BrowseComponent implements OnInit {
                   column: 6,
                 })
                 .data(mirnasString);
-              return Promise.resolve();
+              return resolve();
             },
             error: () => {
               edgeTable
@@ -1334,7 +1355,7 @@ export class BrowseComponent implements OnInit {
                   column: 6,
                 })
                 .data('-');
-              return Promise.resolve();
+              return resolve();
             },
           });
         });

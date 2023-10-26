@@ -17,6 +17,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatLineModule} from '@angular/material/core';
 import {GBrowserModule} from 'g-browser';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { GseaComponent } from './components/gsea/gsea.component';
 import {ClipboardModule} from '@angular/cdk/clipboard';
 import {NgxDropzoneModule} from 'ngx-dropzone';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -43,6 +48,7 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -55,7 +61,8 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
     CreditsComponent,
     TutorialComponent,
     DownloadComponent,
-    SpongEffectsComponent,
+    GseaComponent
+    SpongEffectsComponent
   ],
     imports: [
         BrowserModule,
@@ -65,6 +72,10 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
         MatTabsModule,
         MatLineModule,
         GBrowserModule,
+        MatFormFieldModule,
+        ReactiveFormsModule,
+        NgxMatSelectSearchModule,
+        NgxSliderModule,
         ClipboardModule,
         NgxDropzoneModule,
         MatExpansionModule,
