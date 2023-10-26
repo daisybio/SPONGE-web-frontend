@@ -14,14 +14,11 @@ export class AppComponent {
  constructor(@Inject(APP_BASE_HREF) public baseHref: string) {  }
   title = 'SPONGEdb';
 
- /* constructor() {
-  }*/
-
   ngOnInit() {
 
     const helper = new Helper()
-    
-    // check cookies 
+
+    // check cookies
     if (helper.getCookie("cookie_accepted") != '1') {
       // cookies have not been accepted
       $('#cookie-accept').click( () => {
@@ -33,6 +30,5 @@ export class AppComponent {
       // cookies have already been accepted
       $('.bottom-cookie').addClass('hidden')
     }
-    
   }
 }
