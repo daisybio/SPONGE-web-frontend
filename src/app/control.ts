@@ -63,9 +63,9 @@ export class Controller {
   static GSEA_RESULTS = '/gseaResults';
   static GSEA_PLOT = '/gseaPlot';
 
-  static DE_RESULTS = '/DifferentialExpression';
+  static DE_RESULTS = '/differentialExpression';
 
-  static COMPARISON = '/Comparison';
+  static COMPARISON = '/comparison';
 
   public get_gene_card_link(gene: string): string {
     return Controller.GENE_CARD + "?gene=" + gene;
