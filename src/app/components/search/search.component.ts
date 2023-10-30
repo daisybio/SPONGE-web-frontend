@@ -163,7 +163,7 @@ export class SearchComponent implements OnInit {
       '<mat-expansion-panel-header>'+
       '<mat-panel-title>Gene Set Enrichment Analysis</mat-panel-title>'+
       '</mat-expansion-panel-header>'+
-      '<app-gsea [input_disease_name_1]="\''+disease_label+'\'" [input_disease_name_2]="\''+disease_label+'\'" [input_disease_subtype_1]="\'Main Type\'" [input_disease_subtype_2]="\'Main Type\'" [input_condition_1]="\'normal\' [input_condition_2]="\'disease\'""></app-gsea>'+
+      '<app-gsea [input_disease_name_1]="\''+disease_label+'\'" [input_disease_name_2]="\''+disease_label+'\'" [input_condition_1]="\'normal\' [input_condition_2]="\'disease\'""></app-gsea>'+
       '</mat-expansion-panel>'+
       '</div>'+
       '</div>'

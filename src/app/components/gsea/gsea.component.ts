@@ -116,6 +116,7 @@ export class GseaComponent implements OnInit, OnChanges {
     this.controller.get_comparison({
       callback: (data) => {
         this.comparisons = data;
+        console.log(data);
         this.disease_name_1_list = [... new Set(data.map(obj => obj.dataset_1.disease_name))];
         this.disease_name_1_list = this.disease_name_1_list.concat([... new Set(data.map(obj => obj.dataset_2.disease_name))]);
         this.disease_name_1 = this.disease_name_1_list[0];

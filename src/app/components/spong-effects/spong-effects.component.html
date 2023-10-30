@@ -320,6 +320,29 @@
                   </mat-grid-list>
                 </div>
               </mat-expansion-panel>
+              <p></p>
+              <mat-expansion-panel>
+                <mat-expansion-panel-header (click)="resetLollipop()">
+                  <mat-panel-title>Gene Set Enrichment Analysis</mat-panel-title>
+                  <mat-panel-description>
+                    View GSEA results for the selected disease type.
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <mat-expansion-panel class="info-card-small" expanded="false">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <div class="info-text-small-div">
+                    <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological functions are enriched in gene expression data.</p>
+                    <p>The information from GSEA can help find biological differences between disease (sub-)types</p>
+                  </div>
+                </mat-expansion-panel>
+                <div style="text-align: center;">
+                  <app-gsea [input_condition_1]="'normal'" [input_condition_2]="'disease'"></app-gsea>
+                </div>
+              </mat-expansion-panel>
+
+
             </mat-accordion>
           </mat-expansion-panel>
           <p></p>
