@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { IGVInput } from 'src/app/interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -16,14 +17,14 @@ export class SharedService {
     return this.data;
   }
 
-  private _selectedEdgeMirnas = new Subject<string[]>();
+  private _igvInput = new Subject<IGVInput>();
 
-  public get selectedEdgeMirnas$() {
-    return this._selectedEdgeMirnas.asObservable();
+  public get igvInput$() {
+    return this._igvInput.asObservable();
   }
   // push selected mirnas to other components; triggers update of IGV
-  public pushMirnas(mirnas: string[]) {
-    this._selectedEdgeMirnas.next(mirnas);
+  public pushIgvInput(igvInput: IGVInput) {
+    this._igvInput.next(igvInput);
   }
 
 }

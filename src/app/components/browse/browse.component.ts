@@ -8,6 +8,7 @@ import { SharedService } from '../../services/shared/shared.service';
 
 import sigma from 'sigma';
 import { enableDebugTools } from '@angular/platform-browser';
+import { IGVInput } from 'src/app/interfaces';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -29,7 +30,10 @@ export class BrowseComponent implements OnInit {
   ) {
   }
 
-  public igvInput: string[] = []; // array of hsa IDs
+  public igvInput: IGVInput = {
+    gene: '',
+    hsaList: [],
+  };
   private automaticInteractionValueChange = false;
   private secondIterationAutomaticChange = false;
   private diseaseTrimmed = '';
@@ -591,8 +595,8 @@ export class BrowseComponent implements OnInit {
       : undefined;
 
     // set listener for selected edge mirnas
-    this.sharedService.selectedEdgeMirnas$.subscribe(mirnas => {
-      this.igvInput = mirnas;
+    this.sharedService.igvInput$.subscribe(igvInput => {
+      this.igvInput = igvInput;
       this.changeDetector.detectChanges();
     })
 

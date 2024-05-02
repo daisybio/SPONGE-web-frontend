@@ -1,4 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { Controller } from 'src/app/control';
+import { IGVInput } from 'src/app/interfaces';
 
 declare const igv: any;
 
@@ -9,15 +11,23 @@ declare const igv: any;
 })
 export class IgvComponent implements OnInit {
 
-  public _hsaList: string[] = [];
-  @Input () set hsaList(value: string[]) {
-    if (value.length === 0) {
-      this._hsaList = [];
+
+  public controller = new Controller();
+  public geneInformation: any;
+
+  public _igvInput?: IGVInput;
+   @Input() set igvInput(value: IGVInput) {
+    if (value.hsaList.length === 0) {
+      this._igvInput = undefined;
       return
     }
-    this._hsaList = value;
-    this.showModal();
-    this.render();
+    this._igvInput = value;
+    this.controller.get_gene_information([this._igvInput.gene]).then((geneInformation) => {
+      this.geneInformation = geneInformation[0];
+      this.showModal();
+      this.render();
+    });
+
   }
 
   public browser: any;
@@ -56,12 +66,15 @@ export class IgvComponent implements OnInit {
     var options =
     {
       "genome": "hg38",
-      "locus": "chr8:72,551,601-145,138,636",
-      "tracks": this._hsaList.map((hsa) => {
+      "tracks": this._igvInput.hsaList.map((hsa) => {
         return {
           "name": hsa,
           "url": `https://exbio.wzw.tum.de/sponge-static/bedfiles/${hsa}.bed`,
-          "format": "bed"
+          "format": "bed",
+          "sourceType": "file",
+          "type": "annotation",
+          "displayMode": "EXPANDED",
+          "indexed": false,
         }
       })
     };
@@ -73,7 +86,7 @@ export class IgvComponent implements OnInit {
         // when launching the browser not for the first time,
         // we need to search manually to set the correct region
         // otherwise, it somehow loads an incorrect region
-        this.browser.search("chr8:72,551,601-145,138,636");
+        this.browser.search(`chr${this.geneInformation.chromosome_name}:${this.geneInformation.start_pos}-${this.geneInformation.end_pos}`);
         this.hideLoadingSpinner();
       })
     

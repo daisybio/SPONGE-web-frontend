@@ -9,7 +9,7 @@ export class Controller {
       location.hostname === 'localhost' ||
       location.hostname === '127.0.0.1'
     ) {
-      Controller.API_ENDPOINT = 'http://localhost:5000/';
+      Controller.API_ENDPOINT = 'https://exbio.wzw.tum.de/sponge-api';
     } else {
       Controller.API_ENDPOINT = window.location.origin + '/sponge-api';
     }
@@ -24,6 +24,8 @@ export class Controller {
   static MIRNA_INTERACTION_SPECIFIC = '/miRNAInteraction/findSpecific';
   static MIRNA_INTERACTION_FIND_CERNA = '/miRNAInteraction/findceRNA';
   // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
+
+  static GENE_INFORMATION = '/getGeneInformation';
 
   static DATASETS = '/dataset';
   static SPONGEFFECTS_DATA = '/dataset/spongEffects';
@@ -117,6 +119,15 @@ export class Controller {
     }).fail((response) => {
       return config.error(response);
     });
+  }
+
+  public async get_gene_information(ensg_number: string[]) {
+    let request = Controller.API_ENDPOINT + Controller.GENE_INFORMATION;
+    if (ensg_number != undefined) {
+      request += '?ensg_number=' + ensg_number.join(',');
+    }
+    const respone = await $.getJSON(request);
+    return respone;
   }
 
   public async get_miRNA_by_ceRNA(config: {

@@ -3,6 +3,7 @@ import { Session } from '../app/session';
 import sigma from 'sigma';
 import { element } from 'protractor';
 import { SharedService } from '../app/services/shared/shared.service';
+import { IGVInput } from './interfaces';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -1523,7 +1524,7 @@ export class Helper {
           table += `
           <tr>
             <td>${attribute}: </td>
-            <td>${entry[attribute]}</td>
+            <td>${entry[attribute]} ${(attribute.startsWith('Gene')) ? '<button type="button" data-ensg="' + entry[attribute] + '" class="btn btn-primary openIGV ' + entry[attribute] +'" > open IGV </button>' : ''}</td>
           </tr>
         `;
         }
@@ -1545,7 +1546,6 @@ export class Helper {
           `<div class="card ${edge.id}">
           <div class="card-body">
             ${table}
-            <button type="button" class="btn btn-primary openIGV">miRNAs in IGV</button>
           </div>
         </div>`
         );
@@ -1576,9 +1576,29 @@ export class Helper {
         });
 
         // add function to last button with class 'openIGV'
-        $(document).on('click', `#edge_information_content .${edge.id} .openIGV`, () => {
+        $(document).on('click', `#edge_information_content .${edge.id} .openIGV.${entry['Gene 1']}`, () => {
           // open IGV with miRNA data
-          this.shared.pushMirnas(Object.keys(mirnas as any).map((x) => x.split(' ')[0]));
+          const hsaList: string[] = Object.keys(mirnas as any).map((x) => x.split(' ')[0]);
+          // get value from clicked button
+          const gene = entry['Gene 1'];
+          const igvInput: IGVInput = {
+            gene,
+            hsaList,
+          };
+          this.shared.pushIgvInput(igvInput);
+        });
+
+        // add function to last button with class 'openIGV'
+        $(document).on('click', `#edge_information_content .${edge.id} .openIGV.${entry['Gene 2']}`, () => {
+          // open IGV with miRNA data
+          const hsaList: string[] = Object.keys(mirnas as any).map((x) => x.split(' ')[0]);
+          // get value from clicked button
+          const gene = entry['Gene 2'];
+          const igvInput: IGVInput = {
+            gene,
+            hsaList,
+          };
+          this.shared.pushIgvInput(igvInput);
         });
       }
     }
