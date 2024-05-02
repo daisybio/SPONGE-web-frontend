@@ -30,6 +30,8 @@ export class Controller {
   static MIRNA_INTERACTION_FIND_CERNA = '/miRNAInteraction/findceRNA';
   // static MIRNA_INTERACTION_OCCURENCE = "/miRNAInteraction/getOccurence"
 
+  static GENE_INFORMATION = '/getGeneInformation';
+
   static DATASETS = '/dataset';
   static DATASETS_INFORMATION = '/datasets';
   static SPONGEFFECTS_PERFORMANCE = '/spongEffects/getRunPerformance';
@@ -146,6 +148,15 @@ export class Controller {
     }).fail((response) => {
       return config.error(response);
     });
+  }
+
+  public async get_gene_information(ensg_number: string[]) {
+    let request = Controller.API_ENDPOINT + Controller.GENE_INFORMATION;
+    if (ensg_number != undefined) {
+      request += '?ensg_number=' + ensg_number.join(',');
+    }
+    const respone = await $.getJSON(request);
+    return respone;
   }
 
   public async get_miRNA_by_ceRNA(config: {
