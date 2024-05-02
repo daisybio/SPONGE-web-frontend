@@ -1,6 +1,7 @@
 import { Component,Inject } from '@angular/core'
 import { Helper } from 'src/app/helper'
 import { APP_BASE_HREF } from '@angular/common';
+import { SharedService } from './services/shared/shared.service';
 
 @Component({
   selector: 'app-root',
@@ -11,15 +12,12 @@ export class AppComponent {
   /*
   TS CODE HERE WILL BE EXECUTED IN EVERY COMPONENT
   */
- constructor(@Inject(APP_BASE_HREF) public baseHref: string) {  }
+ constructor(@Inject(APP_BASE_HREF) public baseHref: string, public sharedService: SharedService) {  }
   title = 'SPONGEdb';
-
- /* constructor() {
-  }*/
 
   ngOnInit() {
 
-    const helper = new Helper()
+    const helper = new Helper(this.sharedService)
     
     // check cookies 
     if (helper.getCookie("cookie_accepted") != '1') {

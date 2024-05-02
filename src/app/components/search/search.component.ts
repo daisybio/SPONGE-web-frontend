@@ -2,7 +2,7 @@ import { Component, OnInit, ContentChild } from '@angular/core';
 import { Controller } from '../../control';
 import { Helper } from '../../helper';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { SharedService } from '../../shared.service';
+import { SharedService } from '../../services/shared/shared.service';
 import 'datatables.net';
 import { element } from 'protractor';
 
@@ -164,7 +164,7 @@ export class SearchComponent implements OnInit {
 
   ngOnInit() {
     const controller = new Controller();
-    const helper = new Helper();
+    const helper = new Helper(this.shared_service);
     const $this = this;
     const pValue = 0.05;
     this.pValue_current = 0.05; // default

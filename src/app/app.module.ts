@@ -8,6 +8,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { HomeComponent } from './components/home/home.component';
 import { SearchComponent } from './components/search/search.component';
 import { BrowseComponent } from './components/browse/browse.component';
+import { IgvComponent } from './components/igv/igv.component';
 import { MoreComponent } from './components/more/more.component';
 import { CreditsComponent } from './components/credits/credits.component';
 import { TutorialComponent } from './components/tutorial/tutorial.component';
@@ -30,7 +31,8 @@ import {GBrowserModule} from 'g-browser';
     MoreComponent,
     CreditsComponent,
     TutorialComponent,
-    DownloadComponent
+    DownloadComponent,
+    IgvComponent,
   ],
     imports: [
         BrowserModule,

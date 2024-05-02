@@ -2,6 +2,7 @@ import { Controller } from '../app/control';
 import { Session } from '../app/session';
 import sigma from 'sigma';
 import { element } from 'protractor';
+import { SharedService } from '../app/services/shared/shared.service';
 
 // wtf you have to declare sigma after importing it
 declare const sigma: any;
@@ -85,7 +86,7 @@ export class Helper {
     ]
   );
 
-  constructor() {
+  constructor(private shared: SharedService) {
     try {
       /* Sigma configurations */
       sigma.classes.graph.addMethod('adjacentEdges', function (id) {
@@ -103,7 +104,7 @@ export class Helper {
         }
         return edges;
       });
-    } catch {}
+    } catch { }
   }
 
   network_edges;
@@ -234,7 +235,7 @@ export class Helper {
           path.setAttribute(
             'href',
             'https://www.genecards.org/cgi-bin/carddisp.pl?gene=' +
-              row.cells[count].textContent
+            row.cells[count].textContent
           );
 
           path.textContent = 'GeneCard for ' + row.cells[count].textContent;
@@ -242,7 +243,7 @@ export class Helper {
           path.setAttribute(
             'href',
             'https://www.genecards.org/cgi-bin/carddisp.pl?gene=' +
-              row.cells[count - 1].textContent
+            row.cells[count - 1].textContent
           );
 
           path.textContent = 'GeneCard for ' + row.cells[count - 1].textContent;
@@ -279,8 +280,8 @@ export class Helper {
                     path.setAttribute(
                       'href',
                       'https://www.wikipathways.org/index.php?query=' +
-                        entry.gene.gene_symbol +
-                        '&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query'
+                      entry.gene.gene_symbol +
+                      '&species=Homo+sapiens&title=Special%3ASearchPathways&doSearch=1&ids=&codes=&type=query'
                     );
                     path.setAttribute('value', 'Pathway');
                     path.setAttribute('target', '_blank');
@@ -435,7 +436,7 @@ export class Helper {
                     go.setAttribute(
                       'href',
                       'https://www.ebi.ac.uk/QuickGO/term/' +
-                        entry.gene_ontology_symbol
+                      entry.gene_ontology_symbol
                     );
                     go.setAttribute('data-toggle', 'tooltip');
                     go.setAttribute('data-placement', 'right');
@@ -982,7 +983,7 @@ export class Helper {
 
     $('#network-search').html(
       "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>" +
-        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
     );
     let node_options = ''; // for node selector
     for (const node in nodes) {
@@ -1046,7 +1047,7 @@ export class Helper {
     });
     $('#network_graph_placeholder').addClass('hidden');
 
-    const session = new Session(network);
+    const session = new Session(network, this.shared);
 
     const noverlap_config = {
       nodeMargin: 3.0,
@@ -1499,7 +1500,7 @@ export class Helper {
 
     return { network, session };
   }
-  private clickEdgeListener(e, selected_disease, network) {
+  private async clickEdgeListener(e, selected_disease, network) {
     const data = JSON.parse($('#edge_data').text());
     const edge = e.data.edge;
 
@@ -1544,18 +1545,20 @@ export class Helper {
           `<div class="card ${edge.id}">
           <div class="card-body">
             ${table}
+            <button type="button" class="btn btn-primary openIGV">miRNAs in IGV</button>
           </div>
         </div>`
         );
 
+
         // load and append mirna data
-        this.controller.get_miRNA_by_ceRNA({
+        const mirnas = {};
+        await this.controller.get_miRNA_by_ceRNA({
           disease_name: selected_disease,
           ensg_number: [entry['Gene 1'], entry['Gene 2']],
           between: true,
           callback: (response) => {
             // there can be duplicates
-            const mirnas = {};
             for (const entry of response) {
               mirnas[`${entry.mirna.hs_nr} (${entry.mirna.mir_ID})`] = true;
             }
@@ -1570,6 +1573,12 @@ export class Helper {
           error: () => {
             $('#edge_information #' + id).html('-');
           },
+        });
+
+        // add function to last button with class 'openIGV'
+        $(document).on('click', `#edge_information_content .${edge.id} .openIGV`, () => {
+          // open IGV with miRNA data
+          this.shared.pushMirnas(Object.keys(mirnas as any).map((x) => x.split(' ')[0]));
         });
       }
     }
@@ -1705,7 +1714,7 @@ export class Helper {
 
     $('#network-search').html(
       "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>" +
-        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
     );
     let node_options = ''; // for node selector
     for (const node of this.network_nodes) {
@@ -1753,7 +1762,7 @@ export class Helper {
 
     $('#network-search').html(
       "<select id='network_search_node' class='form-control-md mr-sm-2' data-live-search='true' show-subtext='true'></select>" +
-        "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
+      "<button id='network_search_node_button' class='btn btn-sm btn-secondary' >Search</button>"
     );
     let node_options = ''; // for node selector
     for (const node of this.network_nodes) {
@@ -1787,7 +1796,7 @@ export class Helper {
     $('#network_search_node').selectpicker();
   }
 
-  public filter_nodes_by_degree() {}
+  public filter_nodes_by_degree() { }
 
   public load_session_url(params) {
     let nodes = [],

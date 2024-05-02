@@ -1,6 +1,7 @@
 import { Component, OnInit} from '@angular/core';
 import { Controller } from 'src/app/control';
 import { Helper } from 'src/app/helper';
+import { SharedService } from 'src/app/services/shared/shared.service';
 declare var Plotly: any;
 declare var $: any;
 
@@ -308,10 +309,13 @@ export class HomeComponent implements OnInit {
       yCorr.push( row2['Count of Correlations'] );
     }
   }
+
+  constructor(public sharedService: SharedService) { }
+
   async ngOnInit() {
 
     const controller = new Controller();
-    const helper = new Helper();
+    const helper = new Helper(this.sharedService);
 
     await this.drawInteractionPlot(controller, helper, false);
     await this.drawInteractionPlot(controller, helper, true);

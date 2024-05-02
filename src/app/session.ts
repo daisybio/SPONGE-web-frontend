@@ -1,6 +1,7 @@
 import { Helper } from '../app/helper';
 
 import * as $ from "jquery";
+import { SharedService } from './services/shared/shared.service';
 
 export class Session {
   /*
@@ -12,7 +13,7 @@ export class Session {
   network;
   url = null
 
-  constructor(network) {
+  constructor(network, public sharedService: SharedService) {
       this.network = network
       // BROWSE
       $('#load_disease, #export_selected_nodes, #export_selected_edges').click( () => {
@@ -28,7 +29,7 @@ export class Session {
       $('#network-plot-container').dblclick( () => this.update_url() )  // marked new edges / node
   }
 
-  helper = new Helper()
+  helper = new Helper(this.sharedService)
 
   public  getBaseUrl() {
     return document.getElementsByTagName('base')[0].href;

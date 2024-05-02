@@ -1,10 +1,10 @@
-import { Component, OnInit, ErrorHandler } from '@angular/core';
+import { Component, OnInit, ErrorHandler, ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
 import { Controller } from '../../control';
 import { Helper } from '../../helper';
 import { Session } from '../../session';
 import { Router, ActivatedRoute, Params } from '@angular/router';
-import { SharedService } from '../../shared.service';
+import { SharedService } from '../../services/shared/shared.service';
 
 import sigma from 'sigma';
 import { enableDebugTools } from '@angular/platform-browser';
@@ -24,14 +24,18 @@ export class BrowseComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private sharedService: SharedService,
     private router: Router,
-    private location: Location
-  ) {}
+    private location: Location,
+    private readonly changeDetector: ChangeDetectorRef
+  ) {
+  }
+
+  public igvInput: string[] = []; // array of hsa IDs
   private automaticInteractionValueChange = false;
   private secondIterationAutomaticChange = false;
   private diseaseTrimmed = '';
   private selectedDisease = '';
   private readonly controller = new Controller();
-  private readonly helper = new Helper();
+  private readonly helper = new Helper(this.sharedService);
   private numberNodesAfterRequest;
   private edgeTable;
   private nodeTable;
@@ -581,10 +585,16 @@ export class BrowseComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const sharedData: any = this.sharedService.getData()
       ? this.sharedService.getData()
       : undefined;
+
+    // set listener for selected edge mirnas
+    this.sharedService.selectedEdgeMirnas$.subscribe(mirnas => {
+      this.igvInput = mirnas;
+      this.changeDetector.detectChanges();
+    })
 
     let urlStorage; // save here which nodes and edges to mark while API data is loading
 
