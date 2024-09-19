@@ -69,7 +69,7 @@ export class IgvComponent implements OnInit {
       "tracks": this._igvInput.hsaList.map((hsa) => {
         return {
           "name": hsa,
-          "url": `https://exbio.wzw.tum.de/sponge-static/bedfiles/${hsa}.bed`,
+          "url": `https://www.exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${hsa}.bed`,
           "format": "bed",
           "sourceType": "file",
           "type": "annotation",
