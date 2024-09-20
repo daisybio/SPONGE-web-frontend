@@ -7,9 +7,9 @@ name: Docker
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "SPONGEdb_v2" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "SPONGEdb_v2" ]
 
 env:
   # Use docker.io for Docker Hub if empty
