@@ -1,7 +1,8 @@
 <mat-toolbar>
-  <button mat-button>SPONGE</button>
+  <button mat-button routerLink="">SPONGE</button>
   <span class="spacer"></span>
   @for (subpage of subpages; track subpage) {
     <button mat-button routerLink="/{{subpage.toLowerCase()}}">{{ subpage }}</button>
   }
 </mat-toolbar>
+<router-outlet></router-outlet>
