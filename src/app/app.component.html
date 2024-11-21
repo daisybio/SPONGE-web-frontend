@@ -1,1 +1,7 @@
-<button mat-flat-button>Hello</button>
+<mat-toolbar>
+  <button mat-button>SPONGE</button>
+  <span class="spacer"></span>
+  @for (subpage of subpages; track subpage) {
+    <button mat-button routerLink="/{{subpage.toLowerCase()}}">{{ subpage }}</button>
+  }
+</mat-toolbar>
