@@ -3,6 +3,11 @@ import {BrowseComponent} from "./routes/browse/browse.component";
 import {DownloadComponent} from "./routes/download/download.component";
 import {HomeComponent} from "./routes/home/home.component";
 import {DocumentationComponent} from "./routes/documentation/documentation.component";
+import {IntroductionComponent} from "./routes/documentation/introduction/introduction.component";
+import {HomeSearchBarComponent} from "./routes/documentation/home-search-bar/home-search-bar.component";
+import {
+  BrowseFunctionalitiesComponent
+} from "./routes/documentation/browse-functionalities/browse-functionalities.component";
 
 export const routes: Routes = [
   {
@@ -15,7 +20,25 @@ export const routes: Routes = [
   },
   {
     path: 'documentation',
-    component: DocumentationComponent
+    component: DocumentationComponent,
+    children: [
+      {
+        path: '',
+        component: IntroductionComponent
+      },
+      {
+        path: 'home-search',
+        component: HomeSearchBarComponent
+      },
+      {
+        path: 'browse-functionalities',
+        component: BrowseFunctionalitiesComponent
+      },
+      {
+        path: '**',
+        redirectTo: ''
+      }
+    ]
   },
   {
     path: 'download',
