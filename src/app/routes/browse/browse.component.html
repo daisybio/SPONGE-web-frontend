@@ -1,7 +1,7 @@
 <mat-drawer-container style="min-height: 800px">
   <mat-drawer [opened]="true" mode="side" style="padding: 10px">
     <form (ngSubmit)="onSubmit()" [formGroup]="formGroup">
-      <mat-form-field appearance="outline" style="margin: 5px;">
+      <mat-form-field appearance="outline">
         <mat-label>Disease</mat-label>
         <mat-select formControlName="disease">
           @for (disease of diseases; track disease) {
@@ -14,7 +14,7 @@
           <mat-expansion-panel-header>
             <mat-panel-title>Genes</mat-panel-title>
           </mat-expansion-panel-header>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Sort by</mat-label>
             <mat-select formControlName="geneSorting">
               @for (sorting of geneSortings; track sorting) {
@@ -22,19 +22,19 @@
               }
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. genes</mat-label>
             <input formControlName="maxGenes" matInput type="number"/>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. degree</mat-label>
             <input formControlName="minDegree" matInput type="number"/>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. betweenness</mat-label>
             <input formControlName="minBetweenness" matInput type="number"/>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. eigenvector</mat-label>
             <input formControlName="minEigen" matInput type="number"/>
           </mat-form-field>
@@ -43,7 +43,7 @@
           <mat-expansion-panel-header>
             <mat-panel-title>Interactions</mat-panel-title>
           </mat-expansion-panel-header>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Sort by</mat-label>
             <mat-select formControlName="interactionSorting">
               @for (sorting of interactionSortings; track sorting) {
@@ -51,15 +51,15 @@
               }
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. interactions</mat-label>
             <input formControlName="maxInteractions" matInput type="number"/>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. adj. p-value</mat-label>
             <input formControlName="maxPValue" matInput type="number"/>
           </mat-form-field>
-          <mat-form-field appearance="outline" style="margin: 5px;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. MScore</mat-label>
             <input formControlName="minMScore" matInput type="number"/>
           </mat-form-field>
