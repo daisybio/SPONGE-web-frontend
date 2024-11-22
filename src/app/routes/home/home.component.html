@@ -23,4 +23,13 @@
     }
   </carousel>
   <h2>SPONGE results for each pair of genes</h2>
+  <mat-tab-group (selectedTabChange)="resize()" [preserveContent]="true">
+    <mat-tab label="Cancer">
+      <div #cancerPlot style="height: 800px"></div>
+    </mat-tab>
+    <mat-tab label="Non-cancer">
+      <div #nonCancerPlot style="height: 800px"></div>
+    </mat-tab>
+  </mat-tab-group>
+
 </div>
