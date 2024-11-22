@@ -6,6 +6,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {FormComponent} from "./form/form.component";
 import {CeRNAsComponent} from "./ce-rnas/ce-rnas.component";
 import {InteractionsComponent} from "./interactions/interactions.component";
+import {NetworkComponent} from "./network/network.component";
 
 @Component({
   selector: 'app-browse',
@@ -16,7 +17,8 @@ import {InteractionsComponent} from "./interactions/interactions.component";
     MatExpansionModule,
     FormComponent,
     CeRNAsComponent,
-    InteractionsComponent
+    InteractionsComponent,
+    NetworkComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
