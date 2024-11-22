@@ -13,3 +13,15 @@ export interface OverallCounts {
   disease_name: string,
   run_ID: number
 }
+
+export enum GeneSorting {
+  Betweenness = "Betweenness",
+  DbDegree = "DbDegree",
+  Eigenvector = "Eigenvector"
+}
+
+export enum InteractionSorting {
+  pAdj = "adjusted p-value",
+  mScor = "MScor",
+  Correlation = "Correlation"
+}
