@@ -45,13 +45,15 @@ export enum InteractionSorting {
   Correlation = "Correlation"
 }
 
+export interface Gene {
+  ensg_number: string,
+  gene_symbol: string
+}
+
 export interface CeRNA {
   betweenness: number,
   eigenvector: number,
-  gene: {
-    ensg_number: string,
-    gene_symbol: string
-  },
+  gene: Gene,
   node_degree: number
   run: {
     dataset: {

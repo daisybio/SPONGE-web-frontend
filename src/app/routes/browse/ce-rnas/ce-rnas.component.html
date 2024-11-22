@@ -1,0 +1,37 @@
+<table [dataSource]="ceRNAs$()" class="mat-elevation-z8" mat-table>
+
+  <!--- Note that these columns can be defined in any order.
+        The actual rendered columns are set as a property on the row definition" -->
+
+  <!-- Position Column -->
+  <ng-container matColumnDef="ensg_number">
+    <th *matHeaderCellDef mat-header-cell>Ensembl ID</th>
+    <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.gene.ensg_number }}</td>
+  </ng-container>
+
+  <!-- Name Column -->
+  <ng-container matColumnDef="gene_symbol">
+    <th *matHeaderCellDef mat-header-cell>Gene Symbol</th>
+    <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.gene.gene_symbol }}</td>
+  </ng-container>
+
+  <!-- Weight Column -->
+  <ng-container matColumnDef="betweenness">
+    <th *matHeaderCellDef mat-header-cell>Betweenness</th>
+    <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.betweenness }}</td>
+  </ng-container>
+
+  <!-- Symbol Column -->
+  <ng-container matColumnDef="eigenvector">
+    <th *matHeaderCellDef mat-header-cell> Eigenvector</th>
+    <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.eigenvector }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="node_degree">
+    <th *matHeaderCellDef mat-header-cell> Degree</th>
+    <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.node_degree }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>

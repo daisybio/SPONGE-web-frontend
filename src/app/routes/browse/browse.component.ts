@@ -4,6 +4,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormComponent} from "./form/form.component";
+import {CeRNAsComponent} from "./ce-rnas/ce-rnas.component";
 
 @Component({
   selector: 'app-browse',
@@ -12,7 +13,8 @@ import {FormComponent} from "./form/form.component";
     MatTabsModule,
     ReactiveFormsModule,
     MatExpansionModule,
-    FormComponent
+    FormComponent,
+    CeRNAsComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
