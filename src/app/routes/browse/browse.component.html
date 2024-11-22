@@ -1,1 +1,84 @@
-<p>browse works!</p>
+<mat-drawer-container style="min-height: 800px">
+  <mat-drawer [opened]="true" mode="side" style="padding: 10px">
+    <form (ngSubmit)="onSubmit()" [formGroup]="formGroup">
+      <mat-form-field appearance="outline" style="margin: 5px;">
+        <mat-label>Disease</mat-label>
+        <mat-select formControlName="disease">
+          @for (disease of diseases; track disease) {
+            <mat-option [value]="disease">{{ disease }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Genes</mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Sort by</mat-label>
+            <mat-select formControlName="geneSorting">
+              @for (sorting of geneSortings; track sorting) {
+                <mat-option [value]="sorting">{{ sorting }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Max. genes</mat-label>
+            <input formControlName="maxGenes" matInput type="number"/>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Min. degree</mat-label>
+            <input formControlName="minDegree" matInput type="number"/>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Min. betweenness</mat-label>
+            <input formControlName="minBetweenness" matInput type="number"/>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Min. eigenvector</mat-label>
+            <input formControlName="minEigen" matInput type="number"/>
+          </mat-form-field>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Interactions</mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Sort by</mat-label>
+            <mat-select formControlName="interactionSorting">
+              @for (sorting of interactionSortings; track sorting) {
+                <mat-option [value]="sorting">{{ sorting }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Max. interactions</mat-label>
+            <input formControlName="maxInteractions" matInput type="number"/>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Max. adj. p-value</mat-label>
+            <input formControlName="maxPValue" matInput type="number"/>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="margin: 5px;">
+            <mat-label>Min. MScore</mat-label>
+            <input formControlName="minMScore" matInput type="number"/>
+          </mat-form-field>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <button mat-flat-button style="margin: 5px" type="submit">Search</button>
+    </form>
+  </mat-drawer>
+  <mat-drawer-content>
+    <mat-tab-group>
+      <mat-tab label="Network">
+        Network
+      </mat-tab>
+      <mat-tab label="Genes in the Network">
+        Genes in the Network
+      </mat-tab>
+      <mat-tab label="Interactions in the Network">
+        Interactions in the Network
+      </mat-tab>
+    </mat-tab-group>
+  </mat-drawer-content>
+</mat-drawer-container>
