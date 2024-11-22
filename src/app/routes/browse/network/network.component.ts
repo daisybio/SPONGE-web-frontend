@@ -5,6 +5,11 @@ import {toObservable} from "@angular/core/rxjs-interop";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import Sigma from "sigma";
+import {Settings} from "sigma/settings";
+
+const sigma_settings: Partial<Settings> = {
+  defaultNodeColor: '#052444'
+}
 
 @Component({
   selector: 'app-network',
@@ -27,8 +32,9 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       ceRNAs.forEach(ceRNA => {
         graph.addNode(ceRNA.gene.ensg_number, {
           label: ceRNA.gene.gene_symbol || ceRNA.gene.ensg_number,
-          x: Math.random(),
+          x: Math.random(), // Coordinates will be overridden by the layout algorithm
           y: Math.random(),
+          size: Math.log(ceRNA.node_degree)
         });
       });
 
@@ -48,7 +54,11 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.graph$.subscribe(graph => {
       this.sigma?.kill();
-      this.sigma = new Sigma(graph, this.container.nativeElement);
+      this.sigma = new Sigma(graph, this.container.nativeElement, sigma_settings);
+
+      this.sigma.on('clickNode', event => {
+        console.log(event)
+      });
     });
   }
 
