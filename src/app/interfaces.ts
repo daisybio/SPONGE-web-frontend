@@ -67,8 +67,8 @@ export interface CeRNA {
 
 export interface CeRNAInteraction {
   "correlation": number,
-  "gene1": string,
-  "gene2": string,
+  "gene1": Gene,
+  "gene2": Gene,
   "mscor": number,
   "p_value": number,
   "run": {
