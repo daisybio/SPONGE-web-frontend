@@ -8,4 +8,19 @@
     </mat-form-field>
     <button mat-flat-button style="left: 5px">Search</button>
   </div>
+  <div>
+    <a mat-raised-button routerLink="/browse" style="margin: 5px">Explore the database</a>
+    <a mat-raised-button routerLink="/documentation/more-about-sponge" style="margin: 5px">More about SPONGE</a>
+  </div>
+  <h2>SPONGEdb in a nutshell</h2>
+
+  <carousel [isAnimated]="true" class="carousel-dark">
+    @for (image of images; track image) {
+      <slide>
+        <img [src]="imageRoot + image" alt="image slide"
+             style="display: block; height: 500px; max-width: 100%; object-fit: contain">
+      </slide>
+    }
+  </carousel>
+  <h2>SPONGE results for each pair of genes</h2>
 </div>
