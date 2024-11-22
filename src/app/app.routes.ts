@@ -9,6 +9,7 @@ import {
   BrowseFunctionalitiesComponent
 } from "./routes/documentation/browse-functionalities/browse-functionalities.component";
 import {BrowseSidebarComponent} from "./routes/documentation/browse-sidebar/browse-sidebar.component";
+import {MoreComponent} from "./routes/documentation/more/more.component";
 
 export const routes: Routes = [
   {
@@ -38,6 +39,10 @@ export const routes: Routes = [
       {
         path: 'browse-sidebar',
         component: BrowseSidebarComponent
+      },
+      {
+        path: 'more-about-sponge',
+        component: MoreComponent
       },
       {
         path: '**',
