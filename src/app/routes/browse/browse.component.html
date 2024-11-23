@@ -3,27 +3,34 @@
     <app-form></app-form>
   </mat-drawer>
   <mat-drawer-content>
-    @if (hasData$()) {
-      <mat-tab-group [preserveContent]="false">
-        <mat-tab label="Network">
-          <div style="display: flex; flex-direction: row">
-            <app-network style="min-width: 500px; flex-grow: 3"></app-network>
-            <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
-          </div>
-        </mat-tab>
-        <mat-tab label="Survival analysis">
-          <app-survival-analysis></app-survival-analysis>
-        </mat-tab>
-        <mat-tab label="Expression heatmap">
-          <app-heatmap></app-heatmap>
-        </mat-tab>
-        <mat-tab label="ceRNAs">
-          <app-ce-rnas></app-ce-rnas>
-        </mat-tab>
-        <mat-tab label="Interactions">
-          <app-interactions></app-interactions>
-        </mat-tab>
-      </mat-tab-group>
+    @if (hasData$() || isLoading$()) {
+      @if (!isLoading$()) {
+        <mat-tab-group>
+          <mat-tab label="Network">
+            <div style="display: flex; flex-direction: row">
+              <app-network style="min-width: 500px; flex-grow: 3"></app-network>
+              <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
+            </div>
+          </mat-tab>
+          <mat-tab label="Survival analysis">
+            <app-survival-analysis></app-survival-analysis>
+          </mat-tab>
+          <mat-tab label="Expression heatmap">
+            <app-heatmap></app-heatmap>
+          </mat-tab>
+          <mat-tab label="ceRNAs">
+            <app-ce-rnas></app-ce-rnas>
+          </mat-tab>
+          <mat-tab label="Interactions">
+            <app-interactions></app-interactions>
+          </mat-tab>
+        </mat-tab-group>
+      } @else {
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%">
+          <mat-spinner diameter="100"></mat-spinner>
+        </div>
+      }
+
     } @else {
       <p>
         Please execute a search to see the results.

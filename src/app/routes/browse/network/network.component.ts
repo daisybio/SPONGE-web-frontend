@@ -30,6 +30,7 @@ const sigma_settings: Partial<Settings> = {
   minEdgeThickness: states[State.Default].edgeWidth,
   defaultNodeColor: states[State.Default].nodeColor,
   enableEdgeEvents: true,
+  allowInvalidContainer: true
 }
 
 @Component({
@@ -97,11 +98,17 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   }
 
   setEdgeState(edge: string, state: State) {
+    if (!this.sigma?.getGraph().hasEdge(edge)) {
+      return;
+    }
     this.sigma?.getGraph().setEdgeAttribute(edge, 'color', states[state].edgeColor);
     this.sigma?.getGraph().setEdgeAttribute(edge, 'size', states[state].edgeWidth);
   }
 
   setNodeState(node: string, state: State) {
+    if (!this.sigma?.getGraph().hasNode(node)) {
+      return;
+    }
     this.sigma?.getGraph().setNodeAttribute(node, 'color', states[state].nodeColor);
   }
 

@@ -1,12 +1,11 @@
 import {Component, Signal} from '@angular/core';
 import {CeRNAInteraction} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
-import {MatTableModule} from "@angular/material/table";
 import {InteractionsTableComponent} from "../../../components/interactions-table/interactions-table.component";
 
 @Component({
   selector: 'app-interactions',
-  imports: [MatTableModule, InteractionsTableComponent],
+  imports: [InteractionsTableComponent],
   templateUrl: './interactions.component.html',
   styleUrl: './interactions.component.scss'
 })
