@@ -1,19 +1,7 @@
 <div class="route-container">
   <h1>SPONGE</h1>
   <h4>A resource for competing endogenous RNA interaction networks</h4>
-  <div>
-    <mat-form-field appearance="outline" style="margin-right: 5px">
-      <mat-label>Search for a gene</mat-label>
-      <input [(ngModel)]="searchGene" matInput type="text">
-    </mat-form-field>
-    <button mat-flat-button style="left: 5px">Search</button>
-  </div>
-  <div>
-    <a mat-raised-button routerLink="/browse" style="margin: 5px">Explore the database</a>
-    <a mat-raised-button routerLink="/documentation/more-about-sponge" style="margin: 5px">More about SPONGE</a>
-  </div>
-  <h2>SPONGEdb in a nutshell</h2>
-
+  
   <carousel [isAnimated]="true" class="carousel-dark">
     @for (image of images; track image) {
       <slide>
