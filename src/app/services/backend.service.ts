@@ -51,11 +51,25 @@ export class BackendService {
     return this.http.getRequest<CeRNA[]>(request);
   }
 
-
-  getCeRNAInteractions(config: CeRNAQuery, ensgs: string[]): Promise<CeRNAInteraction[]> {
-    let request = BackendService.API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + config.disease.disease_name;
+  getCeRNAInteractionsAll(disease: string, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
+    let request = BackendService.API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
     request += `&ensg_number=${ensgs.join(',')}`;
-    request += `&pValue=${config.maxPValue}`;
+    request += `&pValue=${maxPValue}`;
+
+    if (limit) {
+      request += `&limit=${limit}`;
+    }
+    if (offset) {
+      request += `&offset=${offset}`;
+    }
+
+    return this.http.getRequest<CeRNAInteraction[]>(request);
+  }
+
+  getCeRNAInteractionsSpecific(disease: string, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+    let request = BackendService.API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
+    request += `&ensg_number=${ensgs.join(',')}`;
+    request += `&pValue=${maxPValue}`;
 
     return this.http.getRequest<CeRNAInteraction[]>(request);
   }

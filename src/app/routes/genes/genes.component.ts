@@ -6,12 +6,13 @@ import {MatIconModule} from "@angular/material/icon";
 import {FormsModule} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {BackendService} from "../../services/backend.service";
-import {AsyncPipe} from "@angular/common";
+import {AsyncPipe, KeyValuePipe} from "@angular/common";
 import {Gene} from "../../interfaces";
 import _, {capitalize} from "lodash";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatSelect} from "@angular/material/select";
+import {InteractionsTableComponent} from "../../components/interactions-table/interactions-table.component";
 
 declare const Plotly: any;
 
@@ -29,13 +30,14 @@ declare const Plotly: any;
     AsyncPipe,
     MatCheckbox,
     MatTabsModule,
-    MatSelect
+    MatSelect,
+    KeyValuePipe,
+    InteractionsTableComponent
   ],
   templateUrl: './genes.component.html',
   styleUrl: './genes.component.scss'
 })
 export class GenesComponent {
-  static readonly resultsPerPage = 10;
   @ViewChild('pie') pie!: ElementRef;
   readonly currentInput = model('');
   readonly selectedDisease = model('');
@@ -50,9 +52,8 @@ export class GenesComponent {
     return this.backend.getGeneCount(genes, onlySignificant);
   })
 
-  readonly pieData$ = computed(async () => {
-    const geneCounts = await this.results();
-    const diseaseCount = geneCounts.map(g => {
+  readonly diseaseCounts$ = computed(async () => {
+    return (await this.results()).map(g => {
       return {
         disease_name: g.run.dataset.disease_name,
         count_sign: g.count_sign
@@ -64,28 +65,35 @@ export class GenesComponent {
       acc[curr.disease_name] += curr.count_sign;
       return acc;
     }, {} as { [key: string]: number });
+  })
 
-    return {
-      values: Object.values(diseaseCount),
-      labels: Object.keys(diseaseCount),
+  readonly interactions$ = computed(async () => {
+    const disease = this.selectedDisease();
+    if (!disease) {
+      return [];
     }
-  })
+    const count = await this.diseaseCounts$().then(data => data[disease]);
 
-  readonly diseases$ = computed(async () => {
-    return (await this.pieData$()).labels;
-  })
+    const n_requests = Math.ceil(count / 1000);
+    const ensgs = this.activeGenes().map(g => g.ensg_number);
+
+    return (await Promise.all([...Array(n_requests).keys()].map(async i => {
+      return this.backend.getCeRNAInteractionsAll(disease, 0.05, ensgs, 1000, i * 1000);
+    }))).flat();
+  });
+
   protected readonly capitalize = capitalize;
 
   constructor(private backend: BackendService) {
     effect(() => {
-      this.pieData$().then(data => {
-        if (data.labels.length === 0) {
+      this.diseaseCounts$().then(data => {
+        if (Object.keys(data).length === 0) {
           return;
         }
 
         Plotly.newPlot(this.pie.nativeElement, [{
-          values: data.values,
-          labels: data.labels.map(capitalize),
+          values: Object.values(data),
+          labels: Object.keys(data).map(capitalize),
           type: 'pie'
         }]);
       });

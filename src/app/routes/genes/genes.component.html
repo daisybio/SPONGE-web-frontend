@@ -41,13 +41,14 @@
         <mat-form-field>
           <mat-label>Disease</mat-label>
           <mat-select [(value)]="selectedDisease">
-            @for (disease of diseases$() | async; track disease) {
-              <mat-option [value]="disease">
-                {{ capitalize(disease) }}
+            @for (disease of (diseaseCounts$() | async)! | keyvalue; track disease) {
+              <mat-option [value]="disease.key">
+                {{ capitalize(disease.key) }} ({{ disease.value }})
               </mat-option>
             }
           </mat-select>
         </mat-form-field>
+        <app-interactions-table [interactions$]="(interactions$() | async)!"></app-interactions-table>
       </mat-tab>
     </mat-tab-group>
   </mat-drawer-content>

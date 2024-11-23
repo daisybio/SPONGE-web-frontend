@@ -79,7 +79,8 @@ export class BrowseService {
     const ceRNA$ = this.backend.getCeRNA(config);
     const runInfo$ = this.backend.getDatasetInfo(config.disease.disease_name);
     const ensgs$ = ceRNA$.then(ceRNAs => ceRNAs.map(ceRNA => ceRNA.gene.ensg_number));
-    const interactions$ = ensgs$.then(async (ensgs) => await this.backend.getCeRNAInteractions(config, ensgs));
+    const interactions$ = ensgs$.then(async (ensgs) =>
+      await this.backend.getCeRNAInteractionsSpecific(config.disease.disease_name, config.maxPValue, ensgs));
 
     const [ceRNAs, runInfo, interactions] = await Promise.all([ceRNA$, runInfo$, interactions$]);
 
