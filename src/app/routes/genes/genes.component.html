@@ -1,0 +1,38 @@
+<mat-drawer-container style="min-height: 800px">
+  <mat-drawer [opened]="true" mode="side" style="padding: 10px">
+    <form>
+      <mat-form-field class="example-chip-list">
+        <mat-label>Selected genes</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Gene selection">
+          @for (gene of activeGenes(); track $index) {
+            <mat-chip-row (removed)="remove(gene)">
+              {{ gene.gene_symbol }}
+              <button matChipRemove [attr.aria-label]="'remove ' + gene">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+        </mat-chip-grid>
+        <input
+          [(ngModel)]="currentInput"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipGrid"
+          name="currentGene"
+          placeholder="Add gene..."
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)"
+                          autoActiveFirstOption>
+          @for (gene of possibleGenes() | async; track gene) {
+            <mat-option [value]="gene">{{ gene.gene_symbol }} ({{ gene.ensg_number }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-checkbox [(ngModel)]="onlySignificant" name="onlySignificant">Show only significant results</mat-checkbox>
+    </form>
+
+  </mat-drawer>
+  <mat-drawer-content>
+    Hello
+  </mat-drawer-content>
+</mat-drawer-container>

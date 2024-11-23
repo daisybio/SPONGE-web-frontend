@@ -6,6 +6,7 @@ import {
   CeRNAInteraction,
   CeRNAQuery,
   Dataset,
+  Gene,
   OverallCounts,
   RunInfo,
   SurvivalPValue,
@@ -77,5 +78,13 @@ export class BackendService {
     request += `&ensg_number=${ensgs.join(',')}`;
 
     return this.http.getRequest<SurvivalPValue[]>(request);
+  }
+
+  getAutocomplete(query: string): Promise<Gene[]> {
+    if (query.length < 2) {
+      return Promise.resolve([]);
+    }
+    const request = BackendService.API_BASE + '/stringSearch?searchString=' + query;
+    return this.http.getRequest<Gene[]>(request);
   }
 }
