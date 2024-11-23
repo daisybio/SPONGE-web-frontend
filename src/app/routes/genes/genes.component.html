@@ -48,7 +48,11 @@
             }
           </mat-select>
         </mat-form-field>
-        <app-interactions-table [interactions$]="(interactions$() | async)"></app-interactions-table>
+        @if (selectedDisease()) {
+          <app-interactions-table [interactions$]="(interactions$() | async)"></app-interactions-table>
+        } @else {
+          <p>Please select a disease to see the interactions.</p>
+        }
       </mat-tab>
     </mat-tab-group>
   </mat-drawer-content>
