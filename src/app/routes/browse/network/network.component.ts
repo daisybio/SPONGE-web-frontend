@@ -5,17 +5,19 @@ import {
   effect,
   ElementRef,
   OnDestroy,
+  Signal,
   signal,
   ViewChild,
   WritableSignal
 } from '@angular/core';
-import {BrowseService} from "../../../services/browse.service";
+import {BrowseService, BrowseState} from "../../../services/browse.service";
 import {ReplaySubject} from "rxjs";
 import {toObservable} from "@angular/core/rxjs-interop";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
+import {CeRNA, CeRNAInteraction} from "../../../interfaces";
 
 enum State {
   Default,
@@ -64,13 +66,18 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   @ViewChild("container") container!: ElementRef;
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
+  data$: Signal<BrowseState | undefined>;
   nodeStates$ = signal<Record<string, EntityState>>({});
   edgeStates$ = signal<Record<string, EntityState>>({});
-  activeNodes$ = computed(() => Object.entries(this.nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node));
-  activeEdges$ = computed(() => Object.entries(this.edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge));
+  activeNodeIDs$ = computed(() => Object.entries(this.nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node));
+  activeEdgeIDs$ = computed(() => Object.entries(this.edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge));
+
+  activeCeRNAs$: Signal<CeRNA[]>;
+  activeInteractions$: Signal<CeRNAInteraction[]>;
 
   constructor(private browseService: BrowseService) {
-    toObservable(this.browseService.data$).subscribe(data => {
+    this.data$ = this.browseService.data$;
+    toObservable(this.data$).subscribe(data => {
       if (data === undefined) return;
       const ceRNAs = data.ceRNAs;
       const interactions = data.interactions;
@@ -98,6 +105,24 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       this.graph$.next(graph);
     })
 
+    this.activeCeRNAs$ = computed(() => {
+      const data = this.data$();
+      if (data === undefined) return [];
+      const nodeIDs = this.activeNodeIDs$();
+
+      return data.ceRNAs.filter(ceRNA => nodeIDs.includes(ceRNA.gene.ensg_number));
+    });
+
+    this.activeInteractions$ = computed(() => {
+      const data = this.data$();
+      if (data === undefined) return [];
+      const edgeIDs = this.activeEdgeIDs$();
+      return edgeIDs.map(edgeID => {
+        return this.getInteractionForEdge(edgeID, data);
+      }).filter(interaction => interaction !== undefined) as CeRNAInteraction[];
+    });
+
+
     effect(() => {
       Object.entries(this.nodeStates$()).forEach(([node, state]) => {
         this.setNodeState(node, this.determineState(state));
@@ -108,6 +133,18 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       Object.entries(this.edgeStates$()).forEach(([edge, state]) => {
         this.setEdgeState(edge, this.determineState(state));
       });
+    });
+  }
+
+  getInteractionForEdge(edgeID: string, data: BrowseState): CeRNAInteraction | undefined {
+    const sigma = this.sigma;
+    if (sigma === undefined) return;
+    const graph = sigma.getGraph();
+    const source = graph?.source(edgeID);
+    const target = graph?.target(edgeID);
+    return data.interactions.find(interaction => {
+      return (interaction.gene1.ensg_number === source && interaction.gene2.ensg_number === target) ||
+        (interaction.gene1.ensg_number === target && interaction.gene2.ensg_number === source);
     });
   }
 
