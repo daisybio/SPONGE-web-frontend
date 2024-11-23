@@ -1,0 +1,60 @@
+<mat-tab-group>
+  <mat-tab label="Active nodes">
+    <div class="card-container">
+      @for (ceRNA of nodes$(); track ceRNA.gene.ensg_number) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ getGenePrimary(ceRNA.gene) }}</mat-card-title>
+            <mat-card-subtitle>{{ ceRNA.gene.ensg_number }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <table>
+              <tr>
+                <th>Betweenness</th>
+                <td>{{ ceRNA.betweenness }}</td>
+              </tr>
+              <tr>
+                <th>Eigenvector</th>
+                <td>{{ ceRNA.eigenvector }}</td>
+              </tr>
+              <tr>
+                <th>Degree</th>
+                <td>{{ ceRNA.node_degree }}</td>
+              </tr>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  </mat-tab>
+  <mat-tab label="Active edges">
+    <div class="card-container">
+      @for (interaction of edges$(); track interaction) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ getGenePrimary(interaction.gene1) }}- {{ getGenePrimary(interaction.gene2) }}
+            </mat-card-title>
+            <mat-card-subtitle>{{ interaction.gene1.ensg_number }} - {{ interaction.gene2.ensg_number }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <table>
+              <tr>
+                <th>Correlation</th>
+                <td>{{ interaction.correlation }}</td>
+              </tr>
+              <tr>
+                <th>MScor</th>
+                <td>{{ interaction.mscor }}</td>
+              </tr>
+              <tr>
+                <th>Adj. p-Value</th>
+                <td>{{ interaction.p_value }}</td>
+              </tr>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  </mat-tab>
+</mat-tab-group>

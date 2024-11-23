@@ -16,3 +16,11 @@ body {
   margin-right: auto;
   margin-top: 10px;
 }
+
+.card-container {
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

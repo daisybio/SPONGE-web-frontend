@@ -47,7 +47,7 @@ export enum InteractionSorting {
 
 export interface Gene {
   ensg_number: string,
-  gene_symbol: string
+  gene_symbol?: string
 }
 
 export interface CeRNA {

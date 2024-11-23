@@ -9,6 +9,8 @@ import {InteractionsComponent} from "./interactions/interactions.component";
 import {NetworkComponent} from "./network/network.component";
 import {HeatmapComponent} from "./heatmap/heatmap.component";
 import {BrowseService} from "../../services/browse.service";
+import {SurvivalAnalysisComponent} from "./survival-analysis/survival-analysis.component";
+import {ActiveEntitiesComponent} from "./active-entities/active-entities.component";
 
 @Component({
   selector: 'app-browse',
@@ -21,7 +23,9 @@ import {BrowseService} from "../../services/browse.service";
     CeRNAsComponent,
     InteractionsComponent,
     NetworkComponent,
-    HeatmapComponent
+    HeatmapComponent,
+    SurvivalAnalysisComponent,
+    ActiveEntitiesComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
