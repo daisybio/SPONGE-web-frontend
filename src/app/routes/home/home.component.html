@@ -1,14 +1,17 @@
 <div class="route-container">
   <h1>SPONGE</h1>
   <h4>A resource for competing endogenous RNA interaction networks</h4>
-  
+
   <carousel [isAnimated]="true" class="carousel-dark">
-    @for (image of images; track image) {
-      <slide>
-        <img [src]="imageRoot + image" alt="image slide"
-             style="display: block; height: 500px; max-width: 100%; object-fit: contain">
-      </slide>
-    }
+    <slide>
+      <img alt="image slide" class="carousel-image" src="/1.svg">
+    </slide>
+    <slide>
+      <img alt="image slide" class="carousel-image" src="/2.png">
+    </slide>
+    <slide>
+      <img alt="image slide" class="carousel-image" src="/3.svg">
+    </slide>
   </carousel>
   <h2>SPONGE results for each pair of genes</h2>
   <mat-tab-group (selectedTabChange)="resize()" [preserveContent]="true">

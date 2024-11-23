@@ -4,7 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --base-href /sponge-v2",
+    "build": "ng build",
+    "build:prod": "ng build --base-href=/sponge-rewrite/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

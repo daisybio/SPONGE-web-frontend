@@ -1,11 +1,9 @@
 FROM node:latest AS builder
 
-ENV BASE_URL=https://exbio.wzw.tum.de/sponge-v2
-
 WORKDIR /app
 COPY . .
 
-RUN npm install --force && npm run build --output-path=dist --configuration=production
+RUN npm install --force && npm run build:prod
 
 FROM nginx:latest
 
