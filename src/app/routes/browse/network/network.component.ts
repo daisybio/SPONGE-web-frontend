@@ -35,7 +35,7 @@ const sigma_settings: Partial<Settings> = {
 @Component({
   selector: 'app-network',
   imports: [],
-  template: '<div #container style="height: 500px"></div>',
+  template: '<div #container style="height: 500px; width: 100%"></div>',
   styleUrl: './network.component.scss'
 })
 export class NetworkComponent implements AfterViewInit, OnDestroy {

@@ -6,8 +6,10 @@
     @if (hasData$()) {
       <mat-tab-group [preserveContent]="true">
         <mat-tab label="Network">
-          <app-network></app-network>
-          <app-active-entities></app-active-entities>
+          <div style="display: flex; flex-direction: row">
+            <app-network style="min-width: 500px; flex-grow: 3"></app-network>
+            <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
+          </div>
         </mat-tab>
         <mat-tab label="Survival analysis">
           <app-survival-analysis></app-survival-analysis>
