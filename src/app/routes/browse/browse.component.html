@@ -5,7 +5,7 @@
   <mat-drawer-content>
     @if (hasData$() || isLoading$()) {
       @if (!isLoading$()) {
-        <mat-tab-group>
+        <mat-tab-group [preserveContent]="true">
           <mat-tab label="Network">
             <div style="display: flex; flex-direction: row">
               <app-network style="min-width: 500px; flex-grow: 3"></app-network>
