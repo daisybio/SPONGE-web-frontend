@@ -8,9 +8,10 @@ import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/mate
 import {BackendService} from "../../services/backend.service";
 import {AsyncPipe} from "@angular/common";
 import {Gene} from "../../interfaces";
-import _ from "lodash";
+import _, {capitalize} from "lodash";
 import {MatCheckbox} from "@angular/material/checkbox";
-import {MatTab, MatTabGroup} from "@angular/material/tabs";
+import {MatTabsModule} from "@angular/material/tabs";
+import {MatSelect} from "@angular/material/select";
 
 declare const Plotly: any;
 
@@ -27,21 +28,22 @@ declare const Plotly: any;
     MatAutocompleteModule,
     AsyncPipe,
     MatCheckbox,
-    MatTabGroup,
-    MatTab
+    MatTabsModule,
+    MatSelect
   ],
   templateUrl: './genes.component.html',
   styleUrl: './genes.component.scss'
 })
 export class GenesComponent {
+  static readonly resultsPerPage = 10;
   @ViewChild('pie') pie!: ElementRef;
   readonly currentInput = model('');
+  readonly selectedDisease = model('');
   readonly activeGenes = signal<Gene[]>([]);
   readonly possibleGenes = computed(() => {
     return this.backend.getAutocomplete(this.currentInput().toLowerCase());
   });
   readonly onlySignificant = model(true);
-
   readonly results = computed(() => {
     const genes = this.activeGenes().map(g => g.ensg_number);
     const onlySignificant = this.onlySignificant();
@@ -66,24 +68,29 @@ export class GenesComponent {
     return {
       values: Object.values(diseaseCount),
       labels: Object.keys(diseaseCount),
-      type: 'pie'
     }
   })
+
+  readonly diseases$ = computed(async () => {
+    return (await this.pieData$()).labels;
+  })
+  protected readonly capitalize = capitalize;
 
   constructor(private backend: BackendService) {
     effect(() => {
       this.pieData$().then(data => {
-        console.log(data);
-
         if (data.labels.length === 0) {
           return;
         }
 
-        Plotly.newPlot(this.pie.nativeElement, [data]);
+        Plotly.newPlot(this.pie.nativeElement, [{
+          values: data.values,
+          labels: data.labels.map(capitalize),
+          type: 'pie'
+        }]);
       });
     });
   }
-
 
   remove(gene: Gene): void {
     this.activeGenes.update(genes => {
