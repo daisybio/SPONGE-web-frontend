@@ -93,3 +93,13 @@ export interface CeRNAQuery {
   maxPValue: number,
   minMScore: number
 }
+
+export interface CeRNAExpression {
+  "dataset": string,
+  "expr_value": number,
+  "gene": {
+    "ensg_number": string,
+    "gene_symbol": string
+  },
+  "sample_ID": string
+}

@@ -11,9 +11,9 @@ import {MatTableModule} from "@angular/material/table";
 })
 export class InteractionsComponent {
   columns = ["gene_1", "gene_2", "correlation", "mscor", "padj", "id"];
-  interactions$: Signal<CeRNAInteraction[]>;
+  interactions$: Signal<CeRNAInteraction[] | undefined>;
 
   constructor(private browseService: BrowseService) {
-    this.interactions$ = computed(() => this.browseService.data$().interactions);
+    this.interactions$ = computed(() => this.browseService.data$()?.interactions);
   }
 }

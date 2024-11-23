@@ -7,6 +7,7 @@ import {FormComponent} from "./form/form.component";
 import {CeRNAsComponent} from "./ce-rnas/ce-rnas.component";
 import {InteractionsComponent} from "./interactions/interactions.component";
 import {NetworkComponent} from "./network/network.component";
+import {HeatmapComponent} from "./heatmap/heatmap.component";
 
 @Component({
   selector: 'app-browse',
@@ -18,7 +19,8 @@ import {NetworkComponent} from "./network/network.component";
     FormComponent,
     CeRNAsComponent,
     InteractionsComponent,
-    NetworkComponent
+    NetworkComponent,
+    HeatmapComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'

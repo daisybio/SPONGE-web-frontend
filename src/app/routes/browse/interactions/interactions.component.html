@@ -1,36 +1,41 @@
-<table [dataSource]="interactions$()" class="mat-elevation-z8" mat-table>
+@if (interactions$(); as interactions) {
+  <table [dataSource]="interactions" class="mat-elevation-z8" mat-table>
 
-  <ng-container matColumnDef="gene_1">
-    <th *matHeaderCellDef mat-header-cell>Gene 1</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.gene1.gene_symbol }}</td>
-  </ng-container>
+    <ng-container matColumnDef="gene_1">
+      <th *matHeaderCellDef mat-header-cell>Gene 1</th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.gene1.gene_symbol }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="gene_2">
-    <th *matHeaderCellDef mat-header-cell>Gene 2</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.gene2.gene_symbol }}</td>
-  </ng-container>
+    <ng-container matColumnDef="gene_2">
+      <th *matHeaderCellDef mat-header-cell>Gene 2</th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.gene2.gene_symbol }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="correlation">
-    <th *matHeaderCellDef mat-header-cell>Correlation</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>
-  </ng-container>
+    <ng-container matColumnDef="correlation">
+      <th *matHeaderCellDef mat-header-cell>Correlation</th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="mscor">
-    <th *matHeaderCellDef mat-header-cell>MScor</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.mscor }}</td>
-  </ng-container>
+    <ng-container matColumnDef="mscor">
+      <th *matHeaderCellDef mat-header-cell>MScor</th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.mscor }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="padj">
-    <th *matHeaderCellDef mat-header-cell>adj. p-Value</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.p_value }}</td>
-  </ng-container>
+    <ng-container matColumnDef="padj">
+      <th *matHeaderCellDef mat-header-cell>adj. p-Value</th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.p_value }}</td>
+    </ng-container>
 
-  <ng-container matColumnDef="id">
-    <th *matHeaderCellDef mat-header-cell>ID
-    <th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.run.run_ID }}</td>
-  </ng-container>
+    <ng-container matColumnDef="id">
+      <th *matHeaderCellDef mat-header-cell>ID
+      <th>
+      <td *matCellDef="let interaction" mat-cell>{{ interaction.run.run_ID }}</td>
+    </ng-container>
 
-  <tr *matHeaderRowDef="columns" mat-header-row></tr>
-  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
-</table>
+    <tr *matHeaderRowDef="columns" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+  </table>
+
+} @else {
+  <p> No data available </p>
+}

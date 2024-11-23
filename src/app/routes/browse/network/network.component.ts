@@ -71,6 +71,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
   constructor(private browseService: BrowseService) {
     toObservable(this.browseService.data$).subscribe(data => {
+      if (data === undefined) return;
       const ceRNAs = data.ceRNAs;
       const interactions = data.interactions;
 

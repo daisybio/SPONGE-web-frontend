@@ -1,8 +1,9 @@
 import {Injectable, Signal, signal} from '@angular/core';
-import {CeRNA, CeRNAInteraction, CeRNAQuery} from "../interfaces";
+import {CeRNA, CeRNAInteraction, CeRNAQuery, Dataset} from "../interfaces";
 import {BackendService} from "./backend.service";
 
 export interface BrowseState {
+  disease: Dataset;
   ceRNAs: CeRNA[];
   interactions: CeRNAInteraction[];
 }
@@ -11,12 +12,12 @@ export interface BrowseState {
   providedIn: 'root'
 })
 export class BrowseService {
-  private readonly _data$ = signal<BrowseState>({ceRNAs: [], interactions: []});
+  private readonly _data$ = signal<BrowseState | undefined>(undefined);
 
   constructor(private backend: BackendService) {
   }
 
-  get data$(): Signal<BrowseState> {
+  get data$(): Signal<BrowseState | undefined> {
     return this._data$.asReadonly();
   }
 
@@ -35,11 +36,8 @@ export class BrowseService {
     const interactions$ = ensgs$.then(async (ensgs) => await this.backend.getCeRNAInteractions(config, ensgs));
 
     const [ceRNAs, runInfo, interactions] = await Promise.all([ceRNA$, runInfo$, interactions$]);
-    console.log('ceRNA response:', ceRNAs);
-    console.log('run info:', runInfo);
-    console.log('interactions:', interactions);
 
-    this._data$.set({ceRNAs, interactions});
+    this._data$.set({ceRNAs, interactions, disease: config.disease});
     this._isLoading$.set(false);
   }
 }

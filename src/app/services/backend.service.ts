@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpService} from "./http.service";
-import {CeRNA, CeRNAInteraction, CeRNAQuery, Dataset, OverallCounts, RunInfo} from "../interfaces";
+import {CeRNA, CeRNAExpression, CeRNAInteraction, CeRNAQuery, Dataset, OverallCounts, RunInfo} from "../interfaces";
 
 @Injectable({
   providedIn: 'root'
@@ -46,5 +46,12 @@ export class BackendService {
     request += `&pValue=${config.maxPValue}`;
 
     return this.http.getRequest<CeRNAInteraction[]>(request);
+  }
+
+  getCeRNAExpression(ensgs: string[], diseaseName: string): Promise<CeRNAExpression[]> {
+    let request = BackendService.API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
+    request += `&ensg_number=${ensgs.join(',')}`;
+
+    return this.http.getRequest<CeRNAExpression[]>(request);
   }
 }
