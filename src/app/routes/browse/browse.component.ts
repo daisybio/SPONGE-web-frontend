@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, computed, Signal} from '@angular/core';
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
@@ -8,6 +8,7 @@ import {CeRNAsComponent} from "./ce-rnas/ce-rnas.component";
 import {InteractionsComponent} from "./interactions/interactions.component";
 import {NetworkComponent} from "./network/network.component";
 import {HeatmapComponent} from "./heatmap/heatmap.component";
+import {BrowseService} from "../../services/browse.service";
 
 @Component({
   selector: 'app-browse',
@@ -26,5 +27,9 @@ import {HeatmapComponent} from "./heatmap/heatmap.component";
   styleUrl: './browse.component.scss'
 })
 export class BrowseComponent {
+  hasData$: Signal<boolean>;
 
+  constructor(private browseService: BrowseService) {
+    this.hasData$ = computed(() => this.browseService.data$() !== undefined);
+  }
 }

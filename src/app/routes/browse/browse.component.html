@@ -3,19 +3,25 @@
     <app-form></app-form>
   </mat-drawer>
   <mat-drawer-content>
-    <mat-tab-group [preserveContent]="true">
-      <mat-tab label="Network">
-        <app-network></app-network>
-      </mat-tab>
-      <mat-tab label="Expression heatmap">
-        <app-heatmap></app-heatmap>
-      </mat-tab>
-      <mat-tab label="ceRNAs">
-        <app-ce-rnas></app-ce-rnas>
-      </mat-tab>
-      <mat-tab label="Interactions">
-        <app-interactions></app-interactions>
-      </mat-tab>
-    </mat-tab-group>
+    @if (hasData$()) {
+      <mat-tab-group [preserveContent]="true">
+        <mat-tab label="Network">
+          <app-network></app-network>
+        </mat-tab>
+        <mat-tab label="Expression heatmap">
+          <app-heatmap></app-heatmap>
+        </mat-tab>
+        <mat-tab label="ceRNAs">
+          <app-ce-rnas></app-ce-rnas>
+        </mat-tab>
+        <mat-tab label="Interactions">
+          <app-interactions></app-interactions>
+        </mat-tab>
+      </mat-tab-group>
+    } @else {
+      <p>
+        Please execute a search to see the results.
+      </p>
+    }
   </mat-drawer-content>
 </mat-drawer-container>
