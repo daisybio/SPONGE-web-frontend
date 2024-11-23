@@ -12,10 +12,4 @@ import {RouterLink, RouterOutlet} from "@angular/router";
 export class AppComponent {
   title = 'SPONGE-web-frontend';
   subpages = ['Browse', 'Genes', 'Documentation', 'Download'];
-
-  constructor() {
-    if (navigator.serviceWorker.controller) {
-      console.log('Active service worker found.')
-    }
-  }
 }
