@@ -1,4 +1,4 @@
-import {Component, computed, Signal} from '@angular/core';
+import {Component, Signal} from '@angular/core';
 import {CeRNAInteraction} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {MatTableModule} from "@angular/material/table";
@@ -11,9 +11,9 @@ import {MatTableModule} from "@angular/material/table";
 })
 export class InteractionsComponent {
   columns = ["gene_1", "gene_2", "correlation", "mscor", "padj", "id"];
-  interactions$: Signal<CeRNAInteraction[] | undefined>;
+  interactions$: Signal<CeRNAInteraction[]>;
 
-  constructor(private browseService: BrowseService) {
-    this.interactions$ = computed(() => this.browseService.data$()?.interactions);
+  constructor(browseService: BrowseService) {
+    this.interactions$ = browseService.interactions$;
   }
 }

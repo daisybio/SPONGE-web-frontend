@@ -16,13 +16,11 @@ export class HeatmapComponent implements AfterViewInit {
   @ViewChild('heatmap') heatmap!: ElementRef;
   plotData$ = new ReplaySubject<any>();
 
-  constructor(private browseService: BrowseService, backend: BackendService) {
+  constructor(browseService: BrowseService, backend: BackendService) {
     effect(async () => {
-      const data = this.browseService.data$();
-      if (data === undefined) return;
-
-      const ceRNAs = data.ceRNAs;
-      const disease = data.disease;
+      const ceRNAs = browseService.ceRNAs$();
+      const disease = browseService.disease$();
+      if (disease === undefined) return;
 
       const ensgs = ceRNAs.map(ceRNA => ceRNA.gene.ensg_number);
 

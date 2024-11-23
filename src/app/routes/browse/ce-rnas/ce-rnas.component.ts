@@ -1,4 +1,4 @@
-import {Component, computed, Signal} from '@angular/core';
+import {Component, Signal} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
 import {CeRNA} from "../../../interfaces";
 import {MatTableModule} from "@angular/material/table";
@@ -13,7 +13,7 @@ export class CeRNAsComponent {
   columns = ["ensg_number", "gene_symbol", "betweenness", "eigenvector", "node_degree"];
   ceRNAs$: Signal<CeRNA[] | undefined>;
 
-  constructor(private browseService: BrowseService) {
-    this.ceRNAs$ = computed(() => this.browseService.data$()?.ceRNAs);
+  constructor(browseService: BrowseService) {
+    this.ceRNAs$ = browseService.ceRNAs$;
   }
 }

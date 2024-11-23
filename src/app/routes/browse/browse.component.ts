@@ -30,6 +30,6 @@ export class BrowseComponent {
   hasData$: Signal<boolean>;
 
   constructor(private browseService: BrowseService) {
-    this.hasData$ = computed(() => this.browseService.data$() !== undefined);
+    this.hasData$ = computed(() => this.browseService.disease$() !== undefined);
   }
 }
