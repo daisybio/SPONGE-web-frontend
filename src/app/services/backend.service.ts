@@ -7,6 +7,7 @@ import {
   CeRNAQuery,
   Dataset,
   Gene,
+  GeneCount,
   OverallCounts,
   RunInfo,
   SurvivalPValue,
@@ -86,5 +87,16 @@ export class BackendService {
     }
     const request = BackendService.API_BASE + '/stringSearch?searchString=' + query;
     return this.http.getRequest<Gene[]>(request);
+  }
+
+  getGeneCount(ensgs: string[], onlySignificant: boolean): Promise<GeneCount[]> {
+    if (ensgs.length === 0) {
+      return Promise.resolve([]);
+    }
+    let request = BackendService.API_BASE + '/getGeneCount?ensg_number=' + ensgs.join(',');
+    if (onlySignificant) {
+      request += '&minCountSign=1';
+    }
+    return this.http.getRequest<GeneCount[]>(request);
   }
 }

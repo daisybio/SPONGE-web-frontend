@@ -117,3 +117,20 @@ export interface SurvivalPValue {
   "gene": Gene,
   "pValue": number
 }
+
+export interface GeneCount {
+  "count_all": number,
+  "count_sign": number,
+  "gene": {
+    "ensg_number": string,
+    "gene_symbol": string
+  },
+  "run": {
+    "dataset": {
+      "data_origin": string,
+      "dataset_ID": number,
+      "disease_name": string
+    },
+    "run_ID": number
+  }
+}
