@@ -28,11 +28,12 @@ export class HeatmapComponent implements AfterViewInit {
       const expressionMap = new Map<string, Map<string, number>>();
       const samples = new Set<string>();
       for (const expr of expression) {
-        if (!expressionMap.has(expr.gene.gene_symbol)) {
-          expressionMap.set(expr.gene.gene_symbol, new Map<string, number>());
+        const geneID = expr.gene.gene_symbol || expr.gene.ensg_number;
+        if (!expressionMap.has(geneID)) {
+          expressionMap.set(geneID, new Map<string, number>());
         }
         samples.add(expr.sample_ID);
-        expressionMap.get(expr.gene.gene_symbol)!.set(expr.sample_ID, expr.expr_value);
+        expressionMap.get(geneID)!.set(expr.sample_ID, expr.expr_value);
       }
 
       const geneSymbols = Array.from(expressionMap.keys());

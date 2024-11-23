@@ -1,1 +1,11 @@
-<p>survival-analysis works!</p>
+@if (disease$(); as disease) {
+  <div class="card-container">
+    @for (ceRNA of ceRNAs$(); track ceRNA.gene.ensg_number) {
+      <app-kmplot [disease]="disease" [ceRNA]="ceRNA"></app-kmplot>
+    }
+  </div>
+} @else {
+  <p>
+    No disease selected.
+  </p>
+}

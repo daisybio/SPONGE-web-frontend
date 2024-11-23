@@ -97,9 +97,23 @@ export interface CeRNAQuery {
 export interface CeRNAExpression {
   "dataset": string,
   "expr_value": number,
-  "gene": {
-    "ensg_number": string,
-    "gene_symbol": string
-  },
+  "gene": Gene,
   "sample_ID": string
+}
+
+export interface SurvivalRate {
+  "dataset": string,
+  "gene": Gene,
+  "overexpression": number,
+  "patient_information": {
+    "disease_status": number,
+    "sample_ID": string,
+    "survival_time": number
+  }
+}
+
+export interface SurvivalPValue {
+  "dataset": string,
+  "gene": Gene,
+  "pValue": number
 }
