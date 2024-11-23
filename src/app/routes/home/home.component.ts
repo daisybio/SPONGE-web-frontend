@@ -1,9 +1,5 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatInput} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
-import {MatAnchor, MatButton} from "@angular/material/button";
-import {RouterLink} from "@angular/router";
 import {CarouselComponent, SlideComponent} from "ngx-bootstrap/carousel";
 import {BackendService} from "../../services/backend.service";
 import {Dataset, OverallCounts} from "../../interfaces";
@@ -14,13 +10,7 @@ declare const Plotly: any;
 @Component({
   selector: 'app-home',
   imports: [
-    MatFormField,
-    MatInput,
     FormsModule,
-    MatLabel,
-    MatButton,
-    RouterLink,
-    MatAnchor,
     CarouselComponent,
     SlideComponent,
     MatTabGroup,
@@ -32,7 +22,6 @@ declare const Plotly: any;
 export class HomeComponent implements AfterViewInit {
   @ViewChild('cancerPlot') cancerPlot!: ElementRef;
   @ViewChild('nonCancerPlot') nonCancerPlot!: ElementRef;
-  searchGene: string = '';
 
   imageRoot: string = '/';
   images: string[] = ['1.svg', '2.png', '3.svg']
