@@ -100,7 +100,11 @@ export class BackendService {
       return Promise.resolve([]);
     }
     const request = BackendService.API_BASE + '/stringSearch?searchString=' + query;
-    return this.http.getRequest<Gene[]>(request);
+    try {
+      return this.http.getRequest<Gene[]>(request);
+    } catch (e) {
+      return Promise.resolve([]);
+    }
   }
 
   getGeneCount(ensgs: string[], onlySignificant: boolean): Promise<GeneCount[]> {

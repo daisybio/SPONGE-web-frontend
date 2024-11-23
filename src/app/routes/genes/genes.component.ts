@@ -56,13 +56,13 @@ export class GenesComponent {
     return (await this.results()).map(g => {
       return {
         disease_name: g.run.dataset.disease_name,
-        count_sign: g.count_sign
+        count: this.onlySignificant() ? g.count_sign : g.count_all
       }
     }).reduce((acc, curr) => {
       if (!acc[curr.disease_name]) {
         acc[curr.disease_name] = 0;
       }
-      acc[curr.disease_name] += curr.count_sign;
+      acc[curr.disease_name] += curr.count;
       return acc;
     }, {} as { [key: string]: number });
   })
@@ -78,7 +78,7 @@ export class GenesComponent {
     const ensgs = this.activeGenes().map(g => g.ensg_number);
 
     return (await Promise.all([...Array(n_requests).keys()].map(async i => {
-      return this.backend.getCeRNAInteractionsAll(disease, 0.05, ensgs, 1000, i * 1000);
+      return this.backend.getCeRNAInteractionsAll(disease, this.onlySignificant() ? 0.05 : 1, ensgs, 1000, i * 1000);
     }))).flat();
   });
 
