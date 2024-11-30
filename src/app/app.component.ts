@@ -11,5 +11,5 @@ import {RouterLink, RouterOutlet} from "@angular/router";
 })
 export class AppComponent {
   title = 'SPONGE-web-frontend';
-  subpages = ['Browse', 'Documentation', 'Download'];
+  subpages = ['Browse', 'SpongEffects', 'Documentation', 'Download'];
 }

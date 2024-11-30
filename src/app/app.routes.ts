@@ -10,6 +10,8 @@ import {
 } from "./routes/documentation/browse-functionalities/browse-functionalities.component";
 import {BrowseSidebarComponent} from "./routes/documentation/browse-sidebar/browse-sidebar.component";
 import {MoreComponent} from "./routes/documentation/more/more.component";
+import {SpongEffectsComponent} from "./routes/spongeffects/spongeffects.component";
+
 
 export const routes: Routes = [
   {
@@ -53,6 +55,10 @@ export const routes: Routes = [
   {
     path: 'download',
     component: DownloadComponent
+  },
+  {
+    path: 'spongeffects',
+    component: SpongEffectsComponent
   },
   {
     path: '**',
