@@ -1,5 +1,5 @@
 <mat-tab-group>
-  <mat-tab label="Active nodes">
+  <mat-tab [label]="'Active nodes (' + nodes$().length + ')'">
     <div class="card-container">
       @for (ceRNA of nodes$(); track ceRNA.gene.ensg_number) {
         <mat-card>
@@ -30,7 +30,7 @@
       }
     </div>
   </mat-tab>
-  <mat-tab label="Active edges">
+  <mat-tab [label]="'Active edges (' + edges$().length + ')'">
     <div class="card-container">
       @for (interaction of edges$(); track interaction) {
         <mat-card>
