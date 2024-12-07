@@ -20,7 +20,7 @@ export class InteractionsTableComponent {
   @ViewChild(MatSort) sort!: MatSort;
 
   interactions$ = input.required<CeRNAInteraction[] | null>();
-  columns = ["gene_1", "gene_2", "correlation", "mscor", "padj", "id"];
+  columns = ["gene_1", "gene_2", "correlation", "mscor", "padj"];
 
   dataSource$ = computed(() => {
     const source = new MatTableDataSource((this.interactions$() || []).map(interaction => {
@@ -29,8 +29,7 @@ export class InteractionsTableComponent {
         gene_2: interaction.gene2.gene_symbol || interaction.gene2.ensg_number,
         correlation: interaction.correlation,
         mscor: interaction.mscor,
-        padj: interaction.p_value,
-        id: interaction.sponge_run.sponge_run_ID
+        padj: interaction.p_value
       }
     }));
     source.paginator = this.paginator;

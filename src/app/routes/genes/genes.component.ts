@@ -55,7 +55,7 @@ export class GenesComponent {
   readonly diseaseCounts$ = computed(async () => {
     return (await this.results()).map(g => {
       return {
-        disease_name: g.run.dataset.disease_name,
+        disease_name: g.sponge_run.dataset.disease_name,
         count: this.onlySignificant() ? g.count_sign : g.count_all
       }
     }).reduce((acc, curr) => {

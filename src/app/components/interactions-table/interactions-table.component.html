@@ -24,12 +24,6 @@
     <td *matCellDef="let interaction" mat-cell>{{ interaction.padj }}</td>
   </ng-container>
 
-  <ng-container matColumnDef="id">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>ID
-    <th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.id }}</td>
-  </ng-container>
-
   <tr *matHeaderRowDef="columns" mat-header-row></tr>
   <tr *matRowDef="let row; columns: columns;" mat-row></tr>
 </table>

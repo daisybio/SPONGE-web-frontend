@@ -6,6 +6,17 @@ export interface Dataset {
   "download_url": string
 }
 
+export interface SpongeRun {
+  "sponge_run": {
+    "dataset": {
+      "data_origin": string,
+      "dataset_ID": number,
+      "disease_name": string
+    },
+    "sponge_run_ID": number
+  }
+}
+
 export interface RunInfo {
   "coefficient_direction": string,
   "coefficient_threshold": string,
@@ -21,7 +32,7 @@ export interface RunInfo {
   "min_corr": number,
   "number_of_datasets": number,
   "number_of_samples": number,
-  "run_ID": number,
+  "sponge_run_ID": number,
   "variance_cutoff": string
 }
 
@@ -30,7 +41,7 @@ export interface OverallCounts {
   count_interactions_sign: number,
   count_shared_miRNAs: number,
   disease_name: string,
-  run_ID: number
+  sponge_run_ID: number
 }
 
 export enum GeneSorting {
@@ -50,19 +61,11 @@ export interface Gene {
   gene_symbol?: string
 }
 
-export interface CeRNA {
+export interface CeRNA extends SpongeRun {
   betweenness: number,
   eigenvector: number,
   gene: Gene,
   node_degree: number
-  run: {
-    dataset: {
-      data_origin: string,
-      dataset_ID: number,
-      disease_name: string
-    },
-    run_ID: number
-  }
 }
 
 export interface CeRNAInteraction {
@@ -71,14 +74,6 @@ export interface CeRNAInteraction {
   "gene2": Gene,
   "mscor": number,
   "p_value": number,
-  "sponge_run": {
-    "dataset": {
-      "data_origin": string,
-      "dataset_ID": number,
-      "disease_name": string
-    },
-    "sponge_run_ID": number
-  }
 }
 
 export interface CeRNAQuery {
@@ -118,19 +113,8 @@ export interface SurvivalPValue {
   "pValue": number
 }
 
-export interface GeneCount {
+export interface GeneCount extends SpongeRun {
   "count_all": number,
   "count_sign": number,
-  "gene": {
-    "ensg_number": string,
-    "gene_symbol": string
-  },
-  "run": {
-    "dataset": {
-      "data_origin": string,
-      "dataset_ID": number,
-      "disease_name": string
-    },
-    "run_ID": number
-  }
+  "gene": Gene
 }
