@@ -1,4 +1,4 @@
-<form (ngSubmit)="onSubmit()" [formGroup]="formGroup">
+<form [formGroup]="formGroup">
   <mat-form-field appearance="outline" style="width: 90%">
     <mat-label>Disease</mat-label>
     <mat-select formControlName="disease">
@@ -75,5 +75,4 @@
       </mat-form-field>
     </mat-expansion-panel>
   </mat-accordion>
-  <button [disabled]="isLoading$()" mat-flat-button style="margin: 5px" type="submit">Search</button>
 </form>

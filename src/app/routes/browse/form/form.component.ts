@@ -88,12 +88,11 @@ export class FormComponent {
         formField?.enable();
       }
     })
-  }
 
-  onSubmit() {
-    const config = this.formGroup.value as CeRNAQuery;
-    config.dataset = this.formGroup.get('dataset')?.value as Dataset;
-    this.browseService.runQuery(config);
+    this.formGroup.valueChanges.subscribe((config) => {
+      config.dataset = this.formGroup.get('dataset')?.value as Dataset;
+      this.browseService.runQuery(config as CeRNAQuery);
+    })
   }
 
   capitalize(val: string) {
