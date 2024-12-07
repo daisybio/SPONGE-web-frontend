@@ -39,7 +39,7 @@ export class BrowseService {
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
   activeInteractions$ = computed(() => {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
-    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).filter(interaction => interaction !== undefined) as CeRNAInteraction[];
+    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined) as CeRNAInteraction[];
   })
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
@@ -122,6 +122,9 @@ export class BrowseService {
     });
 
     interactions.forEach(interaction => {
+      if (graph.hasEdge(interaction.gene1.ensg_number, interaction.gene2.ensg_number)) {
+        return;
+      }
       graph.addEdge(interaction.gene1.ensg_number, interaction.gene2.ensg_number);
     });
 
@@ -159,10 +162,10 @@ export class BrowseService {
     });
   }
 
-  getInteractionForEdge(edgeID: string, interactions: CeRNAInteraction[], graph: Graph): CeRNAInteraction | undefined {
+  getInteractionForEdge(edgeID: string, interactions: CeRNAInteraction[], graph: Graph): CeRNAInteraction[] | undefined {
     const source = graph.source(edgeID);
     const target = graph.target(edgeID);
-    return interactions.find(interaction => {
+    return interactions.filter(interaction => {
       return (interaction.gene1.ensg_number === source && interaction.gene2.ensg_number === target) ||
         (interaction.gene1.ensg_number === target && interaction.gene2.ensg_number === source);
     });
