@@ -7,6 +7,7 @@ import {
   model,
   resource,
   Resource,
+  Signal,
   signal,
   ViewChild
 } from '@angular/core';
@@ -26,6 +27,7 @@ import {MatSelect} from "@angular/material/select";
 import {InteractionsTableComponent} from "../../components/interactions-table/interactions-table.component";
 import {VersionsService} from "../../services/versions.service";
 import {ReplaySubject} from "rxjs";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
 
@@ -44,7 +46,8 @@ declare const Plotly: any;
     MatTabsModule,
     MatSelect,
     KeyValuePipe,
-    InteractionsTableComponent
+    InteractionsTableComponent,
+    MatProgressSpinner
   ],
   templateUrl: './genes.component.html',
   styleUrl: './genes.component.scss'
@@ -57,6 +60,7 @@ export class GenesComponent implements AfterViewInit {
   readonly possibleGenes: Resource<Gene[]>;
   readonly onlySignificant = model(true);
   readonly results: Resource<GeneCount[]>;
+  readonly isLoading: Signal<boolean>;
 
   readonly diseaseCounts$ = computed(() => {
     return this.results.value()?.map(g => {
@@ -110,6 +114,8 @@ export class GenesComponent implements AfterViewInit {
         return backend.getGeneCount(param.request.version, param.request.ensgs, param.request.onlySignificant);
       }
     })
+
+    this.isLoading = this.results.isLoading;
 
     const interactionsQuery = computed(() => {
       return {

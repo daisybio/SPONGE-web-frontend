@@ -42,7 +42,7 @@ export class FormComponent {
     maxPValue: new FormControl<number>(0.05),
     minMScore: new FormControl<number>(0),
   })
-  protected readonly capitalize = _.capitalize();
+  protected readonly capitalize = _.capitalize;
 
   constructor(versions: VersionsService, private browseService: BrowseService) {
     const diseases = versions.diseases$();
