@@ -22,7 +22,7 @@
         />
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)"
                           autoActiveFirstOption>
-          @for (gene of possibleGenes() | async; track gene) {
+          @for (gene of possibleGenes.value(); track gene) {
             <mat-option [value]="gene">{{ gene.gene_symbol }} ({{ gene.ensg_number }})</mat-option>
           }
         </mat-autocomplete>
@@ -41,15 +41,17 @@
         <mat-form-field>
           <mat-label>Disease</mat-label>
           <mat-select [(value)]="selectedDisease">
-            @for (disease of (diseaseCounts$() | async)! | keyvalue; track disease) {
-              <mat-option [value]="disease.key">
-                {{ capitalize(disease.key) }} ({{ disease.value }})
-              </mat-option>
+            @if (diseaseCounts$(); as diseaseCounts) {
+              @for (disease of diseaseCounts | keyvalue; track disease) {
+                <mat-option [value]="disease.key">
+                  {{ capitalize(disease.key) }} ({{ disease.value }})
+                </mat-option>
+              }
             }
           </mat-select>
         </mat-form-field>
-        @if (selectedDisease()) {
-          <app-interactions-table [interactions$]="(interactions$() | async)"></app-interactions-table>
+        @if (interactions$.value(); as interactions) {
+          <app-interactions-table [interactions$]="interactions"></app-interactions-table>
         } @else {
           <p>Please select a disease to see the interactions.</p>
         }

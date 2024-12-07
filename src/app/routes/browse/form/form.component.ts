@@ -1,14 +1,13 @@
-import {Component, Signal} from '@angular/core';
+import {Component, computed, effect, Signal} from '@angular/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatButton} from "@angular/material/button";
 import {MatInputModule} from "@angular/material/input";
-import {BackendService} from "../../../services/backend.service";
 import {CeRNAQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
-import {AsyncPipe} from "@angular/common";
 import {BrowseService} from "../../../services/browse.service";
+import {VersionsService} from "../../../services/versions.service";
 
 @Component({
   selector: 'app-form',
@@ -19,14 +18,13 @@ import {BrowseService} from "../../../services/browse.service";
     ReactiveFormsModule,
     MatButton,
     MatInputModule,
-    AsyncPipe
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
 export class FormComponent {
   isLoading$: Signal<boolean>;
-  diseases: Promise<Dataset[]>;
+  diseases: Signal<Dataset[]>;
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
@@ -42,10 +40,14 @@ export class FormComponent {
     minMScore: new FormControl<number>(0),
   })
 
-  constructor(private backend: BackendService, private browseService: BrowseService) {
-    this.diseases = this.backend.getDatasets().then(diseases => diseases.sort((a, b) => a.disease_name.localeCompare(b.disease_name)));
-    this.diseases.then(diseases => this.formGroup.get('disease')?.setValue(diseases[0]));
+  constructor(versions: VersionsService, private browseService: BrowseService) {
+    const diseases = versions.diseases$();
+    this.diseases = computed(() => (diseases.value() || []).sort((a, b) => a.disease_name.localeCompare(b.disease_name)));
     this.isLoading$ = this.browseService.isLoading$;
+
+    effect(() => {
+      this.formGroup.get('disease')?.setValue(this.diseases()?.[0]);
+    })
   }
 
   onSubmit() {

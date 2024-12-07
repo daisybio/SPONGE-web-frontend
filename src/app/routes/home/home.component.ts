@@ -1,9 +1,20 @@
-import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  Resource,
+  resource,
+  ResourceRef,
+  ViewChild
+} from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {CarouselComponent, SlideComponent} from "ngx-bootstrap/carousel";
 import {BackendService} from "../../services/backend.service";
 import {Dataset, OverallCounts} from "../../interfaces";
 import {MatTab, MatTabGroup} from "@angular/material/tabs";
+import {VersionsService} from "../../services/versions.service";
 
 declare const Plotly: any;
 
@@ -23,31 +34,44 @@ export class HomeComponent implements AfterViewInit {
   @ViewChild('cancerPlot') cancerPlot!: ElementRef;
   @ViewChild('nonCancerPlot') nonCancerPlot!: ElementRef;
 
-  overallCounts: Promise<OverallCounts[]>;
-  diseases: Promise<Dataset[]>;
+  overallCounts: ResourceRef<OverallCounts[]>;
+  diseases: Resource<Dataset[]>;
 
-  constructor(private backend: BackendService) {
-    this.diseases = this.backend.getDatasets();
-    this.overallCounts = this.backend.getOverallCounts();
+  cancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], true));
+  nonCancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], false));
+
+  constructor(private backend: BackendService, versionsService: VersionsService) {
+    const version = versionsService.versionReadOnly();
+    this.diseases = versionsService.diseases$();
+
+    this.overallCounts = resource({
+      request: version,
+      loader: (param) => this.backend.getOverallCounts(param.request)
+    });
   }
 
   async ngAfterViewInit() {
-    this.plot(this.cancerPlot, true);
-    this.plot(this.nonCancerPlot, false);
+    effect(() => {
+      this.plot(this.cancerPlot, this.cancerData());
+      this.plot(this.nonCancerPlot, this.nonCancerData());
+    });
   }
 
-  async plot(element: ElementRef, useCancer: boolean) {
-    const diseases = (await this.diseases).filter(d => (d.disease_type === 'Cancer') === useCancer);
-    const overallCounts = (await this.overallCounts).filter(c => diseases.some(d => d.disease_name === c.disease_name));
+  prepareData(diseases: Dataset[], counts: OverallCounts[], useCancer: boolean) {
+    const usedDiseases = diseases.filter(d => (d.disease_type === 'Cancer') === useCancer);
+    const overallCounts = counts.filter(c => usedDiseases.some(d => d.disease_name === c.disease_name));
     const countField = 'count_interactions_sign';
     const sortedCounts = overallCounts.sort((a, b) => b[countField] - a[countField]);
-    const names = sortedCounts.map(c => c.disease_name);
-    const counts = sortedCounts.map(c => c[countField]);
-    Plotly.newPlot(element.nativeElement, [{
-      x: names,
-      y: counts,
+
+    return [{
+      x: sortedCounts.map(c => c.disease_name),
+      y: sortedCounts.map(c => c[countField]),
       type: 'bar'
-    }], {
+    }];
+  }
+
+  async plot(element: ElementRef, plotData: any) {
+    Plotly.newPlot(element.nativeElement, plotData, {
       title: 'Count of significant interactions',
       yaxis: {
         type: 'log'

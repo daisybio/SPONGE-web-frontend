@@ -1,8 +1,9 @@
-import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, input, OnInit, resource, Resource, ViewChild} from '@angular/core';
 import {CeRNA, Dataset, Gene, SurvivalRate} from "../../../../interfaces";
 import {BackendService} from "../../../../services/backend.service";
 import {MatCardModule} from "@angular/material/card";
 import {compute} from "@fullstax/kaplan-meier-estimator";
+import {VersionsService} from "../../../../services/versions.service";
 
 declare const Plotly: any;
 
@@ -16,11 +17,43 @@ declare const Plotly: any;
   styleUrl: './kmplot.component.scss'
 })
 export class KMPlotComponent implements OnInit {
-  @Input({required: true}) ceRNA!: CeRNA;
-  @Input({required: true}) disease!: Dataset;
+  ceRNA = input.required<CeRNA>()
+  disease = input.required<Dataset>()
   @ViewChild("plot") plot!: ElementRef;
 
-  constructor(private backend: BackendService) {
+  plotData: Resource<any>;
+
+  constructor(private backend: BackendService, versionsService: VersionsService) {
+    const config = computed(() => {
+      return {
+        gene: this.ceRNA().gene,
+        disease: this.disease().disease_name,
+        version: versionsService.versionReadOnly()(),
+      }
+    });
+
+    this.plotData = resource({
+      request: config,
+      loader: async (param) => {
+        const pVals$ = this.backend.getSurvivalPValues(param.request.version, [param.request.gene.ensg_number], param.request.disease);
+        const surivialRates$ = this.backend.getSurvivalRates(param.request.version, [param.request.gene.ensg_number], param.request.disease);
+
+        const [pVals, survivalRates] = await Promise.all([pVals$, surivialRates$]);
+
+        const pValue = pVals[0].pValue;
+
+        const overExpressed = survivalRates.filter((rate) => rate.overexpression === 1)
+        const underExpressed = survivalRates.filter((rate) => rate.overexpression === 0);
+
+        return {
+          overexpressed: this.getPlotData(overExpressed, 'Overexpressed'),
+          underexpressed: this.getPlotData(underExpressed, 'Underexpressed'),
+          pValue,
+          gene: param.request.gene,
+          disease: param.request.disease
+        };
+      }
+    });
   }
 
   getGenePrimary(gene: Gene): string {
@@ -28,19 +61,17 @@ export class KMPlotComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const survivalRates$ = this.backend.getSurvivalRates([this.ceRNA.gene.ensg_number], this.disease.disease_name);
-    const survivalPValues$ = this.backend.getSurvivalPValues([this.ceRNA.gene.ensg_number], this.disease.disease_name);
+    effect(() => {
+      const data = this.plotData.value();
+      if (!data) return;
 
-    Promise.all([survivalRates$, survivalPValues$]).then(([survivalRates, survivalPValues]) => {
-      const pValue = survivalPValues[0].pValue;
-      const overExpressed = survivalRates.filter((rate) => rate.overexpression === 1)
-      const underExpressed = survivalRates.filter((rate) => rate.overexpression === 0);
+      const pValue = data.pValue;
 
       Plotly.newPlot(this.plot.nativeElement, [
-        this.getPlotData(overExpressed, 'Overexpressed'),
-        this.getPlotData(underExpressed, 'Underexpressed')
+        data.overexpressed,
+        data.underexpressed
       ], {
-        title: `Survival Analysis for ${this.getGenePrimary(this.ceRNA.gene)} in ${this.disease.disease_name}<br>P-value: ${pValue}`,
+        title: `Survival Analysis for ${this.getGenePrimary(data.gene)} in ${data.disease.disease_name}<br>P-value: ${pValue}`,
         xaxis: {
           title: 'Time (days)'
         },

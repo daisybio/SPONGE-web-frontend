@@ -1,8 +1,9 @@
-import {computed, effect, Injectable, Signal, signal} from '@angular/core';
+import {computed, effect, Injectable, resource, ResourceRef, Signal, signal} from '@angular/core';
 import {CeRNA, CeRNAInteraction, CeRNAQuery, Dataset} from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import {VersionsService} from "./versions.service";
 
 export enum State {
   Default,
@@ -19,40 +20,49 @@ export interface EntityState {
   providedIn: 'root'
 })
 export class BrowseService {
-  graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
-  activeCeRNAs$: Signal<CeRNA[]>;
-  activeInteractions$: Signal<CeRNAInteraction[]>;
-  private readonly _disease$ = signal<Dataset | undefined>(undefined);
-  private readonly _ceRNAs$ = signal<CeRNA[]>([]);
-  private readonly _interactions$ = signal<CeRNAInteraction[]>([]);
+  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
+  private readonly _query$ = signal<CeRNAQuery | undefined>(undefined);
+  private readonly _version$: Signal<number>;
+  private readonly _currentData$: ResourceRef<{
+    ceRNAs: CeRNA[],
+    interactions: CeRNAInteraction[],
+    disease: Dataset | undefined
+  }>;
+  readonly disease$ = computed(() => this._currentData$.value()?.disease);
+  readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
+  readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
+  activeCeRNAs$ = computed(() => {
+    const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
+    return this.ceRNAs$().filter(ceRNA => activeNodeIDs.includes(ceRNA.gene.ensg_number));
+  });
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
+  activeInteractions$ = computed(() => {
+    const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
+    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).filter(interaction => interaction !== undefined) as CeRNAInteraction[];
+  })
 
-  constructor(private backend: BackendService) {
+  constructor(private backend: BackendService, versionsService: VersionsService) {
+    this._version$ = versionsService.versionReadOnly();
+
+    const requestData = computed(() => {
+      return {
+        version: this._version$(),
+        config: this._query$()
+      }
+    })
+
+    this._currentData$ = resource({
+      request: requestData,
+      loader: (param) => this.fetchData(param.request.version, param.request.config),
+    })
+
     effect(() => {
       const graph = this.graph$();
       const initialState: EntityState = {[State.Hover]: false, [State.Active]: false};
       this._nodeStates$.set(Object.fromEntries(graph.nodes().map(node => [node, initialState])));
       this._edgeStates$.set(Object.fromEntries(graph.edges().map(edge => [edge, initialState])));
     });
-
-    this.activeCeRNAs$ = computed(() => {
-      const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
-      return this.ceRNAs$().filter(ceRNA => activeNodeIDs.includes(ceRNA.gene.ensg_number));
-    });
-
-    this.activeInteractions$ = computed(() => {
-      const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
-      return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).filter(interaction => interaction !== undefined) as CeRNAInteraction[];
-    });
-  }
-
-  get ceRNAs$(): Signal<CeRNA[]> {
-    return this._ceRNAs$.asReadonly();
-  }
-
-  get interactions$(): Signal<CeRNAInteraction[]> {
-    return this._interactions$.asReadonly();
   }
 
   get nodeStates$(): Signal<Record<string, EntityState>> {
@@ -63,33 +73,42 @@ export class BrowseService {
     return this._edgeStates$.asReadonly();
   }
 
-  get disease$(): Signal<Dataset | undefined> {
-    return this._disease$.asReadonly();
-  }
-
   private _isLoading$ = signal<boolean>(false);
 
   get isLoading$(): Signal<boolean> {
     return this._isLoading$.asReadonly();
   }
 
-  async runQuery(config: CeRNAQuery) {
-    this._isLoading$.set(true);
+  runQuery(query: CeRNAQuery) {
+    this._query$.set(query);
+  }
 
-    const ceRNA$ = this.backend.getCeRNA(config);
-    const runInfo$ = this.backend.getDatasetInfo(config.disease.disease_name);
+  async fetchData(version: number, config: CeRNAQuery | undefined): Promise<{
+    ceRNAs: CeRNA[],
+    interactions: CeRNAInteraction[],
+    disease: Dataset | undefined
+  }> {
+    if (config === undefined) {
+      return {
+        ceRNAs: [],
+        interactions: [],
+        disease: undefined
+      }
+    }
+
+    const ceRNA$ = this.backend.getCeRNA(version, config);
+    // const runInfo$ = this.backend.getDatasetInfo(version, config.disease.disease_name);
     const ensgs$ = ceRNA$.then(ceRNAs => ceRNAs.map(ceRNA => ceRNA.gene.ensg_number));
     const interactions$ = ensgs$.then(async (ensgs) =>
-      await this.backend.getCeRNAInteractionsSpecific(config.disease.disease_name, config.maxPValue, ensgs));
+      await this.backend.getCeRNAInteractionsSpecific(version, config.disease.disease_name, config.maxPValue, ensgs));
 
-    const [ceRNAs, runInfo, interactions] = await Promise.all([ceRNA$, runInfo$, interactions$]);
+    const [ceRNAs, interactions] = await Promise.all([ceRNA$, interactions$]);
 
-    console.log(interactions);
-
-    this._disease$.set(config.disease);
-    this._ceRNAs$.set(ceRNAs);
-    this._interactions$.set(interactions);
-    this._isLoading$.set(false);
+    return {
+      ceRNAs,
+      interactions,
+      disease: config.disease
+    }
   }
 
   createGraph(ceRNAs: CeRNA[], interactions: CeRNAInteraction[]): Graph {

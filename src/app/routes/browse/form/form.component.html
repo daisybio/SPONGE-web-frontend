@@ -2,7 +2,7 @@
   <mat-form-field appearance="outline" style="width: 90%">
     <mat-label>Disease</mat-label>
     <mat-select formControlName="disease">
-      @for (disease of diseases | async; track disease) {
+      @for (disease of diseases(); track disease) {
         <mat-option [value]="disease">{{ capitalize(disease.disease_name) }}</mat-option>
       }
     </mat-select>

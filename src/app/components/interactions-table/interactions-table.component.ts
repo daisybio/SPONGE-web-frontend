@@ -19,7 +19,7 @@ export class InteractionsTableComponent {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  interactions$ = input.required<CeRNAInteraction[] | null>();
+  interactions$ = input.required<CeRNAInteraction[]>();
   columns = ["gene_1", "gene_2", "correlation", "mscor", "padj"];
 
   dataSource$ = computed(() => {
