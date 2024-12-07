@@ -1,4 +1,4 @@
-import {Component, computed, Signal} from '@angular/core';
+import {Component, computed, signal, Signal} from '@angular/core';
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
@@ -35,6 +35,8 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 export class BrowseComponent {
   hasData$: Signal<boolean>;
   isLoading$: Signal<boolean>;
+
+  tabChange = signal(0);
 
   constructor(private browseService: BrowseService) {
     this.hasData$ = computed(() => this.browseService.disease$() !== undefined);
