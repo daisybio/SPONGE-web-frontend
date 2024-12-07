@@ -1,34 +1,36 @@
-@if (ceRNAs$(); as ceRNAs) {
-  <table [dataSource]="ceRNAs" class="mat-elevation-z8" mat-table>
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table>
 
-    <ng-container matColumnDef="ensg_number">
-      <th *matHeaderCellDef mat-header-cell>Ensembl ID</th>
-      <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.gene.ensg_number }}</td>
-    </ng-container>
+  <ng-container matColumnDef="ensg_number">
+    <th *matHeaderCellDef mat-header-cell>Ensembl ID</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene.ensg_number }}</td>
+  </ng-container>
 
-    <ng-container matColumnDef="gene_symbol">
-      <th *matHeaderCellDef mat-header-cell>Gene Symbol</th>
-      <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.gene.gene_symbol }}</td>
-    </ng-container>
+  <ng-container matColumnDef="gene_symbol">
+    <th *matHeaderCellDef mat-header-cell>Gene Symbol</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene.gene_symbol }}</td>
+  </ng-container>
 
-    <ng-container matColumnDef="betweenness">
-      <th *matHeaderCellDef mat-header-cell>Betweenness</th>
-      <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.betweenness }}</td>
-    </ng-container>
+  <ng-container matColumnDef="betweenness">
+    <th *matHeaderCellDef mat-header-cell>Betweenness</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.betweenness }}</td>
+  </ng-container>
 
-    <ng-container matColumnDef="eigenvector">
-      <th *matHeaderCellDef mat-header-cell> Eigenvector</th>
-      <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.eigenvector }}</td>
-    </ng-container>
+  <ng-container matColumnDef="eigenvector">
+    <th *matHeaderCellDef mat-header-cell>Eigenvector</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.eigenvector }}</td>
+  </ng-container>
 
-    <ng-container matColumnDef="node_degree">
-      <th *matHeaderCellDef mat-header-cell> Degree</th>
-      <td *matCellDef="let ceRNA" mat-cell> {{ ceRNA.node_degree }}</td>
-    </ng-container>
+  <ng-container matColumnDef="node_degree">
+    <th *matHeaderCellDef mat-header-cell>Degree</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.node_degree }}</td>
+  </ng-container>
 
-    <tr *matHeaderRowDef="columns" mat-header-row></tr>
-    <tr *matRowDef="let row; columns: columns;" mat-row></tr>
-  </table>
-} @else {
-  <p> No data available </p>
-}
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>
+
+<mat-paginator [pageSizeOptions]="[5, 10, 20]"
+               [pageSize]="10"
+               aria-label="Select page of periodic elements"
+               showFirstLastButtons>
+</mat-paginator>
