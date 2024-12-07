@@ -5,22 +5,25 @@ import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
 
-const states: Record<State, { edgeColor: string, edgeWidth: number, nodeColor: string }>
+const states: Record<State, { edgeColor: string, edgeWidth: number, nodeColor: string, nodeSize: number }>
   = {
   [State.Default]: {
     edgeColor: '#000',
     edgeWidth: 3,
     nodeColor: '#052444',
+    nodeSize: 10
   },
   [State.Hover]: {
     edgeColor: '#ff0000',
     edgeWidth: 6,
     nodeColor: '#ff0000',
+    nodeSize: 10
   },
   [State.Active]: {
     nodeColor: '#008cff',
     edgeColor: '#008cff',
     edgeWidth: 6,
+    nodeSize: 15
   }
 }
 
@@ -51,15 +54,11 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     });
 
     effect(() => {
-      Object.entries(this.browseService.nodeStates$()).forEach(([node, state]) => {
-        this.setNodeState(node, this.determineState(state));
-      });
+      this.updateEdges(this.browseService.edgeStates$());
     });
 
     effect(() => {
-      Object.entries(this.browseService.edgeStates$()).forEach(([edge, state]) => {
-        this.setEdgeState(edge, this.determineState(state));
-      });
+      this.updateNodes(this.browseService.nodeStates$());
     });
   }
 
@@ -85,6 +84,9 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
         this.browseService.setState(event.edge, 'edge', State.Hover, false);
       })
     });
+
+    this.updateNodes(this.browseService.nodeStates$());
+    this.updateEdges(this.browseService.edgeStates$());
   }
 
   determineState(entityState: EntityState): State {
@@ -110,9 +112,22 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.sigma?.getGraph().setNodeAttribute(node, 'color', states[state].nodeColor);
+    this.sigma?.getGraph().setNodeAttribute(node, 'size', states[state].nodeSize);
   }
 
   ngOnDestroy(): void {
     this.sigma?.kill();
+  }
+
+  private updateEdges(edgeStates: Record<string, EntityState>) {
+    Object.entries(edgeStates).forEach(([edge, state]) => {
+      this.setEdgeState(edge, this.determineState(state));
+    });
+  }
+
+  private updateNodes(nodeStates: Record<string, EntityState>) {
+    Object.entries(nodeStates).forEach(([node, state]) => {
+      this.setNodeState(node, this.determineState(state));
+    });
   }
 }
