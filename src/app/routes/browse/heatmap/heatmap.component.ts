@@ -1,8 +1,18 @@
-import {AfterViewInit, Component, computed, effect, ElementRef, resource, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  input,
+  OnDestroy,
+  resource,
+  ViewChild
+} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
 import {VersionsService} from "../../../services/versions.service";
-import {ReplaySubject} from "rxjs";
+import {fromEvent, ReplaySubject} from "rxjs";
 
 declare const Plotly: any;
 
@@ -13,7 +23,8 @@ declare const Plotly: any;
   templateUrl: './heatmap.component.html',
   styleUrl: './heatmap.component.scss'
 })
-export class HeatmapComponent implements AfterViewInit {
+export class HeatmapComponent implements AfterViewInit, OnDestroy {
+  refreshSignal = input.required<any>();
   @ViewChild('heatmap') heatmap!: ElementRef;
   plotData$ = new ReplaySubject();
 
@@ -65,6 +76,11 @@ export class HeatmapComponent implements AfterViewInit {
     effect(() => {
       this.plotData$.next(plotData.value());
     });
+
+    effect(() => {
+      this.refreshSignal();
+      this.refresh();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -84,5 +100,19 @@ export class HeatmapComponent implements AfterViewInit {
         }
       });
     });
+
+    fromEvent(window, 'resize').subscribe(() => {
+      this.refresh();
+    });
+  }
+
+  refresh() {
+    if (this.heatmap.nativeElement.checkVisibility()) {
+      Plotly.Plots.resize(this.heatmap.nativeElement);
+    }
+  }
+
+  ngOnDestroy(): void {
+    Plotly.purge(this.heatmap.nativeElement);
   }
 }
