@@ -144,7 +144,7 @@ export class BackendService {
 
     const route = 'stringSearch';
     const queryObj: Query = {
-      query: query
+      searchString: query
     }
     try {
       return this.http.getRequest<Gene[]>(this.getRequestURL(route, queryObj));
