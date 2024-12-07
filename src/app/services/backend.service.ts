@@ -18,7 +18,7 @@ import {
   providedIn: 'root'
 })
 export class BackendService {
-  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api'
+  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api-v2'
 
   constructor(private http: HttpService) {
   }

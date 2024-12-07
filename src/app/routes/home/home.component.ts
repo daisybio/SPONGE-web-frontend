@@ -23,8 +23,6 @@ export class HomeComponent implements AfterViewInit {
   @ViewChild('cancerPlot') cancerPlot!: ElementRef;
   @ViewChild('nonCancerPlot') nonCancerPlot!: ElementRef;
 
-  imageRoot: string = '/';
-  images: string[] = ['1.svg', '2.png', '3.svg']
   overallCounts: Promise<OverallCounts[]>;
   diseases: Promise<Dataset[]>;
 
@@ -39,7 +37,7 @@ export class HomeComponent implements AfterViewInit {
   }
 
   async plot(element: ElementRef, useCancer: boolean) {
-    const diseases = (await this.diseases).filter(d => (d.disease_type === 'cancer') === useCancer);
+    const diseases = (await this.diseases).filter(d => (d.disease_type === 'Cancer') === useCancer);
     const overallCounts = (await this.overallCounts).filter(c => diseases.some(d => d.disease_name === c.disease_name));
     const countField = 'count_interactions_sign';
     const sortedCounts = overallCounts.sort((a, b) => b[countField] - a[countField]);
