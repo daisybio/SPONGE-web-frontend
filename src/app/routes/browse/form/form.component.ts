@@ -8,6 +8,7 @@ import {CeRNAQuery, Dataset, GeneSorting, InteractionSorting} from "../../../int
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
 import {toSignal} from "@angular/core/rxjs-interop";
+import _ from "lodash";
 
 @Component({
   selector: 'app-form',
@@ -41,6 +42,7 @@ export class FormComponent {
     maxPValue: new FormControl<number>(0.05),
     minMScore: new FormControl<number>(0),
   })
+  protected readonly capitalize = _.capitalize();
 
   constructor(versions: VersionsService, private browseService: BrowseService) {
     const diseases = versions.diseases$();
@@ -91,10 +93,6 @@ export class FormComponent {
       config.dataset = this.formGroup.get('dataset')?.value as Dataset;
       this.browseService.runQuery(config as CeRNAQuery);
     })
-  }
-
-  capitalize(val: string) {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
 
   getKeys(enumType: any): string[] {
