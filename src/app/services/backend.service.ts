@@ -29,7 +29,7 @@ export class BackendService {
   }
 
   getDatasetInfo(diseaseName: string): Promise<RunInfo[]> {
-    const request = BackendService.API_BASE + '/dataset/runInformation?disease_name=' + diseaseName;
+    const request = BackendService.API_BASE + '/dataset/spongeRunInformation?disease_name=' + diseaseName;
     return this.http.getRequest<RunInfo[]>(request);
   }
 

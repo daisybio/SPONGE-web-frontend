@@ -71,13 +71,13 @@ export interface CeRNAInteraction {
   "gene2": Gene,
   "mscor": number,
   "p_value": number,
-  "run": {
+  "sponge_run": {
     "dataset": {
       "data_origin": string,
       "dataset_ID": number,
       "disease_name": string
     },
-    "run_ID": number
+    "sponge_run_ID": number
   }
 }
 

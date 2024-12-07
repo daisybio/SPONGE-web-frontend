@@ -84,6 +84,8 @@ export class BrowseService {
 
     const [ceRNAs, runInfo, interactions] = await Promise.all([ceRNA$, runInfo$, interactions$]);
 
+    console.log(interactions);
+
     this._disease$.set(config.disease);
     this._ceRNAs$.set(ceRNAs);
     this._interactions$.set(interactions);

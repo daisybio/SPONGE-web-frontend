@@ -30,7 +30,7 @@ export class InteractionsTableComponent {
         correlation: interaction.correlation,
         mscor: interaction.mscor,
         padj: interaction.p_value,
-        id: interaction.run.run_ID
+        id: interaction.sponge_run.sponge_run_ID
       }
     }));
     source.paginator = this.paginator;
