@@ -56,7 +56,6 @@ export class HomeComponent implements AfterViewInit {
     });
 
     effect(() => {
-      console.log(this.cancerData())
       this.cancerDataSubject.next(this.cancerData());
     });
 

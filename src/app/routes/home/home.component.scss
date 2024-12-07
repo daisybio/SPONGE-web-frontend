@@ -4,3 +4,15 @@
   max-width: 100%;
   object-fit: contain;
 }
+
+.plot-container {
+  height: 800px;
+}
+
+.spinner-container {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
