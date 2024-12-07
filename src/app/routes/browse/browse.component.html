@@ -8,7 +8,7 @@
         <mat-tab-group [preserveContent]="false" (selectedTabChange)="tabChange.set($event.index)">
           <mat-tab label="Network">
             <div style="display: flex; flex-direction: row">
-              <app-network style="min-width: 500px; flex-grow: 3"></app-network>
+              <app-network [refreshSignal]="tabChange()" style="min-width: 500px; flex-grow: 3"></app-network>
               <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
             </div>
           </mat-tab>

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, effect, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, effect, ElementRef, input, OnDestroy, ViewChild} from '@angular/core';
 import {BrowseService, EntityState, State} from "../../../services/browse.service";
 import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
@@ -46,7 +46,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   @ViewChild("container") container!: ElementRef;
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
-
+  refreshSignal = input.required<any>();
 
   constructor(private browseService: BrowseService) {
     effect(() => {
@@ -59,6 +59,11 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       this.updateNodes(this.browseService.nodeStates$());
+    });
+
+    effect(() => {
+      this.refreshSignal();
+      this.refresh();
     });
   }
 
@@ -113,6 +118,10 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     }
     this.sigma?.getGraph().setNodeAttribute(node, 'color', states[state].nodeColor);
     this.sigma?.getGraph().setNodeAttribute(node, 'size', states[state].nodeSize);
+  }
+
+  refresh() {
+    this.sigma?.refresh();
   }
 
   ngOnDestroy(): void {

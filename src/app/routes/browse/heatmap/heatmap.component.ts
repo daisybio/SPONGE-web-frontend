@@ -107,7 +107,7 @@ export class HeatmapComponent implements AfterViewInit, OnDestroy {
   }
 
   refresh() {
-    if (this.heatmap.nativeElement.checkVisibility()) {
+    if (this.heatmap && this.heatmap.nativeElement.checkVisibility()) {
       Plotly.Plots.resize(this.heatmap.nativeElement);
     }
   }
