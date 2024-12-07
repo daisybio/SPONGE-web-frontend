@@ -58,7 +58,7 @@ export class BackendService {
 
     const internalQuery: Query = {
       sponge_db_version: version,
-      disease_name: query.disease.disease_name,
+      disease_name: query.dataset.disease_name,
       minBetweenness: query.minBetweenness,
       minNodeDegree: query.minDegree,
       minEigenvector: query.minEigen,

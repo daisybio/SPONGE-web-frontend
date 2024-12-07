@@ -2,8 +2,10 @@ export interface Dataset {
   "data_origin": string,
   "dataset_ID": number,
   "disease_name": string,
+  disease_subtype: string,
   "disease_type": string,
-  "download_url": string
+  "download_url": string,
+  sponge_db_version: number
 }
 
 export interface SpongeRun {
@@ -77,7 +79,7 @@ export interface CeRNAInteraction {
 }
 
 export interface CeRNAQuery {
-  disease: Dataset,
+  dataset: Dataset,
   geneSorting: GeneSorting,
   maxGenes: number,
   minDegree: number,

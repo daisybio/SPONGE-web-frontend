@@ -2,12 +2,13 @@ import {Component, computed, effect, Signal} from '@angular/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {MatButton} from "@angular/material/button";
 import {MatInputModule} from "@angular/material/input";
 import {CeRNAQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
+import {toSignal} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-form',
@@ -24,11 +25,14 @@ import {VersionsService} from "../../../services/versions.service";
 })
 export class FormComponent {
   isLoading$: Signal<boolean>;
-  diseases: Signal<Dataset[]>;
+  diseases: Signal<string[]>;
+  diseaseSubtypeMap: Signal<Map<string, Dataset[]>>;
+  subtypes: Signal<Dataset[]>;
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
-    disease: new FormControl<Dataset | undefined>(undefined, Validators.required),
+    disease: new FormControl<string>(''),
+    dataset: new FormControl<Dataset | undefined>(undefined),
     geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
     maxGenes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),
@@ -42,11 +46,47 @@ export class FormComponent {
 
   constructor(versions: VersionsService, private browseService: BrowseService) {
     const diseases = versions.diseases$();
-    this.diseases = computed(() => (diseases.value() || []).sort((a, b) => a.disease_name.localeCompare(b.disease_name)));
+    this.diseaseSubtypeMap = computed(() => {
+      const diseaseSubtypes = new Map<string, Dataset[]>();
+      (diseases.value() || []).forEach(disease => {
+        const diseaseName = disease.disease_name;
+        if (!diseaseSubtypes.has(diseaseName)) {
+          diseaseSubtypes.set(diseaseName, []);
+        }
+        diseaseSubtypes.get(diseaseName)?.push(disease);
+      });
+      return diseaseSubtypes;
+    });
+    this.diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
     this.isLoading$ = this.browseService.isLoading$;
 
+    const diseaseSignal = toSignal(
+      this.formGroup.get('disease')!.valueChanges
+    )
+
+    this.subtypes = computed(() => {
+      const disease = diseaseSignal();
+      if (!disease) {
+        return [];
+      }
+      return this.diseaseSubtypeMap().get(disease) || [];
+    });
+
     effect(() => {
-      this.formGroup.get('disease')?.setValue(this.diseases()?.[0]);
+      const diseases = this.diseases();
+      this.formGroup.get('disease')?.setValue(diseases[0]);
+    })
+
+    effect(() => {
+      const subtypes = this.subtypes();
+      const formField = this.formGroup.get('dataset');
+      formField?.setValue(subtypes[0]);
+
+      if (subtypes.length === 1) {
+        formField?.disable();
+      } else {
+        formField?.enable();
+      }
     })
   }
 
