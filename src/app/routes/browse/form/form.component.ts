@@ -82,7 +82,7 @@ export class FormComponent {
       const formField = this.formGroup.get('dataset');
       formField?.setValue(subtypes[0]);
 
-      if (subtypes.length === 1) {
+      if (subtypes.length <= 1) {
         formField?.disable();
       } else {
         formField?.enable();
@@ -92,6 +92,7 @@ export class FormComponent {
 
   onSubmit() {
     const config = this.formGroup.value as CeRNAQuery;
+    config.dataset = this.formGroup.get('dataset')?.value as Dataset;
     this.browseService.runQuery(config);
   }
 
