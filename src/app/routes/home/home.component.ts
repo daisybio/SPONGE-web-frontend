@@ -15,7 +15,7 @@ import {BackendService} from "../../services/backend.service";
 import {Dataset, OverallCounts} from "../../interfaces";
 import {MatTab, MatTabGroup} from "@angular/material/tabs";
 import {VersionsService} from "../../services/versions.service";
-import {ReplaySubject} from "rxjs";
+import {fromEvent, ReplaySubject} from "rxjs";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
@@ -72,6 +72,10 @@ export class HomeComponent implements AfterViewInit {
     this.nonCancerDataSubject.subscribe(data => {
       this.plot(this.nonCancerPlot, data);
     });
+
+    fromEvent(window, 'resize').subscribe(() => {
+      this.resize();
+    });
   }
 
   prepareData(diseases: Dataset[] | undefined, counts: OverallCounts[] | undefined, useCancer: boolean) {
@@ -93,6 +97,7 @@ export class HomeComponent implements AfterViewInit {
 
   async plot(element: ElementRef, plotData: any[] | undefined) {
     if (!plotData) {
+      Plotly.purge(element.nativeElement);
       return;
     }
 
@@ -105,10 +110,19 @@ export class HomeComponent implements AfterViewInit {
         b: 300
       }
     });
+
+    this.resize();
   }
 
   resize() {
-    Plotly.Plots.resize(this.cancerPlot.nativeElement);
-    Plotly.Plots.resize(this.nonCancerPlot.nativeElement);
+    for (const el of [this.cancerPlot, this.nonCancerPlot]) {
+      this.resizeElement(el.nativeElement);
+    }
+  }
+
+  private resizeElement(el: HTMLElement) {
+    if (el.offsetParent !== null) {
+      Plotly.Plots.resize(el);
+    }
   }
 }
