@@ -56,6 +56,10 @@ export class BackendService {
   getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
     const route = 'findceRNA';
 
+    if (version != query.dataset.sponge_db_version) {
+      return Promise.resolve([]);
+    }
+
     const internalQuery: Query = {
       sponge_db_version: version,
       disease_name: query.dataset.disease_name,
@@ -96,6 +100,11 @@ export class BackendService {
 
   getCeRNAInteractionsSpecific(version: number, disease: string, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
     const route = 'ceRNAInteraction/findSpecific';
+
+    if (ensgs.length === 0) {
+      return Promise.resolve([]);
+    }
+
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease,
@@ -108,6 +117,10 @@ export class BackendService {
 
   getCeRNAExpression(version: number, ensgs: string[], diseaseName: string): Promise<CeRNAExpression[]> {
     const route = 'exprValue/getceRNA';
+
+    if (ensgs.length === 0) {
+      return Promise.resolve([]);
+    }
 
     const query: Query = {
       sponge_db_version: version,
