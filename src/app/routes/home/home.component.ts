@@ -15,6 +15,7 @@ import {BackendService} from "../../services/backend.service";
 import {Dataset, OverallCounts} from "../../interfaces";
 import {MatTab, MatTabGroup} from "@angular/material/tabs";
 import {VersionsService} from "../../services/versions.service";
+import {ReplaySubject} from "rxjs";
 
 declare const Plotly: any;
 
@@ -40,6 +41,9 @@ export class HomeComponent implements AfterViewInit {
   cancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], true));
   nonCancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], false));
 
+  cancerDataSubject = new ReplaySubject<any>();
+  nonCancerDataSubject = new ReplaySubject<any>();
+
   constructor(private backend: BackendService, versionsService: VersionsService) {
     const version = versionsService.versionReadOnly();
     this.diseases = versionsService.diseases$();
@@ -48,12 +52,23 @@ export class HomeComponent implements AfterViewInit {
       request: version,
       loader: (param) => this.backend.getOverallCounts(param.request)
     });
+
+    effect(() => {
+      this.cancerDataSubject.next(this.cancerData());
+    });
+
+    effect(() => {
+      this.nonCancerDataSubject.next(this.nonCancerData());
+    });
   }
 
   async ngAfterViewInit() {
-    effect(() => {
-      this.plot(this.cancerPlot, this.cancerData());
-      this.plot(this.nonCancerPlot, this.nonCancerData());
+    this.cancerDataSubject.subscribe(data => {
+      this.plot(this.cancerPlot, data);
+    });
+
+    this.nonCancerDataSubject.subscribe(data => {
+      this.plot(this.nonCancerPlot, data);
     });
   }
 

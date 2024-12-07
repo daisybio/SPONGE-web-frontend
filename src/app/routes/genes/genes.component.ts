@@ -25,6 +25,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatSelect} from "@angular/material/select";
 import {InteractionsTableComponent} from "../../components/interactions-table/interactions-table.component";
 import {VersionsService} from "../../services/versions.service";
+import {ReplaySubject} from "rxjs";
 
 declare const Plotly: any;
 
@@ -73,6 +74,8 @@ export class GenesComponent implements AfterViewInit {
   })
 
   readonly interactions$: Resource<CeRNAInteraction[]>;
+
+  diseaseCountsSubject = new ReplaySubject<any>();
 
   protected readonly capitalize = capitalize;
 
@@ -138,11 +141,15 @@ export class GenesComponent implements AfterViewInit {
           );
           interactions.push(...data);
           offset += limit;
-        } while (data.length > 0);
+        } while (data.length === limit);
 
         return interactions;
       }
     })
+
+    effect(() => {
+      this.diseaseCountsSubject.next(this.diseaseCounts$());
+    });
   }
 
   remove(gene: Gene): void {
@@ -157,8 +164,7 @@ export class GenesComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    effect(() => {
-      const data = this.diseaseCounts$();
+    this.diseaseCountsSubject.subscribe((data) => {
       if (!data || Object.keys(data).length === 0) {
         return;
       }

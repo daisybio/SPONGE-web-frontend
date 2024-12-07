@@ -1,7 +1,8 @@
-import {AfterViewInit, Component, computed, effect, ElementRef, Resource, resource, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, computed, effect, ElementRef, resource, ViewChild} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
 import {VersionsService} from "../../../services/versions.service";
+import {ReplaySubject} from "rxjs";
 
 declare const Plotly: any;
 
@@ -14,7 +15,7 @@ declare const Plotly: any;
 })
 export class HeatmapComponent implements AfterViewInit {
   @ViewChild('heatmap') heatmap!: ElementRef;
-  plotData$: Resource<{} | undefined>;
+  plotData$ = new ReplaySubject();
 
   constructor(browseService: BrowseService, backend: BackendService, versions: VersionsService) {
     const query = computed(() => {
@@ -25,7 +26,7 @@ export class HeatmapComponent implements AfterViewInit {
       }
     })
 
-    this.plotData$ = resource({
+    const plotData = resource({
       request: query,
       loader: async (param) => {
         const ceRNAs = param.request.ceRNAs;
@@ -59,13 +60,15 @@ export class HeatmapComponent implements AfterViewInit {
           type: 'heatmap'
         };
       }
-    }).asReadonly();
+    });
+
+    effect(() => {
+      this.plotData$.next(plotData.value());
+    });
   }
 
   ngAfterViewInit(): void {
-    effect(() => {
-      const data = this.plotData$.value();
-
+    this.plotData$.subscribe(data => {
       if (!data) return;
 
       Plotly.newPlot(this.heatmap.nativeElement, [data], {

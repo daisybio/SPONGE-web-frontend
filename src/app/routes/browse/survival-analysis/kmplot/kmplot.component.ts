@@ -1,9 +1,10 @@
-import {Component, computed, effect, ElementRef, input, OnInit, resource, Resource, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, input, OnInit, resource, ViewChild} from '@angular/core';
 import {CeRNA, Dataset, Gene, SurvivalRate} from "../../../../interfaces";
 import {BackendService} from "../../../../services/backend.service";
 import {MatCardModule} from "@angular/material/card";
 import {compute} from "@fullstax/kaplan-meier-estimator";
 import {VersionsService} from "../../../../services/versions.service";
+import {ReplaySubject} from "rxjs";
 
 declare const Plotly: any;
 
@@ -21,7 +22,7 @@ export class KMPlotComponent implements OnInit {
   disease = input.required<Dataset>()
   @ViewChild("plot") plot!: ElementRef;
 
-  plotData: Resource<any>;
+  plotData = new ReplaySubject<any>();
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     const config = computed(() => {
@@ -32,7 +33,7 @@ export class KMPlotComponent implements OnInit {
       }
     });
 
-    this.plotData = resource({
+    const plotDataResource = resource({
       request: config,
       loader: async (param) => {
         const pVals$ = this.backend.getSurvivalPValues(param.request.version, [param.request.gene.ensg_number], param.request.disease);
@@ -54,6 +55,10 @@ export class KMPlotComponent implements OnInit {
         };
       }
     });
+
+    effect(() => {
+      this.plotData.next(plotDataResource.value());
+    });
   }
 
   getGenePrimary(gene: Gene): string {
@@ -61,10 +66,7 @@ export class KMPlotComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    effect(() => {
-      const data = this.plotData.value();
-      if (!data) return;
-
+    this.plotData.subscribe((data) => {
       const pValue = data.pValue;
 
       Plotly.newPlot(this.plot.nativeElement, [

@@ -73,6 +73,10 @@ export class BackendService {
   getCeRNAInteractionsAll(version: number, disease: string, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
     const route = 'ceRNAInteraction/findAll';
 
+    if (ensgs.length === 0) {
+      return Promise.resolve([]);
+    }
+
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease,
