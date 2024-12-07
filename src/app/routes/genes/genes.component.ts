@@ -123,6 +123,9 @@ export class GenesComponent implements AfterViewInit {
     });
 
     fromEvent(window, 'resize').subscribe(() => {
+      if (!this.pie) {
+        return;
+      }
       Plotly.Plots.resize(this.pie.nativeElement);
     });
 
