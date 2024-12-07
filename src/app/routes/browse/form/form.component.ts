@@ -3,7 +3,6 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
-import {MatButton} from "@angular/material/button";
 import {MatInputModule} from "@angular/material/input";
 import {CeRNAQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
@@ -17,7 +16,6 @@ import {toSignal} from "@angular/core/rxjs-interop";
     MatSelectModule,
     MatExpansionModule,
     ReactiveFormsModule,
-    MatButton,
     MatInputModule,
   ],
   templateUrl: './form.component.html',
@@ -69,7 +67,7 @@ export class FormComponent {
       if (!disease) {
         return [];
       }
-      return this.diseaseSubtypeMap().get(disease) || [];
+      return this.diseaseSubtypeMap().get(disease)?.sort((a, b) => a.disease_subtype?.localeCompare(b.disease_subtype || '') || 0) || [];
     });
 
     effect(() => {
