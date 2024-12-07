@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Signal} from '@angular/core';
 import {HttpService} from "./http.service";
 import {
   CeRNA,
@@ -13,95 +13,141 @@ import {
   SurvivalPValue,
   SurvivalRate
 } from "../interfaces";
+import {VersionsService} from "./versions.service";
+
+interface Query {
+  [key: string]: any;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class BackendService {
   private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api-v2'
+  version: Signal<number>;
 
-  constructor(private http: HttpService) {
+  constructor(private http: HttpService, versionsService: VersionsService) {
+    this.version = versionsService.versionReadOnly();
   }
 
   getDatasets(diseaseName?: string): Promise<Dataset[]> {
-    const request = BackendService.API_BASE + '/dataset' + (diseaseName ? `?disease=${diseaseName}` : '');
-    return this.http.getRequest<Dataset[]>(request);
+    const route = 'dataset';
+
+    const query: Query = {sponge_db_version: this.version()};
+    if (diseaseName) {
+      query['disease'] = diseaseName;
+    }
+
+    return this.http.getRequest<Dataset[]>(this.getRequestURL(route, query));
   }
 
   getDatasetInfo(diseaseName: string): Promise<RunInfo[]> {
-    const request = BackendService.API_BASE + '/dataset/spongeRunInformation?disease_name=' + diseaseName;
-    return this.http.getRequest<RunInfo[]>(request);
+    const route = 'dataset/spongeRunInformation';
+    const query: Query = {sponge_db_version: this.version(), disease_name: diseaseName};
+    return this.http.getRequest<RunInfo[]>(this.getRequestURL(route, query));
   }
 
   getOverallCounts(): Promise<OverallCounts[]> {
-    const request = BackendService.API_BASE + '/getOverallCounts';
-    return this.http.getRequest<OverallCounts[]>(request);
+    const route = 'getOverallCounts';
+    const query: Query = {sponge_db_version: this.version()};
+    return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
   getCeRNA(query: CeRNAQuery): Promise<CeRNA[]> {
-    let request = BackendService.API_BASE + '/findceRNA?disease_name=' + query.disease.disease_name;
+    const route = 'findceRNA';
 
-    request += `&minBetweenness=${query.minBetweenness}`;
-    request += `&minNodeDegree=${query.minDegree}`;
-    request += `&minEigenvector=${query.minEigen}`;
-    request += `&sorting=${query.geneSorting}`;
-    request += `&descending=${true}`;
-    request += `&limit=${query.maxGenes}`;
+    const internalQuery: Query = {
+      sponge_db_version: this.version(),
+      disease_name: query.disease.disease_name,
+      minBetweenness: query.minBetweenness,
+      minNodeDegree: query.minDegree,
+      minEigenvector: query.minEigen,
+      sorting: query.geneSorting,
+      descending: true,
+      limit: query.maxGenes
+    };
 
-    return this.http.getRequest<CeRNA[]>(request);
+    return this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
   }
 
   getCeRNAInteractionsAll(disease: string, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
-    let request = BackendService.API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
-    request += `&ensg_number=${ensgs.join(',')}`;
-    request += `&pValue=${maxPValue}`;
+    const route = 'ceRNAInteraction/findAll';
+
+    const query: Query = {
+      sponge_db_version: this.version(),
+      disease_name: disease,
+      ensg_number: ensgs.join(','),
+      pValue: maxPValue
+    }
 
     if (limit) {
-      request += `&limit=${limit}`;
+      query['limit'] = limit;
     }
     if (offset) {
-      request += `&offset=${offset}`;
+      query['offset'] = offset;
     }
 
-    return this.http.getRequest<CeRNAInteraction[]>(request);
+    return this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
   }
 
   getCeRNAInteractionsSpecific(disease: string, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
-    let request = BackendService.API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
-    request += `&ensg_number=${ensgs.join(',')}`;
-    request += `&pValue=${maxPValue}`;
+    const route = 'ceRNAInteraction/findSpecific';
+    const query: Query = {
+      sponge_db_version: this.version(),
+      disease_name: disease,
+      ensg_number: ensgs.join(','),
+      pValue: maxPValue
+    }
 
-    return this.http.getRequest<CeRNAInteraction[]>(request);
+    return this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
   }
 
   getCeRNAExpression(ensgs: string[], diseaseName: string): Promise<CeRNAExpression[]> {
-    let request = BackendService.API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
-    request += `&ensg_number=${ensgs.join(',')}`;
+    const route = 'exprValue/getceRNA';
 
-    return this.http.getRequest<CeRNAExpression[]>(request);
+    const query: Query = {
+      sponge_db_version: this.version(),
+      disease_name: diseaseName,
+      ensg_number: ensgs.join(',')
+    }
+
+    return this.http.getRequest<CeRNAExpression[]>(this.getRequestURL(route, query));
   }
 
   getSurvivalRates(ensgs: string[], diseaseName: string): Promise<SurvivalRate[]> {
-    let request = BackendService.API_BASE + '/survivalAnalysis/getRates?disease_name=' + diseaseName;
-    request += `&ensg_number=${ensgs.join(',')}`;
+    const route = 'survivalAnalysis/getRates';
+    const query: Query = {
+      sponge_db_version: this.version(),
+      disease_name: diseaseName,
+      ensg_number: ensgs.join(',')
+    }
 
-    return this.http.getRequest<SurvivalRate[]>(request);
+    return this.http.getRequest<SurvivalRate[]>(this.getRequestURL(route, query));
   }
 
   getSurvivalPValues(ensgs: string[], diseaseName: string): Promise<SurvivalPValue[]> {
-    let request = BackendService.API_BASE + '/survivalAnalysis/getPValues?disease_name=' + diseaseName;
-    request += `&ensg_number=${ensgs.join(',')}`;
+    const route = 'survivalAnalysis/getPValues';
 
-    return this.http.getRequest<SurvivalPValue[]>(request);
+    const query: Query = {
+      sponge_db_version: this.version(),
+      disease_name: diseaseName,
+      ensg_number: ensgs.join(',')
+    }
+
+    return this.http.getRequest<SurvivalPValue[]>(this.getRequestURL(route, query));
   }
 
   getAutocomplete(query: string): Promise<Gene[]> {
     if (query.length < 2) {
       return Promise.resolve([]);
     }
-    const request = BackendService.API_BASE + '/stringSearch?searchString=' + query;
+
+    const route = 'stringSearch';
+    const queryObj: Query = {
+      query: query
+    }
     try {
-      return this.http.getRequest<Gene[]>(request);
+      return this.http.getRequest<Gene[]>(this.getRequestURL(route, queryObj));
     } catch (e) {
       return Promise.resolve([]);
     }
@@ -111,10 +157,22 @@ export class BackendService {
     if (ensgs.length === 0) {
       return Promise.resolve([]);
     }
-    let request = BackendService.API_BASE + '/getGeneCount?ensg_number=' + ensgs.join(',');
-    if (onlySignificant) {
-      request += '&minCountSign=1';
+    const route = 'getGeneCount';
+    const query: Query = {
+      sponge_db_version: this.version(),
+      ensg_number: ensgs.join(','),
     }
-    return this.http.getRequest<GeneCount[]>(request);
+    if (onlySignificant) {
+      query['minCountSign'] = 1;
+    }
+    return this.http.getRequest<GeneCount[]>(this.getRequestURL(route, query));
+  }
+
+  private stringify(query: Query): string {
+    return Object.keys(query).map(key => key + '=' + query[key]).join('&');
+  }
+
+  private getRequestURL(route: string, query: Query): string {
+    return `${BackendService.API_BASE}/${route}?${this.stringify(query)}`;
   }
 }

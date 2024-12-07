@@ -5,4 +5,8 @@ import {Injectable, signal} from '@angular/core';
 })
 export class VersionsService {
   version$ = signal(2);
+
+  versionReadOnly() {
+    return this.version$.asReadonly();
+  }
 }
