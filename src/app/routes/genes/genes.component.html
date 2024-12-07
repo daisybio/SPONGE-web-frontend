@@ -42,26 +42,36 @@
       @if (activeGenes().length > 0) {
 
         <mat-tab-group>
-          <mat-tab label="Pie chart">
-            <div #pie></div>
+          <mat-tab label="Sunburst chart">
+            <div #sunburst></div>
           </mat-tab>
           <mat-tab label="Table">
-            <mat-form-field>
+            <mat-form-field style="width: 100%">
               <mat-label>Disease</mat-label>
               <mat-select [(value)]="selectedDisease">
-                @if (diseaseCounts$(); as diseaseCounts) {
-                  @for (disease of diseaseCounts | keyvalue; track disease) {
-                    <mat-option [value]="disease.key">
-                      {{ capitalize(disease.key) }} ({{ disease.value }})
+                @if (diseases(); as diseases) {
+                  @for (disease of diseases; track disease) {
+                    <mat-option [value]="disease">
+                      {{ capitalize(disease) }}
                     </mat-option>
                   }
                 }
               </mat-select>
             </mat-form-field>
-            @if (interactions$.value(); as interactions) {
-              <app-interactions-table [interactions$]="interactions"></app-interactions-table>
+            @if (interactions$.isLoading()) {
+              <div class="spinner-container">
+                <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+              </div>
             } @else {
-              <p>Please select a disease to see the interactions.</p>
+              @if (interactions$.value(); as interactions) {
+                @if (interactions.length > 0) {
+                  <app-interactions-table [interactions$]="interactions"></app-interactions-table>
+                } @else {
+                  <p>No interactions found.</p>
+                }
+              } @else {
+                <p>Please select a disease to see the interactions.</p>
+              }
             }
           </mat-tab>
         </mat-tab-group>

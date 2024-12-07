@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   computed,
-  effect,
   ElementRef,
   model,
   resource,
@@ -18,16 +17,16 @@ import {MatIconModule} from "@angular/material/icon";
 import {FormsModule} from "@angular/forms";
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {BackendService} from "../../services/backend.service";
-import {KeyValuePipe} from "@angular/common";
-import {CeRNAInteraction, Gene, GeneCount} from "../../interfaces";
+import {CeRNAInteraction, Dataset, Gene, GeneCount} from "../../interfaces";
 import _, {capitalize} from "lodash";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatSelect} from "@angular/material/select";
 import {InteractionsTableComponent} from "../../components/interactions-table/interactions-table.component";
 import {VersionsService} from "../../services/versions.service";
-import {ReplaySubject} from "rxjs";
+import {fromEvent, ReplaySubject} from "rxjs";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {toObservable} from "@angular/core/rxjs-interop";
 
 declare const Plotly: any;
 
@@ -45,7 +44,6 @@ declare const Plotly: any;
     MatCheckbox,
     MatTabsModule,
     MatSelect,
-    KeyValuePipe,
     InteractionsTableComponent,
     MatProgressSpinner
   ],
@@ -53,7 +51,7 @@ declare const Plotly: any;
   styleUrl: './genes.component.scss'
 })
 export class GenesComponent implements AfterViewInit {
-  @ViewChild('pie') pie!: ElementRef;
+  @ViewChild('sunburst') pie!: ElementRef;
   readonly currentInput = model('');
   readonly selectedDisease = model('');
   readonly activeGenes = signal<Gene[]>([]);
@@ -62,24 +60,14 @@ export class GenesComponent implements AfterViewInit {
   readonly results: Resource<GeneCount[]>;
   readonly isLoading: Signal<boolean>;
 
-  readonly diseaseCounts$ = computed(() => {
-    return this.results.value()?.map(g => {
-      return {
-        disease_name: g.sponge_run.dataset.disease_name,
-        count: this.onlySignificant() ? g.count_sign : g.count_all
-      }
-    }).reduce((acc, curr) => {
-      if (!acc[curr.disease_name]) {
-        acc[curr.disease_name] = 0;
-      }
-      acc[curr.disease_name] += curr.count;
-      return acc;
-    }, {} as { [key: string]: number });
-  })
+  readonly plotData: Signal<any>;
 
   readonly interactions$: Resource<CeRNAInteraction[]>;
 
-  diseaseCountsSubject = new ReplaySubject<any>();
+  diseases = computed(() => {
+    return this.results.value()?.map(r => r.sponge_run.dataset.disease_name).filter((v, i, a) => a.indexOf(v) === i) || [];
+  });
+  plotDataSubject = new ReplaySubject<any>();
 
   protected readonly capitalize = capitalize;
 
@@ -115,6 +103,14 @@ export class GenesComponent implements AfterViewInit {
       }
     })
 
+    this.plotData = computed(() => {
+      return this.createSunburstData(this.results.value(), versionsService.diseases$().value());
+    });
+
+    toObservable(this.plotData).subscribe(data => {
+      this.plotDataSubject.next(data);
+    });
+
     this.isLoading = this.results.isLoading;
 
     const interactionsQuery = computed(() => {
@@ -124,6 +120,10 @@ export class GenesComponent implements AfterViewInit {
         ensgs: this.activeGenes().map(g => g.ensg_number),
         version: version()
       }
+    });
+
+    fromEvent(window, 'resize').subscribe(() => {
+      Plotly.Plots.resize(this.pie.nativeElement);
     });
 
     this.interactions$ = resource({
@@ -152,10 +152,6 @@ export class GenesComponent implements AfterViewInit {
         return interactions;
       }
     })
-
-    effect(() => {
-      this.diseaseCountsSubject.next(this.diseaseCounts$());
-    });
   }
 
   remove(gene: Gene): void {
@@ -170,16 +166,68 @@ export class GenesComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.diseaseCountsSubject.subscribe((data) => {
-      if (!data || Object.keys(data).length === 0) {
+    this.plotDataSubject.subscribe((data) => {
+      if (!data || data.labels.length === 1) {
         return;
       }
-
-      Plotly.newPlot(this.pie.nativeElement, [{
-        values: Object.values(data),
-        labels: Object.keys(data).map(capitalize),
-        type: 'pie'
-      }]);
+      Plotly.newPlot(this.pie.nativeElement, [data], {
+        margin: {t: 0, l: 0, r: 0, b: 0},
+        height: 900,
+      });
+      Plotly.Plots.resize(this.pie.nativeElement);
     });
+  }
+
+  private createSunburstData(results: GeneCount[] | undefined, datasets: Dataset[] | undefined) {
+    if (!results || !datasets) {
+      return;
+    }
+    const datasetCounts = results.reduce((acc, curr) => {
+      if (!acc[curr.sponge_run.dataset.dataset_ID]) {
+        acc[curr.sponge_run.dataset.dataset_ID] = {
+          count: 0,
+          dataset: datasets.find(d => d.dataset_ID === curr.sponge_run.dataset.dataset_ID)!
+        };
+      }
+      acc[curr.sponge_run.dataset.dataset_ID].count += this.onlySignificant() ? curr.count_sign : curr.count_all;
+      return acc;
+    }, {} as { [key: string]: { count: number, dataset: Dataset } });
+
+    const diseaseCounts = Object.values(datasetCounts).reduce((acc, curr) => {
+      if (!acc[curr.dataset.disease_name]) {
+        acc[curr.dataset.disease_name] = 0;
+      }
+      acc[curr.dataset.disease_name] += curr.count;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    const total = Object.values(diseaseCounts).reduce((acc, curr) => acc + curr, 0);
+
+    const labels = ["Diseases"].concat(Object.keys(diseaseCounts).map(d => capitalize(d)));
+    const values = [total].concat(Object.values(diseaseCounts));
+    const parents = ["", ...Object.keys(diseaseCounts).map(d => "Diseases")];
+
+    for (let datasetCount of Object.values(datasetCounts)) {
+      const subtype = datasetCount.dataset.disease_subtype;
+
+      if (!subtype) {
+        continue;
+      }
+
+      const count = datasetCount.count;
+      const dataset = datasetCount.dataset;
+      const parent = capitalize(dataset.disease_name);
+
+      labels.push(subtype);
+      values.push(count);
+      parents.push(parent);
+    }
+
+    return {
+      labels,
+      values,
+      parents,
+      type: 'sunburst'
+    }
   }
 }

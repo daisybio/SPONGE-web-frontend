@@ -80,7 +80,7 @@ export class BackendService {
     if (ensgs.length === 0) {
       return Promise.resolve([]);
     }
-
+    
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease,
