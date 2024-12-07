@@ -16,6 +16,7 @@ import {Dataset, OverallCounts} from "../../interfaces";
 import {MatTab, MatTabGroup} from "@angular/material/tabs";
 import {VersionsService} from "../../services/versions.service";
 import {ReplaySubject} from "rxjs";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
 
@@ -26,7 +27,8 @@ declare const Plotly: any;
     CarouselComponent,
     SlideComponent,
     MatTabGroup,
-    MatTab
+    MatTab,
+    MatProgressSpinner
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -38,11 +40,11 @@ export class HomeComponent implements AfterViewInit {
   overallCounts: ResourceRef<OverallCounts[]>;
   diseases: Resource<Dataset[]>;
 
-  cancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], true));
-  nonCancerData = computed(() => this.prepareData(this.diseases.value() || [], this.overallCounts.value() || [], false));
+  cancerData = computed(() => this.prepareData(this.diseases.value(), this.overallCounts.value(), true));
+  nonCancerData = computed(() => this.prepareData(this.diseases.value(), this.overallCounts.value(), false));
 
-  cancerDataSubject = new ReplaySubject<any>();
-  nonCancerDataSubject = new ReplaySubject<any>();
+  cancerDataSubject = new ReplaySubject<any[] | undefined>();
+  nonCancerDataSubject = new ReplaySubject<any[] | undefined>();
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     const version = versionsService.versionReadOnly();
@@ -54,6 +56,7 @@ export class HomeComponent implements AfterViewInit {
     });
 
     effect(() => {
+      console.log(this.cancerData())
       this.cancerDataSubject.next(this.cancerData());
     });
 
@@ -72,7 +75,11 @@ export class HomeComponent implements AfterViewInit {
     });
   }
 
-  prepareData(diseases: Dataset[], counts: OverallCounts[], useCancer: boolean) {
+  prepareData(diseases: Dataset[] | undefined, counts: OverallCounts[] | undefined, useCancer: boolean) {
+    if (!diseases || !counts) {
+      return undefined;
+    }
+
     const usedDiseases = diseases.filter(d => (d.disease_type === 'Cancer') === useCancer);
     const overallCounts = counts.filter(c => usedDiseases.some(d => d.disease_name === c.disease_name));
     const countField = 'count_interactions_sign';
@@ -85,7 +92,11 @@ export class HomeComponent implements AfterViewInit {
     }];
   }
 
-  async plot(element: ElementRef, plotData: any) {
+  async plot(element: ElementRef, plotData: any[] | undefined) {
+    if (!plotData) {
+      return;
+    }
+
     Plotly.newPlot(element.nativeElement, plotData, {
       title: 'Count of significant interactions',
       yaxis: {
