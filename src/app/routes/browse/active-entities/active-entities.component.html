@@ -59,6 +59,12 @@
               </tr>
             </table>
           </mat-card-content>
+          <mat-card-actions>
+            <button mat-button (click)="openGeneModal(interaction.gene1)">View {{ getGenePrimary(interaction.gene1) }}
+            </button>
+            <button mat-button (click)="openGeneModal(interaction.gene2)">View {{ getGenePrimary(interaction.gene2) }}
+            </button>
+          </mat-card-actions>
         </mat-card>
       } @empty {
         <p>No active edges found.</p>
