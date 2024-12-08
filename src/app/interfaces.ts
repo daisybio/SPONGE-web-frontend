@@ -120,3 +120,30 @@ export interface GeneCount extends SpongeRun {
   "count_sign": number,
   "gene": Gene
 }
+
+export interface GeneInfo {
+  chromosome_name: string,
+  cytoband: string,
+  description: string,
+  end_pos: number,
+  ensg_number: string,
+  gene_symbol: string,
+  gene_type: string,
+  start_pos: number
+}
+
+export interface GOTerm {
+  description: string,
+  gene: Gene,
+  gene_ontology_symbol: string
+}
+
+export interface Hallmark {
+  gene: Gene,
+  hallmark: string
+}
+
+export interface WikiPathway {
+  gene: Gene,
+  wp_key: string
+}

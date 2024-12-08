@@ -8,10 +8,14 @@ import {
   Dataset,
   Gene,
   GeneCount,
+  GeneInfo,
+  GOTerm,
+  Hallmark,
   OverallCounts,
   RunInfo,
   SurvivalPValue,
-  SurvivalRate
+  SurvivalRate,
+  WikiPathway
 } from "../interfaces";
 
 interface Query {
@@ -169,6 +173,66 @@ export class BackendService {
     } catch (e) {
       return Promise.resolve([]);
     }
+  }
+
+  getGeneInfo(version: number, ensg: string): Promise<GeneInfo[]> {
+    const route = 'getGeneInformation';
+    const query: Query = {
+      sponge_db_version: version,
+      ensg_number: ensg
+    }
+    return this.http.getRequest<GeneInfo[]>(this.getRequestURL(route, query));
+  }
+
+  getGOterms(version: number, symbol: string | undefined): Promise<GOTerm[]> {
+    const route = 'getGeneOntology';
+
+    if (!symbol) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      gene_symbol: symbol
+    }
+    return this.http.getRequest<GOTerm[]>(this.getRequestURL(route, query));
+  }
+
+  async getHallmark(version: number, symbol: string | undefined): Promise<Hallmark[]> {
+    const route = 'getHallmark';
+
+    if (!symbol) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      gene_symbol: symbol
+    }
+    const hallmarks = await this.http.getRequest<Hallmark[] | {}>(this.getRequestURL(route, query));
+    if (!Array.isArray(hallmarks)) {
+      return [];
+    }
+    return hallmarks;
+  }
+
+  async getWikiPathways(version: number, symbol: string | undefined): Promise<WikiPathway[]> {
+    const route = 'getWikipathway';
+
+    if (!symbol) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      gene_symbol: symbol
+    }
+    const wikipathways = await this.http.getRequest<WikiPathway[] | {}>(this.getRequestURL(route, query));
+
+    if (!Array.isArray(wikipathways)) {
+      return [];
+    }
+    return wikipathways;
   }
 
   getGeneCount(version: number, ensgs: string[], onlySignificant: boolean): Promise<GeneCount[]> {

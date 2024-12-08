@@ -1,7 +1,71 @@
 <h1 mat-dialog-title>{{ gene.gene_symbol || gene.ensg_number }}</h1>
 <mat-dialog-content>
-  Hello, world!
+  <mat-tab-group>
+    <mat-tab label="General information">
+      <mat-accordion>
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Gene</mat-panel-title>
+          </mat-expansion-panel-header>
+          <table>
+            @if (geneInfo$.value(); as geneInfo) {
+              <tr>
+                <th>Position</th>
+                <td>{{ geneInfo.chromosome_name }}:{{ geneInfo.start_pos }}-{{ geneInfo.end_pos }}</td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>{{ geneInfo.gene_type }}</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td>{{ geneInfo.description }}</td>
+              </tr>
+              <tr>
+                <th>Cytoband</th>
+                <td>{{ geneInfo.cytoband }}</td>
+              </tr>
+            }
+          </table>
+        </mat-expansion-panel>
+        @if (wikipathways$.value(); as pathways) {
+          <mat-expansion-panel [disabled]="pathways.length === 0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>WikiPathways</mat-panel-title>
+            </mat-expansion-panel-header>
+            @for (pathway of pathways; track pathway) {
+              <a mat-flat-button>{{ pathway.wp_key }}</a>
+            }
+          </mat-expansion-panel>
+        }
+        @if (hallmarks$.value(); as hallmarks) {
+          <mat-expansion-panel [disabled]="hallmarks.length === 0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Hallmarks</mat-panel-title>
+            </mat-expansion-panel-header>
+            @for (hallmark of hallmarks; track hallmark) {
+              <a mat-flat-button>{{ hallmark.hallmark }}</a>
+            }
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    </mat-tab>
+    @if (goTerms$.value(); as goTerms) {
+      <mat-tab label="Gene ontology" [disabled]="goTerms.length === 0">
+        <table>
+          <tr>
+            <th>GO term</th>
+            <th>Definition</th>
+          </tr>
+          @for (goTerm of goTerms; track goTerm) {
+            <tr>
+              <td>{{ goTerm.gene_ontology_symbol }}</td>
+              <td>{{ goTerm.description }}</td>
+            </tr>
+          }
+        </table>
+      </mat-tab>
+    }
+  </mat-tab-group>
 </mat-dialog-content>
-<mat-dialog-actions>
-  <button (click)="onClose()" mat-button>Close</button>
-</mat-dialog-actions>
+
