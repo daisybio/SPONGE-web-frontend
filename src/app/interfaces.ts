@@ -2,7 +2,7 @@ export interface Dataset {
   "data_origin": string,
   "dataset_ID": number,
   "disease_name": string,
-  disease_subtype?: string,
+  disease_subtype: string | null,
   "disease_type": string,
   "download_url": string,
   sponge_db_version: number

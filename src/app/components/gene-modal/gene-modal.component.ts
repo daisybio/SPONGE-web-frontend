@@ -70,7 +70,6 @@ export class GeneModalComponent implements AfterViewInit {
 
     effect(() => {
       this.goDatasource.filter = this.goFilter().trim().toLowerCase();
-      console.log(this.goDatasource.filter)
     });
   }
 

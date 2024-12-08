@@ -91,7 +91,6 @@ export class GenesComponent implements AfterViewInit {
 
     effect(() => {
       const subtypes = this.possibleSubtypes();
-      console.log(subtypes);
       if (subtypes.length >= 1) {
         this.selectedSubtype.set(subtypes[0]);
       }
@@ -127,7 +126,7 @@ export class GenesComponent implements AfterViewInit {
     })
 
     this.plotData = computed(() => {
-      return this.createSunburstData(this.results.value(), versionsService.diseases$().value());
+      return this.createSunburstData(this.results.value(), versionsService.diseases$().value(), this.onlySignificant());
     });
 
     toObservable(this.plotData).subscribe(data => {
@@ -204,7 +203,7 @@ export class GenesComponent implements AfterViewInit {
     });
   }
 
-  private createSunburstData(results: GeneCount[] | undefined, datasets: Dataset[] | undefined) {
+  private createSunburstData(results: GeneCount[] | undefined, datasets: Dataset[] | undefined, onlySignificant: boolean): any {
     if (!results || !datasets) {
       return;
     }
@@ -215,7 +214,7 @@ export class GenesComponent implements AfterViewInit {
           dataset: datasets.find(d => d.dataset_ID === curr.sponge_run.dataset.dataset_ID)!
         };
       }
-      acc[curr.sponge_run.dataset.dataset_ID].count += this.onlySignificant() ? curr.count_sign : curr.count_all;
+      acc[curr.sponge_run.dataset.dataset_ID].count += onlySignificant ? curr.count_sign : curr.count_all;
       return acc;
     }, {} as { [key: string]: { count: number, dataset: Dataset } });
 
@@ -234,11 +233,7 @@ export class GenesComponent implements AfterViewInit {
     const parents = ["", ...Object.keys(diseaseCounts).map(d => "Diseases")];
 
     for (let datasetCount of Object.values(datasetCounts)) {
-      const subtype = datasetCount.dataset.disease_subtype;
-
-      if (!subtype) {
-        continue;
-      }
+      const subtype = datasetCount.dataset.disease_subtype || 'Unspecified';
 
       const count = datasetCount.count;
       const dataset = datasetCount.dataset;
@@ -253,6 +248,7 @@ export class GenesComponent implements AfterViewInit {
       labels,
       values,
       parents,
+      branchvalues: 'total',
       type: 'sunburst'
     }
   }
