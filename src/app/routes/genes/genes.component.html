@@ -14,13 +14,14 @@
           }
         </mat-chip-grid>
         <input
+          #geneInput
           [(ngModel)]="currentInput"
           [matAutocomplete]="auto"
           [matChipInputFor]="chipGrid"
           name="currentGene"
           placeholder="Add gene..."
         />
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)"
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); geneInput.value = ''"
                           autoActiveFirstOption>
           @for (gene of possibleGenes.value(); track gene) {
             <mat-option [value]="gene">{{ gene.gene_symbol }} ({{ gene.ensg_number }})</mat-option>
