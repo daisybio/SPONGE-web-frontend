@@ -70,7 +70,7 @@ export interface CeRNA extends SpongeRun {
   node_degree: number
 }
 
-export interface CeRNAInteraction {
+export interface CeRNAInteraction extends SpongeRun {
   "correlation": number,
   "gene1": Gene,
   "gene2": Gene,

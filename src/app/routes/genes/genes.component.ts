@@ -154,27 +154,12 @@ export class GenesComponent implements AfterViewInit {
     this.interactions$ = resource({
       request: interactionsQuery,
       loader: async (param) => {
-        const interactions: CeRNAInteraction[] = [];
-
-        let data: CeRNAInteraction[];
-
-        const limit = 1000;
-        let offset = 0;
-
-        do {
-          data = await backend.getCeRNAInteractionsAll(
-            param.request.version,
-            param.request.disease,
-            param.request.onlySignificant ? 0.05 : 1,
-            param.request.ensgs,
-            limit,
-            offset
-          );
-          interactions.push(...data);
-          offset += limit;
-        } while (data.length === limit);
-
-        return interactions;
+        return backend.getCeRNAInteractionsAll(
+          param.request.version,
+          param.request.disease,
+          param.request.onlySignificant ? 0.05 : 1,
+          param.request.ensgs
+        );
       }
     })
   }

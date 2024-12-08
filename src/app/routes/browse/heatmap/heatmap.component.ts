@@ -32,7 +32,7 @@ export class HeatmapComponent implements AfterViewInit, OnDestroy {
     const query = computed(() => {
       return {
         ceRNAs: browseService.ceRNAs$(),
-        disease: browseService.disease$()?.disease_name,
+        disease: browseService.disease$(),
         version: versions.versionReadOnly()()
       }
     })
