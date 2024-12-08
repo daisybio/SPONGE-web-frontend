@@ -1,12 +1,22 @@
 <table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort>
   <ng-container matColumnDef="gene_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene 1</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.gene_1 }}</td>
+    <td *matCellDef="let interaction" mat-cell>
+      <button (click)="openDialog(interaction.gene1_obj)" mat-button
+              matTooltip="Show details about {{interaction.gene_1}}">
+        {{ interaction.gene_1 }}
+      </button>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="gene_2">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene 2</th>
-    <td *matCellDef="let interaction" mat-cell>{{ interaction.gene_2 }}</td>
+    <td *matCellDef="let interaction" mat-cell>
+      <button (click)="openDialog(interaction.gene2_obj)" mat-button
+              matTooltip="Show details about {{interaction.gene_2}}">
+        {{ interaction.gene_2 }}
+      </button>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="correlation">

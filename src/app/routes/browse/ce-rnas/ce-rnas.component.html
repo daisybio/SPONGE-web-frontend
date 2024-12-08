@@ -1,13 +1,11 @@
 <table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
-
-  <ng-container matColumnDef="ensg_number">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Ensembl ID</th>
-    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.ensg_number }}</td>
-  </ng-container>
-
   <ng-container matColumnDef="gene_symbol">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene Symbol</th>
-    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene_symbol }}</td>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene</th>
+    <td *matCellDef="let ceRNA" mat-cell>
+      <button (click)="openDialog(ceRNA.gene)" mat-button matTooltip="Show details about {{ceRNA.gene_symbol}}">
+        {{ ceRNA.gene_symbol }}
+      </button>
+    </td>
   </ng-container>
 
   <ng-container matColumnDef="betweenness">

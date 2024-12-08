@@ -1,8 +1,12 @@
-import {AfterViewInit, Component, computed, input, ViewChild} from '@angular/core';
-import {CeRNAInteraction} from "../../interfaces";
+import {AfterViewInit, Component, computed, inject, input, ViewChild} from '@angular/core';
+import {CeRNAInteraction, Gene} from "../../interfaces";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatSort, MatSortHeader} from "@angular/material/sort";
+import {GeneModalComponent} from "../gene-modal/gene-modal.component";
+import {MatDialog} from "@angular/material/dialog";
+import {MatButton} from "@angular/material/button";
+import {MatTooltip} from "@angular/material/tooltip";
 
 @Component({
   selector: 'app-interactions-table',
@@ -10,7 +14,9 @@ import {MatSort, MatSortHeader} from "@angular/material/sort";
     MatTableModule,
     MatPaginatorModule,
     MatSortHeader,
-    MatSort
+    MatSort,
+    MatButton,
+    MatTooltip
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss'
@@ -19,6 +25,7 @@ export class InteractionsTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   interactions$ = input<CeRNAInteraction[]>();
+  readonly dialog = inject(MatDialog);
 
   columns = ["gene_1", "gene_2", "correlation", "mscor", "padj"];
 
@@ -29,7 +36,9 @@ export class InteractionsTableComponent implements AfterViewInit {
         gene_2: interaction.gene2.gene_symbol || interaction.gene2.ensg_number,
         correlation: interaction.correlation,
         mscor: interaction.mscor,
-        padj: interaction.p_value
+        padj: interaction.p_value,
+        gene1_obj: interaction.gene1,
+        gene2_obj: interaction.gene2
       }
     }));
   });
@@ -38,5 +47,11 @@ export class InteractionsTableComponent implements AfterViewInit {
     const dataSource = this.dataSource$();
     dataSource.paginator = this.paginator;
     dataSource.sort = this.sort;
+  }
+
+  openDialog(gene: Gene) {
+    this.dialog.open(GeneModalComponent, {
+      data: gene
+    })
   }
 }
