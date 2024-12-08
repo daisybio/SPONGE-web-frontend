@@ -12,6 +12,7 @@ import {BrowseService} from "../../services/browse.service";
 import {SurvivalAnalysisComponent} from "./survival-analysis/survival-analysis.component";
 import {ActiveEntitiesComponent} from "./active-entities/active-entities.component";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
   selector: 'app-browse',
@@ -27,7 +28,8 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
     HeatmapComponent,
     SurvivalAnalysisComponent,
     ActiveEntitiesComponent,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatIcon
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
@@ -39,7 +41,7 @@ export class BrowseComponent {
   tabChange = signal(0);
 
   constructor(private browseService: BrowseService) {
-    this.hasData$ = computed(() => this.browseService.disease$() !== undefined);
+    this.hasData$ = computed(() => this.browseService.ceRNAs$().length > 0);
     this.isLoading$ = this.browseService.isLoading$;
   }
 }

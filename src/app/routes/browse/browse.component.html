@@ -3,8 +3,8 @@
     <app-form></app-form>
   </mat-drawer>
   <mat-drawer-content>
-    @if (hasData$() || isLoading$()) {
-      @if (!isLoading$()) {
+    @if (!isLoading$()) {
+      @if (hasData$()) {
         <mat-tab-group [preserveContent]="false" (selectedTabChange)="tabChange.set($event.index)">
           <mat-tab label="Gene network">
             <div style="display: flex; flex-direction: row">
@@ -26,15 +26,22 @@
           </mat-tab>
         </mat-tab-group>
       } @else {
-        <div class="spinner-container">
-          <mat-spinner mode="indeterminate"></mat-spinner>
+        <div class="card-container" style="margin-top: 50px">
+          <mat-icon>
+            warning
+          </mat-icon>
+          <p>
+            The configuration you have selected does not have any data.
+          </p>
+          <p>
+            Consider increasing the thresholds or selecting a different configuration.
+          </p>
         </div>
       }
-
     } @else {
-      <p>
-        Please execute a search to see the results.
-      </p>
+      <div class="spinner-container">
+        <mat-spinner mode="indeterminate"></mat-spinner>
+      </div>
     }
   </mat-drawer-content>
 </mat-drawer-container>

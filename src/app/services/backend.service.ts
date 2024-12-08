@@ -57,7 +57,7 @@ export class BackendService {
     return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
-  getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
+  async getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
     const route = 'findceRNA';
 
     if (version != query.dataset.sponge_db_version) {
@@ -75,7 +75,9 @@ export class BackendService {
       limit: query.maxGenes
     };
 
-    return this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
+    const res = await this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
+
+    return res.filter(cerna => cerna.sponge_run.dataset.dataset_ID === query.dataset.dataset_ID);
   }
 
   getCeRNAInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
