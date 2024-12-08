@@ -10,6 +10,10 @@
           <table>
             @if (geneInfo$.value(); as geneInfo) {
               <tr>
+                <th>Ensembl ID</th>
+                <td>{{ geneInfo.ensg_number }}</td>
+              </tr>
+              <tr>
                 <th>Position</th>
                 <td>{{ geneInfo.chromosome_name }}:{{ geneInfo.start_pos }}-{{ geneInfo.end_pos }}</td>
               </tr>
@@ -34,7 +38,9 @@
               <mat-panel-title>WikiPathways</mat-panel-title>
             </mat-expansion-panel-header>
             @for (pathway of pathways; track pathway) {
-              <a mat-flat-button>{{ pathway.wp_key }}</a>
+              <a [href]="'https://www.wikipathways.org/pathways/' + pathway.wp_key"
+                 target="_blank"
+                 mat-flat-button>{{ pathway.wp_key }}</a>
             }
           </mat-expansion-panel>
         }
@@ -43,9 +49,11 @@
             <mat-expansion-panel-header>
               <mat-panel-title>Hallmarks</mat-panel-title>
             </mat-expansion-panel-header>
-            @for (hallmark of hallmarks; track hallmark) {
-              <a mat-flat-button>{{ hallmark.hallmark }}</a>
-            }
+            <mat-chip-set>
+              @for (hallmark of hallmarks; track hallmark) {
+                <mat-chip>{{ hallmark.hallmark }}</mat-chip>
+              }
+            </mat-chip-set>
           </mat-expansion-panel>
         }
       </mat-accordion>

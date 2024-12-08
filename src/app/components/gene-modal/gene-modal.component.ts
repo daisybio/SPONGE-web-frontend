@@ -11,6 +11,7 @@ import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
+import {MatChip, MatChipSet} from "@angular/material/chips";
 
 @Component({
   selector: 'app-gene-modal',
@@ -23,7 +24,9 @@ import {FormsModule} from "@angular/forms";
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatChipSet,
+    MatChip
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss'
