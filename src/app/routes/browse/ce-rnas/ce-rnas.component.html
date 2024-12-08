@@ -1,27 +1,27 @@
-<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table>
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
 
   <ng-container matColumnDef="ensg_number">
-    <th *matHeaderCellDef mat-header-cell>Ensembl ID</th>
-    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene.ensg_number }}</td>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Ensembl ID</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.ensg_number }}</td>
   </ng-container>
 
   <ng-container matColumnDef="gene_symbol">
-    <th *matHeaderCellDef mat-header-cell>Gene Symbol</th>
-    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene.gene_symbol }}</td>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene Symbol</th>
+    <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.gene_symbol }}</td>
   </ng-container>
 
   <ng-container matColumnDef="betweenness">
-    <th *matHeaderCellDef mat-header-cell>Betweenness</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Betweenness</th>
     <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.betweenness }}</td>
   </ng-container>
 
   <ng-container matColumnDef="eigenvector">
-    <th *matHeaderCellDef mat-header-cell>Eigenvector</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Eigenvector</th>
     <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.eigenvector }}</td>
   </ng-container>
 
   <ng-container matColumnDef="node_degree">
-    <th *matHeaderCellDef mat-header-cell>Degree</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Degree</th>
     <td *matCellDef="let ceRNA" mat-cell>{{ ceRNA.node_degree }}</td>
   </ng-container>
 
