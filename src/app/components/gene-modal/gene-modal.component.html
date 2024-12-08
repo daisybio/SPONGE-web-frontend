@@ -50,22 +50,32 @@
         }
       </mat-accordion>
     </mat-tab>
-    @if (goTerms$.value(); as goTerms) {
-      <mat-tab label="Gene ontology" [disabled]="goTerms.length === 0">
-        <table>
-          <tr>
-            <th>GO term</th>
-            <th>Definition</th>
-          </tr>
-          @for (goTerm of goTerms; track goTerm) {
-            <tr>
-              <td>{{ goTerm.gene_ontology_symbol }}</td>
-              <td>{{ goTerm.description }}</td>
-            </tr>
-          }
-        </table>
-      </mat-tab>
-    }
+    <mat-tab [disabled]="goTerms$.value()?.length === 0" label="Gene ontology">
+      <mat-form-field style="padding: 10px; width: 100%">
+        <mat-label>Search</mat-label>
+        <input [(ngModel)]="goFilter" matInput placeholder="Search for GO terms">
+        <mat-hint>Case insensitive</mat-hint>
+      </mat-form-field>
+      <table [dataSource]="goDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="symbol">
+          <th *matHeaderCellDef mat-header-cell>Link</th>
+          <td *matCellDef="let goTerm" mat-cell>
+            <a [href]="'https://amigo.geneontology.org/amigo/term/' + goTerm.gene_ontology_symbol" mat-flat-button
+               target="_blank">{{ goTerm.gene_ontology_symbol }}</a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th *matHeaderCellDef mat-header-cell>Description</th>
+          <td *matCellDef="let goTerm" mat-cell>{{ goTerm.description }}</td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="columns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5" aria-label="Select page of users"></mat-paginator>
+    </mat-tab>
+
   </mat-tab-group>
 </mat-dialog-content>
 
