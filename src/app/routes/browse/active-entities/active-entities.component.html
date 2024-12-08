@@ -23,6 +23,9 @@
               </tr>
             </table>
           </mat-card-content>
+          <mat-card-actions>
+            <button mat-button (click)="openGeneModal(ceRNA.gene)">View Details</button>
+          </mat-card-actions>
         </mat-card>
       } @empty {
         <p>No active nodes found.</p>
