@@ -81,6 +81,10 @@ export class BrowseService {
     this._query$.set(query);
   }
 
+  rawDataURL() {
+    return computed(() => this._query$()?.dataset?.download_url);
+  }
+
   async fetchData(version: number, config: CeRNAQuery | undefined): Promise<{
     ceRNAs: CeRNA[],
     interactions: CeRNAInteraction[],

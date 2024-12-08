@@ -1,6 +1,11 @@
 <mat-drawer-container style="min-height: 800px">
   <mat-drawer [opened]="true" mode="side" style="padding: 10px">
     <app-form></app-form>
+    @if (rawDataURL$(); as rawDataURL) {
+      <div class="card-container">
+        <a target="_blank" [href]="rawDataURL" mat-flat-button>View raw data</a>
+      </div>
+    }
   </mat-drawer>
   <mat-drawer-content>
     @if (!isLoading$()) {
