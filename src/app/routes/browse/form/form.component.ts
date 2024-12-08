@@ -45,18 +45,8 @@ export class FormComponent {
   protected readonly capitalize = _.capitalize;
 
   constructor(versions: VersionsService, private browseService: BrowseService) {
-    const diseases = versions.diseases$();
-    this.diseaseSubtypeMap = computed(() => {
-      const diseaseSubtypes = new Map<string, Dataset[]>();
-      (diseases.value() || []).forEach(disease => {
-        const diseaseName = disease.disease_name;
-        if (!diseaseSubtypes.has(diseaseName)) {
-          diseaseSubtypes.set(diseaseName, []);
-        }
-        diseaseSubtypes.get(diseaseName)?.push(disease);
-      });
-      return diseaseSubtypes;
-    });
+    this.diseaseSubtypeMap = versions.diseaseSubtypeMap();
+
     this.diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
     this.isLoading$ = this.browseService.isLoading$;
 

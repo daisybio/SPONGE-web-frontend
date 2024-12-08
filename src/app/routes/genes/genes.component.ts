@@ -2,8 +2,10 @@ import {
   AfterViewInit,
   Component,
   computed,
+  effect,
   ElementRef,
   model,
+  ModelSignal,
   resource,
   Resource,
   Signal,
@@ -54,7 +56,9 @@ export class GenesComponent implements AfterViewInit {
   @ViewChild('sunburst') pie!: ElementRef;
   readonly currentInput = model('');
   readonly selectedDisease = model('');
+  readonly selectedSubtype: ModelSignal<Dataset | undefined> = model();
   readonly activeGenes = signal<Gene[]>([]);
+  readonly diseaseSubtypeMap: Signal<Map<string, Dataset[]>>;
   readonly possibleGenes: Resource<Gene[]>;
   readonly onlySignificant = model(true);
   readonly results: Resource<GeneCount[]>;
@@ -67,17 +71,36 @@ export class GenesComponent implements AfterViewInit {
   diseases = computed(() => {
     return this.results.value()?.map(r => r.sponge_run.dataset.disease_name).filter((v, i, a) => a.indexOf(v) === i) || [];
   });
+  possibleSubtypes = computed(() => {
+    return this.diseaseSubtypeMap().get(this.selectedDisease()) || [];
+  });
   plotDataSubject = new ReplaySubject<any>();
 
   protected readonly capitalize = capitalize;
 
   constructor(backend: BackendService, versionsService: VersionsService) {
     const version = versionsService.versionReadOnly();
+    this.diseaseSubtypeMap = versionsService.diseaseSubtypeMap();
 
     const autocompleteQuery = computed(() => {
       return {
         version: version(),
         query: this.currentInput().toLowerCase()
+      }
+    });
+
+    effect(() => {
+      const subtypes = this.possibleSubtypes();
+      console.log(subtypes);
+      if (subtypes.length >= 1) {
+        this.selectedSubtype.set(subtypes[0]);
+      }
+    });
+
+    effect(() => {
+      const diseases = this.diseases();
+      if (diseases.length >= 1) {
+        this.selectedDisease.set(diseases[0]);
       }
     });
 
@@ -115,7 +138,7 @@ export class GenesComponent implements AfterViewInit {
 
     const interactionsQuery = computed(() => {
       return {
-        disease: this.selectedDisease(),
+        disease: this.selectedSubtype(),
         onlySignificant: this.onlySignificant(),
         ensgs: this.activeGenes().map(g => g.ensg_number),
         version: version()
