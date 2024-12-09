@@ -7,8 +7,11 @@
           <mat-expansion-panel-header>
             <mat-panel-title>Gene</mat-panel-title>
           </mat-expansion-panel-header>
-          <table>
-            @if (geneInfo$.value(); as geneInfo) {
+          @if (geneInfo$.isLoading()) {
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+          }
+          @if (geneInfo$.value(); as geneInfo) {
+            <table>
               <tr>
                 <th>Ensembl ID</th>
                 <td>{{ geneInfo.ensg_number }}</td>
@@ -29,8 +32,8 @@
                 <th>Cytoband</th>
                 <td>{{ geneInfo.cytoband }}</td>
               </tr>
-            }
-          </table>
+            </table>
+          }
         </mat-expansion-panel>
         @if (wikipathways$.value(); as pathways) {
           <mat-expansion-panel [disabled]="pathways.length === 0">

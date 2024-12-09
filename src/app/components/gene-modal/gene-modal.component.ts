@@ -12,6 +12,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatChip, MatChipSet} from "@angular/material/chips";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 @Component({
   selector: 'app-gene-modal',
@@ -26,7 +27,8 @@ import {MatChip, MatChipSet} from "@angular/material/chips";
     MatInputModule,
     FormsModule,
     MatChipSet,
-    MatChip
+    MatChip,
+    MatProgressSpinner
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss'
