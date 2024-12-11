@@ -57,7 +57,7 @@ export class BackendService {
     return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
-  async getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
+  getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
     const route = 'findceRNA';
 
     if (version != query.dataset.sponge_db_version) {
@@ -67,6 +67,7 @@ export class BackendService {
     const internalQuery: Query = {
       sponge_db_version: version,
       disease_name: query.dataset.disease_name,
+      dataset_ID: query.dataset.dataset_ID,
       minBetweenness: query.minBetweenness,
       minNodeDegree: query.minDegree,
       minEigenvector: query.minEigen,
@@ -75,9 +76,7 @@ export class BackendService {
       limit: query.maxGenes
     };
 
-    const res = await this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
-
-    return res.filter(cerna => cerna.sponge_run.dataset.dataset_ID === query.dataset.dataset_ID);
+    return this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
   }
 
   async getCeRNAInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
@@ -90,6 +89,7 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(','),
       pValue: maxPValue
     }
@@ -110,10 +110,10 @@ export class BackendService {
       offset += limit;
     } while (data.length === limit);
 
-    return results.filter(interaction => disease.dataset_ID === interaction.sponge_run.dataset.dataset_ID);
+    return results;
   }
 
-  async getCeRNAInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+  getCeRNAInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
     const route = 'ceRNAInteraction/findSpecific';
 
     if (ensgs.length === 0) {
@@ -123,12 +123,12 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(','),
       pValue: maxPValue
     }
 
-    const res = await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
-    return res.filter(interaction => disease.dataset_ID === interaction.sponge_run.dataset.dataset_ID);
+    return this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
   }
 
   async getCeRNAExpression(version: number, ensgs: string[], disease: Dataset): Promise<CeRNAExpression[]> {
@@ -141,6 +141,7 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(',')
     }
 
@@ -152,6 +153,7 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(',')
     }
 
@@ -164,6 +166,7 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(',')
     }
 
