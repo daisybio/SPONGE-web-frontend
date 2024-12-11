@@ -1,18 +1,27 @@
-import {Component, computed, effect, ElementRef, input, OnInit, resource, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, input, OnInit, resource, ResourceRef, ViewChild} from '@angular/core';
 import {CeRNA, Dataset, Gene, SurvivalRate} from "../../../../interfaces";
 import {BackendService} from "../../../../services/backend.service";
 import {MatCardModule} from "@angular/material/card";
 import {compute} from "@fullstax/kaplan-meier-estimator";
 import {VersionsService} from "../../../../services/versions.service";
 import {ReplaySubject} from "rxjs";
+import {MatProgressBar} from "@angular/material/progress-bar";
 
 declare const Plotly: any;
 
+interface CombinedPlotData {
+  overexpressed: any;
+  underexpressed: any;
+  pValue: number;
+  gene: Gene;
+  disease: Dataset;
+}
 
 @Component({
   selector: 'app-kmplot',
   imports: [
-    MatCardModule
+    MatCardModule,
+    MatProgressBar
   ],
   templateUrl: './kmplot.component.html',
   styleUrl: './kmplot.component.scss'
@@ -22,24 +31,29 @@ export class KMPlotComponent implements OnInit {
   disease = input.required<Dataset>()
   @ViewChild("plot") plot!: ElementRef;
 
-  plotData = new ReplaySubject<any>();
+  plotDataResource: ResourceRef<CombinedPlotData | undefined>;
+  plotData = new ReplaySubject<CombinedPlotData | undefined>();
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     const config = computed(() => {
       return {
         gene: this.ceRNA().gene,
-        disease: this.disease().disease_name,
+        disease: this.disease(),
         version: versionsService.versionReadOnly()(),
       }
     });
 
-    const plotDataResource = resource({
+    this.plotDataResource = resource({
       request: config,
       loader: async (param) => {
         const pVals$ = this.backend.getSurvivalPValues(param.request.version, [param.request.gene.ensg_number], param.request.disease);
         const surivialRates$ = this.backend.getSurvivalRates(param.request.version, [param.request.gene.ensg_number], param.request.disease);
 
         const [pVals, survivalRates] = await Promise.all([pVals$, surivialRates$]);
+
+        if (pVals.length === 0) {
+          return undefined;
+        }
 
         const pValue = pVals[0].pValue;
 
@@ -57,7 +71,7 @@ export class KMPlotComponent implements OnInit {
     });
 
     effect(() => {
-      this.plotData.next(plotDataResource.value());
+      this.plotData.next(this.plotDataResource.value());
     });
   }
 
@@ -67,6 +81,10 @@ export class KMPlotComponent implements OnInit {
 
   ngOnInit(): void {
     this.plotData.subscribe((data) => {
+      if (data === undefined) {
+        return;
+      }
+
       const pValue = data.pValue;
 
       Plotly.newPlot(this.plot.nativeElement, [

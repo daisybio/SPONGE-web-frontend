@@ -31,8 +31,8 @@ export class BackendService {
   constructor(private http: HttpService) {
   }
 
-  getDatasets(version: number, diseaseName?: string): Promise<Dataset[]> {
-    const route = 'dataset';
+  async getDatasets(version: number, diseaseName?: string): Promise<Dataset[]> {
+    const route = 'datasets';
 
     const query: Query = {
       sponge_db_version: version
@@ -147,27 +147,27 @@ export class BackendService {
     return await this.http.getRequest<CeRNAExpression[]>(this.getRequestURL(route, query));
   }
 
-  getSurvivalRates(version: number, ensgs: string[], diseaseName: string): Promise<SurvivalRate[]> {
+  getSurvivalRates(version: number, ensgs: string[], disease: Dataset): Promise<SurvivalRate[]> {
     const route = 'survivalAnalysis/getRates';
     const query: Query = {
       sponge_db_version: version,
-      disease_name: diseaseName,
+      disease_name: disease.disease_name,
       ensg_number: ensgs.join(',')
     }
 
     return this.http.getRequest<SurvivalRate[]>(this.getRequestURL(route, query));
   }
 
-  getSurvivalPValues(version: number, ensgs: string[], diseaseName: string): Promise<SurvivalPValue[]> {
+  async getSurvivalPValues(version: number, ensgs: string[], disease: Dataset): Promise<SurvivalPValue[]> {
     const route = 'survivalAnalysis/getPValues';
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: diseaseName,
+      disease_name: disease.disease_name,
       ensg_number: ensgs.join(',')
     }
 
-    return this.http.getRequest<SurvivalPValue[]>(this.getRequestURL(route, query));
+    return (await this.http.getRequest<SurvivalPValue[] | undefined>(this.getRequestURL(route, query))) ?? [];
   }
 
   getAutocomplete(version: number, query: string): Promise<Gene[]> {
