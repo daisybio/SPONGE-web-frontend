@@ -34,17 +34,17 @@
 
   </mat-drawer>
   <mat-drawer-content>
-    @if (isLoading()) {
+    @if (this.results.isLoading()) {
       <div class="spinner-container">
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
       </div>
     }
-    <div [hidden]="isLoading()">
+    <div [hidden]="this.results.isLoading()">
       @if (activeGenes().length > 0) {
 
         <mat-tab-group>
           <mat-tab label="Sunburst chart">
-            <div #sunburst></div>
+            <app-sunburst [onlySignificant]="onlySignificant()" [results]="results.value()"></app-sunburst>
           </mat-tab>
           <mat-tab label="Table">
             <div>
