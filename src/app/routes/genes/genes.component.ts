@@ -47,6 +47,7 @@ export class GenesComponent {
   readonly currentInput = model('');
   readonly selectedDisease = model('');
   readonly selectedSubtype: ModelSignal<Dataset | undefined> = model();
+  readonly onlySignificant = model(true);
 
   readonly activeGenes = signal<Gene[]>([]);
 
@@ -61,7 +62,6 @@ export class GenesComponent {
       return this.backend.getAutocomplete(param.request.version, param.request.query);
     }
   });
-  readonly onlySignificant = model(true);
   readonly results = resource({
     request: computed(() => {
       return {
@@ -95,29 +95,28 @@ export class GenesComponent {
   })
 
   diseases = computed(() => {
-    return this.results.value()?.map(r => r.sponge_run.dataset.disease_name).filter((v, i, a) => a.indexOf(v) === i) || [];
+    return this.results.value()?.map(r => r.sponge_run.dataset.disease_name)
+      .filter((v, i, a) => a.indexOf(v) === i) || [];
   });
   possibleSubtypes = computed(() => {
-    return this.diseaseSubtypeMap().get(this.selectedDisease()) || [];
+    const results = this.results.value();
+    return (this.diseaseSubtypeMap().get(this.selectedDisease()) || [])
+      .filter(d => results?.some(r => r.sponge_run.dataset.dataset_ID === d.dataset_ID));
   });
 
+  diseaseUpdate = effect(() => {
+    const diseases = this.diseases();
+    if (diseases.length >= 1) {
+      this.selectedDisease.set(diseases[0]);
+    }
+  });
+  subTypeUpdate = effect(() => {
+    const subtypes = this.possibleSubtypes();
+    if (subtypes.length >= 1) {
+      this.selectedSubtype.set(subtypes[0]);
+    }
+  });
   protected readonly capitalize = capitalize;
-
-  constructor() {
-    effect(() => {
-      const subtypes = this.possibleSubtypes();
-      if (subtypes.length >= 1) {
-        this.selectedSubtype.set(subtypes[0]);
-      }
-    });
-
-    effect(() => {
-      const diseases = this.diseases();
-      if (diseases.length >= 1) {
-        this.selectedDisease.set(diseases[0]);
-      }
-    });
-  }
 
   remove(gene: Gene): void {
     this.activeGenes.update(genes => {
