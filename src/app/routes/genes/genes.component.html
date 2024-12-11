@@ -76,14 +76,11 @@
                 <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
               </div>
             } @else {
-              @if (interactions$.value(); as interactions) {
-                @if (interactions.length > 0) {
-                  <app-interactions-table [interactions$]="interactions"></app-interactions-table>
-                } @else {
-                  <p>No interactions found.</p>
-                }
+              @let interactions = interactions$.value() ?? [];
+              @if (interactions.length > 0) {
+                <app-interactions-table [interactions$]="interactions"></app-interactions-table>
               } @else {
-                <p>Please select a disease to see the interactions.</p>
+                <p>No interactions found.</p>
               }
             }
           </mat-tab>
