@@ -43,6 +43,7 @@ export class GenesComponent {
 
   readonly version = this.versionsService.versionReadOnly();
   readonly diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
+  readonly tabChange = signal<number>(0);
 
   readonly currentInput = model<string | Gene>('');
   readonly selectedDisease = model('');

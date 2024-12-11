@@ -42,9 +42,10 @@
     <div [hidden]="this.results.isLoading()">
       @if (activeGenes().length > 0) {
 
-        <mat-tab-group>
+        <mat-tab-group [(selectedIndex)]="tabChange">
           <mat-tab label="Sunburst chart">
-            <app-sunburst [onlySignificant]="onlySignificant()" [results]="results.value()"></app-sunburst>
+            <app-sunburst [refresh]="tabChange()" [onlySignificant]="onlySignificant()"
+                          [results]="results.value()"></app-sunburst>
           </mat-tab>
           <mat-tab label="Table">
             <div>

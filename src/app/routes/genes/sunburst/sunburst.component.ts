@@ -17,31 +17,32 @@ export class SunburstComponent {
   versionsService = inject(VersionsService);
   sunburst = viewChild.required<ElementRef<HTMLDivElement>>('sunburst');
   results = input.required<GeneCount[] | undefined>();
+  refresh = input<any>();
   datasets = this.versionsService.diseases$().value;
   onlySignificant = input.required<boolean>();
 
   plotData = computed(() => this.createSunburstData(this.results(), this.datasets(), this.onlySignificant()));
   windowResize = toSignal(fromEvent(window, 'resize'));
 
-  constructor() {
-    effect(() => {
-      this.windowResize();
-      this.resizePlot(this.sunburst().nativeElement);
+  plotResize = effect(async () => {
+    this.windowResize();
+    this.refresh();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    this.resizePlot(this.sunburst().nativeElement);
+  });
+
+  plotDataChange = effect(() => {
+    const plotData = this.plotData();
+    if (!plotData || plotData.labels.length === 1) return;
+
+    const div = this.sunburst().nativeElement;
+
+    Plotly.newPlot(div, [plotData], {
+      margin: {t: 0, l: 0, r: 0, b: 0},
+      height: 900,
     });
-
-    effect(() => {
-      const plotData = this.plotData();
-      if (!plotData || plotData.labels.length === 1) return;
-
-      const div = this.sunburst().nativeElement;
-
-      Plotly.newPlot(div, [plotData], {
-        margin: {t: 0, l: 0, r: 0, b: 0},
-        height: 900,
-      });
-      this.resizePlot(div);
-    });
-  }
+    this.resizePlot(div);
+  });
 
   private resizePlot(div: HTMLDivElement) {
     if (div.checkVisibility()) {
@@ -98,5 +99,4 @@ export class SunburstComponent {
       type: 'sunburst'
     }
   }
-
 }
