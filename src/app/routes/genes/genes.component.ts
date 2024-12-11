@@ -44,7 +44,7 @@ export class GenesComponent {
   readonly version = this.versionsService.versionReadOnly();
   readonly diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
 
-  readonly currentInput = model('');
+  readonly currentInput = model<string | Gene>('');
   readonly selectedDisease = model('');
   readonly selectedSubtype: ModelSignal<Dataset | undefined> = model();
   readonly onlySignificant = model(true);
@@ -53,9 +53,18 @@ export class GenesComponent {
 
   readonly possibleGenes = resource({
     request: computed(() => {
+      const currentInput = this.currentInput();
+
+      let query = '';
+      if (typeof currentInput === 'string') {
+        query = currentInput;
+      } else {
+        query = '';
+      }
+
       return {
         version: this.version(),
-        query: this.currentInput().toLowerCase()
+        query
       }
     }),
     loader: async (param) => {

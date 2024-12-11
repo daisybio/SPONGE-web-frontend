@@ -26,7 +26,7 @@ export class SunburstComponent {
   constructor() {
     effect(() => {
       this.windowResize();
-      Plotly.Plots.resize(this.sunburst().nativeElement);
+      this.resizePlot(this.sunburst().nativeElement);
     });
 
     effect(() => {
@@ -39,8 +39,14 @@ export class SunburstComponent {
         margin: {t: 0, l: 0, r: 0, b: 0},
         height: 900,
       });
-      Plotly.Plots.resize(div);
+      this.resizePlot(div);
     });
+  }
+
+  private resizePlot(div: HTMLDivElement) {
+    if (div.checkVisibility()) {
+      Plotly.Plots.resize(div);
+    }
   }
 
   private createSunburstData(results: GeneCount[] | undefined, datasets: Dataset[] | undefined, onlySignificant: boolean): any {
