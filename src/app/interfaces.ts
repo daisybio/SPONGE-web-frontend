@@ -63,14 +63,14 @@ export interface Gene {
   gene_symbol?: string
 }
 
-export interface CeRNA extends SpongeRun {
+export interface GeneNode extends SpongeRun {
   betweenness: number,
   eigenvector: number,
   gene: Gene,
   node_degree: number
 }
 
-export interface CeRNAInteraction extends SpongeRun {
+export interface GeneInteraction extends SpongeRun {
   "correlation": number,
   "gene1": Gene,
   "gene2": Gene,
@@ -92,7 +92,7 @@ export interface BrowseQuery {
   minMScore: number
 }
 
-export interface CeRNAExpression {
+export interface GeneExpression {
   "dataset": string,
   "expr_value": number,
   "gene": Gene,

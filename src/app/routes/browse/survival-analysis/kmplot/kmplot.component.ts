@@ -1,5 +1,5 @@
 import {Component, computed, effect, ElementRef, input, OnInit, resource, ResourceRef, ViewChild} from '@angular/core';
-import {CeRNA, Dataset, Gene, SurvivalRate} from "../../../../interfaces";
+import {Dataset, Gene, GeneNode, SurvivalRate} from "../../../../interfaces";
 import {BackendService} from "../../../../services/backend.service";
 import {MatCardModule} from "@angular/material/card";
 import {compute} from "@fullstax/kaplan-meier-estimator";
@@ -27,7 +27,7 @@ interface CombinedPlotData {
   styleUrl: './kmplot.component.scss'
 })
 export class KMPlotComponent implements OnInit {
-  ceRNA = input.required<CeRNA>()
+  ceRNA = input.required<GeneNode>()
   disease = input.required<Dataset>()
   @ViewChild("plot") plot!: ElementRef;
 

@@ -1,5 +1,5 @@
 import {computed, effect, Injectable, resource, ResourceRef, Signal, signal} from '@angular/core';
-import {BrowseQuery, CeRNA, CeRNAInteraction, Dataset} from "../interfaces";
+import {BrowseQuery, Dataset, GeneInteraction, GeneNode} from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
@@ -20,17 +20,17 @@ export interface EntityState {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<{
-    ceRNAs: CeRNA[],
-    interactions: CeRNAInteraction[],
+    ceRNAs: GeneNode[],
+    interactions: GeneInteraction[],
     disease: Dataset | undefined
   }>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeCeRNAs$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -39,7 +39,7 @@ export class BrowseService {
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
   activeInteractions$ = computed(() => {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
-    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined) as CeRNAInteraction[];
+    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined) as GeneInteraction[];
   })
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
@@ -86,8 +86,8 @@ export class BrowseService {
   }
 
   async fetchData(version: number, config: BrowseQuery | undefined): Promise<{
-    ceRNAs: CeRNA[],
-    interactions: CeRNAInteraction[],
+    ceRNAs: GeneNode[],
+    interactions: GeneInteraction[],
     disease: Dataset | undefined
   }> {
     if (config === undefined) {
@@ -98,7 +98,7 @@ export class BrowseService {
       }
     }
 
-    const ceRNA$ = this.backend.getCeRNA(version, config);
+    const ceRNA$ = this.backend.getGenes(version, config);
     // const runInfo$ = this.backend.getDatasetInfo(version, config.disease.disease_name);
     const ensgs$ = ceRNA$.then(ceRNAs => ceRNAs.map(ceRNA => ceRNA.gene.ensg_number));
     const interactions$ = ensgs$.then(async (ensgs) =>
@@ -113,7 +113,7 @@ export class BrowseService {
     }
   }
 
-  createGraph(ceRNAs: CeRNA[], interactions: CeRNAInteraction[]): Graph {
+  createGraph(ceRNAs: GeneNode[], interactions: GeneInteraction[]): Graph {
     const graph = new Graph();
 
     ceRNAs.forEach(ceRNA => {
@@ -166,7 +166,7 @@ export class BrowseService {
     });
   }
 
-  getInteractionForEdge(edgeID: string, interactions: CeRNAInteraction[], graph: Graph): CeRNAInteraction[] | undefined {
+  getInteractionForEdge(edgeID: string, interactions: GeneInteraction[], graph: Graph): GeneInteraction[] | undefined {
     const source = graph.source(edgeID);
     const target = graph.target(edgeID);
     return interactions.filter(interaction => {

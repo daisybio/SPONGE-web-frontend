@@ -1,5 +1,5 @@
 import {Component, Signal} from '@angular/core';
-import {CeRNA, Dataset} from "../../../interfaces";
+import {Dataset, GeneNode} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {KMPlotComponent} from "./kmplot/kmplot.component";
 
@@ -12,7 +12,7 @@ import {KMPlotComponent} from "./kmplot/kmplot.component";
   styleUrl: './survival-analysis.component.scss'
 })
 export class SurvivalAnalysisComponent {
-  ceRNAs$: Signal<CeRNA[]>;
+  ceRNAs$: Signal<GeneNode[]>;
   disease$: Signal<Dataset | undefined>;
 
   constructor(browseService: BrowseService) {

@@ -1,5 +1,5 @@
 import {Component, Signal} from '@angular/core';
-import {CeRNAInteraction} from "../../../interfaces";
+import {GeneInteraction} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {InteractionsTableComponent} from "../../../components/interactions-table/interactions-table.component";
 
@@ -10,7 +10,7 @@ import {InteractionsTableComponent} from "../../../components/interactions-table
   styleUrl: './interactions.component.scss'
 })
 export class InteractionsComponent {
-  interactions$: Signal<CeRNAInteraction[]>;
+  interactions$: Signal<GeneInteraction[]>;
 
   constructor(browseService: BrowseService) {
     this.interactions$ = browseService.interactions$;

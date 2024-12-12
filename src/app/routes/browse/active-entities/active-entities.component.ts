@@ -1,7 +1,7 @@
 import {Component, inject, Signal} from '@angular/core';
 import {MatTabsModule} from "@angular/material/tabs";
 import {BrowseService} from "../../../services/browse.service";
-import {CeRNA, CeRNAInteraction, Gene} from "../../../interfaces";
+import {Gene, GeneInteraction, GeneNode} from "../../../interfaces";
 import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {GeneModalComponent} from "../../../components/gene-modal/gene-modal.component";
@@ -18,8 +18,8 @@ import {MatButton} from "@angular/material/button";
   styleUrl: './active-entities.component.scss'
 })
 export class ActiveEntitiesComponent {
-  nodes$: Signal<CeRNA[]>
-  edges$: Signal<CeRNAInteraction[]>
+  nodes$: Signal<GeneNode[]>
+  edges$: Signal<GeneInteraction[]>
   readonly dialog = inject(MatDialog);
 
   constructor(browseService: BrowseService) {

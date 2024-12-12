@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, inject, ViewChild} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
-import {CeRNA, Gene} from "../../../interfaces";
+import {Gene, GeneNode} from "../../../interfaces";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort, MatSortHeader} from "@angular/material/sort";
@@ -19,7 +19,7 @@ export class NodesComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   columns = ["gene_symbol", "betweenness", "eigenvector", "node_degree"];
-  dataSource: MatTableDataSource<CeRNA>;
+  dataSource: MatTableDataSource<GeneNode>;
   readonly dialog = inject(MatDialog);
 
   constructor(browseService: BrowseService) {

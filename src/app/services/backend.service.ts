@@ -2,13 +2,13 @@ import {Injectable} from '@angular/core';
 import {HttpService} from "./http.service";
 import {
   BrowseQuery,
-  CeRNA,
-  CeRNAExpression,
-  CeRNAInteraction,
   Dataset,
   Gene,
   GeneCount,
+  GeneExpression,
   GeneInfo,
+  GeneInteraction,
+  GeneNode,
   GOTerm,
   Hallmark,
   OverallCounts,
@@ -57,7 +57,7 @@ export class BackendService {
     return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
-  getCeRNA(version: number, query: BrowseQuery): Promise<CeRNA[]> {
+  getGenes(version: number, query: BrowseQuery): Promise<GeneNode[]> {
     const route = 'findceRNA';
 
     if (version != query.dataset.sponge_db_version) {
@@ -76,10 +76,10 @@ export class BackendService {
       limit: query.maxGenes
     };
 
-    return this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
+    return this.http.getRequest<GeneNode[]>(this.getRequestURL(route, internalQuery));
   }
 
-  async getGeneInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+  async getGeneInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<GeneInteraction[]> {
     const route = 'ceRNAInteraction/findAll';
 
     if (ensgs.length === 0 || !disease || version != disease.sponge_db_version) {
@@ -94,14 +94,14 @@ export class BackendService {
       pValue: maxPValue
     }
 
-    const results: CeRNAInteraction[] = []
+    const results: GeneInteraction[] = []
     const limit = 1000;
     let offset = 0;
 
-    let data: CeRNAInteraction[];
+    let data: GeneInteraction[];
 
     do {
-      data = await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, {
+      data = await this.http.getRequest<GeneInteraction[]>(this.getRequestURL(route, {
         ...query,
         limit,
         offset
@@ -113,7 +113,7 @@ export class BackendService {
     return results;
   }
 
-  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<GeneInteraction[]> {
     const route = 'ceRNAInteraction/findSpecific';
 
     if (ensgs.length === 0) {
@@ -128,10 +128,10 @@ export class BackendService {
       pValue: maxPValue
     }
 
-    return this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<GeneInteraction[]>(this.getRequestURL(route, query));
   }
 
-  async getGeneExpression(version: number, ensgs: string[], disease: Dataset): Promise<CeRNAExpression[]> {
+  async getGeneExpression(version: number, ensgs: string[], disease: Dataset): Promise<GeneExpression[]> {
     const route = 'exprValue/getceRNA';
 
     if (ensgs.length === 0) {
@@ -145,7 +145,7 @@ export class BackendService {
       ensg_number: ensgs.join(',')
     }
 
-    return await this.http.getRequest<CeRNAExpression[]>(this.getRequestURL(route, query));
+    return await this.http.getRequest<GeneExpression[]>(this.getRequestURL(route, query));
   }
 
   getSurvivalRates(version: number, ensgs: string[], disease: Dataset): Promise<SurvivalRate[]> {

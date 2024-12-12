@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, computed, inject, input, ViewChild} from '@angular/core';
-import {CeRNAInteraction, Gene} from "../../interfaces";
+import {Gene, GeneInteraction} from "../../interfaces";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatSort, MatSortHeader} from "@angular/material/sort";
@@ -24,7 +24,7 @@ import {MatTooltip} from "@angular/material/tooltip";
 export class InteractionsTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  interactions$ = input<CeRNAInteraction[]>();
+  interactions$ = input<GeneInteraction[]>();
   readonly dialog = inject(MatDialog);
 
   columns = ["gene_1", "gene_2", "correlation", "mscor", "padj"];
