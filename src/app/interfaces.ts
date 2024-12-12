@@ -79,6 +79,7 @@ export interface CeRNAInteraction extends SpongeRun {
 }
 
 export interface BrowseQuery {
+  level: 'gene' | 'transcript',
   dataset: Dataset,
   geneSorting: GeneSorting,
   maxGenes: number,

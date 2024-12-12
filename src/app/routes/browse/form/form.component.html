@@ -19,7 +19,7 @@
   }
 
   <div class="card-container">
-    <mat-button-toggle-group [(value)]="level$">
+    <mat-button-toggle-group formControlName="level">
       <mat-button-toggle value="gene">Genes</mat-button-toggle>
       <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
     </mat-button-toggle-group>

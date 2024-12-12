@@ -28,7 +28,6 @@ import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-to
 export class FormComponent {
   versionsService = inject(VersionsService);
   browseService = inject(BrowseService);
-  level$ = this.browseService.level$;
   diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
   diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
   geneSortings = GeneSorting;
@@ -36,6 +35,7 @@ export class FormComponent {
   formGroup = new FormGroup({
     disease: new FormControl<string>(''),
     dataset: new FormControl<Dataset | undefined>(undefined),
+    level: new FormControl<'gene' | 'transcript'>('gene'),
     geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
     maxGenes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),

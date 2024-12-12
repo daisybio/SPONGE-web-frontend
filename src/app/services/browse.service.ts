@@ -20,8 +20,6 @@ export interface EntityState {
   providedIn: 'root'
 })
 export class BrowseService {
-  readonly level$ = signal<'gene' | 'transcript'>('gene');
-  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<{
@@ -32,6 +30,7 @@ export class BrowseService {
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeCeRNAs$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
