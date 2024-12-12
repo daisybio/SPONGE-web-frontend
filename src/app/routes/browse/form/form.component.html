@@ -19,7 +19,7 @@
   }
 
   <div class="card-container">
-    <mat-button-toggle-group>
+    <mat-button-toggle-group [(value)]="level$">
       <mat-button-toggle value="gene">Genes</mat-button-toggle>
       <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
     </mat-button-toggle-group>
@@ -28,7 +28,7 @@
   <mat-accordion>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
-        <mat-panel-title>Genes</mat-panel-title>
+        <mat-panel-title>Nodes</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline">
         <mat-label>Sort by</mat-label>

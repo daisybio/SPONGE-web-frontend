@@ -10,12 +10,12 @@ import {GeneModalComponent} from "../../../components/gene-modal/gene-modal.comp
 import {MatTooltip} from "@angular/material/tooltip";
 
 @Component({
-  selector: 'app-ce-rnas',
+  selector: 'app-nodes',
   imports: [MatTableModule, MatPaginator, MatSort, MatSortHeader, MatButton, MatTooltip],
-  templateUrl: './ce-rnas.component.html',
-  styleUrl: './ce-rnas.component.scss'
+  templateUrl: './nodes.component.html',
+  styleUrl: './nodes.component.scss'
 })
-export class CeRNAsComponent implements AfterViewInit {
+export class NodesComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   columns = ["gene_symbol", "betweenness", "eigenvector", "node_degree"];

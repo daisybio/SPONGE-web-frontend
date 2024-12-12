@@ -11,7 +11,7 @@
     @if (!isLoading$()) {
       @if (hasData$()) {
         <mat-tab-group [preserveContent]="false" (selectedTabChange)="tabChange.set($event.index)">
-          <mat-tab label="Gene network">
+          <mat-tab label="Network">
             <div style="display: flex; flex-direction: row">
               <app-network [refreshSignal]="tabChange()" style="min-width: 500px; flex-grow: 3"></app-network>
               <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
@@ -25,8 +25,8 @@
           <mat-tab label="Expression heatmap">
             <app-heatmap [refreshSignal]="tabChange()"></app-heatmap>
           </mat-tab>
-          <mat-tab label="Genes">
-            <app-ce-rnas></app-ce-rnas>
+          <mat-tab label="Nodes">
+            <app-nodes></app-nodes>
           </mat-tab>
           <mat-tab label="Interactions">
             <app-interactions></app-interactions>

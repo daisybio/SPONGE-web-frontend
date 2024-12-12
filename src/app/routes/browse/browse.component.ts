@@ -4,7 +4,6 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {ReactiveFormsModule} from "@angular/forms";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormComponent} from "./form/form.component";
-import {CeRNAsComponent} from "./ce-rnas/ce-rnas.component";
 import {InteractionsComponent} from "./interactions/interactions.component";
 import {NetworkComponent} from "./network/network.component";
 import {HeatmapComponent} from "./heatmap/heatmap.component";
@@ -15,6 +14,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
+import {NodesComponent} from "./nodes/nodes.component";
 
 @Component({
   selector: 'app-browse',
@@ -24,7 +24,6 @@ import {VersionsService} from "../../services/versions.service";
     ReactiveFormsModule,
     MatExpansionModule,
     FormComponent,
-    CeRNAsComponent,
     InteractionsComponent,
     NetworkComponent,
     HeatmapComponent,
@@ -32,7 +31,8 @@ import {VersionsService} from "../../services/versions.service";
     ActiveEntitiesComponent,
     MatProgressSpinnerModule,
     MatIcon,
-    MatAnchor
+    MatAnchor,
+    NodesComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
