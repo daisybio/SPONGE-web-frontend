@@ -1,7 +1,7 @@
-import {Component, Signal} from '@angular/core';
-import {Dataset, GeneNode} from "../../../interfaces";
+import {Component, inject, Signal} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
 import {KMPlotComponent} from "./kmplot/kmplot.component";
+import {GeneNode} from "../../../interfaces";
 
 @Component({
   selector: 'app-survival-analysis',
@@ -12,11 +12,7 @@ import {KMPlotComponent} from "./kmplot/kmplot.component";
   styleUrl: './survival-analysis.component.scss'
 })
 export class SurvivalAnalysisComponent {
-  ceRNAs$: Signal<GeneNode[]>;
-  disease$: Signal<Dataset | undefined>;
-
-  constructor(browseService: BrowseService) {
-    this.ceRNAs$ = browseService.activeCeRNAs$;
-    this.disease$ = browseService.disease$;
-  }
+  browseService = inject(BrowseService);
+  nodes$ = this.browseService.activeNodes$ as Signal<GeneNode[]>;
+  disease$ = this.browseService.disease$;
 }

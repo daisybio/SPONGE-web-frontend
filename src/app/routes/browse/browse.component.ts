@@ -41,8 +41,9 @@ export class BrowseComponent {
   tabChange = signal(0);
   versionService = inject(VersionsService);
   browseService = inject(BrowseService);
+  level = this.browseService.level$;
   version$ = this.versionService.versionReadOnly();
-  hasData$ = computed(() => this.browseService.ceRNAs$().length > 0);
+  hasData$ = computed(() => this.browseService.nodes$().length > 0);
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();
 }

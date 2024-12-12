@@ -1,7 +1,7 @@
 @if (disease$(); as disease) {
   <div class="card-container">
-    @for (ceRNA of ceRNAs$(); track ceRNA.gene.ensg_number) {
-      <app-kmplot [disease]="disease" [ceRNA]="ceRNA"></app-kmplot>
+    @for (node of nodes$(); track node) {
+      <app-kmplot [disease]="disease" [gene]="node"></app-kmplot>
     } @empty {
       <p style="margin-top: 50px">
         Please select nodes in the gene network to see the survival analysis.

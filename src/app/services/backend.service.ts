@@ -15,6 +15,8 @@ import {
   RunInfo,
   SurvivalPValue,
   SurvivalRate,
+  TranscriptInteraction,
+  TranscriptNode,
   WikiPathway
 } from "../interfaces";
 
@@ -57,8 +59,9 @@ export class BackendService {
     return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
-  getGenes(version: number, query: BrowseQuery): Promise<GeneNode[]> {
-    const route = 'findceRNA';
+  getNodes(version: number, query: BrowseQuery): Promise<(GeneNode | TranscriptNode)[]> {
+    const level = query.level;
+    const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
 
     if (version != query.dataset.sponge_db_version) {
       return Promise.resolve([]);
@@ -76,7 +79,7 @@ export class BackendService {
       limit: query.maxGenes
     };
 
-    return this.http.getRequest<GeneNode[]>(this.getRequestURL(route, internalQuery));
+    return this.http.getRequest<(GeneNode | TranscriptNode)[]>(this.getRequestURL(route, internalQuery));
   }
 
   async getGeneInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<GeneInteraction[]> {
@@ -113,10 +116,10 @@ export class BackendService {
     return results;
   }
 
-  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<GeneInteraction[]> {
-    const route = 'ceRNAInteraction/findSpecific';
+  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, identifiers: string[], level: 'gene' | 'transcript'): Promise<(GeneInteraction | TranscriptInteraction)[]> {
+    const route = level == 'gene' ? 'ceRNAInteraction/findSpecific' : 'ceRNAInteraction/findSpecificTranscripts';
 
-    if (ensgs.length === 0) {
+    if (identifiers.length === 0) {
       return Promise.resolve([]);
     }
 
@@ -124,25 +127,35 @@ export class BackendService {
       sponge_db_version: version,
       disease_name: disease.disease_name,
       dataset_ID: disease.dataset_ID,
-      ensg_number: ensgs.join(','),
       pValue: maxPValue
     }
 
-    return this.http.getRequest<GeneInteraction[]>(this.getRequestURL(route, query));
+    if (level == 'gene') {
+      query['ensg_number'] = identifiers.join(',');
+    } else {
+      query['enst_number'] = identifiers.join(',');
+    }
+
+    return this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(this.getRequestURL(route, query));
   }
 
-  async getGeneExpression(version: number, ensgs: string[], disease: Dataset): Promise<GeneExpression[]> {
-    const route = 'exprValue/getceRNA';
+  async getGeneExpression(version: number, identifiers: string[], disease: Dataset, level: 'gene' | 'transcript'): Promise<GeneExpression[]> {
+    const route = level == 'gene' ? 'exprValue/getceRNA' : 'exprValue/getTranscriptExpr';
 
-    if (ensgs.length === 0) {
+    if (identifiers.length === 0) {
       return Promise.resolve([]);
     }
 
     const query: Query = {
       sponge_db_version: version,
       disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
-      ensg_number: ensgs.join(',')
+      dataset_ID: disease.dataset_ID
+    }
+
+    if (level == 'gene') {
+      query['ensg_number'] = identifiers.join(',');
+    } else {
+      query['enst_number'] = identifiers.join(',');
     }
 
     return await this.http.getRequest<GeneExpression[]>(this.getRequestURL(route, query));

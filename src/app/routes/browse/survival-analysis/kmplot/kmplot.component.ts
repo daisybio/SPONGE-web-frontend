@@ -27,7 +27,7 @@ interface CombinedPlotData {
   styleUrl: './kmplot.component.scss'
 })
 export class KMPlotComponent implements OnInit {
-  ceRNA = input.required<GeneNode>()
+  gene = input.required<GeneNode>()
   disease = input.required<Dataset>()
   @ViewChild("plot") plot!: ElementRef;
 
@@ -35,16 +35,14 @@ export class KMPlotComponent implements OnInit {
   plotData = new ReplaySubject<CombinedPlotData | undefined>();
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
-    const config = computed(() => {
-      return {
-        gene: this.ceRNA().gene,
-        disease: this.disease(),
-        version: versionsService.versionReadOnly()(),
-      }
-    });
-
     this.plotDataResource = resource({
-      request: config,
+      request: computed(() => {
+        return {
+          gene: this.gene().gene,
+          disease: this.disease(),
+          version: versionsService.versionReadOnly()(),
+        }
+      }),
       loader: async (param) => {
         const pVals$ = this.backend.getSurvivalPValues(param.request.version, [param.request.gene.ensg_number], param.request.disease);
         const surivialRates$ = this.backend.getSurvivalRates(param.request.version, [param.request.gene.ensg_number], param.request.disease);

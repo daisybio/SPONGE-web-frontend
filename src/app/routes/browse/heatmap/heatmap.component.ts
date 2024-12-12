@@ -29,25 +29,25 @@ export class HeatmapComponent implements AfterViewInit, OnDestroy {
   plotData$ = new ReplaySubject();
 
   constructor(browseService: BrowseService, backend: BackendService, versions: VersionsService) {
-    const query = computed(() => {
-      return {
-        ceRNAs: browseService.ceRNAs$(),
-        disease: browseService.disease$(),
-        version: versions.versionReadOnly()()
-      }
-    })
-
     const plotData = resource({
-      request: query,
+      request: computed(() => {
+        return {
+          nodes: browseService.nodes$(),
+          disease: browseService.disease$(),
+          level: browseService.level$(),
+          version: versions.versionReadOnly()()
+        }
+      }),
       loader: async (param) => {
-        const ceRNAs = param.request.ceRNAs;
+        const nodes = param.request.nodes;
         const disease = param.request.disease;
         const version = param.request.version;
-        if (ceRNAs === undefined || disease === undefined) return;
+        const level = param.request.level;
+        if (nodes === undefined || disease === undefined || level === undefined) return;
 
-        const ensgs = ceRNAs.map(ceRNA => ceRNA.gene.ensg_number);
+        const identifiers = nodes.map(node => BrowseService.getNodeID(node));
 
-        const expression = await backend.getGeneExpression(version, ensgs, disease);
+        const expression = await backend.getGeneExpression(version, identifiers, disease, level);
 
         const expressionMap = new Map<string, Map<string, number>>();
         const samples = new Set<string>();

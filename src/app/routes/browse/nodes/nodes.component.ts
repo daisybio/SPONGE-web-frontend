@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, inject, ViewChild} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
-import {Gene, GeneNode} from "../../../interfaces";
+import {Gene, GeneNode, TranscriptNode} from "../../../interfaces";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort, MatSortHeader} from "@angular/material/sort";
@@ -18,18 +18,18 @@ import {MatTooltip} from "@angular/material/tooltip";
 export class NodesComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  columns = ["gene_symbol", "betweenness", "eigenvector", "node_degree"];
-  dataSource: MatTableDataSource<GeneNode>;
+  columns = ["identifier", "betweenness", "eigenvector", "node_degree"];
+  dataSource: MatTableDataSource<GeneNode | TranscriptNode>;
   readonly dialog = inject(MatDialog);
 
   constructor(browseService: BrowseService) {
-    this.dataSource = new MatTableDataSource<any>(browseService.ceRNAs$().map(ceRNA => {
+    this.dataSource = new MatTableDataSource<any>(browseService.nodes$().map(node => {
       return {
-        gene_symbol: ceRNA.gene.gene_symbol || ceRNA.gene.ensg_number,
-        betweenness: ceRNA.betweenness,
-        eigenvector: ceRNA.eigenvector,
-        node_degree: ceRNA.node_degree,
-        gene: ceRNA.gene
+        identifier: BrowseService.getNodePrettyName(node),
+        betweenness: node.betweenness,
+        eigenvector: node.eigenvector,
+        node_degree: node.node_degree,
+        obj: 'gene' in node ? node.gene : node.transcript
       }
     }));
   }

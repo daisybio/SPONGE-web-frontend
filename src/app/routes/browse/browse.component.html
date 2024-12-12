@@ -17,7 +17,7 @@
               <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
             </div>
           </mat-tab>
-          @if (version$() === 1) {
+          @if (version$() === 1 && level() == 'gene') {
             <mat-tab label="Survival analysis">
               <app-survival-analysis></app-survival-analysis>
             </mat-tab>

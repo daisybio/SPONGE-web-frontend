@@ -1,5 +1,14 @@
 import {computed, effect, Injectable, resource, ResourceRef, Signal, signal} from '@angular/core';
-import {BrowseQuery, Dataset, GeneInteraction, GeneNode} from "../interfaces";
+import {
+  BrowseQuery,
+  Dataset,
+  Gene,
+  GeneInteraction,
+  GeneNode,
+  Transcript,
+  TranscriptInteraction,
+  TranscriptNode
+} from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
@@ -16,25 +25,27 @@ export interface EntityState {
   [State.Active]: boolean;
 }
 
+interface NetworkData {
+  nodes: (GeneNode | TranscriptNode)[],
+  interactions: (GeneInteraction | TranscriptInteraction)[],
+  disease: Dataset | undefined
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class BrowseService {
-  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
-  private readonly _currentData$: ResourceRef<{
-    ceRNAs: GeneNode[],
-    interactions: GeneInteraction[],
-    disease: Dataset | undefined
-  }>;
+  private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
-  readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
+  readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
-  activeCeRNAs$ = computed(() => {
+  activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
-    return this.ceRNAs$().filter(ceRNA => activeNodeIDs.includes(ceRNA.gene.ensg_number));
+    return this.nodes$().filter(node => activeNodeIDs.includes(BrowseService.getNodeID(node)));
   });
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
   activeInteractions$ = computed(() => {
@@ -77,6 +88,40 @@ export class BrowseService {
     return this._currentData$.isLoading;
   }
 
+  get level$(): Signal<'gene' | 'transcript' | undefined> {
+    return computed(() => this._query$()?.level);
+  }
+
+  public static getNodeID(node: GeneNode | TranscriptNode): string {
+    return 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number;
+  }
+
+  public static getNodePrettyName(node: GeneNode | TranscriptNode): string {
+    return 'gene' in node ? node.gene.gene_symbol || node.gene.ensg_number : node.transcript.enst_number;
+  }
+
+  public static getNodeObject(node: GeneNode | TranscriptNode): Gene | Transcript {
+    return 'gene' in node ? node.gene : node.transcript;
+  }
+
+  public static getInteractionIDs(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
+    return 'gene1' in interaction ?
+      [interaction.gene1.ensg_number, interaction.gene2.ensg_number] :
+      [interaction.transcript1.enst_number, interaction.transcript2.enst_number];
+  }
+
+  public static getInteractionPrettyNames(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
+    return 'gene1' in interaction ?
+      [interaction.gene1.gene_symbol || interaction.gene1.ensg_number, interaction.gene2.gene_symbol || interaction.gene2.ensg_number] :
+      [interaction.transcript1.enst_number, interaction.transcript2.enst_number];
+  }
+
+  public static getInteractionObjects(interaction: GeneInteraction | TranscriptInteraction): [Gene, Gene] | [Transcript, Transcript] {
+    return 'gene1' in interaction ?
+      [interaction.gene1, interaction.gene2] :
+      [interaction.transcript1, interaction.transcript2];
+  }
+
   runQuery(query: BrowseQuery) {
     this._query$.set(query);
   }
@@ -85,51 +130,46 @@ export class BrowseService {
     return computed(() => this._query$()?.dataset?.download_url);
   }
 
-  async fetchData(version: number, config: BrowseQuery | undefined): Promise<{
-    ceRNAs: GeneNode[],
-    interactions: GeneInteraction[],
-    disease: Dataset | undefined
-  }> {
+  async fetchData(version: number, config: BrowseQuery | undefined): Promise<NetworkData> {
     if (config === undefined) {
       return {
-        ceRNAs: [],
+        nodes: [],
         interactions: [],
         disease: undefined
       }
     }
 
-    const ceRNA$ = this.backend.getGenes(version, config);
-    // const runInfo$ = this.backend.getDatasetInfo(version, config.disease.disease_name);
-    const ensgs$ = ceRNA$.then(ceRNAs => ceRNAs.map(ceRNA => ceRNA.gene.ensg_number));
-    const interactions$ = ensgs$.then(async (ensgs) =>
-      await this.backend.getGeneInteractionsSpecific(version, config.dataset, config.maxPValue, ensgs));
-
-    const [ceRNAs, interactions] = await Promise.all([ceRNA$, interactions$]);
+    const nodes = await this.backend.getNodes(version, config);
+    // Get gene IDs or transcript IDs respectively
+    const identifiers = nodes.map(node => 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number);
+    const interactions =
+      await this.backend.getGeneInteractionsSpecific(version, config.dataset, config.maxPValue, identifiers, config.level);
 
     return {
-      ceRNAs,
+      nodes,
       interactions,
       disease: config.dataset
     }
   }
 
-  createGraph(ceRNAs: GeneNode[], interactions: GeneInteraction[]): Graph {
+  createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
     const graph = new Graph();
 
-    ceRNAs.forEach(ceRNA => {
-      graph.addNode(ceRNA.gene.ensg_number, {
-        label: ceRNA.gene.gene_symbol || ceRNA.gene.ensg_number,
+    nodes.forEach(node => {
+      graph.addNode(BrowseService.getNodeID(node), {
+        label: BrowseService.getNodePrettyName(node),
         x: Math.random(), // Coordinates will be overridden by the layout algorithm
         y: Math.random(),
-        size: Math.log(ceRNA.node_degree)
+        size: Math.log(node.node_degree)
       });
     });
 
     interactions.forEach(interaction => {
-      if (graph.hasEdge(interaction.gene1.ensg_number, interaction.gene2.ensg_number)) {
+      const ids = BrowseService.getInteractionIDs(interaction);
+      if (graph.hasEdge(ids[0], ids[1])) {
         return;
       }
-      graph.addEdge(interaction.gene1.ensg_number, interaction.gene2.ensg_number);
+      graph.addEdge(ids[0], ids[1]);
     });
 
     forceAtlas2.assign(graph, {
@@ -166,12 +206,13 @@ export class BrowseService {
     });
   }
 
-  getInteractionForEdge(edgeID: string, interactions: GeneInteraction[], graph: Graph): GeneInteraction[] | undefined {
+  getInteractionForEdge(edgeID: string, interactions: (GeneInteraction | TranscriptInteraction)[], graph: Graph): (GeneInteraction | TranscriptInteraction)[] {
     const source = graph.source(edgeID);
     const target = graph.target(edgeID);
     return interactions.filter(interaction => {
-      return (interaction.gene1.ensg_number === source && interaction.gene2.ensg_number === target) ||
-        (interaction.gene1.ensg_number === target && interaction.gene2.ensg_number === source);
+      const ids = BrowseService.getInteractionIDs(interaction);
+      return (ids[0] === source && ids[1] === target) ||
+        (ids[0] === target && ids[1] === source);
     });
   }
 }
