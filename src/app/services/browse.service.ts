@@ -21,6 +21,7 @@ export interface EntityState {
 })
 export class BrowseService {
   readonly level$ = signal<'gene' | 'transcript'>('gene');
+  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<{
@@ -31,7 +32,6 @@ export class BrowseService {
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeCeRNAs$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -103,7 +103,7 @@ export class BrowseService {
     // const runInfo$ = this.backend.getDatasetInfo(version, config.disease.disease_name);
     const ensgs$ = ceRNA$.then(ceRNAs => ceRNAs.map(ceRNA => ceRNA.gene.ensg_number));
     const interactions$ = ensgs$.then(async (ensgs) =>
-      await this.backend.getCeRNAInteractionsSpecific(version, config.dataset, config.maxPValue, ensgs));
+      await this.backend.getGeneInteractionsSpecific(version, config.dataset, config.maxPValue, ensgs));
 
     const [ceRNAs, interactions] = await Promise.all([ceRNA$, interactions$]);
 

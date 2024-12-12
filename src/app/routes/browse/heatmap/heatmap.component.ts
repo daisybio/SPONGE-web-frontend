@@ -47,7 +47,7 @@ export class HeatmapComponent implements AfterViewInit, OnDestroy {
 
         const ensgs = ceRNAs.map(ceRNA => ceRNA.gene.ensg_number);
 
-        const expression = await backend.getCeRNAExpression(version, ensgs, disease);
+        const expression = await backend.getGeneExpression(version, ensgs, disease);
 
         const expressionMap = new Map<string, Map<string, number>>();
         const samples = new Set<string>();

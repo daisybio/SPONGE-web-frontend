@@ -79,7 +79,7 @@ export class BackendService {
     return this.http.getRequest<CeRNA[]>(this.getRequestURL(route, internalQuery));
   }
 
-  async getCeRNAInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+  async getGeneInteractionsAll(version: number, disease: Dataset | undefined, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
     const route = 'ceRNAInteraction/findAll';
 
     if (ensgs.length === 0 || !disease || version != disease.sponge_db_version) {
@@ -113,7 +113,7 @@ export class BackendService {
     return results;
   }
 
-  getCeRNAInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
+  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
     const route = 'ceRNAInteraction/findSpecific';
 
     if (ensgs.length === 0) {
@@ -131,7 +131,7 @@ export class BackendService {
     return this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query));
   }
 
-  async getCeRNAExpression(version: number, ensgs: string[], disease: Dataset): Promise<CeRNAExpression[]> {
+  async getGeneExpression(version: number, ensgs: string[], disease: Dataset): Promise<CeRNAExpression[]> {
     const route = 'exprValue/getceRNA';
 
     if (ensgs.length === 0) {

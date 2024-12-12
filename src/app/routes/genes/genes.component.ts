@@ -95,7 +95,7 @@ export class GenesComponent {
       }
     }),
     loader: async (param) => {
-      return this.backend.getCeRNAInteractionsAll(
+      return this.backend.getGeneInteractionsAll(
         param.request.version,
         param.request.disease,
         param.request.onlySignificant ? 0.05 : 1,
