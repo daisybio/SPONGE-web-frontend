@@ -63,10 +63,22 @@ export interface Gene {
   gene_symbol?: string
 }
 
+export interface Transcript {
+  enst_number: string,
+  gene: Gene
+}
+
 export interface GeneNode extends SpongeRun {
   betweenness: number,
   eigenvector: number,
   gene: Gene,
+  node_degree: number
+}
+
+export interface TranscriptNode extends SpongeRun {
+  betweenness: number,
+  eigenvector: number,
+  transcript: Transcript,
   node_degree: number
 }
 
@@ -76,6 +88,14 @@ export interface GeneInteraction extends SpongeRun {
   "gene2": Gene,
   "mscor": number,
   "p_value": number,
+}
+
+export interface TranscriptInteraction extends SpongeRun {
+  "correlation": number,
+  "mscor": number,
+  "p_value": number,
+  "transcript1": Transcript,
+  "transcript2": Transcript
 }
 
 export interface BrowseQuery {
@@ -97,6 +117,13 @@ export interface GeneExpression {
   "expr_value": number,
   "gene": Gene,
   "sample_ID": string
+}
+
+export interface TranscriptExpression {
+  "dataset": string,
+  "expr_value": number,
+  "sample_ID": string,
+  "transcript": Transcript
 }
 
 export interface SurvivalRate {
