@@ -1,5 +1,5 @@
 import {computed, effect, Injectable, resource, ResourceRef, Signal, signal} from '@angular/core';
-import {CeRNA, CeRNAInteraction, CeRNAQuery, Dataset} from "../interfaces";
+import {BrowseQuery, CeRNA, CeRNAInteraction, Dataset} from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
@@ -21,8 +21,7 @@ export interface EntityState {
 })
 export class BrowseService {
   readonly level$ = signal<'gene' | 'transcript'>('gene');
-  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
-  private readonly _query$ = signal<CeRNAQuery | undefined>(undefined);
+  private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<{
     ceRNAs: CeRNA[],
@@ -32,6 +31,7 @@ export class BrowseService {
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly ceRNAs$ = computed(() => this._currentData$.value()?.ceRNAs || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.ceRNAs$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeCeRNAs$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -78,7 +78,7 @@ export class BrowseService {
     return this._currentData$.isLoading;
   }
 
-  runQuery(query: CeRNAQuery) {
+  runQuery(query: BrowseQuery) {
     this._query$.set(query);
   }
 
@@ -86,7 +86,7 @@ export class BrowseService {
     return computed(() => this._query$()?.dataset?.download_url);
   }
 
-  async fetchData(version: number, config: CeRNAQuery | undefined): Promise<{
+  async fetchData(version: number, config: BrowseQuery | undefined): Promise<{
     ceRNAs: CeRNA[],
     interactions: CeRNAInteraction[],
     disease: Dataset | undefined

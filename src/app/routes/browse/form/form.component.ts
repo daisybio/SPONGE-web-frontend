@@ -4,7 +4,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
-import {CeRNAQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
+import {BrowseQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
 import {toSignal} from "@angular/core/rxjs-interop";
@@ -78,7 +78,7 @@ export class FormComponent {
   constructor() {
     this.formGroup.valueChanges.subscribe((config) => {
       config.dataset = this.formGroup.get('dataset')?.value as Dataset;
-      this.browseService.runQuery(config as CeRNAQuery);
+      this.browseService.runQuery(config as BrowseQuery);
     })
   }
 

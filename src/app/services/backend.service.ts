@@ -1,10 +1,10 @@
 import {Injectable} from '@angular/core';
 import {HttpService} from "./http.service";
 import {
+  BrowseQuery,
   CeRNA,
   CeRNAExpression,
   CeRNAInteraction,
-  CeRNAQuery,
   Dataset,
   Gene,
   GeneCount,
@@ -57,7 +57,7 @@ export class BackendService {
     return this.http.getRequest<OverallCounts[]>(this.getRequestURL(route, query));
   }
 
-  getCeRNA(version: number, query: CeRNAQuery): Promise<CeRNA[]> {
+  getCeRNA(version: number, query: BrowseQuery): Promise<CeRNA[]> {
     const route = 'findceRNA';
 
     if (version != query.dataset.sponge_db_version) {

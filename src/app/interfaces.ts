@@ -78,7 +78,7 @@ export interface CeRNAInteraction extends SpongeRun {
   "p_value": number,
 }
 
-export interface CeRNAQuery {
+export interface BrowseQuery {
   dataset: Dataset,
   geneSorting: GeneSorting,
   maxGenes: number,
