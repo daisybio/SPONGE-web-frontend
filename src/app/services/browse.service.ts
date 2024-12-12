@@ -35,13 +35,13 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -107,19 +107,19 @@ export class BrowseService {
   public static getInteractionIDs(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
     return 'gene1' in interaction ?
       [interaction.gene1.ensg_number, interaction.gene2.ensg_number] :
-      [interaction.transcript1.enst_number, interaction.transcript2.enst_number];
+      [interaction.transcript_1.enst_number, interaction.transcript_2.enst_number];
   }
 
   public static getInteractionPrettyNames(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
     return 'gene1' in interaction ?
       [interaction.gene1.gene_symbol || interaction.gene1.ensg_number, interaction.gene2.gene_symbol || interaction.gene2.ensg_number] :
-      [interaction.transcript1.enst_number, interaction.transcript2.enst_number];
+      [interaction.transcript_1.enst_number, interaction.transcript_2.enst_number];
   }
 
   public static getInteractionObjects(interaction: GeneInteraction | TranscriptInteraction): [Gene, Gene] | [Transcript, Transcript] {
     return 'gene1' in interaction ?
       [interaction.gene1, interaction.gene2] :
-      [interaction.transcript1, interaction.transcript2];
+      [interaction.transcript_1, interaction.transcript_2];
   }
 
   runQuery(query: BrowseQuery) {

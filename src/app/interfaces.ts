@@ -94,8 +94,8 @@ export interface TranscriptInteraction extends SpongeRun {
   "correlation": number,
   "mscor": number,
   "p_value": number,
-  "transcript1": Transcript,
-  "transcript2": Transcript
+  "transcript_1": Transcript,
+  "transcript_2": Transcript
 }
 
 export interface BrowseQuery {

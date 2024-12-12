@@ -39,8 +39,8 @@ export class InteractionsTableComponent implements AfterViewInit {
         correlation: interaction.correlation,
         mscor: interaction.mscor,
         padj: interaction.p_value,
-        obj1: 'gene1' in interaction ? interaction.gene1 : interaction.transcript1,
-        gene2_obj: 'gene2' in interaction ? interaction.gene2 : interaction.transcript2
+        obj1: 'gene1' in interaction ? interaction.gene1 : interaction.transcript_1,
+        gene2_obj: 'gene2' in interaction ? interaction.gene2 : interaction.transcript_2
       }
     }));
   });
