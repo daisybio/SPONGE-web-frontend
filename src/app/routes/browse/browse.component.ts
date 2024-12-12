@@ -14,6 +14,7 @@ import {ActiveEntitiesComponent} from "./active-entities/active-entities.compone
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
+import {VersionsService} from "../../services/versions.service";
 
 @Component({
   selector: 'app-browse',
@@ -38,7 +39,9 @@ import {MatAnchor} from "@angular/material/button";
 })
 export class BrowseComponent {
   tabChange = signal(0);
-  private readonly browseService = inject(BrowseService);
+  versionService = inject(VersionsService);
+  browseService = inject(BrowseService);
+  version$ = this.versionService.versionReadOnly();
   hasData$ = computed(() => this.browseService.ceRNAs$().length > 0);
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();

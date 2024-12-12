@@ -17,9 +17,11 @@
               <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
             </div>
           </mat-tab>
-          <mat-tab label="Survival analysis">
-            <app-survival-analysis></app-survival-analysis>
-          </mat-tab>
+          @if (version$() === 1) {
+            <mat-tab label="Survival analysis">
+              <app-survival-analysis></app-survival-analysis>
+            </mat-tab>
+          }
           <mat-tab label="Expression heatmap">
             <app-heatmap [refreshSignal]="tabChange()"></app-heatmap>
           </mat-tab>
