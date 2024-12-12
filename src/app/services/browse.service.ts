@@ -143,7 +143,7 @@ export class BrowseService {
     // Get gene IDs or transcript IDs respectively
     const identifiers = nodes.map(node => 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number);
     const interactions =
-      await this.backend.getGeneInteractionsSpecific(version, config.dataset, config.maxPValue, identifiers, config.level);
+      await this.backend.getInteractionsSpecific(version, config.dataset, config.maxPValue, identifiers, config.level);
 
     return {
       nodes,
@@ -154,6 +154,8 @@ export class BrowseService {
 
   createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
     const graph = new Graph();
+
+    console.log(nodes);
 
     nodes.forEach(node => {
       graph.addNode(BrowseService.getNodeID(node), {

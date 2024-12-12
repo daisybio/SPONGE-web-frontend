@@ -15,6 +15,7 @@ import {
   RunInfo,
   SurvivalPValue,
   SurvivalRate,
+  TranscriptExpression,
   TranscriptInteraction,
   TranscriptNode,
   WikiPathway
@@ -116,7 +117,7 @@ export class BackendService {
     return results;
   }
 
-  getGeneInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, identifiers: string[], level: 'gene' | 'transcript'): Promise<(GeneInteraction | TranscriptInteraction)[]> {
+  getInteractionsSpecific(version: number, disease: Dataset, maxPValue: number, identifiers: string[], level: 'gene' | 'transcript'): Promise<(GeneInteraction | TranscriptInteraction)[]> {
     const route = level == 'gene' ? 'ceRNAInteraction/findSpecific' : 'ceRNAInteraction/findSpecificTranscripts';
 
     if (identifiers.length === 0) {
@@ -139,7 +140,7 @@ export class BackendService {
     return this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(this.getRequestURL(route, query));
   }
 
-  async getGeneExpression(version: number, identifiers: string[], disease: Dataset, level: 'gene' | 'transcript'): Promise<GeneExpression[]> {
+  async getExpression(version: number, identifiers: string[], disease: Dataset, level: 'gene' | 'transcript'): Promise<(GeneExpression | TranscriptExpression)[]> {
     const route = level == 'gene' ? 'exprValue/getceRNA' : 'exprValue/getTranscriptExpr';
 
     if (identifiers.length === 0) {
@@ -158,7 +159,7 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return await this.http.getRequest<GeneExpression[]>(this.getRequestURL(route, query));
+    return await this.http.getRequest<(GeneExpression | TranscriptExpression)[]>(this.getRequestURL(route, query));
   }
 
   getSurvivalRates(version: number, ensgs: string[], disease: Dataset): Promise<SurvivalRate[]> {

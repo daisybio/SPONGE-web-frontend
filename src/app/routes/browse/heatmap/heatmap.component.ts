@@ -47,17 +47,17 @@ export class HeatmapComponent implements AfterViewInit, OnDestroy {
 
         const identifiers = nodes.map(node => BrowseService.getNodeID(node));
 
-        const expression = await backend.getGeneExpression(version, identifiers, disease, level);
+        const expression = await backend.getExpression(version, identifiers, disease, level);
 
         const expressionMap = new Map<string, Map<string, number>>();
         const samples = new Set<string>();
         for (const expr of expression) {
-          const geneID = expr.gene.gene_symbol || expr.gene.ensg_number;
-          if (!expressionMap.has(geneID)) {
-            expressionMap.set(geneID, new Map<string, number>());
+          const identifier = 'gene' in expr ? expr.gene.gene_symbol || expr.gene.ensg_number : expr.transcript.enst_number;
+          if (!expressionMap.has(identifier)) {
+            expressionMap.set(identifier, new Map<string, number>());
           }
           samples.add(expr.sample_ID);
-          expressionMap.get(geneID)!.set(expr.sample_ID, expr.expr_value);
+          expressionMap.get(identifier)!.set(expr.sample_ID, expr.expr_value);
         }
 
         const geneSymbols = Array.from(expressionMap.keys());
