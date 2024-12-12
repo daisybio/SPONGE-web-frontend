@@ -1,4 +1,4 @@
-import {Component, computed, effect, Signal} from '@angular/core';
+import {Component, computed, effect, inject} from '@angular/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
@@ -9,6 +9,7 @@ import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
 import {toSignal} from "@angular/core/rxjs-interop";
 import _ from "lodash";
+import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 
 @Component({
   selector: 'app-form',
@@ -18,15 +19,17 @@ import _ from "lodash";
     MatExpansionModule,
     ReactiveFormsModule,
     MatInputModule,
+    MatButtonToggleGroup,
+    MatButtonToggle,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
 })
 export class FormComponent {
-  isLoading$: Signal<boolean>;
-  diseases: Signal<string[]>;
-  diseaseSubtypeMap: Signal<Map<string, Dataset[]>>;
-  subtypes: Signal<Dataset[]>;
+  versionsService = inject(VersionsService);
+  browseService = inject(BrowseService);
+  diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
+  diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
@@ -42,43 +45,36 @@ export class FormComponent {
     maxPValue: new FormControl<number>(0.05),
     minMScore: new FormControl<number>(0),
   })
+
+  diseaseSignal = toSignal(
+    this.formGroup.get('disease')!.valueChanges
+  )
+
+  subtypes = computed(() => {
+    const disease = this.diseaseSignal();
+    if (!disease) {
+      return [];
+    }
+    return this.diseaseSubtypeMap().get(disease)?.sort((a, b) => a.disease_subtype?.localeCompare(b.disease_subtype || '') || 0) || [];
+  });
+  setInitialDisease = effect(() => {
+    const diseases = this.diseases();
+    this.formGroup.get('disease')?.setValue(diseases[0]);
+  })
+  setInitialSubtype = effect(() => {
+    const subtypes = this.subtypes();
+    const formField = this.formGroup.get('dataset');
+    formField?.setValue(subtypes[0]);
+
+    if (subtypes.length <= 1) {
+      formField?.disable();
+    } else {
+      formField?.enable();
+    }
+  })
   protected readonly capitalize = _.capitalize;
 
-  constructor(versions: VersionsService, private browseService: BrowseService) {
-    this.diseaseSubtypeMap = versions.diseaseSubtypeMap();
-
-    this.diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
-    this.isLoading$ = this.browseService.isLoading$;
-
-    const diseaseSignal = toSignal(
-      this.formGroup.get('disease')!.valueChanges
-    )
-
-    this.subtypes = computed(() => {
-      const disease = diseaseSignal();
-      if (!disease) {
-        return [];
-      }
-      return this.diseaseSubtypeMap().get(disease)?.sort((a, b) => a.disease_subtype?.localeCompare(b.disease_subtype || '') || 0) || [];
-    });
-
-    effect(() => {
-      const diseases = this.diseases();
-      this.formGroup.get('disease')?.setValue(diseases[0]);
-    })
-
-    effect(() => {
-      const subtypes = this.subtypes();
-      const formField = this.formGroup.get('dataset');
-      formField?.setValue(subtypes[0]);
-
-      if (subtypes.length <= 1) {
-        formField?.disable();
-      } else {
-        formField?.enable();
-      }
-    })
-
+  constructor() {
     this.formGroup.valueChanges.subscribe((config) => {
       config.dataset = this.formGroup.get('dataset')?.value as Dataset;
       this.browseService.runQuery(config as CeRNAQuery);
