@@ -16,6 +16,7 @@ import {
   SurvivalPValue,
   SurvivalRate,
   TranscriptExpression,
+  TranscriptInfo,
   TranscriptInteraction,
   TranscriptNode,
   WikiPathway
@@ -201,6 +202,15 @@ export class BackendService {
     } catch (e) {
       return Promise.resolve([]);
     }
+  }
+
+  getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
+    const route = 'getTranscriptInformation';
+    const query: Query = {
+      sponge_db_version: version,
+      enst_number: enst
+    }
+    return this.http.getRequest<TranscriptInfo[]>(this.getRequestURL(route, query));
   }
 
   getGeneInfo(version: number, ensg: string): Promise<GeneInfo[]> {

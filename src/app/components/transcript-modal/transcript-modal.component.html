@@ -1,7 +1,33 @@
 <h1 mat-dialog-title>{{ BrowseService.getFullName(transcript) }}</h1>
 <mat-dialog-content>
-  <p>
-    Will be implemented soon!
-  </p>
+  <mat-tab-group>
+    <mat-tab label="General information">
+      @if (transcriptInfo$.isLoading()) {
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      }
+      @if (transcriptInfo$.value(); as transcriptInfo) {
+        <table>
+          <tr>
+            <th>Ensembl ID</th>
+            <td>{{ transcript.enst_number }}</td>
+          </tr>
+          <tr>
+            <th>Position</th>
+            <td>{{ transcriptInfo.chromosome_name }}:{{ transcriptInfo.start_pos }}-{{ transcriptInfo.end_pos }}</td>
+          </tr>
+          <tr>
+            <th>Type</th>
+            <td>{{ transcriptInfo.transcript_type }}</td>
+          </tr>
+          <tr>
+            <th>Canonical</th>
+            <td>{{ transcriptInfo.canonical_transcript }}</td>
+          </tr>
+        </table>
+      }
+    </mat-tab>
+  </mat-tab-group>
 </mat-dialog-content>
-
+<mat-dialog-actions>
+  <button (click)="showGene()" mat-button>Show Gene</button>
+</mat-dialog-actions>

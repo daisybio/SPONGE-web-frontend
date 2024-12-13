@@ -160,6 +160,18 @@ export interface GeneInfo {
   start_pos: number
 }
 
+export interface TranscriptInfo {
+  ensg_number: string,
+  transcript_type: string,
+  start_pos: number,
+  end_pos: number,
+  canonical_transcript: number
+}
+
+export interface TranscriptInfoWithChromosome extends TranscriptInfo {
+  chromosome_name: string
+}
+
 export interface GOTerm {
   description: string,
   gene: Gene,
