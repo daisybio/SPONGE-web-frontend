@@ -36,9 +36,9 @@
   <mat-tab [label]="'Active edges (' + edges$().length + ')'">
     <div class="card-container">
       @for (interaction of edges$(); track interaction) {
-        @let names = BrowseService.getInteractionGeneNames(interaction);
         <mat-card>
           <mat-card-header>
+            @let names = BrowseService.getInteractionGeneNames(interaction);
             @let ids = BrowseService.getInteractionIDs(interaction);
             <mat-card-title>{{ names[0] }} - {{ names[1] }}
             </mat-card-title>
@@ -62,10 +62,11 @@
             </table>
           </mat-card-content>
           <mat-card-actions>
+            @let fullNames = BrowseService.getInteractionFullNames(interaction);
             @let objs = BrowseService.getInteractionObjects(interaction);
-            <button mat-button (click)="openModal(objs[0])">View {{ names[0] }}
+            <button mat-button (click)="openModal(objs[0])">View {{ fullNames[0] }}
             </button>
-            <button mat-button (click)="openModal(objs[1])">View {{ names[1] }}
+            <button mat-button (click)="openModal(objs[1])">View {{ fullNames[1] }}
             </button>
           </mat-card-actions>
         </mat-card>
