@@ -13,7 +13,6 @@ import {VersionsService} from "./services/versions.service";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'SPONGE-web-frontend';
   subpages = ['Browse', 'Genes', 'Documentation', 'Download'];
   version: WritableSignal<number>;
 
