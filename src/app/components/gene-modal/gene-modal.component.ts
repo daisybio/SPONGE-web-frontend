@@ -65,6 +65,11 @@ export class GeneModalComponent implements AfterViewInit {
     loader: async (version) => this.backend.getWikiPathways(version.request, this.gene.gene_symbol)
   })
 
+  readonly transcripts$ = resource({
+    request: this.version$,
+    loader: async (version) => this.backend.getGeneTranscripts(version.request, this.gene.ensg_number)
+  })
+
   constructor() {
     effect(() => {
       this.goDatasource.data = this.goTerms$.value() ?? [];

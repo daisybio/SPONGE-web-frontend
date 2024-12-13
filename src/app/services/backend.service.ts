@@ -288,6 +288,15 @@ export class BackendService {
     return this.http.getRequest<GeneCount[]>(this.getRequestURL(route, query));
   }
 
+  async getGeneTranscripts(version: number, ensg: string): Promise<string[]> {
+    const route = 'getGeneTranscripts';
+    const query: Query = {
+      sponge_db_version: version,
+      ensg_number: ensg
+    }
+    return this.http.getRequest<string[]>(this.getRequestURL(route, query));
+  }
+
   async getAlternativeSplicingEvents(enst: string): Promise<string[]> {
     const route = 'alternativeSplicing/getTranscriptEvents';
 

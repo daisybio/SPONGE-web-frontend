@@ -86,6 +86,11 @@
       </table>
       <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5" aria-label="Select page of users"></mat-paginator>
     </mat-tab>
+    <mat-tab label="Transcripts">
+      @for (transcript of transcripts$.value(); track transcript) {
+        <p>{{ transcript }}</p>
+      }
+    </mat-tab>
 
   </mat-tab-group>
 </mat-dialog-content>
