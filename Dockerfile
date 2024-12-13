@@ -3,7 +3,7 @@ FROM node:latest AS builder
 WORKDIR /app
 COPY . .
 
-RUN npm install --force && npm run build:prod
+RUN npm i && npm run build:prod
 
 FROM nginx:latest
 
