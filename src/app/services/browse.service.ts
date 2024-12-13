@@ -35,13 +35,13 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -177,8 +177,6 @@ export class BrowseService {
 
   createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
     const graph = new Graph();
-
-    console.log(nodes.map(BrowseService.getNodeID));
 
     nodes.forEach(node => {
       graph.addNode(BrowseService.getNodeID(node), {
