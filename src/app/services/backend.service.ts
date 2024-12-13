@@ -149,7 +149,6 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: disease.disease_name,
       dataset_ID: disease.dataset_ID
     }
 

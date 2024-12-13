@@ -28,10 +28,6 @@ export class ActiveEntitiesComponent {
     this.edges$ = browseService.activeInteractions$;
   }
 
-  getGenePrimary(gene: Gene): string {
-    return gene.gene_symbol || gene.ensg_number;
-  }
-
   openModal(entity: Gene | Transcript): void {
     this.dialog.open(GeneModalComponent, {
       data: entity

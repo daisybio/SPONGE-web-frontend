@@ -25,7 +25,7 @@ export class NodesComponent implements AfterViewInit {
   constructor(browseService: BrowseService) {
     this.dataSource = new MatTableDataSource<any>(browseService.nodes$().map(node => {
       return {
-        identifier: BrowseService.getNodePrettyName(node),
+        identifier: BrowseService.getNodeFullName(node),
         betweenness: node.betweenness,
         eigenvector: node.eigenvector,
         node_degree: node.node_degree,

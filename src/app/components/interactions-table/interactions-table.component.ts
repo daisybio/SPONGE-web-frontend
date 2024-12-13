@@ -32,7 +32,7 @@ export class InteractionsTableComponent implements AfterViewInit {
 
   dataSource$ = computed(() => {
     return new MatTableDataSource((this.interactions$() || []).map(interaction => {
-      const names = BrowseService.getInteractionPrettyNames(interaction);
+      const names = BrowseService.getInteractionGeneNames(interaction);
       return {
         name_1: names[0],
         name_2: names[1],

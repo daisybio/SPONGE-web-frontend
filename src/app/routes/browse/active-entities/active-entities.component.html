@@ -4,7 +4,7 @@
       @for (node of nodes$(); track node) {
         <mat-card>
           <mat-card-header>
-            <mat-card-title>{{ BrowseService.getNodePrettyName(node) }}</mat-card-title>
+            <mat-card-title>{{ BrowseService.getNodeGeneName(node) }}</mat-card-title>
             <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
@@ -36,7 +36,7 @@
   <mat-tab [label]="'Active edges (' + edges$().length + ')'">
     <div class="card-container">
       @for (interaction of edges$(); track interaction) {
-        @let names = BrowseService.getInteractionPrettyNames(interaction);
+        @let names = BrowseService.getInteractionGeneNames(interaction);
         <mat-card>
           <mat-card-header>
             @let ids = BrowseService.getInteractionIDs(interaction);
