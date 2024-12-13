@@ -18,13 +18,15 @@
     </mat-form-field>
   }
 
-  <div class="card-container">
-    <mat-button-toggle-group formControlName="level">
-      <mat-button-toggle value="gene">Genes</mat-button-toggle>
-      <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
-    </mat-button-toggle-group>
-  </div>
-
+  @if (version() > 1) {
+    <div class="card-container">
+      <mat-button-toggle-group formControlName="level">
+        <mat-button-toggle value="gene">Genes</mat-button-toggle>
+        <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  }
+  
   <mat-accordion>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
