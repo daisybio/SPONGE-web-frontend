@@ -1,4 +1,4 @@
-import {Component, inject, model, resource, ViewChild} from '@angular/core';
+import {Component, computed, effect, inject, model, resource, ViewChild} from '@angular/core';
 import {Transcript, TranscriptInfoWithChromosome} from "../../interfaces";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {MatButtonModule} from "@angular/material/button";
@@ -59,6 +59,23 @@ export class TranscriptModalComponent {
         chromosome_name: geneInfo.chromosome_name
       } as TranscriptInfoWithChromosome
     }
+  })
+  isCanonical$ = computed(() => {
+    const info = this.transcriptInfo$.value();
+    if (info === undefined) return "Unknown";
+    if (info.canonical_transcript === 0) {
+      return "No";
+    } else if (info.canonical_transcript === 1) {
+      return "Yes";
+    } else {
+      return "Unknown";
+    }
+  })
+  alternativeSplicingEvents = resource({
+    loader: () => this.backend.getAlternativeSplicingEvents(this.transcript.enst_number)
+  })
+  logEvents = effect(() => {
+    console.log(this.alternativeSplicingEvents.value());
   })
   protected readonly BrowseService = BrowseService;
 

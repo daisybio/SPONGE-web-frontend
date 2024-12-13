@@ -288,6 +288,17 @@ export class BackendService {
     return this.http.getRequest<GeneCount[]>(this.getRequestURL(route, query));
   }
 
+  async getAlternativeSplicingEvents(enst: string): Promise<string[]> {
+    const route = 'alternativeSplicing/getTranscriptEvents';
+
+    const query: Query = {
+      enst_number: enst
+    }
+
+    const data = await this.http.getRequest<{ event_type: string; }[]>(this.getRequestURL(route, query));
+    return data.map(d => d.event_type);
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query).map(key => key + '=' + query[key]).join('&');
   }

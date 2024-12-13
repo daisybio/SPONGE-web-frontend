@@ -27,10 +27,13 @@
           </tr>
           <tr>
             <th>Canonical</th>
-            <td>{{ transcriptInfo.canonical_transcript }}</td>
+            <td>{{ isCanonical$() }}</td>
           </tr>
         </table>
       }
+    </mat-tab>
+    <mat-tab label="Alternative splicing">
+
     </mat-tab>
   </mat-tab-group>
 </mat-dialog-content>
