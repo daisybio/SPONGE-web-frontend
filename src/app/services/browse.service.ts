@@ -11,8 +11,8 @@ import {
 } from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
-import forceAtlas2 from "graphology-layout-forceatlas2";
 import {VersionsService} from "./versions.service";
+import ForceSupervisor from "graphology-layout-force/worker";
 
 export enum State {
   Default,
@@ -35,13 +35,13 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -232,10 +232,8 @@ export class BrowseService {
       graph.addEdge(ids[0], ids[1]);
     });
 
-    forceAtlas2.assign(graph, {
-      iterations: 100,
-      settings: forceAtlas2.inferSettings(graph)
-    });
+    const layout = new ForceSupervisor(graph, {isNodeFixed: (_, attr) => attr['highlighted']});
+    layout.start();
 
     return graph;
   }

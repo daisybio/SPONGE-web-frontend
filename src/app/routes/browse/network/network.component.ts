@@ -1,9 +1,20 @@
-import {AfterViewInit, Component, effect, ElementRef, input, OnDestroy, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  ViewChild
+} from '@angular/core';
 import {BrowseService, EntityState, State} from "../../../services/browse.service";
 import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
+import ForceSupervisor from "graphology-layout-force/worker";
 
 const states: Record<State, { edgeColor: string, edgeWidth: number, nodeColor: string, nodeSize: number }>
   = {
@@ -46,11 +57,16 @@ const sigma_settings: Partial<Settings> = {
 })
 export class NetworkComponent implements AfterViewInit, OnDestroy {
   @ViewChild("container") container!: ElementRef;
+  browseService = inject(BrowseService);
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   refreshSignal = input.required<any>();
+  layout$ = computed(() => {
+    const graph = this.browseService.graph$();
+    const layout = new ForceSupervisor(graph);
+  });
 
-  constructor(private browseService: BrowseService) {
+  constructor() {
     effect(() => {
       this.graph$.next(this.browseService.graph$());
     });
