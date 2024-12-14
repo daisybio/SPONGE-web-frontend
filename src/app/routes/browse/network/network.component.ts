@@ -33,7 +33,9 @@ const sigma_settings: Partial<Settings> = {
   minEdgeThickness: states[State.Default].edgeWidth,
   defaultNodeColor: states[State.Default].nodeColor,
   enableEdgeEvents: true,
-  allowInvalidContainer: true
+  allowInvalidContainer: true,
+  minCameraRatio: 0.5,
+  maxCameraRatio: 2,
 }
 
 @Component({
