@@ -1,40 +1,49 @@
 import {
   AfterViewInit,
   Component,
-  computed,
   effect,
   ElementRef,
   inject,
   input,
   OnDestroy,
-  ViewChild
+  signal,
+  ViewChild,
+  WritableSignal
 } from '@angular/core';
 import {BrowseService, EntityState, State} from "../../../services/browse.service";
 import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
-import ForceSupervisor from "graphology-layout-force/worker";
 
-const states: Record<State, { edgeColor: string, edgeWidth: number, nodeColor: string, nodeSize: number }>
+const states: Record<State, {
+  edgeColor: string,
+  edgeWidth: number,
+  nodeColor: string,
+  nodeSize: number,
+  highlight: boolean
+}>
   = {
   [State.Default]: {
     edgeColor: '#000',
     edgeWidth: 3,
     nodeColor: '#052444',
-    nodeSize: 10
+    nodeSize: 10,
+    highlight: false
   },
   [State.Hover]: {
     edgeColor: '#ff0000',
     edgeWidth: 6,
     nodeColor: '#ff0000',
-    nodeSize: 10
+    nodeSize: 10,
+    highlight: true
   },
   [State.Active]: {
     nodeColor: '#008cff',
     edgeColor: '#008cff',
     edgeWidth: 6,
-    nodeSize: 15
+    nodeSize: 15,
+    highlight: true
   }
 }
 
@@ -61,10 +70,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   refreshSignal = input.required<any>();
-  layout$ = computed(() => {
-    const graph = this.browseService.graph$();
-    const layout = new ForceSupervisor(graph);
-  });
+  draggedNode$: WritableSignal<string | undefined> = signal(undefined);
 
   constructor() {
     effect(() => {
@@ -89,23 +95,61 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.graph$.subscribe(graph => {
       this.sigma?.kill();
-      this.sigma = new Sigma(graph, this.container.nativeElement, sigma_settings);
+      const sigma = new Sigma(graph, this.container.nativeElement, sigma_settings);
 
-      this.sigma.on('clickNode', event => {
+      sigma.on('clickNode', event => {
+        if (event.node === this.draggedNode$()) return;
         this.browseService.toggleState(event.node, 'node', State.Active);
       });
 
-      this.sigma.on('clickEdge', event => {
+      sigma.on('clickEdge', event => {
         this.browseService.toggleState(event.edge, 'edge', State.Active);
       })
 
-      this.sigma.on('enterEdge', event => {
+      sigma.on('enterEdge', event => {
         this.browseService.setState(event.edge, 'edge', State.Hover, true);
       })
 
-      this.sigma.on('leaveEdge', event => {
+      sigma.on('leaveEdge', event => {
         this.browseService.setState(event.edge, 'edge', State.Hover, false);
       })
+
+      sigma.on('downNode', event => {
+        this.draggedNode$.set(event.node);
+        graph.setNodeAttribute(event.node, 'highlighted', true);
+        if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+      })
+
+      sigma.on('moveBody', ({event}) => {
+        const node = this.draggedNode$();
+        if (node === undefined) return;
+
+        const pos = sigma.viewportToGraph(event);
+
+        graph.setNodeAttribute(node, 'x', pos.x);
+        graph.setNodeAttribute(node, 'y', pos.y);
+
+        event.preventSigmaDefault();
+        event.original.preventDefault();
+        event.original.stopPropagation();
+      })
+
+      const handleUpNode = (event: any) => {
+        const node = this.draggedNode$();
+        if (node === undefined) return;
+
+        graph.setNodeAttribute(node, 'highlighted', false);
+        this.draggedNode$.set(undefined);
+      }
+
+      sigma.on('upNode', event => {
+        handleUpNode(event);
+      })
+      sigma.on('upStage', event => {
+        handleUpNode(event);
+      })
+
+      this.sigma = sigma;
     });
 
     this.updateNodes(this.browseService.nodeStates$());
@@ -136,6 +180,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     }
     this.sigma?.getGraph().setNodeAttribute(node, 'color', states[state].nodeColor);
     this.sigma?.getGraph().setNodeAttribute(node, 'size', states[state].nodeSize);
+    this.sigma?.getGraph().setNodeAttribute(node, 'highlighted', states[state].highlight);
   }
 
   refresh() {

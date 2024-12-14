@@ -232,7 +232,14 @@ export class BrowseService {
       graph.addEdge(ids[0], ids[1]);
     });
 
-    const layout = new ForceSupervisor(graph, {isNodeFixed: (_, attr) => attr['highlighted']});
+    const layout = new ForceSupervisor(graph, {
+      isNodeFixed: (_, attr) => attr['highlighted'],
+      settings: {
+        repulsion: 0.5,
+        attraction: 0.001,
+        gravity: 0.001,
+      }
+    });
     layout.start();
 
     return graph;
