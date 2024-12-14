@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, effect, inject, model, resource, ResourceRef, viewChild} from '@angular/core';
 import {Gene, GOTerm} from "../../interfaces";
-import {MAT_DIALOG_DATA, MatDialogModule} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {MatButtonModule} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {BackendService} from "../../services/backend.service";
@@ -13,6 +13,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatChip, MatChipSet} from "@angular/material/chips";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {TranscriptModalComponent} from "../transcript-modal/transcript-modal.component";
 
 interface ASEntry {
   enst: string;
@@ -44,6 +45,7 @@ export class GeneModalComponent implements AfterViewInit {
   goColumns = ['symbol', 'description']
   asColumns = ['enst', 'events']
   goFilter = model<string>('')
+  dialog = inject(MatDialog);
 
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
@@ -111,5 +113,12 @@ export class GeneModalComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.goDatasource.paginator = this.goPaginator();
     this.asDatasource.paginator = this.asPaginator();
+  }
+
+  async openTranscript(enst: string) {
+    const transcript = (await this.backend.getTranscriptInfo(this.version$(), enst))[0];
+    this.dialog.open(TranscriptModalComponent, {
+      data: transcript
+    });
   }
 }
