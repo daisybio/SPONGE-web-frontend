@@ -58,6 +58,8 @@ const sigma_settings: Partial<Settings> = {
   maxCameraRatio: 2,
 }
 
+const MIN_DRAG_TIME = 100;
+
 @Component({
   selector: 'app-network',
   imports: [],
@@ -71,6 +73,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   sigma?: Sigma;
   refreshSignal = input.required<any>();
   draggedNode$: WritableSignal<string | undefined> = signal(undefined);
+  dragStart$ = signal<number | undefined>(undefined);
 
   constructor() {
     effect(() => {
@@ -98,7 +101,8 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       const sigma = new Sigma(graph, this.container.nativeElement, sigma_settings);
 
       sigma.on('clickNode', event => {
-        if (event.node === this.draggedNode$()) return;
+        const dragStart = this.dragStart$();
+        if (dragStart && (Date.now() - dragStart) > MIN_DRAG_TIME) return;
         this.browseService.toggleState(event.node, 'node', State.Active);
       });
 
@@ -115,9 +119,10 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       })
 
       sigma.on('downNode', event => {
-        this.draggedNode$.set(event.node);
         graph.setNodeAttribute(event.node, 'highlighted', true);
         if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
+        this.draggedNode$.set(event.node);
+        this.dragStart$.set(Date.now());
       })
 
       sigma.on('moveBody', ({event}) => {
