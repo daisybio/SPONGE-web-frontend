@@ -175,34 +175,6 @@ export class BrowseService {
     }
   }
 
-  createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
-    const graph = new Graph();
-
-    nodes.forEach(node => {
-      graph.addNode(BrowseService.getNodeID(node), {
-        label: BrowseService.getNodeFullName(node),
-        x: Math.random(), // Coordinates will be overridden by the layout algorithm
-        y: Math.random(),
-        size: Math.log(node.node_degree)
-      });
-    });
-
-    interactions.forEach(interaction => {
-      const ids = BrowseService.getInteractionIDs(interaction);
-      if (graph.hasEdge(ids[0], ids[1])) {
-        return;
-      }
-      graph.addEdge(ids[0], ids[1]);
-    });
-
-    forceAtlas2.assign(graph, {
-      iterations: 100,
-      settings: forceAtlas2.inferSettings(graph)
-    });
-
-    return graph;
-  }
-
   toggleState(id: string, entityType: "node" | "edge", state: State.Active | State.Hover) {
     const states = entityType === "node" ? this._nodeStates$ : this._edgeStates$;
     states.update(entityStates => {
@@ -237,5 +209,34 @@ export class BrowseService {
       return (ids[0] === source && ids[1] === target) ||
         (ids[0] === target && ids[1] === source);
     });
+  }
+
+  private createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
+    const graph = new Graph();
+
+    nodes.forEach(node => {
+      graph.addNode(BrowseService.getNodeID(node), {
+        label: BrowseService.getNodeFullName(node),
+        x: Math.random(), // Coordinates will be overridden by the layout algorithm
+        y: Math.random(),
+        size: Math.log(node.node_degree),
+        forceLabel: true
+      });
+    });
+
+    interactions.forEach(interaction => {
+      const ids = BrowseService.getInteractionIDs(interaction);
+      if (graph.hasEdge(ids[0], ids[1])) {
+        return;
+      }
+      graph.addEdge(ids[0], ids[1]);
+    });
+
+    forceAtlas2.assign(graph, {
+      iterations: 100,
+      settings: forceAtlas2.inferSettings(graph)
+    });
+
+    return graph;
   }
 }
