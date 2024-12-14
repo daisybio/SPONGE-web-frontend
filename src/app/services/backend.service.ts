@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpService} from "./http.service";
 import {
+  AlternativeSplicingEvent,
   BrowseQuery,
   Dataset,
   Gene,
@@ -297,15 +298,14 @@ export class BackendService {
     return this.http.getRequest<string[]>(this.getRequestURL(route, query));
   }
 
-  async getAlternativeSplicingEvents(enst: string): Promise<string[]> {
+  async getAlternativeSplicingEvents(ensts: string[]): Promise<AlternativeSplicingEvent[]> {
     const route = 'alternativeSplicing/getTranscriptEvents';
 
     const query: Query = {
-      enst_number: enst
+      enst_number: ensts.join(',')
     }
 
-    const data = await this.http.getRequest<{ event_type: string; }[]>(this.getRequestURL(route, query));
-    return data.map(d => d.event_type);
+    return this.http.getRequest<AlternativeSplicingEvent[]>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

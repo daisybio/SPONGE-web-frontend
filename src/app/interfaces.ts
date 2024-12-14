@@ -187,3 +187,11 @@ export interface WikiPathway {
   gene: Gene,
   wp_key: string
 }
+
+export interface AlternativeSplicingEvent {
+  event_name: string,
+  event_type: string,
+  transcript: {
+    enst_number: string
+  }
+}

@@ -72,7 +72,7 @@ export class TranscriptModalComponent {
     }
   })
   alternativeSplicingEvents = resource({
-    loader: () => this.backend.getAlternativeSplicingEvents(this.transcript.enst_number)
+    loader: () => this.backend.getAlternativeSplicingEvents([this.transcript.enst_number])
   })
   logEvents = effect(() => {
     console.log(this.alternativeSplicingEvents.value());

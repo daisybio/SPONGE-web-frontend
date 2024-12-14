@@ -87,9 +87,20 @@
       <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5" aria-label="Select page of users"></mat-paginator>
     </mat-tab>
     <mat-tab label="Transcripts">
-      @for (transcript of transcripts$.value(); track transcript) {
-        <p>{{ transcript }}</p>
+      @if (transcripts$.isLoading()) {
+        <div class="card-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+      } @else {
+        @if (transcripts$.value(); as transcripts) {
+          @for (transcript of transcripts | keyvalue; track transcript) {
+            <p>{{ transcript.key }}</p>
+          }
+        } @else {
+          <p>No transcripts found</p>
+        }
       }
+
     </mat-tab>
 
   </mat-tab-group>

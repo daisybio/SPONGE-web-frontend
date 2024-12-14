@@ -13,6 +13,7 @@ import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {MatChip, MatChipSet} from "@angular/material/chips";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {KeyValuePipe} from "@angular/common";
 
 @Component({
   selector: 'app-gene-modal',
@@ -28,7 +29,8 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
     FormsModule,
     MatChipSet,
     MatChip,
-    MatProgressSpinner
+    MatProgressSpinner,
+    KeyValuePipe
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss'
@@ -67,7 +69,18 @@ export class GeneModalComponent implements AfterViewInit {
 
   readonly transcripts$ = resource({
     request: this.version$,
-    loader: async (version) => this.backend.getGeneTranscripts(version.request, this.gene.ensg_number)
+    loader: async (version) => {
+      const transcripts = await this.backend.getGeneTranscripts(version.request, this.gene.ensg_number);
+      const asEvents = await this.backend.getAlternativeSplicingEvents(transcripts);
+      return asEvents.reduce((acc, event) => {
+        const enst = event.transcript.enst_number;
+        if (!acc.has(enst)) {
+          acc.set(enst, new Set<string>());
+        }
+        acc.get(enst)!.add(event.event_name);
+        return acc;
+      }, new Map<string, Set<string>>());
+    }
   })
 
   constructor() {
