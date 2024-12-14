@@ -119,7 +119,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       })
 
       sigma.on('downNode', event => {
-        graph.setNodeAttribute(event.node, 'highlighted', true);
+        this.browseService.setState(event.node, 'node', State.Hover, true);
         if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
         this.draggedNode$.set(event.node);
         this.dragStart$.set(Date.now());
@@ -143,7 +143,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
         const node = this.draggedNode$();
         if (node === undefined) return;
 
-        graph.setNodeAttribute(node, 'highlighted', false);
+        this.browseService.setState(node, 'node', State.Hover, false);
         this.draggedNode$.set(undefined);
       }
 
@@ -153,7 +153,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       sigma.on('upStage', event => {
         handleUpNode(event);
       })
-
+      
       this.sigma = sigma;
     });
 
