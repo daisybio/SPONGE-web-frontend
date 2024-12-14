@@ -58,7 +58,7 @@ const sigma_settings: Partial<Settings> = {
   maxCameraRatio: 2,
 }
 
-const MIN_DRAG_TIME = 100;
+const MIN_DRAG_TIME = 200;
 
 @Component({
   selector: 'app-network',
@@ -102,7 +102,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
       sigma.on('clickNode', event => {
         const dragStart = this.dragStart$();
-        if (dragStart && (Date.now() - dragStart) > MIN_DRAG_TIME) return;
+        if (dragStart && ((Date.now() - dragStart) > MIN_DRAG_TIME)) return;
         this.browseService.toggleState(event.node, 'node', State.Active);
       });
 
