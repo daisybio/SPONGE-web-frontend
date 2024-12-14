@@ -33,6 +33,26 @@
       }
     </mat-tab>
     <mat-tab label="Alternative splicing">
+      <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="event_type">
+          <th *matHeaderCellDef mat-header-cell>Type</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            {{ asEntry.event_type }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="event_name">
+          <th *matHeaderCellDef mat-header-cell>Name</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            {{ asEntry.event_name }}
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="columns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+                     aria-label="Select page of users"></mat-paginator>
 
     </mat-tab>
   </mat-tab-group>

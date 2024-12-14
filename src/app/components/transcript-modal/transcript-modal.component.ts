@@ -1,12 +1,12 @@
-import {Component, computed, effect, inject, model, resource, ViewChild} from '@angular/core';
-import {Transcript, TranscriptInfoWithChromosome} from "../../interfaces";
+import {AfterViewInit, Component, computed, effect, inject, resource, viewChild} from '@angular/core';
+import {AlternativeSplicingEvent, Transcript, TranscriptInfoWithChromosome} from "../../interfaces";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule} from "@angular/material/dialog";
 import {MatButtonModule} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {BackendService} from "../../services/backend.service";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatExpansionModule} from "@angular/material/expansion";
-import {MatTableModule} from "@angular/material/table";
+import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
@@ -32,16 +32,16 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss'
 })
-export class TranscriptModalComponent {
+export class TranscriptModalComponent implements AfterViewInit {
   readonly dialog = inject(MatDialog);
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  columns = ['symbol', 'description']
-  goFilter = model<string>('')
+  paginator = viewChild.required(MatPaginator);
+  columns = ['event_type', 'event_name']
 
   readonly transcript = inject<Transcript>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
   readonly version$ = this.versionsService.versionReadOnly();
+  asDatasource = new MatTableDataSource<AlternativeSplicingEvent>();
 
   readonly transcriptInfo$ = resource({
     request: this.version$,
@@ -74,14 +74,21 @@ export class TranscriptModalComponent {
   alternativeSplicingEvents = resource({
     loader: () => this.backend.getAlternativeSplicingEvents([this.transcript.enst_number])
   })
-  logEvents = effect(() => {
-    console.log(this.alternativeSplicingEvents.value());
-  })
   protected readonly BrowseService = BrowseService;
+
+  constructor() {
+    effect(() => {
+      this.asDatasource.data = this.alternativeSplicingEvents.value() || [];
+    })
+  }
 
   showGene() {
     this.dialog.open(GeneModalComponent, {
       data: this.transcript.gene
     })
+  }
+
+  ngAfterViewInit(): void {
+    this.asDatasource.paginator = this.paginator();
   }
 }
