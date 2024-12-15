@@ -3,7 +3,7 @@
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 1</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj1)" mat-button
-              matTooltip="Show details about {{interaction.name_1}}">
+              matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
         {{ interaction.name_1 }}
       </button>
     </td>
@@ -13,7 +13,7 @@
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 2</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj2)" mat-button
-              matTooltip="Show details about {{interaction.name_2}}">
+              matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
         {{ interaction.name_2 }}
       </button>
     </td>

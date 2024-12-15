@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpService} from "./http.service";
 import {
+  AlternativeSplicingEvent,
   BrowseQuery,
   CeRNA,
   CeRNAExpression,
@@ -31,6 +32,7 @@ import {
   SurvivalPValue,
   SurvivalRate,
   TranscriptExpression,
+  TranscriptInfo,
   TranscriptInteraction,
   TranscriptNode,
   WikiPathway
@@ -165,7 +167,6 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: disease.disease_name,
       dataset_ID: disease.dataset_ID
     }
 
@@ -206,6 +207,15 @@ export class BackendService {
     } catch (e) {
       return Promise.resolve([]);
     }
+  }
+
+  getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
+    const route = 'getTranscriptInformation';
+    const query: Query = {
+      sponge_db_version: version,
+      enst_number: enst
+    }
+    return this.http.getRequest<TranscriptInfo[]>(this.getRequestURL(route, query));
   }
 
   getGeneInfo(version: number, ensg: string): Promise<GeneInfo[]> {
@@ -281,6 +291,25 @@ export class BackendService {
       query['minCountSign'] = 1;
     }
     return this.http.getRequest<GeneCount[]>(this.getRequestURL(route, query));
+  }
+
+  async getGeneTranscripts(version: number, ensg: string): Promise<string[]> {
+    const route = 'getGeneTranscripts';
+    const query: Query = {
+      sponge_db_version: version,
+      ensg_number: ensg
+    }
+    return this.http.getRequest<string[]>(this.getRequestURL(route, query));
+  }
+
+  async getAlternativeSplicingEvents(ensts: string[]): Promise<AlternativeSplicingEvent[]> {
+    const route = 'alternativeSplicing/getTranscriptEvents';
+
+    const query: Query = {
+      enst_number: ensts.join(',')
+    }
+
+    return this.http.getRequest<AlternativeSplicingEvent[]>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

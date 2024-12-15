@@ -28,6 +28,7 @@ import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-to
 export class FormComponent {
   versionsService = inject(VersionsService);
   browseService = inject(BrowseService);
+  version = this.versionsService.versionReadOnly();
   diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
   diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
   geneSortings = GeneSorting;

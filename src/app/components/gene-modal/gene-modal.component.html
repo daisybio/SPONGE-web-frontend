@@ -81,10 +81,43 @@
           <td *matCellDef="let goTerm" mat-cell>{{ goTerm.description }}</td>
         </ng-container>
 
-        <tr *matHeaderRowDef="columns" mat-header-row></tr>
-        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+        <tr *matHeaderRowDef="goColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: goColumns;" mat-row></tr>
       </table>
-      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5" aria-label="Select page of users"></mat-paginator>
+      <mat-paginator #goPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+                     aria-label="Select page of users"></mat-paginator>
+    </mat-tab>
+    <mat-tab label="Transcripts">
+      @if (transcripts$.isLoading()) {
+        <div class="card-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+      }
+      <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="enst">
+          <th *matHeaderCellDef mat-header-cell>Transcript</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <button (click)="openTranscript(asEntry.enst)" mat-button>{{ asEntry.enst }}</button>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="events">
+          <th *matHeaderCellDef mat-header-cell>Alt. Splicing event types</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <mat-chip-set>
+              @for (event of asEntry.events; track event) {
+                <mat-chip>{{ event }}</mat-chip>
+              }
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
+      </table>
+      <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+                     aria-label="Select page of users"></mat-paginator>
+
     </mat-tab>
 
   </mat-tab-group>

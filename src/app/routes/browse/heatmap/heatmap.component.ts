@@ -1,118 +1,114 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  input,
-  OnDestroy,
-  resource,
-  ViewChild
-} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, OnDestroy, resource, viewChild} from '@angular/core';
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
 import {VersionsService} from "../../../services/versions.service";
-import {fromEvent, ReplaySubject} from "rxjs";
+import {fromEvent} from "rxjs";
+import {toSignal} from "@angular/core/rxjs-interop";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
 
 
 @Component({
   selector: 'app-heatmap',
-  imports: [],
+  imports: [
+    MatProgressSpinner
+  ],
   templateUrl: './heatmap.component.html',
   styleUrl: './heatmap.component.scss'
 })
-export class HeatmapComponent implements AfterViewInit, OnDestroy {
+export class HeatmapComponent implements OnDestroy {
+  browseService = inject(BrowseService);
+  backend = inject(BackendService);
+  versions = inject(VersionsService);
+
   refreshSignal = input.required<any>();
-  @ViewChild('heatmap') heatmap!: ElementRef;
-  plotData$ = new ReplaySubject();
+  heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
 
-  constructor(browseService: BrowseService, backend: BackendService, versions: VersionsService) {
-    const plotData = resource({
-      request: computed(() => {
-        return {
-          nodes: browseService.nodes$(),
-          disease: browseService.disease$(),
-          level: browseService.level$(),
-          version: versions.versionReadOnly()()
+  windowResizeSignal = toSignal(fromEvent(window, 'resize'));
+
+  plotData = resource({
+    request: computed(() => {
+      return {
+        nodes: this.browseService.nodes$(),
+        disease: this.browseService.disease$(),
+        level: this.browseService.level$(),
+        version: this.versions.versionReadOnly()()
+      }
+    }),
+    loader: async (param) => {
+      const nodes = param.request.nodes;
+      const disease = param.request.disease;
+      const version = param.request.version;
+      const level = param.request.level;
+      if (nodes === undefined || disease === undefined || level === undefined) return;
+
+      const identifiers = nodes.map(node => BrowseService.getNodeID(node));
+
+      const expression = await this.backend.getExpression(version, identifiers, disease, level);
+
+      const expressionMap = new Map<string, Map<string, number>>();
+      const samples = new Set<string>();
+      for (const expr of expression) {
+        const identifier = 'gene' in expr ? expr.gene.gene_symbol || expr.gene.ensg_number : expr.transcript.enst_number;
+        if (!expressionMap.has(identifier)) {
+          expressionMap.set(identifier, new Map<string, number>());
         }
-      }),
-      loader: async (param) => {
-        const nodes = param.request.nodes;
-        const disease = param.request.disease;
-        const version = param.request.version;
-        const level = param.request.level;
-        if (nodes === undefined || disease === undefined || level === undefined) return;
+        samples.add(expr.sample_ID);
+        expressionMap.get(identifier)!.set(expr.sample_ID, expr.expr_value);
+      }
 
-        const identifiers = nodes.map(node => BrowseService.getNodeID(node));
+      const geneSymbols = Array.from(expressionMap.keys());
+      const sampleIDs = Array.from(samples);
+      const values = geneSymbols.map(gene => sampleIDs.map(sample => expressionMap.get(gene)!.get(sample)));
 
-        const expression = await backend.getExpression(version, identifiers, disease, level);
+      return {
+        x: sampleIDs,
+        y: geneSymbols,
+        z: values,
+        type: 'heatmap'
+      };
+    }
+  });
 
-        const expressionMap = new Map<string, Map<string, number>>();
-        const samples = new Set<string>();
-        for (const expr of expression) {
-          const identifier = 'gene' in expr ? expr.gene.gene_symbol || expr.gene.ensg_number : expr.transcript.enst_number;
-          if (!expressionMap.has(identifier)) {
-            expressionMap.set(identifier, new Map<string, number>());
-          }
-          samples.add(expr.sample_ID);
-          expressionMap.get(identifier)!.set(expr.sample_ID, expr.expr_value);
-        }
+  refreshEffect = effect(() => {
+    this.refreshSignal();
+    this.windowResizeSignal();
 
-        const geneSymbols = Array.from(expressionMap.keys());
-        const sampleIDs = Array.from(samples);
-        const values = geneSymbols.map(gene => sampleIDs.map(sample => expressionMap.get(gene)!.get(sample)));
+    this.refresh();
+  });
 
-        return {
-          x: sampleIDs,
-          y: geneSymbols,
-          z: values,
-          type: 'heatmap'
-        };
+  plotUpdateEffect = effect(() => {
+    const data = this.plotData.value();
+    if (!data) return;
+
+    const heatmap = this.heatmap().nativeElement;
+
+    Plotly.newPlot(heatmap, [data], {
+      title: 'Expression heatmap',
+      xaxis: {
+        title: 'Sample ID'
+      },
+      yaxis: {
+        title: 'Node'
+      },
+      margin: {
+        b: 300,
+        l: 200
       }
     });
-
-    effect(() => {
-      this.plotData$.next(plotData.value());
-    });
-
-    effect(() => {
-      this.refreshSignal();
-      this.refresh();
-    });
-  }
-
-  ngAfterViewInit(): void {
-    this.plotData$.subscribe(data => {
-      if (!data) return;
-
-      Plotly.newPlot(this.heatmap.nativeElement, [data], {
-        title: 'Heatmap of gene expression',
-        xaxis: {
-          title: 'Sample ID'
-        },
-        yaxis: {
-          title: 'Gene'
-        },
-        margin: {
-          b: 300
-        }
-      });
-    });
-
-    fromEvent(window, 'resize').subscribe(() => {
-      this.refresh();
-    });
-  }
+  });
 
   refresh() {
-    if (this.heatmap && this.heatmap.nativeElement.checkVisibility()) {
-      Plotly.Plots.resize(this.heatmap.nativeElement);
+    const heatmap = this.heatmap().nativeElement;
+    if (heatmap.checkVisibility()) {
+      Plotly.Plots.resize(heatmap);
     }
   }
 
   ngOnDestroy(): void {
-    Plotly.purge(this.heatmap.nativeElement);
+    Plotly.purge(this.heatmap().nativeElement);
+    this.refreshEffect.destroy();
+    this.plotUpdateEffect.destroy();
   }
 }

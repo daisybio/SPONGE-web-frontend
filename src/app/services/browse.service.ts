@@ -11,8 +11,8 @@ import {
 } from "../interfaces";
 import {BackendService} from "./backend.service";
 import Graph from "graphology";
-import forceAtlas2 from "graphology-layout-forceatlas2";
 import {VersionsService} from "./versions.service";
+import ForceSupervisor from "graphology-layout-force/worker";
 
 export enum State {
   Default,
@@ -96,8 +96,12 @@ export class BrowseService {
     return 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number;
   }
 
-  public static getNodePrettyName(node: GeneNode | TranscriptNode): string {
-    return 'gene' in node ? node.gene.gene_symbol || node.gene.ensg_number : node.transcript.enst_number;
+  public static getNodeGeneName(node: GeneNode | TranscriptNode): string {
+    return BrowseService.getGeneName(BrowseService.getNodeObject(node));
+  }
+
+  public static getNodeFullName(node: GeneNode | TranscriptNode): string {
+    return BrowseService.getFullName(BrowseService.getNodeObject(node));
   }
 
   public static getNodeObject(node: GeneNode | TranscriptNode): Gene | Transcript {
@@ -105,21 +109,40 @@ export class BrowseService {
   }
 
   public static getInteractionIDs(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
-    return 'gene1' in interaction ?
-      [interaction.gene1.ensg_number, interaction.gene2.ensg_number] :
-      [interaction.transcript_1.enst_number, interaction.transcript_2.enst_number];
+    const objects = BrowseService.getInteractionObjects(interaction);
+    return objects.map(BrowseService.getID) as [string, string];
   }
 
-  public static getInteractionPrettyNames(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
-    return 'gene1' in interaction ?
-      [interaction.gene1.gene_symbol || interaction.gene1.ensg_number, interaction.gene2.gene_symbol || interaction.gene2.ensg_number] :
-      [interaction.transcript_1.enst_number, interaction.transcript_2.enst_number];
+  public static getInteractionFullNames(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
+    const objects = BrowseService.getInteractionObjects(interaction);
+    return objects.map(BrowseService.getFullName) as [string, string];
+  }
+
+  public static getInteractionGeneNames(interaction: GeneInteraction | TranscriptInteraction): [string, string] {
+    const objects = BrowseService.getInteractionObjects(interaction);
+    return objects.map(BrowseService.getGeneName) as [string, string];
   }
 
   public static getInteractionObjects(interaction: GeneInteraction | TranscriptInteraction): [Gene, Gene] | [Transcript, Transcript] {
     return 'gene1' in interaction ?
       [interaction.gene1, interaction.gene2] :
       [interaction.transcript_1, interaction.transcript_2];
+  }
+
+  public static getFullName(node: Gene | Transcript): string {
+    if ('ensg_number' in node) {
+      return node.gene_symbol || node.ensg_number;
+    } else {
+      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number})`;
+    }
+  }
+
+  private static getID(node: Gene | Transcript): string {
+    return 'ensg_number' in node ? node.ensg_number : node.enst_number;
+  }
+
+  private static getGeneName(node: Gene | Transcript): string {
+    return 'ensg_number' in node ? node.gene_symbol || node.ensg_number : node.gene.gene_symbol || node.gene.ensg_number;
   }
 
   runQuery(query: BrowseQuery) {
@@ -150,36 +173,6 @@ export class BrowseService {
       interactions,
       disease: config.dataset
     }
-  }
-
-  createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
-    const graph = new Graph();
-
-    console.log(nodes);
-
-    nodes.forEach(node => {
-      graph.addNode(BrowseService.getNodeID(node), {
-        label: BrowseService.getNodePrettyName(node),
-        x: Math.random(), // Coordinates will be overridden by the layout algorithm
-        y: Math.random(),
-        size: Math.log(node.node_degree)
-      });
-    });
-
-    interactions.forEach(interaction => {
-      const ids = BrowseService.getInteractionIDs(interaction);
-      if (graph.hasEdge(ids[0], ids[1])) {
-        return;
-      }
-      graph.addEdge(ids[0], ids[1]);
-    });
-
-    forceAtlas2.assign(graph, {
-      iterations: 100,
-      settings: forceAtlas2.inferSettings(graph)
-    });
-
-    return graph;
   }
 
   toggleState(id: string, entityType: "node" | "edge", state: State.Active | State.Hover) {
@@ -216,5 +209,39 @@ export class BrowseService {
       return (ids[0] === source && ids[1] === target) ||
         (ids[0] === target && ids[1] === source);
     });
+  }
+
+  private createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
+    const graph = new Graph();
+
+    nodes.forEach(node => {
+      graph.addNode(BrowseService.getNodeID(node), {
+        label: BrowseService.getNodeFullName(node),
+        x: Math.random(), // Coordinates will be overridden by the layout algorithm
+        y: Math.random(),
+        size: Math.log(node.node_degree),
+        forceLabel: true
+      });
+    });
+
+    interactions.forEach(interaction => {
+      const ids = BrowseService.getInteractionIDs(interaction);
+      if (graph.hasEdge(ids[0], ids[1])) {
+        return;
+      }
+      graph.addEdge(ids[0], ids[1]);
+    });
+
+    const layout = new ForceSupervisor(graph, {
+      isNodeFixed: (_, attr) => attr['highlighted'],
+      settings: {
+        repulsion: 0.5,
+        attraction: 0.001,
+        gravity: 0.001,
+      }
+    });
+    layout.start();
+
+    return graph;
   }
 }

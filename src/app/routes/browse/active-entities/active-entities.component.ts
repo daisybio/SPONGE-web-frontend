@@ -6,6 +6,7 @@ import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {GeneModalComponent} from "../../../components/gene-modal/gene-modal.component";
 import {MatButton} from "@angular/material/button";
+import {TranscriptModalComponent} from "../../../components/transcript-modal/transcript-modal.component";
 
 @Component({
   selector: 'app-active-entities',
@@ -28,13 +29,15 @@ export class ActiveEntitiesComponent {
     this.edges$ = browseService.activeInteractions$;
   }
 
-  getGenePrimary(gene: Gene): string {
-    return gene.gene_symbol || gene.ensg_number;
-  }
-
   openModal(entity: Gene | Transcript): void {
-    this.dialog.open(GeneModalComponent, {
-      data: entity
-    })
+    if ('ensg_number' in entity) {
+      this.dialog.open(GeneModalComponent, {
+        data: entity
+      })
+    } else {
+      this.dialog.open(TranscriptModalComponent, {
+        data: entity
+      })
+    }
   }
 }

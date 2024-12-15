@@ -2,7 +2,8 @@
   <ng-container matColumnDef="identifier">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene</th>
     <td *matCellDef="let node" mat-cell>
-      <button (click)="openDialog(node.obj)" mat-button matTooltip="Show details about {{node.identifier}}">
+      <button (click)="openDialog(node.obj)" mat-button matTooltip="Show details about {{node.identifier}}"
+              matTooltipPosition="right">
         {{ node.identifier }}
       </button>
     </td>
