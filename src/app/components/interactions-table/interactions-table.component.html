@@ -1,0 +1,40 @@
+<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort>
+  <ng-container matColumnDef="name_1">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 1</th>
+    <td *matCellDef="let interaction" mat-cell>
+      <button (click)="openDialog(interaction.obj1)" mat-button
+              matTooltip="Show details about {{interaction.name_1}}">
+        {{ interaction.name_1 }}
+      </button>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="name_2">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 2</th>
+    <td *matCellDef="let interaction" mat-cell>
+      <button (click)="openDialog(interaction.obj2)" mat-button
+              matTooltip="Show details about {{interaction.name_2}}">
+        {{ interaction.name_2 }}
+      </button>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="correlation">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Correlation</th>
+    <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="mscor">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>MScor</th>
+    <td *matCellDef="let interaction" mat-cell>{{ interaction.mscor }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="padj">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>adj. p-Value</th>
+    <td *matCellDef="let interaction" mat-cell>{{ interaction.padj }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>
+<mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" aria-label="Select page of users"></mat-paginator>

@@ -1,0 +1,34 @@
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
+  <ng-container matColumnDef="identifier">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene</th>
+    <td *matCellDef="let node" mat-cell>
+      <button (click)="openDialog(node.obj)" mat-button matTooltip="Show details about {{node.identifier}}">
+        {{ node.identifier }}
+      </button>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="betweenness">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Betweenness</th>
+    <td *matCellDef="let node" mat-cell>{{ node.betweenness }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="eigenvector">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Eigenvector</th>
+    <td *matCellDef="let node" mat-cell>{{ node.eigenvector }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="node_degree">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Degree</th>
+    <td *matCellDef="let node" mat-cell>{{ node.node_degree }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>
+
+<mat-paginator [pageSizeOptions]="[5, 10, 20]"
+               [pageSize]="10"
+               aria-label="Select page of periodic elements"
+               showFirstLastButtons>
+</mat-paginator>

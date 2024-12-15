@@ -1,429 +1,429 @@
-/* set base container dimensions */
-
-#bigBox {
-  width: auto;
-  margin: 50px
-}
-
-.container {
-  margin: 20px;
-}
-
-.circle {
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  border-radius: 50%;
-  font-size: 20px;
-  color: white;
-  text-align: center;
-  background: #4892b9;
-}
-
-.sidebar {
-  min-width: 150px;
-  max-width: 150px;
-  background-color: #e7e7e7;
-}
-
-.sidebar-tabs {
-  display: block;
-  min-width: 150px;
-  max-width: 150px;
-}
-
-.sidebar-tab {
-  font-size: 24px;
-  font-weight: normal;
-  margin-bottom: 10px;
-  margin-top: 10px;
-  margin-right: 5px;
-  margin-left: 5px;
-  background-color: #9ccee8;
-}
-
-#headline{
-  text-align:center;
-}
-
-.card-body {
-  img {
-    height: auto;
-  }
-}
-
-/* cards */
-.mat-card-header {
-  width: 100%;
-}
-
-.mat-card-header-text {
-  margin: 0 !important;
-}
-
-.mat-card-title {
-  text-align: left;
-}
-
-.mat-card-subtitle {
-  text-align: left;
-}
-
-.mat-card-content {
-  margin-left: 10px;
-}
-
-// info card
-.info-card {
-  background-color: #9ccee8;
-}
-
-.info-card-small {
-  background-color: #9ccee8;
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.info-text-small-div{
-  font-size: 16px;
-}
-
-.info-list {
-  list-style-type: none;
-}
-
-.spongEffects-workflow-img {
-  align-self: center;
-}
-
-/* expansion panels */
-.mat-expansion-panel-header {
-
-}
-
-.mat-expansion-panel-header-title {
-  width: 250px !important;
-  margin-left: 8px;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.mat-expansion-panel-header-description {
-  margin-left: auto;
-  width: 600px !important;
-}
-
-.explore-card {
-  background-color: lightgrey;
-}
-
-.level-toggle {
-  float: right;
-  margin-left: auto;
-  margin-right: 20px;
-}
-
-.level-toggle-button {
-  background-color: white;
-}
-
-.publication-link {
-  color: #366080;
-  font-style: italic;
-}
-
-.predict-card {
-  background-color: lightgrey;
-}
-
-.cancer-select-card {
-  height: 700px;
-}
-
-.cancer-select {
-  float: left;
-  margin-left: auto;
-  margin-right: 60px;
-  width: 400px;
-}
-
-.mat-select-trigger {
-  min-width: 500px;
-}
-
-.cancer-select-input {
-  width: 500px;
-  max-height: 600px;
-}
-
-.subtype-header {
-  text-align: left;
-  font-weight: bold;
-}
-
-.result-panel {
-  background-color: #dfdfe0;
-}
-
-.result-accordion .mat-expansion-panel-header-description{
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sample-distribution-pie {
-  width: 100%;
-  height: 100%;
-}
-
-.overall-acc-plot-div {
-  height: 200px;
-  width: 100%;
-}
-
-#overall-acc {
-  height: 200px;
-  width: 100%;
-}
-
-.class-acc-plot-div {
-  height: 400px;
-  width: 100%;
-  overflow-y: auto;
-}
-
-.class-acc-plot {
-  height: 100%;
-  width: 100%;
-}
-
-.measure-select-input {
-  float: right;
-  margin-left: auto;
-}
-
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  height: 100vh;
-}
-
-.loading-spinner img {
-  animation: changeColor 2s linear infinite alternate;
-  transition: filter 1s linear;
-  max-width: 100px;
-  max-height: 100px;
-}
-
-@keyframes changeColor {
-  0% {
-    filter: hue-rotate(0deg); /* Starting color */
-  }
-  100% {
-    filter: hue-rotate(180deg); /* Ending color */
-  }
-}
-
-.enrichmentPlotHolderDiv {
-  height: 300px;
-  width: 100%;
-  overflow-y: auto;
-}
-
-.enrichmentPlotHolder {
-  width: 100%;
-}
-// box for cancer selection
-.cancer-select-box {
-  min-height: 300px;
-  margin-left: 10px;
-}
-
-// cancer description
-.cancer-information {
-  height: 250px;
-  float: left;
-}
-// cancer image
-.cancer-image {
-  width: 100%;
-  height: 500px;
-  text-align: center;
-}
-
-.cancer-image img {
-  max-height: 100%;
-  max-width: 100%;
-  display: block;
-  margin: 0 auto;
-}
-
-// lollipop plot
-.score-select {
-  margin-left: 20px;
-  margin-right: auto;
-  float: left;
-  width: 300px;
-}
-
-.score-select-input {
-  width: 200px;
-}
-
-.top-select {
-  width: 200px;
-}
-
-.select-top-n {
-  width: 200px;
-}
-
-.top-ceRNA-selection-div {
-  width: 200px;
-}
-
-.top-centralities-plot {
-  height: 300px;
-  width: 100%;
-}
-
-table {
-  width: 100%;
-  min-height: 200px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.modules-table {
-  width: 100%;
-  max-height: 300px;
-  overflow-y: auto;
-  border-color: lightgrey;
-  border-width: 2px;
-}
-
-.mat-cell, .mat-header-cell {
-  text-align: center;
-  vertical-align: middle;
-}
-
-.module-expression-heatmap {
-  width: 100%;
-  height: 300px;
-  align-items: center;
-  justify-content: center;
-}
-
-.heatmaps {
-  overflow: auto;
-}
-
-// PREDICT TAB
-
-.example-expression-button-div {
-  float: right;
-  margin-left: auto;
-  margin-right: 20px;
-}
-
-.example-expression-button {
-  background-color: #4892b9;
-  color: white;
-}
-
-.example-expression-table-div {
-  width: 100%;
-  height: auto;
-}
-
-.example-expression-table {
-  width: 100%;
-  height: auto;
-}
-
-.mat-form-field + .mat-form-field {
-  margin-left: 8px;
-}
-
-.run-button-div {
-  min-width: 100%;
-  max-width: 100%;
-}
-
-.run-button {
-  background-color: #0b608c;
-  min-width: 80%;
-  max-width: 80%;
-  margin: 5px;
-  color: white;
-}
-
-.run-button-predict {
-  background-color: #4892b9;
-  min-width: 100%;
-  max-width: 100%;
-  margin: 5px;
-  color: white;
-}
-
-.type-prediction-div {
-  width: 100%;
-  height: 400px;
-  flex-direction: row;
-}
-
-.type-prediction {
-  display: flex;
-  width: 80%;
-  float: left;
-  height: 400px;
-  overflow-y: auto;
-}
-
-.type-legend {
-  width: 15%;
-  float: right;
-}
-
-.type-legend {
-  margin-top: 10px;
-  margin-right: 10px;
-}
-
-.legend {
-  display: flex;
-  flex-direction: column;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.legend-text {
-  font-size: 14px;
-}
-
-.child {
-  font-size: 12px;
-  display: flex;
-}
-
-.legend-labels {
-  margin-right: 5px;
-  display: flex;
-  flex-direction: column;
-}
-
-.child:not(:last-child) {
-  margin-bottom: 60px; /* Adjust the margin between child elements */
-}
-
-.percent-color-box {
-  width: 30px;
-  height: 80px;
-  margin-right: 10px;
-  background: linear-gradient(to top, darkorange, #008c00);
-  text-orientation: sideways;
-}
+// /* set base container dimensions */
+
+// #bigBox {
+//   width: auto;
+//   margin: 50px
+// }
+
+// .container {
+//   margin: 20px;
+// }
+
+// .circle {
+//   width: 40px;
+//   height: 40px;
+//   line-height: 40px;
+//   border-radius: 50%;
+//   font-size: 20px;
+//   color: white;
+//   text-align: center;
+//   background: #4892b9;
+// }
+
+// .sidebar {
+//   min-width: 150px;
+//   max-width: 150px;
+//   background-color: #e7e7e7;
+// }
+
+// .sidebar-tabs {
+//   display: block;
+//   min-width: 150px;
+//   max-width: 150px;
+// }
+
+// .sidebar-tab {
+//   font-size: 24px;
+//   font-weight: normal;
+//   margin-bottom: 10px;
+//   margin-top: 10px;
+//   margin-right: 5px;
+//   margin-left: 5px;
+//   background-color: #9ccee8;
+// }
+
+// #headline{
+//   text-align:center;
+// }
+
+// .card-body {
+//   img {
+//     height: auto;
+//   }
+// }
+
+// /* cards */
+// .mat-card-header {
+//   width: 100%;
+// }
+
+// .mat-card-header-text {
+//   margin: 0 !important;
+// }
+
+// .mat-card-title {
+//   text-align: left;
+// }
+
+// .mat-card-subtitle {
+//   text-align: left;
+// }
+
+// .mat-card-content {
+//   margin-left: 10px;
+// }
+
+// // info card
+// .info-card {
+//   background-color: #9ccee8;
+// }
+
+// .info-card-small {
+//   background-color: #9ccee8;
+//   font-size: 18px;
+//   margin-bottom: 10px;
+// }
+
+// .info-text-small-div{
+//   font-size: 16px;
+// }
+
+// .info-list {
+//   list-style-type: none;
+// }
+
+// .spongEffects-workflow-img {
+//   align-self: center;
+// }
+
+// /* expansion panels */
+// .mat-expansion-panel-header {
+
+// }
+
+// .mat-expansion-panel-header-title {
+//   width: 250px !important;
+//   margin-left: 8px;
+//   font-size: 20px;
+//   font-weight: 500;
+// }
+
+// .mat-expansion-panel-header-description {
+//   margin-left: auto;
+//   width: 600px !important;
+// }
+
+// .explore-card {
+//   background-color: lightgrey;
+// }
+
+// .level-toggle {
+//   float: right;
+//   margin-left: auto;
+//   margin-right: 20px;
+// }
+
+// .level-toggle-button {
+//   background-color: white;
+// }
+
+// .publication-link {
+//   color: #366080;
+//   font-style: italic;
+// }
+
+// .predict-card {
+//   background-color: lightgrey;
+// }
+
+// .cancer-select-card {
+//   height: 700px;
+// }
+
+// .cancer-select {
+//   float: left;
+//   margin-left: auto;
+//   margin-right: 60px;
+//   width: 400px;
+// }
+
+// .mat-select-trigger {
+//   min-width: 500px;
+// }
+
+// .cancer-select-input {
+//   width: 500px;
+//   max-height: 600px;
+// }
+
+// .subtype-header {
+//   text-align: left;
+//   font-weight: bold;
+// }
+
+// .result-panel {
+//   background-color: #dfdfe0;
+// }
+
+// .result-accordion .mat-expansion-panel-header-description{
+//   justify-content: space-between;
+//   align-items: center;
+// }
+
+// .sample-distribution-pie {
+//   width: 100%;
+//   height: 100%;
+// }
+
+// .overall-acc-plot-div {
+//   height: 200px;
+//   width: 100%;
+// }
+
+// #overall-acc {
+//   height: 200px;
+//   width: 100%;
+// }
+
+// .class-acc-plot-div {
+//   height: 400px;
+//   width: 100%;
+//   overflow-y: auto;
+// }
+
+// .class-acc-plot {
+//   height: 100%;
+//   width: 100%;
+// }
+
+// .measure-select-input {
+//   float: right;
+//   margin-left: auto;
+// }
+
+// .loading-spinner {
+//   display: flex;
+//   justify-content: center;
+//   align-items: flex-start;
+//   height: 100vh;
+// }
+
+// .loading-spinner img {
+//   animation: changeColor 2s linear infinite alternate;
+//   transition: filter 1s linear;
+//   max-width: 100px;
+//   max-height: 100px;
+// }
+
+// @keyframes changeColor {
+//   0% {
+//     filter: hue-rotate(0deg); /* Starting color */
+//   }
+//   100% {
+//     filter: hue-rotate(180deg); /* Ending color */
+//   }
+// }
+
+// .enrichmentPlotHolderDiv {
+//   height: 300px;
+//   width: 100%;
+//   overflow-y: auto;
+// }
+
+// .enrichmentPlotHolder {
+//   width: 100%;
+// }
+// // box for cancer selection
+// .cancer-select-box {
+//   min-height: 300px;
+//   margin-left: 10px;
+// }
+
+// // cancer description
+// .cancer-information {
+//   height: 250px;
+//   float: left;
+// }
+// // cancer image
+// .cancer-image {
+//   width: 100%;
+//   height: 500px;
+//   text-align: center;
+// }
+
+// .cancer-image img {
+//   max-height: 100%;
+//   max-width: 100%;
+//   display: block;
+//   margin: 0 auto;
+// }
+
+// // lollipop plot
+// .score-select {
+//   margin-left: 20px;
+//   margin-right: auto;
+//   float: left;
+//   width: 300px;
+// }
+
+// .score-select-input {
+//   width: 200px;
+// }
+
+// .top-select {
+//   width: 200px;
+// }
+
+// .select-top-n {
+//   width: 200px;
+// }
+
+// .top-ceRNA-selection-div {
+//   width: 200px;
+// }
+
+// .top-centralities-plot {
+//   height: 300px;
+//   width: 100%;
+// }
+
+// table {
+//   width: 100%;
+//   min-height: 200px;
+//   max-height: 200px;
+//   overflow-y: auto;
+// }
+
+// .modules-table {
+//   width: 100%;
+//   max-height: 300px;
+//   overflow-y: auto;
+//   border-color: lightgrey;
+//   border-width: 2px;
+// }
+
+// .mat-cell, .mat-header-cell {
+//   text-align: center;
+//   vertical-align: middle;
+// }
+
+// .module-expression-heatmap {
+//   width: 100%;
+//   height: 300px;
+//   align-items: center;
+//   justify-content: center;
+// }
+
+// .heatmaps {
+//   overflow: auto;
+// }
+
+// // PREDICT TAB
+
+// .example-expression-button-div {
+//   float: right;
+//   margin-left: auto;
+//   margin-right: 20px;
+// }
+
+// .example-expression-button {
+//   background-color: #4892b9;
+//   color: white;
+// }
+
+// .example-expression-table-div {
+//   width: 100%;
+//   height: auto;
+// }
+
+// .example-expression-table {
+//   width: 100%;
+//   height: auto;
+// }
+
+// .mat-form-field + .mat-form-field {
+//   margin-left: 8px;
+// }
+
+// .run-button-div {
+//   min-width: 100%;
+//   max-width: 100%;
+// }
+
+// .run-button {
+//   background-color: #0b608c;
+//   min-width: 80%;
+//   max-width: 80%;
+//   margin: 5px;
+//   color: white;
+// }
+
+// .run-button-predict {
+//   background-color: #4892b9;
+//   min-width: 100%;
+//   max-width: 100%;
+//   margin: 5px;
+//   color: white;
+// }
+
+// .type-prediction-div {
+//   width: 100%;
+//   height: 400px;
+//   flex-direction: row;
+// }
+
+// .type-prediction {
+//   display: flex;
+//   width: 80%;
+//   float: left;
+//   height: 400px;
+//   overflow-y: auto;
+// }
+
+// .type-legend {
+//   width: 15%;
+//   float: right;
+// }
+
+// .type-legend {
+//   margin-top: 10px;
+//   margin-right: 10px;
+// }
+
+// .legend {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .legend-item {
+//   display: flex;
+//   align-items: center;
+//   margin-bottom: 5px;
+// }
+
+// .legend-text {
+//   font-size: 14px;
+// }
+
+// .child {
+//   font-size: 12px;
+//   display: flex;
+// }
+
+// .legend-labels {
+//   margin-right: 5px;
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .child:not(:last-child) {
+//   margin-bottom: 60px; /* Adjust the margin between child elements */
+// }
+
+// .percent-color-box {
+//   width: 30px;
+//   height: 80px;
+//   margin-right: 10px;
+//   background: linear-gradient(to top, darkorange, #008c00);
+//   text-orientation: sideways;
+// }

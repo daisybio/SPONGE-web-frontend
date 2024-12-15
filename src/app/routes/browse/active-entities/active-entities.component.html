@@ -1,0 +1,78 @@
+<mat-tab-group>
+  <mat-tab [label]="'Active nodes (' + nodes$().length + ')'">
+    <div class="card-container">
+      @for (node of nodes$(); track node) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>{{ BrowseService.getNodePrettyName(node) }}</mat-card-title>
+            <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <table>
+              <tr>
+                <th>Betweenness</th>
+                <td>{{ node.betweenness }}</td>
+              </tr>
+              <tr>
+                <th>Eigenvector</th>
+                <td>{{ node.eigenvector }}</td>
+              </tr>
+              <tr>
+                <th>Degree</th>
+                <td>{{ node.node_degree }}</td>
+              </tr>
+            </table>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button (click)="openModal(BrowseService.getNodeObject(node))">View Details</button>
+          </mat-card-actions>
+        </mat-card>
+      } @empty {
+        <p>No active nodes found.</p>
+        <p>Click on a node in the network to activate.</p>
+      }
+    </div>
+  </mat-tab>
+  <mat-tab [label]="'Active edges (' + edges$().length + ')'">
+    <div class="card-container">
+      @for (interaction of edges$(); track interaction) {
+        @let names = BrowseService.getInteractionPrettyNames(interaction);
+        <mat-card>
+          <mat-card-header>
+            @let ids = BrowseService.getInteractionIDs(interaction);
+            <mat-card-title>{{ names[0] }} - {{ names[1] }}
+            </mat-card-title>
+            <mat-card-subtitle>{{ ids[0] }} - {{ ids[1] }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <table>
+              <tr>
+                <th>Correlation</th>
+                <td>{{ interaction.correlation }}</td>
+              </tr>
+              <tr>
+                <th>MScor</th>
+                <td>{{ interaction.mscor }}</td>
+              </tr>
+              <tr>
+                <th>Adj. p-Value</th>
+                <td>{{ interaction.p_value }}</td>
+              </tr>
+            </table>
+          </mat-card-content>
+          <mat-card-actions>
+            @let objs = BrowseService.getInteractionObjects(interaction);
+            <button mat-button (click)="openModal(objs[0])">View {{ names[0] }}
+            </button>
+            <button mat-button (click)="openModal(objs[1])">View {{ names[1] }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      } @empty {
+        <p>No active edges found.</p>
+        <p>Click on an edge in the network to activate.</p>
+      }
+    </div>
+  </mat-tab>
+</mat-tab-group>

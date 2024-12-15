@@ -11,7 +11,9 @@ import {
 import {BrowseSidebarComponent} from "./routes/documentation/browse-sidebar/browse-sidebar.component";
 import {MoreComponent} from "./routes/documentation/more/more.component";
 import {SpongEffectsComponent} from "./routes/spongeffects/spongeffects.component";
-
+import {GenesComponent} from "./routes/genes/genes.component";
+import {ExploreComponent} from "./routes/spongeffects/explore/explore.component";
+import {PredictComponent} from "./routes/spongeffects/predict/predict.component";
 
 export const routes: Routes = [
   {
@@ -21,6 +23,10 @@ export const routes: Routes = [
   {
     path: 'browse',
     component: BrowseComponent
+  },
+  {
+    path: 'genes',
+    component: GenesComponent
   },
   {
     path: 'documentation',
@@ -58,7 +64,17 @@ export const routes: Routes = [
   },
   {
     path: 'spongeffects',
-    component: SpongEffectsComponent
+    component: SpongEffectsComponent,
+    children: [
+      {
+        path: '',
+        component: ExploreComponent
+      },
+      {
+        path: 'predict',
+        component: PredictComponent
+      }
+    ],
   },
   {
     path: '**',

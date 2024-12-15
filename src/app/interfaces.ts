@@ -2,8 +2,40 @@ export interface Dataset {
   data_origin: string,
   dataset_ID: number,
   disease_name: string,
+  disease_subtype: string | null,
   disease_type: string,
-  download_url: string
+  download_url: string,
+  sponge_db_version: number
+}
+
+export interface SpongeRun {
+  "sponge_run": {
+    "dataset": {
+      "data_origin": string,
+      "dataset_ID": number,
+      "disease_name": string
+    },
+    "sponge_run_ID": number
+  }
+}
+
+export interface RunInfo {
+  "coefficient_direction": string,
+  "coefficient_threshold": string,
+  "dataset": {
+    "dataset_ID": number,
+    "disease_name": string
+  },
+  "f_test": boolean,
+  "f_test_p_adj_threshold": number,
+  "ks": string,
+  "log_level": string,
+  "m_max": number,
+  "min_corr": number,
+  "number_of_datasets": number,
+  "number_of_samples": number,
+  "sponge_run_ID": number,
+  "variance_cutoff": string
 }
 
 export interface DatasetInfo {
@@ -23,7 +55,7 @@ export interface OverallCounts {
   count_interactions_sign: number,
   count_shared_miRNAs: number,
   disease_name: string,
-  run_ID: number
+  sponge_run_ID: number
 }
 
 export enum GeneSorting {
@@ -41,6 +73,55 @@ export enum InteractionSorting {
 export interface Gene {
   ensg_number: string,
   gene_symbol?: string
+}
+
+export interface Transcript {
+  enst_number: string,
+  gene: Gene
+}
+
+export interface GeneNode extends SpongeRun {
+  betweenness: number,
+  eigenvector: number,
+  gene: Gene,
+  node_degree: number
+}
+
+export interface TranscriptNode extends SpongeRun {
+  betweenness: number,
+  eigenvector: number,
+  transcript: Transcript,
+  node_degree: number
+}
+
+export interface GeneInteraction extends SpongeRun {
+  "correlation": number,
+  "gene1": Gene,
+  "gene2": Gene,
+  "mscor": number,
+  "p_value": number,
+}
+
+export interface TranscriptInteraction extends SpongeRun {
+  "correlation": number,
+  "mscor": number,
+  "p_value": number,
+  "transcript_1": Transcript,
+  "transcript_2": Transcript
+}
+
+export interface BrowseQuery {
+  level: 'gene' | 'transcript',
+  dataset: Dataset,
+  geneSorting: GeneSorting,
+  maxGenes: number,
+  minDegree: number,
+  minBetweenness: number,
+  minEigen: number,
+  interactionSorting: InteractionSorting,
+  maxInteractions: number,
+  maxPValue: number,
+  minMScore: number
 }
 
 export interface CeRNA {
@@ -94,15 +175,18 @@ export interface CeRNAExpression {
   "sample_ID": string
 }
 
+export interface GeneExpression {
+  "dataset": string,
+  "expr_value": number,
+  "gene": Gene,
+  "sample_ID": string
+}
+
 export interface TranscriptExpression {
   "dataset": string,
-  "transcript": string,
   "expr_value": number,
-  "gene": {
-    "ensg_number": string,
-    "gene_symbol": Gene
-  },
   "sample_ID": string,
+  "transcript": Transcript
 }
 
 export interface SurvivalRate {
@@ -122,25 +206,65 @@ export interface SurvivalPValue {
   "pValue": number
 }
 
-export interface GeneCount {
+export interface GeneCount extends SpongeRun {
   "count_all": number,
   "count_sign": number,
-  "gene": {
-    "ensg_number": string,
-    "gene_symbol": string
-  },
-  "run": {
-    "dataset": {
-      "data_origin": string,
-      "dataset_ID": number,
-      "disease_name": string
-    },
-    "run_ID": number
-  }
+  "gene": Gene
+}
+
+export interface GeneInfo {
+  chromosome_name: string,
+  cytoband: string,
+  description: string,
+  end_pos: number,
+  ensg_number: string,
+  gene_symbol: string,
+  gene_type: string,
+  start_pos: number
+}
+
+export interface GOTerm {
+  description: string,
+  gene: Gene,
+  gene_ontology_symbol: string
+}
+
+export interface Hallmark {
+  gene: Gene,
+  hallmark: string
+}
+
+export interface WikiPathway {
+  gene: Gene,
+  wp_key: string
 }
 
 // from spongEffects
 // route responses
+
+export interface SpongEffectsRun {
+  spongeEffects_run_ID: number,
+  m_scor_threshold: number,
+  p_adjust_threshold: number,
+  modules_cutoff: number,
+  bin_size: number,
+  min_size: number,
+  max_size: number,
+  min_expr: number,
+  method: string,
+  cv_folds: number
+  level:  string,
+  sponge_run_ID: number, 
+  m_max: number, 
+  log_level: string,
+  sponge_db_version:  string,
+  dataset_ID: number, 
+  disease_name: string,
+  data_origin: string,
+  disease_type: string,
+  download_url: string,
+  disease_subtype: string,
+}
 
 export interface RunPerformance {
   model_type: string,
@@ -231,6 +355,11 @@ export interface PredictCancerType {
   }[];
 }
 
+export interface ExploreQuery {
+  selectedCancer: string,
+  selectedLevel: string
+}
+
 // other interfaces for spongEffects
 
 export interface Metric {
@@ -238,7 +367,7 @@ export interface Metric {
   split: string
   lower: number,
   upper: number,
-  level: number
+  idx: number
 }
 
 export interface SelectElement {

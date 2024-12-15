@@ -1,12 +1,20 @@
-import {Component} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {MatTabsModule} from "@angular/material/tabs";
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatOption, MatSelect} from "@angular/material/select";
-import {MatInput} from "@angular/material/input";
-import {MatAccordion, MatExpansionModule} from "@angular/material/expansion";
-import {MatButton} from "@angular/material/button";
+import {ReactiveFormsModule} from "@angular/forms";
+import {MatExpansionModule} from "@angular/material/expansion";
+import {FormComponent} from "./form/form.component";
+import {InteractionsComponent} from "./interactions/interactions.component";
+import {NetworkComponent} from "./network/network.component";
+import {HeatmapComponent} from "./heatmap/heatmap.component";
+import {BrowseService} from "../../services/browse.service";
+import {SurvivalAnalysisComponent} from "./survival-analysis/survival-analysis.component";
+import {ActiveEntitiesComponent} from "./active-entities/active-entities.component";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {MatIcon} from "@angular/material/icon";
+import {MatAnchor} from "@angular/material/button";
+import {VersionsService} from "../../services/versions.service";
+import {NodesComponent} from "./nodes/nodes.component";
 
 @Component({
   selector: 'app-browse',
@@ -14,37 +22,28 @@ import {MatButton} from "@angular/material/button";
     MatSidenavModule,
     MatTabsModule,
     ReactiveFormsModule,
-    MatFormField,
-    MatLabel,
-    MatSelect,
-    MatOption,
-    MatInput,
-    MatAccordion,
     MatExpansionModule,
-    MatButton
+    FormComponent,
+    InteractionsComponent,
+    NetworkComponent,
+    HeatmapComponent,
+    SurvivalAnalysisComponent,
+    ActiveEntitiesComponent,
+    MatProgressSpinnerModule,
+    MatIcon,
+    MatAnchor,
+    NodesComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
 })
 export class BrowseComponent {
-  diseases = ["A", "B", "C"];
-  geneSortings = ["D", "E", "F"];
-  interactionSortings = ["G", "H", "I"];
-
-  formGroup = new FormGroup({
-    disease: new FormControl(this.diseases[0]),
-    geneSorting: new FormControl(this.geneSortings[0]),
-    maxGenes: new FormControl(10, [Validators.min(1), Validators.max(100)]),
-    minDegree: new FormControl(1, [Validators.min(1), Validators.max(100)]),
-    minBetweenness: new FormControl(0, [Validators.min(0), Validators.max(1)]),
-    minEigen: new FormControl(0, [Validators.min(0), Validators.max(1)]),
-    interactionSorting: new FormControl(this.interactionSortings[0]),
-    maxInteractions: new FormControl(100, [Validators.min(1), Validators.max(1000)]),
-    maxPValue: new FormControl(0.05, [Validators.min(0), Validators.max(1)]),
-    minMScore: new FormControl(0, [Validators.min(0), Validators.max(1)]),
-  })
-
-  onSubmit() {
-    console.log(this.formGroup.value);
-  }
+  tabChange = signal(0);
+  versionService = inject(VersionsService);
+  browseService = inject(BrowseService);
+  level = this.browseService.level$;
+  version$ = this.versionService.versionReadOnly();
+  hasData$ = computed(() => this.browseService.nodes$().length > 0);
+  isLoading$ = this.browseService.isLoading$;
+  rawDataURL$ = this.browseService.rawDataURL();
 }
