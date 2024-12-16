@@ -7,7 +7,7 @@ import {BrowseService} from "../../services/browse.service";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
-import {MatSortModule} from "@angular/material/sort";
+import {MatSort, MatSortModule} from "@angular/material/sort";
 
 interface TableData {
   node1_coefficient: number;
@@ -24,30 +24,10 @@ interface TableData {
 })
 export class InteractionModalComponent implements AfterViewInit {
   paginator = viewChild.required(MatPaginator);
+  sort = viewChild.required(MatSort);
   readonly interaction = inject<GeneInteraction | TranscriptInteraction>(MAT_DIALOG_DATA);
   tableData = new MatTableDataSource<TableData>();
   columns = ['hs_nr', 'mir_ID', 'node1_coefficient', 'node2_coefficient'];
-  protected readonly browseService = inject(BrowseService);
-  disease$ = this.browseService.disease$;
-  protected readonly BrowseService = BrowseService;
-  private readonly backend = inject(BackendService);
-  private readonly versionsService = inject(VersionsService);
-  version$ = this.versionsService.versionReadOnly();
-  miRNAs$ = resource({
-    request: computed(() => {
-      return {
-        version: this.version$(),
-        level: 'gene1' in this.interaction ? 'gene' : 'transcript',
-        disease: this.disease$()
-      }
-    }),
-    loader: async (param) => {
-      const disease = param.request.disease;
-      if (disease === undefined) return;
-      const identifiers = BrowseService.getInteractionIDs(this.interaction);
-      return await this.backend.getMiRNAs(param.request.version, disease, identifiers, param.request.level as 'gene' | 'transcript');
-    }
-  })
   tableData$ = computed(() => {
     const miRNAs = this.miRNAs$.value();
     if (miRNAs === undefined) return [];
@@ -89,6 +69,27 @@ export class InteractionModalComponent implements AfterViewInit {
       };
     }).filter((entry): entry is TableData => entry !== undefined);
   })
+  protected readonly browseService = inject(BrowseService);
+  disease$ = this.browseService.disease$;
+  protected readonly BrowseService = BrowseService;
+  private readonly backend = inject(BackendService);
+  miRNAs$ = resource({
+    request: computed(() => {
+      return {
+        version: this.version$(),
+        level: 'gene1' in this.interaction ? 'gene' : 'transcript',
+        disease: this.disease$()
+      }
+    }),
+    loader: async (param) => {
+      const disease = param.request.disease;
+      if (disease === undefined) return;
+      const identifiers = BrowseService.getInteractionIDs(this.interaction);
+      return await this.backend.getMiRNAs(param.request.version, disease, identifiers, param.request.level as 'gene' | 'transcript');
+    }
+  })
+  private readonly versionsService = inject(VersionsService);
+  version$ = this.versionsService.versionReadOnly();
 
   constructor() {
     effect(() => {
@@ -98,5 +99,6 @@ export class InteractionModalComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.tableData.paginator = this.paginator();
+    this.tableData.sort = this.sort();
   }
 }
