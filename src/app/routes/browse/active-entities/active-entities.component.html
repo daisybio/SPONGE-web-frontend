@@ -59,6 +59,11 @@
                 <th>Adj. p-Value</th>
                 <td>{{ interaction.p_value }}</td>
               </tr>
+              <tr>
+                <th>MiRNAs</th>
+                <td>
+                  <button mat-button (click)="openInteractionModal(interaction)">View supporting miRNAs</button>
+              </tr>
             </table>
           </mat-card-content>
           <mat-card-actions>

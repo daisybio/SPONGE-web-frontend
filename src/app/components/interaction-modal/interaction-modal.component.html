@@ -1,0 +1,9 @@
+@let fullNames = BrowseService.getInteractionFullNames(interaction);
+<h1 mat-dialog-title>{{ fullNames[0] }} - {{ fullNames[1] }}</h1>
+<mat-dialog-content>
+  @if (miRNAresource.isLoading()) {
+    <div class="card-container">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+  }
+</mat-dialog-content>

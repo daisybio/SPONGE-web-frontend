@@ -206,8 +206,7 @@ export interface TranscriptMiRNA extends SpongeRun {
   mirna: MiRNA
 }
 
-export interface GeneMiRNA {
+export interface GeneMiRNA extends SpongeRun {
   gene: Gene,
-  mirna: MiRNA,
-  run: SpongeRun
+  mirna: MiRNA
 }

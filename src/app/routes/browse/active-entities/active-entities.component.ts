@@ -1,12 +1,13 @@
-import {Component, inject, Signal} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {MatTabsModule} from "@angular/material/tabs";
 import {BrowseService} from "../../../services/browse.service";
-import {Gene, GeneInteraction, GeneNode, Transcript, TranscriptInteraction, TranscriptNode} from "../../../interfaces";
+import {Gene, GeneInteraction, Transcript, TranscriptInteraction} from "../../../interfaces";
 import {MatCardModule} from "@angular/material/card";
 import {MatDialog} from "@angular/material/dialog";
 import {GeneModalComponent} from "../../../components/gene-modal/gene-modal.component";
 import {MatButton} from "@angular/material/button";
 import {TranscriptModalComponent} from "../../../components/transcript-modal/transcript-modal.component";
+import {InteractionModalComponent} from "../../../components/interaction-modal/interaction-modal.component";
 
 @Component({
   selector: 'app-active-entities',
@@ -19,14 +20,17 @@ import {TranscriptModalComponent} from "../../../components/transcript-modal/tra
   styleUrl: './active-entities.component.scss'
 })
 export class ActiveEntitiesComponent {
-  nodes$: Signal<(GeneNode | TranscriptNode)[]>
-  edges$: Signal<(GeneInteraction | TranscriptInteraction)[]>
   readonly dialog = inject(MatDialog);
-  protected readonly BrowseService = BrowseService;
+  protected BrowseService = BrowseService;
+  protected readonly browseService = inject(BrowseService);
+  nodes$ = this.browseService.activeNodes$;
+  edges$ = this.browseService.activeInteractions$;
 
-  constructor(browseService: BrowseService) {
-    this.nodes$ = browseService.activeNodes$;
-    this.edges$ = browseService.activeInteractions$;
+  openInteractionModal(interaction: GeneInteraction | TranscriptInteraction): void {
+    console.log(interaction);
+    this.dialog.open(InteractionModalComponent, {
+      data: interaction
+    });
   }
 
   openModal(entity: Gene | Transcript): void {

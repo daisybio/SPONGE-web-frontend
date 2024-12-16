@@ -300,29 +300,21 @@ export class BackendService {
     return this.http.getRequest<string[]>(this.getRequestURL(route, query));
   }
 
-  async getGeneMiRNAs(version: number, disease: Dataset, ensgs: [string, string]) {
-    const route = 'miRNAInteraction/findceRNA';
+  async getMiRNAs(version: number, disease: Dataset, identifiers: [string, string], level: 'gene' | 'transcript') {
+    const route = level == 'gene' ? 'miRNAInteraction/findceRNA' : 'miRNAInteraction/findceRNATranscripts';
 
     const query: Query = {
       sponge_db_version: version,
       dataset_ID: disease.dataset_ID,
-      ensg_number: ensgs.join(','),
       between: true
     }
-
-    return this.http.getRequest<GeneMiRNA[]>(this.getRequestURL(route, query));
-  }
-
-  getTranscriptMiRNAs(version: number, disease: Dataset, ensts: [string, string]) {
-    const route = 'miRNAInteraction/findceRNATranscripts';
-
-    const query: Query = {
-      sponge_db_version: version,
-      dataset_ID: disease.dataset_ID,
-      enst_number: ensts.join(',')
+    if (level == 'gene') {
+      query['ensg_number'] = identifiers.join(',');
+    } else {
+      query['enst_number'] = identifiers.join(',');
     }
 
-    return this.http.getRequest<TranscriptMiRNA[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<GeneMiRNA[] | TranscriptMiRNA[]>(this.getRequestURL(route, query));
   }
 
   async getAlternativeSplicingEvents(ensts: string[]): Promise<AlternativeSplicingEvent[]> {

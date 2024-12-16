@@ -35,13 +35,13 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -50,7 +50,7 @@ export class BrowseService {
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
   activeInteractions$ = computed(() => {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
-    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined) as GeneInteraction[];
+    return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined);
   })
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
