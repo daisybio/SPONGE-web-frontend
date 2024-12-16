@@ -4,6 +4,7 @@ import {capitalize} from "lodash";
 import {toSignal} from "@angular/core/rxjs-interop";
 import {fromEvent} from "rxjs";
 import {VersionsService} from "../../../services/versions.service";
+import {SUBTYPE_DEFAULT} from "../../../constants";
 
 declare const Plotly: any;
 
@@ -86,7 +87,7 @@ export class SunburstComponent {
     const parents = ["", ...diseaseOrder.map(d => "Diseases")];
 
     for (let datasetCount of Object.values(datasetCounts)) {
-      const subtype = datasetCount.dataset.disease_subtype || 'Unspecific';
+      const subtype = datasetCount.dataset.disease_subtype || SUBTYPE_DEFAULT;
 
       const count = datasetCount.count;
       const dataset = datasetCount.dataset;
@@ -96,7 +97,7 @@ export class SunburstComponent {
       values.push(count);
       parents.push(dataset.disease_name);
     }
-    
+
     return {
       ids,
       labels,

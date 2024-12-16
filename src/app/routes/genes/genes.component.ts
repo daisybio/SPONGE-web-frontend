@@ -15,6 +15,7 @@ import {InteractionsTableComponent} from "../../components/interactions-table/in
 import {VersionsService} from "../../services/versions.service";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {SunburstComponent} from "./sunburst/sunburst.component";
+import {SUBTYPE_DEFAULT} from "../../constants";
 
 @Component({
   selector: 'app-genes',
@@ -127,6 +128,7 @@ export class GenesComponent {
     }
   });
   protected readonly capitalize = capitalize;
+  protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
 
   remove(gene: Gene): void {
     this.activeGenes.update(genes => {

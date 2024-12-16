@@ -66,7 +66,7 @@
                 <mat-select [(value)]="selectedSubtype" [disabled]="possibleSubtypes().length < 2">
                   @for (subtype of possibleSubtypes(); track subtype.disease_subtype) {
                     <mat-option [value]="subtype">
-                      {{ capitalize(subtype.disease_subtype || "unspecified") }}
+                      {{ capitalize(subtype.disease_subtype || SUBTYPE_DEFAULT) }}
                     </mat-option>
                   }
                 </mat-select>

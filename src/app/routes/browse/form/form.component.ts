@@ -10,6 +10,7 @@ import {VersionsService} from "../../../services/versions.service";
 import {toSignal} from "@angular/core/rxjs-interop";
 import _ from "lodash";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
+import {SUBTYPE_DEFAULT} from "../../../constants";
 
 @Component({
   selector: 'app-form',
@@ -66,7 +67,7 @@ export class FormComponent {
   setInitialSubtype = effect(() => {
     const subtypes = this.subtypes();
     const formField = this.formGroup.get('dataset');
-    formField?.setValue(subtypes[0]);
+    formField?.setValue(subtypes.find((subtype) => subtype.disease_subtype === null));
 
     if (subtypes.length <= 1) {
       formField?.disable();
@@ -75,6 +76,7 @@ export class FormComponent {
     }
   })
   protected readonly capitalize = _.capitalize;
+  protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
 
   constructor() {
     this.formGroup.valueChanges.subscribe((config) => {
