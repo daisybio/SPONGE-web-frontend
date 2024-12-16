@@ -27,7 +27,6 @@ export class ActiveEntitiesComponent {
   edges$ = this.browseService.activeInteractions$;
 
   openInteractionModal(interaction: GeneInteraction | TranscriptInteraction): void {
-    console.log(interaction);
     this.dialog.open(InteractionModalComponent, {
       data: interaction
     });

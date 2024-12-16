@@ -203,10 +203,12 @@ export interface MiRNA {
 
 export interface TranscriptMiRNA extends SpongeRun {
   transcript: Transcript,
-  mirna: MiRNA
+  mirna: MiRNA,
+  coefficient: number
 }
 
 export interface GeneMiRNA extends SpongeRun {
   gene: Gene,
-  mirna: MiRNA
+  mirna: MiRNA,
+  coefficient: number
 }
