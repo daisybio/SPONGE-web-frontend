@@ -17,7 +17,8 @@
     <ng-container matColumnDef="mir_ID">
       <th *matHeaderCellDef mat-header-cell mat-sort-header>ID</th>
       <td *matCellDef="let entry" mat-cell>
-        {{ entry.mir_ID }}
+        <a [href]="'https://mirbase.org/mature/' + entry.mir_ID" mat-flat-button matTooltip="Open in miRBase"
+           matTooltipPosition="right" target="_blank">{{ entry.mir_ID }}</a>
       </td>
     </ng-container>
 
