@@ -9,6 +9,7 @@ import {
   GeneExpression,
   GeneInfo,
   GeneInteraction,
+  GeneMiRNA,
   GeneNode,
   GOTerm,
   Hallmark,
@@ -19,6 +20,7 @@ import {
   TranscriptExpression,
   TranscriptInfo,
   TranscriptInteraction,
+  TranscriptMiRNA,
   TranscriptNode,
   WikiPathway
 } from "../interfaces";
@@ -296,6 +298,31 @@ export class BackendService {
       ensg_number: ensg
     }
     return this.http.getRequest<string[]>(this.getRequestURL(route, query));
+  }
+
+  async getGeneMiRNAs(version: number, disease: Dataset, ensgs: [string, string]) {
+    const route = 'miRNAInteraction/findceRNA';
+
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID: disease.dataset_ID,
+      ensg_number: ensgs.join(','),
+      between: true
+    }
+
+    return this.http.getRequest<GeneMiRNA[]>(this.getRequestURL(route, query));
+  }
+
+  getTranscriptMiRNAs(version: number, disease: Dataset, ensts: [string, string]) {
+    const route = 'miRNAInteraction/findceRNATranscripts';
+
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID: disease.dataset_ID,
+      enst_number: ensts.join(',')
+    }
+
+    return this.http.getRequest<TranscriptMiRNA[]>(this.getRequestURL(route, query));
   }
 
   async getAlternativeSplicingEvents(ensts: string[]): Promise<AlternativeSplicingEvent[]> {
