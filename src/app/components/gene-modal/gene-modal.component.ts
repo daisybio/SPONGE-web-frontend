@@ -51,6 +51,7 @@ export class GeneModalComponent implements AfterViewInit {
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
   readonly version$ = this.versionsService.versionReadOnly();
+  readonly isOpeningTranscript = model<boolean>(false);
 
   goDatasource = new MatTableDataSource<GOTerm>();
   asDatasource = new MatTableDataSource<ASEntry>();
@@ -116,9 +117,12 @@ export class GeneModalComponent implements AfterViewInit {
   }
 
   async openTranscript(enst: string) {
+    if (this.isOpeningTranscript()) return;
+    this.isOpeningTranscript.set(true);
     const transcript = (await this.backend.getTranscriptInfo(this.version$(), enst))[0];
     this.dialog.open(TranscriptModalComponent, {
       data: transcript
     });
+    this.isOpeningTranscript.set(false);
   }
 }
