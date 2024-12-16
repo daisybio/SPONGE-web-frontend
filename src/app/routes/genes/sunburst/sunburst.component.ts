@@ -54,6 +54,8 @@ export class SunburstComponent {
     if (!results || !datasets) {
       return;
     }
+
+    // Get the full dataset objects by matching the dataset_IDs
     const datasetCounts = results.reduce((acc, curr) => {
       if (!acc[curr.sponge_run.dataset.dataset_ID]) {
         acc[curr.sponge_run.dataset.dataset_ID] = {
@@ -63,8 +65,9 @@ export class SunburstComponent {
       }
       acc[curr.sponge_run.dataset.dataset_ID].count += onlySignificant ? curr.count_sign : curr.count_all;
       return acc;
-    }, {} as { [key: string]: { count: number, dataset: Dataset } });
+    }, {} as { [key: number]: { count: number, dataset: Dataset } });
 
+    // Sum up the counts for each disease_name
     const diseaseCounts = Object.values(datasetCounts).reduce((acc, curr) => {
       if (!acc[curr.dataset.disease_name]) {
         acc[curr.dataset.disease_name] = 0;
@@ -73,25 +76,29 @@ export class SunburstComponent {
       return acc;
     }, {} as { [key: string]: number });
 
+    // Calculate the sum across all diseases
     const total = Object.values(diseaseCounts).reduce((acc, curr) => acc + curr, 0);
 
-    const labels = ["Diseases"].concat(Object.keys(diseaseCounts).map(d => capitalize(d)));
-    const values = [total].concat(Object.values(diseaseCounts));
-    const parents = ["", ...Object.keys(diseaseCounts).map(d => "Diseases")];
+    const diseaseOrder = Object.keys(diseaseCounts).sort((a, b) => diseaseCounts[b] - diseaseCounts[a]);
+    const ids = ["Diseases"].concat(diseaseOrder);
+    const labels = ["Diseases"].concat(diseaseOrder.map(d => capitalize(d)));
+    const values = [total].concat(diseaseOrder.map(d => diseaseCounts[d]));
+    const parents = ["", ...diseaseOrder.map(d => "Diseases")];
 
     for (let datasetCount of Object.values(datasetCounts)) {
-      const subtype = datasetCount.dataset.disease_subtype || 'Unspecified';
+      const subtype = datasetCount.dataset.disease_subtype || 'Unspecific';
 
       const count = datasetCount.count;
       const dataset = datasetCount.dataset;
-      const parent = capitalize(dataset.disease_name);
 
+      ids.push(`${dataset.disease_name}-${subtype}`);
       labels.push(subtype);
       values.push(count);
-      parents.push(parent);
+      parents.push(dataset.disease_name);
     }
-
+    
     return {
+      ids,
       labels,
       values,
       parents,
