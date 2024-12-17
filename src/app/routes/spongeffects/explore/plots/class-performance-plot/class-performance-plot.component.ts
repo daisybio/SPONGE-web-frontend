@@ -6,7 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {max, min, sum} from 'simple-statistics';
-import { 
+import {
   SelectElement,
   PlotlyData,
  } from '../../../../../interfaces';
@@ -34,9 +34,9 @@ export class ClassPerformancePlotComponent {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
-  
+
   @ViewChild("classModelPerformancePlot") classPerformancePlotDiv!: ElementRef;
-  plotClassPerformance: ResourceRef<PlotlyData | undefined>; 
+  plotClassPerformance: ResourceRef<PlotlyData | undefined>;
 
 
   performanceMeasures: SelectElement[] = [
@@ -81,7 +81,7 @@ export class ClassPerformancePlotComponent {
 
 
 
-  
+
   async plotModelClassPerformance(version: number, cancer: string, level: string): Promise<PlotlyData> {
     const performanceData = await this.backend.getRunClassPerformance(version, cancer, level);
 

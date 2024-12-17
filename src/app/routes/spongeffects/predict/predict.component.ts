@@ -1,41 +1,35 @@
-import { Component, effect, ElementRef, inject, ViewChild } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSliderModule } from '@angular/material/slider';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatListModule } from '@angular/material/list';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatProgressBarModule, ProgressBarMode } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatMenuModule } from '@angular/material/menu';
-import { NgxDropzoneModule } from 'ngx-dropzone';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTableDataSource } from '@angular/material/table';
-import { ExampleExpression, PlotlyData } from '../../../interfaces';
-import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { FormControl, FormGroup, FormsModule, Validators } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
-import {MatOption, ThemePalette} from '@angular/material/core';
-import { timer } from 'rxjs';
-import { BackendService } from '../../../services/backend.service';
-import { VersionsService } from '../../../services/versions.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {Component, ElementRef, inject, ViewChild} from '@angular/core';
+import {MatCardModule} from '@angular/material/card';
+import {MatIconModule} from '@angular/material/icon';
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatSelectModule} from '@angular/material/select';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSliderModule} from '@angular/material/slider';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatListModule} from '@angular/material/list';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatProgressBarModule, ProgressBarMode} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatChipsModule} from '@angular/material/chips';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatMenuModule} from '@angular/material/menu';
+import {NgxDropzoneModule} from 'ngx-dropzone';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTableDataSource, MatTableModule} from '@angular/material/table';
+import {ExampleExpression, PlotlyData} from '../../../interfaces';
+import {CommonModule} from '@angular/common';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {MatOption} from '@angular/material/core';
+import {timer} from 'rxjs';
+import {BackendService} from '../../../services/backend.service';
+import {VersionsService} from '../../../services/versions.service';
 
 declare var Plotly: any;
-
-
-
 
 
 const EXAMPLE_GENE_EXPR: ExampleExpression[] = [
@@ -93,12 +87,10 @@ export class PredictComponent {
     ["id", ""],
     ["sample1", "sample1"], ["sample2", "sample2"], ["sample3", "sample3"], ["sample4", "sample4"], ["sampleN", "sampleN"],
   ]);
-  exampleExpressionFiles: File[] = [new File([JSON.stringify(EXAMPLE_GENE_EXPR)], "example_expression.txt")];  
+  exampleExpressionFiles: File[] = [new File([JSON.stringify(EXAMPLE_GENE_EXPR)], "example_expression.txt")];
   // save example file
 
-  
-  
-  
+
   uploadedExpressionFiles: File[] = [];
 
 
@@ -149,7 +141,8 @@ export class PredictComponent {
   predictedSubtype: string = "None";
 
 
-  constructor() { }
+  constructor() {
+  }
 
 
   // setInitialParams = effect(() => {
@@ -173,8 +166,7 @@ export class PredictComponent {
   buttonText(btn: string) {
     if (btn == "expr") {
       return this.showExpressionExample ? "Hide example file" : "Show example file";
-    }
-    else {
+    } else {
       return "";
     }
   }
@@ -207,7 +199,7 @@ export class PredictComponent {
   }
 
   estimateRunTime() {
-    const fileSize: number = this.uploadedExpressionFiles[0].size / (1024**2);
+    const fileSize: number = this.uploadedExpressionFiles[0].size / (1024 ** 2);
     const refSlope: number = 0.7;
     const x0: number = 17;
     const st: number = this.predictSubtypes ? 4 : 1;
@@ -222,19 +214,19 @@ export class PredictComponent {
     const interval: number = (1000 * totalRunTime) / 100;
     const progressBarTimer = timer(0, interval);
     progressBarTimer.subscribe(() => {
-      this.estimatedRunTime = totalRunTime * (100-this.progressBarValue)/100;
+      this.estimatedRunTime = totalRunTime * (100 - this.progressBarValue) / 100;
       if (this.progressBarValue < 100) this.progressBarValue++;
     });
   }
 
   getColorForValue(value: number): string {
     let g: number = 140;
-    let r: number = value >= 0.5 ? Math.round(255*2 * (1 - value)): 255;
+    let r: number = value >= 0.5 ? Math.round(255 * 2 * (1 - value)) : 255;
     const b: number = 0;
     return `rgb(${r},${g},${b})`;
   }
 
-  
+
   async extractPredictions(responseJson: any): Promise<PlotlyData> {
     const typeGroups: Map<string, string[]> = new Map<string, string[]>();
     // group predictions by type
@@ -353,7 +345,7 @@ export class PredictComponent {
 
   async getPredictionData(): Promise<any> {
     const uploadedFile: File = this.uploadedExpressionFiles[0];
-      // Client-side validation
+    // Client-side validation
     if (!this.validateFileContent(uploadedFile)) {
       return Promise.reject('Client-side validation failed.');
     }
@@ -367,7 +359,7 @@ export class PredictComponent {
         this.formGroup.value.minSize ?? this.minSizeDefault,
         this.formGroup.value.maxSize ?? this.maxSizeDefault,
         this.formGroup.value.minExpr ?? this.minExprDefault,
-        this.formGroup.value.method ?? this.methodDefault,  
+        this.formGroup.value.method ?? this.methodDefault,
       )
       return prediction;
     } catch (error) {
@@ -391,8 +383,6 @@ export class PredictComponent {
       this.predictionLoading = false;
     }
   }
-
-
 }
 
 
