@@ -1,0 +1,15 @@
+@if (disease$(); as disease) {
+  <div class="card-container">
+    @for (node of nodes$(); track node) {
+      <app-kmplot [disease]="disease" [gene]="node"></app-kmplot>
+    } @empty {
+      <p style="margin-top: 50px">
+        Please select nodes in the gene network to see the survival analysis.
+      </p>
+    }
+  </div>
+} @else {
+  <p>
+    No disease selected.
+  </p>
+}

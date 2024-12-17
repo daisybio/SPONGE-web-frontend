@@ -1,0 +1,96 @@
+<mat-drawer-container style="min-height: 800px">
+  <mat-drawer [opened]="true" mode="side" style="padding: 10px">
+    <form>
+      <mat-form-field class="example-chip-list">
+        <mat-label>Selected genes</mat-label>
+        <mat-chip-grid #chipGrid aria-label="Gene selection">
+          @for (gene of activeGenes(); track $index) {
+            <mat-chip-row (removed)="remove(gene)">
+              {{ gene.gene_symbol }}
+              <button matChipRemove [attr.aria-label]="'remove ' + gene">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+        </mat-chip-grid>
+        <input
+          #geneInput
+          [(ngModel)]="currentInput"
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipGrid"
+          name="currentGene"
+          placeholder="Add gene..."
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); geneInput.value = ''"
+                          autoActiveFirstOption>
+          @for (gene of possibleGenes.value(); track gene) {
+            <mat-option [value]="gene">{{ gene.gene_symbol }} ({{ gene.ensg_number }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-checkbox [(ngModel)]="onlySignificant" name="onlySignificant">Show only significant results</mat-checkbox>
+    </form>
+
+  </mat-drawer>
+  <mat-drawer-content>
+    @if (this.results.isLoading()) {
+      <div class="spinner-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
+    }
+    <div [hidden]="this.results.isLoading()">
+      @if (activeGenes().length > 0) {
+
+        <mat-tab-group [(selectedIndex)]="tabChange">
+          <mat-tab label="Sunburst chart">
+            <app-sunburst [refresh]="tabChange()" [onlySignificant]="onlySignificant()"
+                          [results]="results.value()"></app-sunburst>
+          </mat-tab>
+          <mat-tab label="Table">
+            <div>
+              <mat-form-field style="width: 100%">
+                <mat-label>Disease</mat-label>
+                <mat-select [(value)]="selectedDisease">
+                  @if (diseases(); as diseases) {
+                    @for (disease of diseases; track disease) {
+                      <mat-option [value]="disease">
+                        {{ capitalize(disease) }}
+                      </mat-option>
+                    }
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field style="width: 100%">
+                <mat-label>Subtype</mat-label>
+                <mat-select [(value)]="selectedSubtype" [disabled]="possibleSubtypes().length < 2">
+                  @for (subtype of possibleSubtypes(); track subtype.disease_subtype) {
+                    <mat-option [value]="subtype">
+                      {{ capitalize(subtype.disease_subtype || SUBTYPE_DEFAULT) }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+            @if (interactions$.isLoading()) {
+              <div class="spinner-container">
+                <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+              </div>
+            } @else {
+              @let interactions = interactions$.value() ?? [];
+              @if (interactions.length > 0) {
+                <app-interactions-table [interactions$]="interactions"></app-interactions-table>
+              } @else {
+                <p>No interactions found.</p>
+              }
+            }
+          </mat-tab>
+        </mat-tab-group>
+      } @else {
+        <div class="card-container">
+          <p style="margin-top: 50px">Select genes to see the results.</p>
+        </div>
+      }
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>

@@ -1,0 +1,35 @@
+<div class="route-container">
+  <h1>SPONGE</h1>
+  <h4>A resource for competing endogenous RNA interaction networks</h4>
+
+  <carousel [isAnimated]="true" class="carousel-dark">
+    <slide>
+      <img alt="image slide" class="carousel-image" src="./1.svg">
+    </slide>
+    <slide>
+      <img alt="image slide" class="carousel-image" src="./2.png">
+    </slide>
+    <slide>
+      <img alt="image slide" class="carousel-image" src="./3.svg">
+    </slide>
+  </carousel>
+  <h2>SPONGE results for each pair of genes</h2>
+  <mat-tab-group (selectedTabChange)="resize()" [preserveContent]="true">
+    <mat-tab label="Cancer">
+      @if (cancerData() === undefined) {
+        <div class="spinner-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+      }
+      <div #cancerPlot class="plot-container"></div>
+    </mat-tab>
+    <mat-tab label="Non-cancer">
+      @if (nonCancerData() === undefined) {
+        <div class="spinner-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+      }
+      <div #nonCancerPlot class="plot-container"></div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

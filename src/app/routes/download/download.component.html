@@ -1,0 +1,24 @@
+<div class="route-container">
+  <h1>SPONGE downloads</h1>
+  <h2>Download ceRNA interactions</h2>
+  <p>The competing endogenous RNA interactions shown in this database have been computed using the <a
+    href="https://bioconductor.org/packages/release/bioc/html/SPONGE.html">SPONGE bioconductor R
+    package</a> with matched gene and miRNA expression data from The Cancer Genome Atlas as reprocessed by the <a
+    href="https://www.nature.com/articles/nbt.3772">TOIL
+    project</a>.
+    For robust results, we considered cancer types with > 100 samples. For convenience, we offer SPONGE computed
+    interactions for each cancer type as bulk download:</p>
+  <table [dataSource]="downloads" mat-table>
+    <ng-container matColumnDef="name">
+      <th *matHeaderCellDef mat-header-cell>Name</th>
+      <td *matCellDef="let download" mat-cell>{{ download.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="url">
+      <th *matHeaderCellDef mat-header-cell>Download</th>
+      <td *matCellDef="let download" mat-cell><a [href]="download.url" mat-flat-button>Download</a></td>
+    </ng-container>
+
+    <tr *matHeaderRowDef="columns" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+  </table>
+</div>

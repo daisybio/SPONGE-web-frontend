@@ -1,0 +1,21 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      {{ getGenePrimary(gene().gene) }}
+    </mat-card-title>
+    <mat-card-subtitle>
+      {{ gene().gene.ensg_number }}
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    @if (plotDataResource.isLoading()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    } @else {
+      @if (!plotDataResource.value()) {
+        <p>No data available</p>
+      }
+    }
+
+    <div #plot style="width: 700px"></div>
+  </mat-card-content>
+</mat-card>

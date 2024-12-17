@@ -1,0 +1,54 @@
+<mat-drawer-container style="min-height: 800px">
+  <mat-drawer [opened]="true" mode="side" style="padding: 10px">
+    <app-form></app-form>
+    @if (rawDataURL$(); as rawDataURL) {
+      <div class="card-container">
+        <a target="_blank" [href]="rawDataURL" mat-flat-button>View raw data</a>
+      </div>
+    }
+  </mat-drawer>
+  <mat-drawer-content>
+    @if (!isLoading$()) {
+      @if (hasData$()) {
+        <mat-tab-group [preserveContent]="false" (selectedTabChange)="tabChange.set($event.index)">
+          <mat-tab label="Network">
+            <div style="display: flex; flex-direction: row">
+              <app-network [refreshSignal]="tabChange()" style="min-width: 500px; flex-grow: 3"></app-network>
+              <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
+            </div>
+          </mat-tab>
+          @if (version$() === 1 && level() == 'gene') {
+            <mat-tab label="Survival analysis">
+              <app-survival-analysis></app-survival-analysis>
+            </mat-tab>
+          }
+          <mat-tab label="Expression heatmap">
+            <app-heatmap [refreshSignal]="tabChange()"></app-heatmap>
+          </mat-tab>
+          <mat-tab label="Nodes">
+            <app-nodes></app-nodes>
+          </mat-tab>
+          <mat-tab label="Interactions">
+            <app-interactions></app-interactions>
+          </mat-tab>
+        </mat-tab-group>
+      } @else {
+        <div class="card-container" style="margin-top: 50px">
+          <mat-icon>
+            warning
+          </mat-icon>
+          <p>
+            The configuration you have selected does not have any data.
+          </p>
+          <p>
+            Consider increasing the thresholds or selecting a different configuration.
+          </p>
+        </div>
+      }
+    } @else {
+      <div class="spinner-container">
+        <mat-spinner mode="indeterminate"></mat-spinner>
+      </div>
+    }
+  </mat-drawer-content>
+</mat-drawer-container>

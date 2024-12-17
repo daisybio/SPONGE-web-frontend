@@ -1,0 +1,127 @@
+<h1 mat-dialog-title>{{ gene.gene_symbol || gene.ensg_number }}</h1>
+<mat-dialog-content>
+  <mat-tab-group>
+    <mat-tab label="General information">
+      <mat-accordion>
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Gene</mat-panel-title>
+          </mat-expansion-panel-header>
+          @if (geneInfo$.isLoading()) {
+            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+          }
+          @if (geneInfo$.value(); as geneInfo) {
+            <table>
+              <tr>
+                <th>Ensembl ID</th>
+                <td>{{ geneInfo.ensg_number }}</td>
+              </tr>
+              <tr>
+                <th>Position</th>
+                <td>{{ geneInfo.chromosome_name }}:{{ geneInfo.start_pos }}-{{ geneInfo.end_pos }}</td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>{{ geneInfo.gene_type }}</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td>{{ geneInfo.description }}</td>
+              </tr>
+              <tr>
+                <th>Cytoband</th>
+                <td>{{ geneInfo.cytoband }}</td>
+              </tr>
+            </table>
+          }
+        </mat-expansion-panel>
+        @if (wikipathways$.value(); as pathways) {
+          <mat-expansion-panel [disabled]="pathways.length === 0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>WikiPathways</mat-panel-title>
+            </mat-expansion-panel-header>
+            @for (pathway of pathways; track pathway) {
+              <a [href]="'https://www.wikipathways.org/pathways/' + pathway.wp_key"
+                 target="_blank"
+                 mat-flat-button>{{ pathway.wp_key }}</a>
+            }
+          </mat-expansion-panel>
+        }
+        @if (hallmarks$.value(); as hallmarks) {
+          <mat-expansion-panel [disabled]="hallmarks.length === 0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Hallmarks</mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-chip-set>
+              @for (hallmark of hallmarks; track hallmark) {
+                <mat-chip>{{ hallmark.hallmark }}</mat-chip>
+              }
+            </mat-chip-set>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    </mat-tab>
+    <mat-tab [disabled]="goTerms$.value()?.length === 0" label="Gene ontology">
+      <mat-form-field style="padding: 10px; width: 100%">
+        <mat-label>Search</mat-label>
+        <input [(ngModel)]="goFilter" matInput placeholder="Search for GO terms">
+        <mat-hint>Case insensitive</mat-hint>
+      </mat-form-field>
+      <table [dataSource]="goDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="symbol">
+          <th *matHeaderCellDef mat-header-cell>Link</th>
+          <td *matCellDef="let goTerm" mat-cell>
+            <a [href]="'https://amigo.geneontology.org/amigo/term/' + goTerm.gene_ontology_symbol" mat-flat-button
+               target="_blank">{{ goTerm.gene_ontology_symbol }}</a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th *matHeaderCellDef mat-header-cell>Description</th>
+          <td *matCellDef="let goTerm" mat-cell>{{ goTerm.description }}</td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="goColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: goColumns;" mat-row></tr>
+      </table>
+      <mat-paginator #goPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+                     aria-label="Select page of users"></mat-paginator>
+    </mat-tab>
+    <mat-tab label="Transcripts">
+      @if (transcripts$.isLoading()) {
+        <div class="card-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
+      }
+      <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="enst">
+          <th *matHeaderCellDef mat-header-cell>Transcript</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <button (click)="openTranscript(asEntry.enst)" [disabled]="isOpeningTranscript()"
+                    mat-button>{{ asEntry.enst }}
+            </button>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="events">
+          <th *matHeaderCellDef mat-header-cell>Alt. Splicing event types</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <mat-chip-set>
+              @for (event of asEntry.events; track event) {
+                <mat-chip>{{ event }}</mat-chip>
+              }
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
+      </table>
+      <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+                     aria-label="Select page of users"></mat-paginator>
+
+    </mat-tab>
+
+  </mat-tab-group>
+</mat-dialog-content>
+
