@@ -1,0 +1,21 @@
+<h1>Home Search Bar</h1>
+<p>
+  You can enter a gene symbol or ENSG number to search in the SPONGE database for all corresponding interactions.
+  On the next side you will find tables of the found cancer sets. You can search those tables for other genes or create
+  a network from those table entries by clicking the "Show as Network" Button. You can also select some entries and
+  export only those to the network.
+</p>
+<p>Search Features:</p>
+<table [dataSource]="features" mat-table>
+  <ng-container matColumnDef="name">
+    <th *matHeaderCellDef mat-header-cell>Function</th>
+    <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+  </ng-container>
+  <ng-container matColumnDef="description">
+    <th *matHeaderCellDef mat-header-cell>Effect</th>
+    <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>

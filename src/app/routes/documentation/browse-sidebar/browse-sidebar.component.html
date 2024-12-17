@@ -1,0 +1,15 @@
+<h1>Browse sidebar</h1>
+
+<table [dataSource]="features" mat-table>
+  <ng-container matColumnDef="name">
+    <th *matHeaderCellDef mat-header-cell>Function</th>
+    <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+  </ng-container>
+  <ng-container matColumnDef="description">
+    <th *matHeaderCellDef mat-header-cell>Effect</th>
+    <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>
