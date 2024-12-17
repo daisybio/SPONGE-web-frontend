@@ -33,7 +33,7 @@ interface Query {
   providedIn: 'root'
 })
 export class BackendService {
-  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api-v2'
+  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api'
 
   constructor(private http: HttpService) {
   }
