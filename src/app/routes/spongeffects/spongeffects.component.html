@@ -1,13 +1,17 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side" style="width: 220px">
-    <mat-nav-list class="">
-      <a mat-list-item routerLink="./">Explore</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="predict">Predict</a>
-    </mat-nav-list>
+    <div class="card-container">
+      <mat-button-toggle-group [(value)]="mode">
+        <mat-button-toggle value="explore">Explore</mat-button-toggle>
+        <mat-button-toggle value="predict">Predict</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
   </mat-drawer>
   <mat-drawer-content>
-    <router-outlet></router-outlet>
+    @if (mode() == 'explore') {
+      <app-explore></app-explore>
+    } @else {
+      <app-predict></app-predict>
+    }
   </mat-drawer-content>
 </mat-drawer-container>
