@@ -1,18 +1,15 @@
-import { Component, Renderer2, ElementRef, ViewChild, resource, ResourceRef, inject, computed } from '@angular/core';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import {max, min, sum} from 'simple-statistics';
-import {
-  SelectElement,
-  PlotlyData,
- } from '../../../../../interfaces';
-import { VersionsService } from '../../../../../services/versions.service';
-import { BackendService } from '../../../../../services/backend.service';
-import { ExploreService } from '../../../../../services/explore.service';
+import {Component, computed, ElementRef, inject, Renderer2, resource, ResourceRef, ViewChild} from '@angular/core';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatIconModule} from '@angular/material/icon';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {PlotlyData, SelectElement,} from '../../../../../interfaces';
+import {VersionsService} from '../../../../../services/versions.service';
+import {BackendService} from '../../../../../services/backend.service';
+import {ExploreService} from '../../../../../services/explore.service';
+import {sum} from "lodash";
 
 declare var Plotly: any;
 
@@ -74,12 +71,10 @@ export class ClassPerformancePlotComponent {
         const level = param.request.level;
         if (version === undefined || gene === undefined || level === undefined) return;
         const plot = await this.plotModelClassPerformance(version, gene, level);
-      return plot;
-    }
+        return plot;
+      }
     });
   }
-
-
 
 
   async plotModelClassPerformance(version: number, cancer: string, level: string): Promise<PlotlyData> {
@@ -110,8 +105,8 @@ export class ClassPerformancePlotComponent {
         traces.push(trace);
       }
     }
-    const meanTextLength: number = Math.round(sum(traces[0].x.map(d => d.length))/traces[0].x.length);
-    const textPad: number = meanTextLength*10.5;
+    const meanTextLength: number = Math.round(sum(traces[0].x.map(d => d.length)) / traces[0].x.length);
+    const textPad: number = meanTextLength * 10.5;
     const containerWidth = this.renderer.selectRootElement(this.classPerformancePlotDiv.nativeElement).offsetWidth;
     // const angle: number = meanTextLength > 15 ? 90: 0;
     // angle 90 if number of bars is greater than 10
@@ -142,7 +137,7 @@ export class ClassPerformancePlotComponent {
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)'
     };
-    const config = { responsive: true };
+    const config = {responsive: true};
     const data = {data: traces, layout: layout, config: config};
     return Plotly.newPlot(this.classPerformancePlotDiv.nativeElement, data.data, data.layout, data.config);
 

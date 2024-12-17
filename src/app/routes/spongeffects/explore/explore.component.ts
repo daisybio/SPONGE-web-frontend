@@ -1,29 +1,25 @@
-import {Component, computed, effect, Signal, inject, ResourceRef, resource, ViewChild, ElementRef} from '@angular/core';
-import {MatExpansionPanel,
+import {Component, effect, inject} from '@angular/core';
+import {
+  MatExpansionModule,
+  MatExpansionPanel,
   MatExpansionPanelDescription,
-  MatExpansionPanelTitle,
-  MatExpansionModule
+  MatExpansionPanelTitle
 } from "@angular/material/expansion";
-import {MatIcon} from "@angular/material/icon";
+import {MatIcon, MatIconModule} from "@angular/material/icon";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatOption, MatSelect} from "@angular/material/select";
-import {FormsModule} from "@angular/forms";
-import {max, min, sum} from 'simple-statistics';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {MatButton} from "@angular/material/button";
-import {MatButtonToggleModule } from '@angular/material/button-toggle';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {sum} from 'lodash';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import {MatIconModule} from '@angular/material/icon';
 import {ExploreService} from '../../../services/explore.service';
-import {Dataset, ExploreQuery, PlotlyData, Metric, RunPerformance} from '../../../interfaces';
-import {AsyncPipe} from "@angular/common";
+import {ExploreQuery} from '../../../interfaces';
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
-import {toSignal} from "@angular/core/rxjs-interop";
 import {BackendService} from "../../../services/backend.service";
-import { MatCardModule } from '@angular/material/card';
-import { ClassPerformancePlotComponent } from "./plots/class-performance-plot/class-performance-plot.component";
-import { OverallAccPlotComponent } from "./plots/overall-acc-plot/overall-acc-plot.component";
+import {MatCardModule} from '@angular/material/card';
+import {ClassPerformancePlotComponent} from "./plots/class-performance-plot/class-performance-plot.component";
+import {OverallAccPlotComponent} from "./plots/overall-acc-plot/overall-acc-plot.component";
 
 
 declare const Plotly: any;
@@ -36,7 +32,7 @@ export class Cancer {
 
   base: string = "https://portal.gdc.cancer.gov/projects/TGCA-";
 
-  constructor(value: string, viewValue: string, allSubTypes: string[], sampleSizes: number[], ) {
+  constructor(value: string, viewValue: string, allSubTypes: string[], sampleSizes: number[],) {
     this.value = value;
     this.viewValue = viewValue;
     this.allSubTypes = allSubTypes;
@@ -84,7 +80,7 @@ export class Cancer {
     MatCardModule,
     ClassPerformancePlotComponent,
     OverallAccPlotComponent
-],
+  ],
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss']
 })
@@ -96,7 +92,7 @@ export class ExploreComponent {
   levels = ['gene', 'transcript'];
   formGroup = new FormGroup({
     selectedCancer: new FormControl<string>(''),
-    selectedLevel:  new FormControl<'gene' | 'transcript'>('gene'),
+    selectedLevel: new FormControl<'gene' | 'transcript'>('gene'),
   });
   // diseaseSignal = toSignal(
   //   this.formGroup.get('selectedCancer')!.valueChanges
@@ -108,21 +104,21 @@ export class ExploreComponent {
   // cancers = computed(() => {
   //   return Array.from(new Set(this.spongEffectsRuns.then(run => run.map(run => run.disease_name)))); //.sort((a, b) => a.localeCompare(b));
   // });
-    // cancers = computed(() => Array.from(this.spongEffectsRunDatasets()));
-    // cancers = computed(() => Array.from(this.diseaseSubtypeMap().keys()));
-    cancers = this.exploreService.spongEffectsRunDataset();
-    // .filter(cancer => cancer in this.spongEffectsRuns.then(runs => runs.map(run => this.capitalize(run.disease_name))))
-    // .filter(cancer => cancer.startsWith('breast'))
-    // .sort((a, b) => a.localeCompare(b)));
+  // cancers = computed(() => Array.from(this.spongEffectsRunDatasets()));
+  // cancers = computed(() => Array.from(this.diseaseSubtypeMap().keys()));
+  cancers = this.exploreService.spongEffectsRunDataset();
+  // .filter(cancer => cancer in this.spongEffectsRuns.then(runs => runs.map(run => this.capitalize(run.disease_name))))
+  // .filter(cancer => cancer.startsWith('breast'))
+  // .sort((a, b) => a.localeCompare(b)));
 
-    setInitialCancer = effect(() => {
-      const cancers = this.cancers();
-      this.formGroup.get('selectedCancer')?.setValue(cancers[0]);
-    });
+  setInitialCancer = effect(() => {
+    const cancers = this.cancers();
+    this.formGroup.get('selectedCancer')?.setValue(cancers[0]);
+  });
 
-    //////////////////////////////////////////
-    /////////// Plotting variables ///////////
-    //////////////////////////////////////////
+  //////////////////////////////////////////
+  /////////// Plotting variables ///////////
+  //////////////////////////////////////////
 
   constructor() {
     // watch dropdown menu
@@ -145,9 +141,7 @@ export class ExploreComponent {
 
   }
 
-  
 
-  
   clearResults() {
 //     // allow new queries
 //     this.exploreResultsQueried = false;
