@@ -6,7 +6,7 @@
     </button>
   </div>
 } @else {
-  <mat-expansion-panel>
+  <mat-expansion-panel style="margin-bottom: 10px">
     <mat-expansion-panel-header>
       <mat-panel-title>
         <mat-icon>info</mat-icon>
@@ -23,9 +23,9 @@
 }
 
 <ng-template #dialog>
-  <h2 mat-dialog-title>{{ title() }}</h2>
+  <h1 mat-dialog-title>{{ title() }}</h1>
   @if (subtitle(); as subtitle) {
-    <h4>{{ subtitle }}</h4>
+    <h2 mat-dialog-title>{{ subtitle }}</h2>
   }
   <mat-dialog-content>
     <ng-container *ngTemplateOutlet="content"></ng-container>
