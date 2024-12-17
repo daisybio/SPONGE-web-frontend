@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, inject, resource, ResourceRef, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, resource, viewChild} from '@angular/core';
 import {Metric, PlotlyData, RunPerformance} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
@@ -32,36 +32,40 @@ export class OverallAccPlotComponent {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
+  refreshSignal$ = input();
 
-  @ViewChild('overallAccuracyPlot') overallAccPlot!: ElementRef;
+  overallAccPlot = viewChild.required<ElementRef<HTMLDivElement>>('overallAccuracyPlot');
 
-  plotOverallAccResource: ResourceRef<PlotlyData | undefined>;
   // plot parameters
   defaultPlotMode: string = "lines+markers";
   defaultLineWidth: number = 4;
   defaultMarkerSize: number = 10;
 
-  constructor() {
-    this.plotOverallAccResource = resource({
-      request: computed(() => {
-        return {
-          version: this.versionService.versionReadOnly()(),
-          cancer: this.exploreService.selectedDisease$(),
-          level: this.exploreService.level$()
-        }
-      }),
-      loader: async (param) => {
-        const version = param.request.version;
-        const gene = param.request.cancer;
-        const level = param.request.level;
-        if (version === undefined || gene === undefined || level === undefined) return;
-        const data = this.getOverallAccuracyData(version, gene, level);
-        const plot = await this.plotOverallAccuracyPlot(data);
-        return plot;
+  plotOverallAccResource = resource({
+    request: computed(() => {
+      return {
+        version: this.versionService.versionReadOnly()(),
+        cancer: this.exploreService.selectedDisease$(),
+        level: this.exploreService.level$()
       }
-    });
+    }),
+    loader: async (param) => {
+      const version = param.request.version;
+      const gene = param.request.cancer;
+      const level = param.request.level;
+      if (version === undefined || gene === undefined || level === undefined) return;
+      const data = this.getOverallAccuracyData(version, gene, level);
+      return await this.plotOverallAccuracyPlot(data);
+    }
+  });
 
+  constructor() {
+    effect(() => {
+      this.refreshSignal$();
+      this.refreshPlot();
+    });
   }
+
 
   async getOverallAccuracyData(version: number, cancer: string, level: string): Promise<Metric[]> {
     const modelPerformances = await this.backend.getRunPerformance(version, cancer, level);
@@ -194,7 +198,13 @@ export class OverallAccPlotComponent {
 
     const config = {responsive: true};
     // remove loading spinner and show plot
-    return Plotly.newPlot(this.overallAccPlot.nativeElement, [...data, ...customLegend], layout, config);
+    return Plotly.newPlot(this.overallAccPlot().nativeElement, [...data, ...customLegend], layout, config);
   }
 
+  refreshPlot() {
+    const plotDiv = this.overallAccPlot().nativeElement;
+    if (plotDiv.checkVisibility()) {
+      Plotly.Plots.resize(plotDiv);
+    }
+  }
 }
