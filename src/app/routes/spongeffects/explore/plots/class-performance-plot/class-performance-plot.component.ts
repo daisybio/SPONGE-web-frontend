@@ -8,8 +8,8 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {PlotlyData, SelectElement,} from '../../../../../interfaces';
 import {VersionsService} from '../../../../../services/versions.service';
 import {BackendService} from '../../../../../services/backend.service';
-import {ExploreService} from '../../../../../services/explore.service';
 import {sum} from "lodash";
+import {ExploreService} from "../../service/explore.service";
 
 declare var Plotly: any;
 
@@ -31,6 +31,10 @@ export class ClassPerformancePlotComponent {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
+
+  version$ = this.versionService.versionReadOnly;
+  level$ = this.exploreService.level$;
+  disease$ = this.exploreService.selectedDisease$;
 
   @ViewChild("classModelPerformancePlot") classPerformancePlotDiv!: ElementRef;
   plotClassPerformance: ResourceRef<PlotlyData | undefined>;
@@ -61,7 +65,7 @@ export class ClassPerformancePlotComponent {
       request: computed(() => {
         return {
           version: this.versionService.versionReadOnly()(),
-          cancer: this.exploreService.cancer$(),
+          cancer: this.exploreService.selectedDisease$(),
           level: this.exploreService.level$()
         }
       }),
@@ -70,8 +74,7 @@ export class ClassPerformancePlotComponent {
         const gene = param.request.cancer;
         const level = param.request.level;
         if (version === undefined || gene === undefined || level === undefined) return;
-        const plot = await this.plotModelClassPerformance(version, gene, level);
-        return plot;
+        return await this.plotModelClassPerformance(version, gene, level);
       }
     });
   }
@@ -142,22 +145,4 @@ export class ClassPerformancePlotComponent {
     return Plotly.newPlot(this.classPerformancePlotDiv.nativeElement, data.data, data.layout, data.config);
 
   }
-
-  async resetClassAccPlot() {
-    Plotly.update(this.classPerformancePlotDiv.nativeElement);
-  }
-
-  async cancelClick(event: any) {
-    event.stopPropagation();
-  }
-
-  // async rePlotModelClassPerformance(): Promise<any> {
-  //   this.plotModelClassPerformance().then(_ => this.classPerformanceLoading = false);
-  // }
-
-  // async plotResults() {
-  //   this.plotModelClassPerformance().then(_ => this.classPerformanceLoading = false);
-  // }
-
-
 }

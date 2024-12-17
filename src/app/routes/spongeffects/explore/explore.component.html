@@ -1,6 +1,3 @@
-<h2 class="display-6" id="headline">
-  Explore spongEffects on TCGA projects or make predictions on custom expressions
-</h2>
 <p></p>
 <mat-expansion-panel class="info-card" expanded="false">
   <mat-expansion-panel-header>
@@ -33,26 +30,6 @@
     <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
   </div>
 </mat-expansion-panel>
-
-<p></p>
-
-<form [formGroup]="formGroup">
-  <mat-form-field appearance="outline" style="width: 50%; margin-right: 30px;">
-    <mat-label>Disease</mat-label>
-    <mat-select formControlName="selectedCancer">
-      @for (cancer of cancers(); track cancer) {
-        <mat-option [value]="cancer">{{ capitalize(cancer) }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-  <mat-button-toggle-group class="level-toggle-button" formControlName="selectedLevel">
-    <!--  hideSingleSelectionIndicator="true" -->
-    @for (level of levels; track level) {
-      <mat-button-toggle [value]="level">{{ capitalize(level) }}</mat-button-toggle>
-    }
-  </mat-button-toggle-group>
-</form>
-<p></p>
 
 <!-- result panel -->
 <mat-card appearance="outlined" class="result-card">

@@ -1,15 +1,14 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
-import { resource, ResourceRef, computed } from '@angular/core';
-import { PlotlyData, Metric, RunPerformance } from '../../../../../interfaces';
-import { BackendService } from '../../../../../services/backend.service';
-import { ExploreService } from '../../../../../services/explore.service';
-import { VersionsService } from '../../../../../services/versions.service';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import {Component, computed, ElementRef, inject, resource, ResourceRef, ViewChild} from '@angular/core';
+import {Metric, PlotlyData, RunPerformance} from '../../../../../interfaces';
+import {BackendService} from '../../../../../services/backend.service';
+import {VersionsService} from '../../../../../services/versions.service';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatIconModule} from '@angular/material/icon';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatSelectModule} from '@angular/material/select';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {ExploreService} from "../../service/explore.service";
 
 declare var Plotly: any;
 
@@ -35,17 +34,17 @@ export class OverallAccPlotComponent {
   @ViewChild('overallAccuracyPlot') overallAccPlot!: ElementRef;
 
   plotOverallAccResource: ResourceRef<PlotlyData | undefined>;
-    // plot parameters
+  // plot parameters
   defaultPlotMode: string = "lines+markers";
   defaultLineWidth: number = 4;
   defaultMarkerSize: number = 10;
 
-  constructor(){
+  constructor() {
     this.plotOverallAccResource = resource({
       request: computed(() => {
         return {
           version: this.versionService.versionReadOnly()(),
-          cancer: this.exploreService.cancer$(),
+          cancer: this.exploreService.selectedDisease$(),
           level: this.exploreService.level$()
         }
       }),
@@ -59,18 +58,18 @@ export class OverallAccPlotComponent {
         return plot;
       }
     });
-    
+
   }
 
   async getOverallAccuracyData(version: number, cancer: string, level: string): Promise<Metric[]> {
     const modelPerformances = await this.backend.getRunPerformance(version, cancer, level);
     return modelPerformances.map((entry: RunPerformance, idx: number): Metric => {
       return {
-      name: entry.model_type,
-      split: entry.split_type,
-      lower: entry.accuracy_lower,
-      upper: entry.accuracy_upper,
-      idx: idx + 1
+        name: entry.model_type,
+        split: entry.split_type,
+        lower: entry.accuracy_lower,
+        upper: entry.accuracy_upper,
+        idx: idx + 1
       }
     });
   };
@@ -87,8 +86,8 @@ export class OverallAccPlotComponent {
       },
       margin: {
         t: 40,
-      //   b: 40,
-      //   l: 0,
+        //   b: 40,
+        //   l: 0,
         // r: 200,
       },
       annotations: [
@@ -116,7 +115,7 @@ export class OverallAccPlotComponent {
     };
     const metrics: Metric[] = await metricData;
     const data = metrics.map(metric => {
-      const col: string = metric.name == "modules" ? "green": "orange"
+      const col: string = metric.name == "modules" ? "green" : "orange"
       // Add model name to y-axis labels
       layout.yaxis.tickvals.push(metric.idx + 1);
       layout.yaxis.ticktext.push(`Model ${metric.idx}`);
@@ -125,13 +124,13 @@ export class OverallAccPlotComponent {
         x: [metric.lower, metric.upper],
         y: [metric.idx + 1, metric.idx + 1],
         mode: this.defaultPlotMode,
-        name: metric.name + " ("  + metric.split + ")",
+        name: metric.name + " (" + metric.split + ")",
         text: ["Lower Bound (Accuracy)", "Upper Bound (Accuracy)"],
         hovertemplate: "<i>%{text}: %{x:.2f}</i>",
         line: {
           width: this.defaultLineWidth,
           color: col,
-          dash: metric.split == "train" ? "solid": "dash"
+          dash: metric.split == "train" ? "solid" : "dash"
         },
         marker: {
           size: this.defaultMarkerSize,
@@ -190,8 +189,8 @@ export class OverallAccPlotComponent {
         type: 'scatter'
       }
     ];
-    
-    const config = { responsive: true };
+
+    const config = {responsive: true};
     // remove loading spinner and show plot
     return Plotly.newPlot(this.overallAccPlot.nativeElement, [...data, ...customLegend], layout, config);
   }

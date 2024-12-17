@@ -6,6 +6,11 @@
         <mat-button-toggle value="predict">Predict</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
+    @if (mode() == 'explore') {
+      <app-explore-form></app-explore-form>
+    } @else {
+      <app-predict-form></app-predict-form>
+    }
   </mat-drawer>
   <mat-drawer-content>
     @if (mode() == 'explore') {
