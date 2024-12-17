@@ -1,26 +1,33 @@
-<!--  <img src="../../../assets/img/spongEffects_logo.png" width="12%" height="12%"-->
-<!--       style="float: right; padding-left: 20px" alt="">-->
 <h2 class="display-6" id="headline">
   Explore spongEffects on TCGA projects or make predictions on custom expressions
 </h2>
 <p></p>
 <mat-expansion-panel class="info-card" expanded="false">
   <mat-expansion-panel-header>
-    <mat-panel-title><mat-icon>info</mat-icon> What is spongEffects?</mat-panel-title>
+    <mat-panel-title>
+      <mat-icon>info</mat-icon>
+      What is spongEffects?
+    </mat-panel-title>
     <mat-panel-description>
       General information about spongEffects on TCGA and custom usage
     </mat-panel-description>
   </mat-expansion-panel-header>
   <div class="info-text-div">
-    <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">spongEffects</a> can be used for downstream analysis of SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random forest machine learning approach.</p>
-    <p>For more detailed information refer to the <a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.</p>
-    <p>We trained spongEffects prediction models on the TCGA pan-cancer dataset and nine other TCGA projects that feature sufficient cancer subtyping for classification.</p>
+    <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">spongEffects</a> can be used for downstream analysis of
+      SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random forest
+      machine learning approach.</p>
+    <p>For more detailed information refer to the <a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.
+    </p>
+    <p>We trained spongEffects prediction models on the TCGA pan-cancer dataset and nine other TCGA projects that
+      feature sufficient cancer subtyping for classification.</p>
     <p>
       The tab below shows the spongEffects prediction results for a selected TCGA project.
-      You can browse the hub-nodes that spongEffects models views as potential biomarkers and compare their gene/transcript expression.
+      You can browse the hub-nodes that spongEffects models views as potential biomarkers and compare their
+      gene/transcript expression.
     </p>
     <p>
-      We can use the pretrained TCGA models to classify tumor (sub-)types and predict biomarkers on new independent input data that can be uploaded via the
+      We can use the pretrained TCGA models to classify tumor (sub-)types and predict biomarkers on new independent
+      input data that can be uploaded via the
       tab below.
     </p>
     <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
@@ -38,7 +45,8 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-button-toggle-group formControlName="selectedLevel" class="level-toggle-button"> <!--  hideSingleSelectionIndicator="true" -->
+  <mat-button-toggle-group class="level-toggle-button" formControlName="selectedLevel">
+    <!--  hideSingleSelectionIndicator="true" -->
     @for (level of levels; track level) {
       <mat-button-toggle [value]="level">{{ capitalize(level) }}</mat-button-toggle>
     }
@@ -49,12 +57,15 @@
 <!-- result panel -->
 <mat-card appearance="outlined" class="result-card">
   <mat-card-header>
-    <mat-card-title><mat-icon>search</mat-icon> Explore results</mat-card-title>
-    <mat-card-subtitle>spongEffects predictions for selected project</mat-card-subtitle> 
+    <mat-card-title>
+      <mat-icon>search</mat-icon>
+      Explore results
+    </mat-card-title>
+    <mat-card-subtitle>spongEffects predictions for selected project</mat-card-subtitle>
   </mat-card-header>
   <p></p>
   <mat-card-content>
-    <mat-accordion #accordion="matAccordion" class="result-accordion" [multi]="true">
+    <mat-accordion #accordion="matAccordion" [multi]="true" class="result-accordion">
 
       <app-overall-acc-plot></app-overall-acc-plot>
 
@@ -69,10 +80,14 @@
         </mat-expansion-panel-header>
         <mat-expansion-panel class="info-card-small" expanded="false">
           <mat-expansion-panel-header>
-            <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
+            <mat-panel-title>
+              <mat-icon>info</mat-icon>
+              What does this mean?
+            </mat-panel-title>
           </mat-expansion-panel-header>
           <div class="info-text-small-div">
-            <p>The spongEffects enrichment score distributions can give an insight into the model capability to differentiate between the given classes.</p>
+            <p>The spongEffects enrichment score distributions can give an insight into the model capability to
+              differentiate between the given classes.</p>
           </div>
         </mat-expansion-panel>
         <div class="enrichmentPlotHolderDiv">
@@ -90,121 +105,19 @@
         </mat-expansion-panel-header>
         <mat-expansion-panel class="info-card-small" expanded="false">
           <mat-expansion-panel-header>
-            <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
+            <mat-panel-title>
+              <mat-icon>info</mat-icon>
+              What does this mean?
+            </mat-panel-title>
           </mat-expansion-panel-header>
           <div class="info-text-small-div">
-            <p>The mean decrease in the Gini coefficient tells us how much each variable affects the consistency of nodes and leaves in a random forest. If the mean decrease accuracy or mean decrease Gini score is higher, it means the variable is more important in the model.</p>
-            <p>Module centralities that are at the top right of the plot below play a crucial role in distinguishing between the various cancer (sub-)types.</p>
+            <p>The mean decrease in the Gini coefficient tells us how much each variable affects the consistency of
+              nodes and leaves in a random forest. If the mean decrease accuracy or mean decrease Gini score is higher,
+              it means the variable is more important in the model.</p>
+            <p>Module centralities that are at the top right of the plot below play a crucial role in distinguishing
+              between the various cancer (sub-)types.</p>
           </div>
         </mat-expansion-panel>
-        <!-- <div class="lollipop-select-box"> -->
-          <!-- <mat-grid-list cols="100" rowHeight="10px">
-            <mat-grid-tile colspan="100" rowspan="10">
-              Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot.
-            </mat-grid-tile>
-            <mat-grid-tile colspan="70" rowspan="30">
-              <div *ngIf="lollipopLoading" class="loading-spinner">
-                <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-              </div>
-              <div class="top-centralities-plot-div">
-                <div #lollipopPlot [hidden]="lollipopLoading" class="top-centralities-plot"></div>
-              </div>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="30" rowspan="5">
-              <div class="select-top-n">
-                <mat-form-field class="top-select">
-                  <mat-label>Number of top rated centralities to include</mat-label>
-                  <input class="col-xs-4 col-xs-offset-2" type="string"
-                        matInput id="markNSelect"
-                        [formControl]="markControl"
-                        (keyup)="resetLollipop()">
-                  <mat-error>Please provide a number between 3 and 20</mat-error>
-                </mat-form-field>
-              </div>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="30" rowspan="5">
-              <div class="select-top-n">
-                <mat-form-field class="top-select">
-                  <mat-label>Number of top rated centralities to display</mat-label>
-                  <input class="col-xs-4 col-xs-offset-2" type="string"
-                        matInput id="topNSelect"
-                        [formControl]="topControl"
-                        (keyup)="resetLollipop()">
-                  <mat-error>Please provide a number between 3 and 20</mat-error>
-                </mat-form-field>
-              </div>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="30" rowspan="5">
-              <button mat-button class="run-button"
-                      (click)="clearSelection()">
-                Clear selection
-              </button>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="30" rowspan="5">
-              <mat-checkbox class="check-box"
-                            color="primary"
-                            [(ngModel)]="includeModuleMembers">
-                Include module members
-              </mat-checkbox>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="30" rowspan="5">
-              <button mat-button class="run-button"
-                      (click)="exploreExpression()">
-                Investigate expressions
-              </button>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="100" rowspan="34">
-              <div class="modules-table">
-                <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
-                  <ng-container matColumnDef="ensemblID">
-                    <th mat-header-cell *matHeaderCellDef>ID</th>
-                    <td mat-cell *matCellDef="let el">{{el.ensemblID}}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="symbol">
-                    <th mat-header-cell *matHeaderCellDef>Gene symbol</th>
-                    <td mat-cell *matCellDef="let el">
-                      {{el.symbol }}
-                      <a href="{{get_gene_card(el.symbol)}}" target="_blank">
-                        <img src="../../../assets/img/gene_card_icon.png" style="width:5%;height:5%;" alt="gene-card">
-                      </a>
-                    </td>
-                  </ng-container>
-                  <ng-container matColumnDef="meanGiniDecrease">
-                    <th mat-header-cell *matHeaderCellDef>Mean Gini Decrease</th>
-                    <td mat-cell *matCellDef="let el">{{el.meanGiniDecrease}}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="meanAccuracyDecrease">
-                    <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
-                    <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
-                  </ng-container>
-                  <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef>Description</th>
-                    <td mat-cell *matCellDef="let el">{{el.description}}</td>
-                  </ng-container>
-
-                  <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
-                  <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
-                </table>
-              </div>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="50" rowspan="30">
-              <div class="module-expression-heatmap">
-                <div *ngIf="elementExpressionLoading" class="loading-spinner">
-                  <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-                </div>
-                <div #moduleExpressionHeatmapDiv [hidden]="elementExpressionLoading"></div>
-              </div>
-            </mat-grid-tile>
-            <mat-grid-tile colspan="50" rowspan="30">
-              <div class="module-expression-heatmap">
-                <div *ngIf="elementExpressionLoading" class="loading-spinner">
-                  <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-                </div>
-                <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>
-              </div>
-            </mat-grid-tile>
-          </mat-grid-list> -->
-        <!-- </div> -->
       </mat-expansion-panel>
 
 
@@ -217,15 +130,18 @@
         </mat-expansion-panel-header>
         <mat-expansion-panel class="info-card-small" expanded="false">
           <mat-expansion-panel-header>
-            <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
+            <mat-panel-title>
+              <mat-icon>info</mat-icon>
+              What does this mean?
+            </mat-panel-title>
           </mat-expansion-panel-header>
           <div class="info-text-small-div">
-            <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological functions are enriched in gene expression data.</p>
+            <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological
+              functions are enriched in gene expression data.</p>
             <p>The information from GSEA can help find biological differences between disease (sub-)types</p>
           </div>
         </mat-expansion-panel>
         <div style="text-align: center;">
-          <!-- <app-gsea [input_condition_1]="'normal'" [input_condition_2]="'disease'"></app-gsea> -->
         </div>
       </mat-expansion-panel>
 
@@ -233,243 +149,3 @@
     </mat-accordion>
   </mat-card-content>
 </mat-card>
-<!-- <mat-accordion #accordion="matAccordion" class="result-accordion" [multi]="true">
-  <mat-expansion-panel>
-    <mat-expansion-panel-header (click)="resetOverallAccPlot()">
-      <mat-panel-title>Model performance</mat-panel-title>
-      <mat-panel-description>
-        Accuracy of spongEffects modules against random modules
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>
-          The models performance is compared against a model that was trained on randomly selected SPONGE centralities.
-          The model that was trained on the spongEffects modules should outperform the random approach.
-          Dotted lines represent the overall accuracy for the test split of the data and solid lines show analogously show the training performance.
-          Each line start (circle) and end (diamond) mark the lower and upper balanced accuracy bounds of a specific model.
-        </p>
-      </div>
-    </mat-expansion-panel>
-    <div class="overall-acc-plot-div">
-      <div *ngIf="overallAccuracyLoading" class="loading-spinner">
-        <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-      </div>
-      <div #overallAccuracyPlot [hidden]="overallAccuracyLoading" id="overall-acc" class="overall-acc-plot"></div>
-    </div>
-  </mat-expansion-panel>
-  <p></p>
-  <mat-expansion-panel #selectionPanel
-                       (opened)="performanceSelectPanelIsOpen = true"
-                       (closed)="performanceSelectPanelIsOpen = false">
-    <mat-expansion-panel-header (click)="togglePanel($event, selectionPanel)">
-      <mat-panel-title>Class performance</mat-panel-title>
-      <mat-panel-description>
-        Class specific performance
-      </mat-panel-description>
-      <mat-form-field class="measure-select-input">
-        <mat-select [(ngModel)]="performanceMeasure"
-                    name="score-select"
-                    (click)="cancelClick($event)"
-                    (selectionChange)="rePlotModelClassPerformance()">
-          <mat-option *ngFor="let p of performanceMeasures"
-                      [value]="p">
-            {{p.viewValue}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </mat-expansion-panel-header>
-    <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>This plot shows the performance of the individual class predictions of the model that was trained with the spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions should be made with more caution if this it not the case.</p>
-      </div>
-    </mat-expansion-panel>
-    <div class="class-acc-plot-div">
-      <div *ngIf="classPerformanceLoading" class="loading-spinner">
-        <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-      </div>
-      <div #classModelPerformancePlot [hidden]="classPerformanceLoading" class="class-acc-plot"></div>
-    </div>
-  </mat-expansion-panel>
-  <p></p>
-  <mat-expansion-panel>
-    <mat-expansion-panel-header (click)="resetEnrichmentScoreByClass()">
-      <mat-panel-title>Classification</mat-panel-title>
-      <mat-panel-description>
-        Classification through enrichment score distributions
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>The spongEffects enrichment score distributions can give an insight into the model capability to differentiate between the given classes.</p>
-      </div>
-    </mat-expansion-panel>
-    <div class="enrichmentPlotHolderDiv">
-      <div *ngIf="enrichmentScoreDensityLoading" class="loading-spinner">
-        <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-      </div>
-      <div #enrichmentScoresByClassPlot [hidden]="enrichmentScoreDensityLoading" class="enrichmentPlotHolder"></div>
-    </div>
-  </mat-expansion-panel>
-  <p></p>
-  <mat-expansion-panel>
-    <mat-expansion-panel-header (click)="resetLollipop()">
-      <mat-panel-title>Top ceRNA centralities</mat-panel-title>
-      <mat-panel-description>
-        View predicted centralities with the highest decrease in Gini index.
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>The mean decrease in the Gini coefficient tells us how much each variable affects the consistency of nodes and leaves in a random forest. If the mean decrease accuracy or mean decrease Gini score is higher, it means the variable is more important in the model.</p>
-        <p>Module centralities that are at the top right of the plot below play a crucial role in distinguishing between the various cancer (sub-)types.</p>
-      </div>
-    </mat-expansion-panel>
-    <div class="lollipop-select-box">
-      <mat-grid-list cols="100" rowHeight="10px">
-        <mat-grid-tile colspan="100" rowspan="10">
-          Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot.
-        </mat-grid-tile>
-        <mat-grid-tile colspan="70" rowspan="30">
-          <div *ngIf="lollipopLoading" class="loading-spinner">
-            <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-          </div>
-          <div class="top-centralities-plot-div">
-            <div #lollipopPlot [hidden]="lollipopLoading" class="top-centralities-plot"></div>
-          </div>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="30" rowspan="5">
-          <div class="select-top-n">
-            <mat-form-field class="top-select">
-              <mat-label>Number of top rated centralities to include</mat-label>
-              <input class="col-xs-4 col-xs-offset-2" type="string"
-                     matInput id="markNSelect"
-                     [formControl]="markControl"
-                     (keyup)="resetLollipop()">
-              <mat-error>Please provide a number between 3 and 20</mat-error>
-            </mat-form-field>
-          </div>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="30" rowspan="5">
-          <div class="select-top-n">
-            <mat-form-field class="top-select">
-              <mat-label>Number of top rated centralities to display</mat-label>
-              <input class="col-xs-4 col-xs-offset-2" type="string"
-                     matInput id="topNSelect"
-                     [formControl]="topControl"
-                     (keyup)="resetLollipop()">
-              <mat-error>Please provide a number between 3 and 20</mat-error>
-            </mat-form-field>
-          </div>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="30" rowspan="5">
-          <button mat-button class="run-button"
-                  (click)="clearSelection()">
-            Clear selection
-          </button>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="30" rowspan="5">
-          <mat-checkbox class="check-box"
-                        color="primary"
-                        [(ngModel)]="includeModuleMembers">
-            Include module members
-          </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="30" rowspan="5">
-          <button mat-button class="run-button"
-                  (click)="exploreExpression()">
-            Investigate expressions
-          </button>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="100" rowspan="34">
-          <div class="modules-table">
-            <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
-              <ng-container matColumnDef="ensemblID">
-                <th mat-header-cell *matHeaderCellDef>ID</th>
-                <td mat-cell *matCellDef="let el">{{el.ensemblID}}</td>
-              </ng-container>
-              <ng-container matColumnDef="symbol">
-                <th mat-header-cell *matHeaderCellDef>Gene symbol</th>
-                <td mat-cell *matCellDef="let el">
-                  {{el.symbol }}
-                  <a href="{{getGeneCardLink(el.symbol)}}" target="_blank">
-                    <img src="../../../assets/img/gene_card_icon.png" style="width:5%;height:5%;" alt="gene-card">
-                  </a>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="meanGiniDecrease">
-                <th mat-header-cell *matHeaderCellDef>Mean Gini Decrease</th>
-                <td mat-cell *matCellDef="let el">{{el.meanGiniDecrease}}</td>
-              </ng-container>
-              <ng-container matColumnDef="meanAccuracyDecrease">
-                <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
-                <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
-              </ng-container>
-              <ng-container matColumnDef="description">
-                <th mat-header-cell *matHeaderCellDef>Description</th>
-                <td mat-cell *matCellDef="let el">{{el.description}}</td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
-              <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
-            </table>
-          </div>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="50" rowspan="30">
-          <div class="module-expression-heatmap">
-            <div *ngIf="elementExpressionLoading" class="loading-spinner">
-              <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-            </div>
-            <div #moduleExpressionHeatmapDiv [hidden]="elementExpressionLoading"></div>
-          </div>
-        </mat-grid-tile>
-        <mat-grid-tile colspan="50" rowspan="30">
-          <div class="module-expression-heatmap">
-            <div *ngIf="elementExpressionLoading" class="loading-spinner">
-              <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-            </div>
-            <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>
-          </div>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </div>
-  </mat-expansion-panel>
-  <p></p>
-  <mat-expansion-panel>
-    <mat-expansion-panel-header (click)="resetLollipop()">
-      <mat-panel-title>Gene Set Enrichment Analysis</mat-panel-title>
-      <mat-panel-description>
-        View GSEA results for the selected disease type.
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological functions are enriched in gene expression data.</p>
-        <p>The information from GSEA can help find biological differences between disease (sub-)types</p>
-      </div>
-    </mat-expansion-panel>
-    <div style="text-align: center;">
-      <app-gsea [input_condition_1]="'normal'" [input_condition_2]="'disease'"></app-gsea>
-    </div>
-  </mat-expansion-panel>
-
-
-</mat-accordion> -->
-
-<!--(mouseover)="setPreviewCancer(cancer)"-->
-

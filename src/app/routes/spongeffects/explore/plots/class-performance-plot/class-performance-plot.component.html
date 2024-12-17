@@ -1,37 +1,32 @@
 <mat-expansion-panel expanded="true">
+  <mat-expansion-panel-header>
+    <mat-panel-title>Class performance</mat-panel-title>
+    <mat-panel-description>
+      Class specific performance
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+
+
+  <div [hidden]="!plotClassPerformance.isLoading()">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+
+  <div class="class-performance-plot-div">
+    <div #classModelPerformancePlot class="class-performance-plot"></div>
+  </div>
+
+  <mat-expansion-panel class="info-card-small" expanded="false">
     <mat-expansion-panel-header>
-      <mat-panel-title>Class performance</mat-panel-title>
-      <mat-panel-description>
-        Class specific performance
-      </mat-panel-description>
-      <!-- <mat-form-field class="measure-select-input">
-        <mat-select [(ngModel)]="performanceMeasure"
-                    name="score-select"
-                    (click)="cancelClick($event)"
-                    (selectionChange)="rePlotModelClassPerformance()">
-          <mat-option *ngFor="let p of performanceMeasures"
-                      [value]="p">
-            {{p.viewValue}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field> -->
+      <mat-panel-title>
+        <mat-icon>info</mat-icon>
+        What does this mean?
+      </mat-panel-title>
     </mat-expansion-panel-header>
-
-
-    <div [hidden]="!plotClassPerformance.isLoading()">
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <div class="info-text-small-div">
+      <p>This plot shows the performance of the individual class predictions of the model that was trained with the
+        spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in
+        the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions
+        should be made with more caution if this it not the case.</p>
     </div>
-
-    <div class="class-performance-plot-div">
-      <div #classModelPerformancePlot class="class-performance-plot"></div>
-    </div>
-
-      <mat-expansion-panel class="info-card-small" expanded="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title><mat-icon>info</mat-icon>What does this mean?</mat-panel-title>
-      </mat-expansion-panel-header>
-      <div class="info-text-small-div">
-        <p>This plot shows the performance of the individual class predictions of the model that was trained with the spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions should be made with more caution if this it not the case.</p>
-      </div>
-    </mat-expansion-panel>
   </mat-expansion-panel>
+</mat-expansion-panel>
