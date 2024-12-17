@@ -10,6 +10,7 @@ import {VersionsService} from '../../../../../services/versions.service';
 import {BackendService} from '../../../../../services/backend.service';
 import {sum} from "lodash";
 import {ExploreService} from "../../service/explore.service";
+import {InfoComponent} from "../../../../../components/info/info.component";
 
 declare var Plotly: any;
 
@@ -22,7 +23,8 @@ declare var Plotly: any;
     MatSelectModule,
     FormsModule,
     ReactiveFormsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    InfoComponent
   ],
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss'

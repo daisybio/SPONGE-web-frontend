@@ -12,18 +12,26 @@
         <mat-icon>info</mat-icon>
         {{ title() }}
       </mat-panel-title>
-      <mat-panel-description>
-        {{ subtitle() }}
-      </mat-panel-description>
+      @if (subtitle(); as subtitle) {
+        <mat-panel-description>
+          {{ subtitle }}
+        </mat-panel-description>
+      }
     </mat-expansion-panel-header>
-    <ng-content></ng-content>
+    <ng-container *ngTemplateOutlet="content"></ng-container>
   </mat-expansion-panel>
 }
 
 <ng-template #dialog>
   <h2 mat-dialog-title>{{ title() }}</h2>
-  <h4>{{ subtitle() }}</h4>
+  @if (subtitle(); as subtitle) {
+    <h4>{{ subtitle }}</h4>
+  }
   <mat-dialog-content>
-    <ng-content></ng-content>
+    <ng-container *ngTemplateOutlet="content"></ng-container>
   </mat-dialog-content>
+</ng-template>
+
+<ng-template #content>
+  <ng-content></ng-content>
 </ng-template>

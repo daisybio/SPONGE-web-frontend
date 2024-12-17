@@ -6,17 +6,9 @@
   <div #classModelPerformancePlot class="class-performance-plot"></div>
 </div>
 
-<mat-expansion-panel class="info-card-small" expanded="false">
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      <mat-icon>info</mat-icon>
-      What does this mean?
-    </mat-panel-title>
-  </mat-expansion-panel-header>
-  <div class="info-text-small-div">
-    <p>This plot shows the performance of the individual class predictions of the model that was trained with the
-      spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in
-      the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions
-      should be made with more caution if this it not the case.</p>
-  </div>
-</mat-expansion-panel>
+<app-info type="panel">
+  <p>This plot shows the performance of the individual class predictions of the model that was trained with the
+    spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in
+    the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions
+    should be made with more caution if this it not the case.</p>
+</app-info>

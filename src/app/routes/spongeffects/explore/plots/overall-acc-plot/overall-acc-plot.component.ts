@@ -9,6 +9,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {ExploreService} from "../../service/explore.service";
+import {InfoComponent} from "../../../../../components/info/info.component";
 
 declare var Plotly: any;
 
@@ -21,7 +22,8 @@ declare var Plotly: any;
     MatSelectModule,
     FormsModule,
     ReactiveFormsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    InfoComponent
   ],
   templateUrl: './overall-acc-plot.component.html',
   styleUrl: './overall-acc-plot.component.scss'
