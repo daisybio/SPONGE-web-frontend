@@ -7,6 +7,7 @@ import {VersionsService} from "../../services/versions.service";
 import {BackendService} from "../../services/backend.service";
 import {PredictFormComponent} from "./predict/form/predict-form.component";
 import {ExploreFormComponent} from "./explore/form/explore-form.component";
+import {InfoComponent} from "../../components/info/info.component";
 
 // import { Tab, Cancer, PlotlyData } from '../../models/spongeffects.model';
 
@@ -23,7 +24,8 @@ import {ExploreFormComponent} from "./explore/form/explore-form.component";
     PredictComponent,
     PredictFormComponent,
     PredictFormComponent,
-    ExploreFormComponent
+    ExploreFormComponent,
+    InfoComponent
   ],
   styleUrls: ['./spongeffects.component.scss']
 })

@@ -9,6 +9,7 @@ import {MatCardModule} from '@angular/material/card';
 import {ClassPerformancePlotComponent} from "./plots/class-performance-plot/class-performance-plot.component";
 import {OverallAccPlotComponent} from "./plots/overall-acc-plot/overall-acc-plot.component";
 import {MatTabsModule} from "@angular/material/tabs";
+import {InfoComponent} from "../../../components/info/info.component";
 
 @Component({
   selector: 'app-explore',
@@ -23,7 +24,8 @@ import {MatTabsModule} from "@angular/material/tabs";
     MatCardModule,
     ClassPerformancePlotComponent,
     OverallAccPlotComponent,
-    MatTabsModule
+    MatTabsModule,
+    InfoComponent
   ],
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss']

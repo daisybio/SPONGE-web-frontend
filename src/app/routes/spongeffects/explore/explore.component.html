@@ -1,36 +1,3 @@
-<mat-expansion-panel class="info-card" expanded="false">
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      <mat-icon>info</mat-icon>
-      What is spongEffects?
-    </mat-panel-title>
-    <mat-panel-description>
-      General information about spongEffects on TCGA and custom usage
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <div class="info-text-div">
-    <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">spongEffects</a> can be used for downstream analysis of
-      SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random forest
-      machine learning approach.</p>
-    <p>For more detailed information refer to the <a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.
-    </p>
-    <p>We trained spongEffects prediction models on the TCGA pan-cancer dataset and nine other TCGA projects that
-      feature sufficient cancer subtyping for classification.</p>
-    <p>
-      The tab below shows the spongEffects prediction results for a selected TCGA project.
-      You can browse the hub-nodes that spongEffects models views as potential biomarkers and compare their
-      gene/transcript expression.
-    </p>
-    <p>
-      We can use the pretrained TCGA models to classify tumor (sub-)types and predict biomarkers on new independent
-      input data that can be uploaded via the
-      tab below.
-    </p>
-    <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
-  </div>
-</mat-expansion-panel>
-
-
 <mat-tab-group>
   <mat-tab label="Model performance">
     <app-overall-acc-plot></app-overall-acc-plot>
