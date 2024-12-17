@@ -31,7 +31,7 @@
     {
       "name": "backend",
       "urls": [
-        "https://exbio.wzw.tum.de/sponge-api-v2/**"
+        "https://exbio.wzw.tum.de/sponge-api/**"
       ],
       "cacheConfig": {
         "maxSize": 1000,

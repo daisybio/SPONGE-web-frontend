@@ -9,6 +9,7 @@ import {MatButton} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
 import {BrowseService} from "../../services/browse.service";
 import {TranscriptModalComponent} from "../transcript-modal/transcript-modal.component";
+import {InteractionModalComponent} from "../interaction-modal/interaction-modal.component";
 
 @Component({
   selector: 'app-interactions-table',
@@ -29,7 +30,7 @@ export class InteractionsTableComponent implements AfterViewInit {
   interactions$ = input<(GeneInteraction | TranscriptInteraction)[]>();
   readonly dialog = inject(MatDialog);
 
-  columns = ["name_1", "name_2", "correlation", "mscor", "padj"];
+  columns = ["name_1", "name_2", "mirna", "correlation", "mscor", "padj"];
 
   dataSource$ = computed(() => {
     return new MatTableDataSource((this.interactions$() || []).map(interaction => {
@@ -41,7 +42,8 @@ export class InteractionsTableComponent implements AfterViewInit {
         mscor: interaction.mscor,
         padj: interaction.p_value,
         obj1: 'gene1' in interaction ? interaction.gene1 : interaction.transcript_1,
-        obj2: 'gene2' in interaction ? interaction.gene2 : interaction.transcript_2
+        obj2: 'gene2' in interaction ? interaction.gene2 : interaction.transcript_2,
+        interaction
       }
     }));
   });
@@ -50,6 +52,12 @@ export class InteractionsTableComponent implements AfterViewInit {
     const dataSource = this.dataSource$();
     dataSource.paginator = this.paginator;
     dataSource.sort = this.sort;
+  }
+
+  openMiRNADialog(interaction: GeneInteraction | TranscriptInteraction) {
+    this.dialog.open(InteractionModalComponent, {
+      data: interaction
+    })
   }
 
   openDialog(entity: Gene | Transcript) {

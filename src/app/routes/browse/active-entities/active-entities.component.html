@@ -1,5 +1,13 @@
 <mat-tab-group>
   <mat-tab [label]="'Active nodes (' + nodes$().length + ')'">
+    @if (nodes$().length > 0) {
+      <div class="card-container">
+        <p>
+          Metrics are calculated based on the entire network, not the shown subset.
+        </p>
+      </div>
+    }
+
     <div class="card-container">
       @for (node of nodes$(); track node) {
         <mat-card>
@@ -34,6 +42,13 @@
     </div>
   </mat-tab>
   <mat-tab [label]="'Active edges (' + edges$().length + ')'">
+    @if (edges$().length > 0) {
+      <div class="card-container">
+        <p>
+          Metrics are calculated based on the entire network, not the shown subset.
+        </p>
+      </div>
+    }
     <div class="card-container">
       @for (interaction of edges$(); track interaction) {
         <mat-card>
@@ -58,6 +73,11 @@
               <tr>
                 <th>Adj. p-Value</th>
                 <td>{{ interaction.p_value }}</td>
+              </tr>
+              <tr>
+                <th>MiRNAs</th>
+                <td>
+                  <button mat-button (click)="openInteractionModal(interaction)">View supporting miRNAs</button>
               </tr>
             </table>
           </mat-card-content>

@@ -430,3 +430,20 @@ export interface AlternativeSplicingEvent {
     enst_number: string
   }
 }
+
+export interface MiRNA {
+  hs_nr: string,
+  mir_ID: string
+}
+
+export interface TranscriptMiRNA extends SpongeRun {
+  transcript: Transcript,
+  mirna: MiRNA,
+  coefficient: number
+}
+
+export interface GeneMiRNA extends SpongeRun {
+  gene: Gene,
+  mirna: MiRNA,
+  coefficient: number
+}

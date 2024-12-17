@@ -19,6 +19,16 @@
     </td>
   </ng-container>
 
+  <ng-container matColumnDef="mirna">
+    <th *matHeaderCellDef mat-header-cell>miRNAs</th>
+    <td *matCellDef="let interaction" mat-cell>
+      <button (click)="openMiRNADialog(interaction.interaction)" mat-button
+              matTooltip="Show supporting miRNAs" matTooltipPosition="right">
+        Show miRNAs
+      </button>
+    </td>
+  </ng-container>
+
   <ng-container matColumnDef="correlation">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Correlation</th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>

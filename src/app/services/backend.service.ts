@@ -15,6 +15,7 @@ import {
   GeneExpression,
   GeneInfo,
   GeneInteraction,
+  GeneMiRNA,
   GeneNode,
   GOTerm,
   Hallmark,
@@ -34,6 +35,7 @@ import {
   TranscriptExpression,
   TranscriptInfo,
   TranscriptInteraction,
+  TranscriptMiRNA,
   TranscriptNode,
   WikiPathway
 } from "../interfaces";
@@ -46,8 +48,7 @@ interface Query {
   providedIn: 'root'
 })
 export class BackendService {
-  // private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api-v2'
-  private static API_BASE = 'http://127.0.0.1:5555'
+  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api'
 
   constructor(private http: HttpService) {
   }
@@ -300,6 +301,23 @@ export class BackendService {
       ensg_number: ensg
     }
     return this.http.getRequest<string[]>(this.getRequestURL(route, query));
+  }
+
+  async getMiRNAs(version: number, disease: Dataset, identifiers: [string, string], level: 'gene' | 'transcript') {
+    const route = level == 'gene' ? 'miRNAInteraction/findceRNA' : 'miRNAInteraction/findceRNATranscripts';
+
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID: disease.dataset_ID,
+      between: true
+    }
+    if (level == 'gene') {
+      query['ensg_number'] = identifiers.join(',');
+    } else {
+      query['enst_number'] = identifiers.join(',');
+    }
+
+    return this.http.getRequest<GeneMiRNA[] | TranscriptMiRNA[]>(this.getRequestURL(route, query));
   }
 
   async getAlternativeSplicingEvents(ensts: string[]): Promise<AlternativeSplicingEvent[]> {

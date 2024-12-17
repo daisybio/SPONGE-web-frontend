@@ -12,7 +12,7 @@
       <mat-label>Subtype</mat-label>
       <mat-select formControlName="dataset">
         @for (dataset of subtypes; track dataset.dataset_ID) {
-          <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || 'unspecified') }}</mat-option>
+          <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -26,7 +26,7 @@
       </mat-button-toggle-group>
     </div>
   }
-  
+
   <mat-accordion>
     <mat-expansion-panel>
       <mat-expansion-panel-header>

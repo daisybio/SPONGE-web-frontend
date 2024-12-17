@@ -97,7 +97,9 @@
         <ng-container matColumnDef="enst">
           <th *matHeaderCellDef mat-header-cell>Transcript</th>
           <td *matCellDef="let asEntry" mat-cell>
-            <button (click)="openTranscript(asEntry.enst)" mat-button>{{ asEntry.enst }}</button>
+            <button (click)="openTranscript(asEntry.enst)" [disabled]="isOpeningTranscript()"
+                    mat-button>{{ asEntry.enst }}
+            </button>
           </td>
         </ng-container>
 
