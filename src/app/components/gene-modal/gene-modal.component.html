@@ -109,7 +109,7 @@
             <td *matCellDef="let asEntry" mat-cell>
               <mat-chip-set>
                 @for (event of asEntry.events; track event) {
-                  <mat-chip>{{ event }}</mat-chip>
+                  <mat-chip [matTooltip]="asDescriptions[event]">{{ event }}</mat-chip>
                 }
               </mat-chip-set>
             </td>
