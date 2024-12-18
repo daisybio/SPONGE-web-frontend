@@ -23,6 +23,7 @@
     "@angular/router": "^19.0.3",
     "@angular/service-worker": "^19.0.3",
     "@fullstax/kaplan-meier-estimator": "^3.1.2",
+    "@sigma/node-square": "^3.0.0",
     "@types/lodash": "^4.17.13",
     "graphology": "^0.25.4",
     "graphology-layout-force": "^0.2.4",

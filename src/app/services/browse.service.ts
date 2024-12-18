@@ -27,6 +27,7 @@ export interface EntityState {
 
 interface NetworkData {
   nodes: (GeneNode | TranscriptNode)[],
+  inverseNodes: (GeneNode | TranscriptNode)[],
   interactions: (GeneInteraction | TranscriptInteraction)[],
   disease: Dataset | undefined
 }
@@ -40,8 +41,9 @@ export class BrowseService {
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
+  readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$()));
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -169,19 +171,28 @@ export class BrowseService {
     if (config === undefined) {
       return {
         nodes: [],
+        inverseNodes: [],
         interactions: [],
         disease: undefined
       }
     }
 
+    const inverseConfig = {
+      ...config,
+      level: config.level === 'gene' ? 'transcript' : 'gene' as 'gene' | 'transcript'
+    }
+
+    const inverseNodes$ = this.backend.getNodes(version, inverseConfig);
     const nodes = await this.backend.getNodes(version, config);
     // Get gene IDs or transcript IDs respectively
     const identifiers = nodes.map(node => 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number);
     const interactions =
       await this.backend.getInteractionsSpecific(version, config.dataset, config.maxPValue, identifiers, config.level);
+    const inverseNodes = await inverseNodes$;
 
     return {
       nodes,
+      inverseNodes,
       interactions,
       disease: config.dataset
     }
@@ -223,16 +234,19 @@ export class BrowseService {
     });
   }
 
-  private createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[]): Graph {
+  private createGraph(nodes: (GeneNode | TranscriptNode)[], interactions: (GeneInteraction | TranscriptInteraction)[], inverseNodes: (GeneNode | TranscriptNode)[]): Graph {
     const graph = new Graph();
 
     nodes.forEach(node => {
+      const gene = BrowseService.getNodeGeneName(node);
+      const hasInverse = inverseNodes.some(inverseNode => BrowseService.getNodeGeneName(inverseNode) === gene);
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
         x: Math.random(), // Coordinates will be overridden by the layout algorithm
         y: Math.random(),
         size: Math.log(node.node_degree),
-        forceLabel: true
+        forceLabel: true,
+        type: hasInverse ? 'circle' : 'square'
       });
     });
 

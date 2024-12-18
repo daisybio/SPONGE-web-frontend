@@ -19,6 +19,8 @@ import {Settings} from "sigma/settings";
 import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
+import {NodeCircleProgram} from "sigma/rendering";
+import {NodeSquareProgram} from "@sigma/node-square";
 
 const states: Record<State, {
   edgeColor: string,
@@ -60,6 +62,10 @@ const sigma_settings: Partial<Settings> = {
   allowInvalidContainer: true,
   minCameraRatio: 0.5,
   maxCameraRatio: 2,
+  nodeProgramClasses: {
+    square: NodeSquareProgram,
+    circle: NodeCircleProgram
+  },
 }
 
 const MIN_DRAG_TIME = 200;
