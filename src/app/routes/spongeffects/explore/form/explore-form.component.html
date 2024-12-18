@@ -1,0 +1,14 @@
+<mat-form-field style="margin-left: 5px; margin-right: 5px">
+  <mat-label>Disease</mat-label>
+  <mat-select [(value)]="disease$">
+    @for (disease of diseases$(); track disease) {
+      <mat-option [value]="disease">{{ disease }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<div class="card-container">
+  <mat-button-toggle-group [(value)]="level$">
+    <mat-button-toggle value="gene">Gene</mat-button-toggle>
+    <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>

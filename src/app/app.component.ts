@@ -13,7 +13,8 @@ import {VersionsService} from "./services/versions.service";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  subpages = ['Browse', 'Genes', 'Documentation', 'Download'];
+  title = 'SPONGE-web-frontend';
+  subpages = ['Browse', 'Genes', 'SpongEffects', 'Documentation', 'Download'];
   version: WritableSignal<number>;
 
   constructor(versionsService: VersionsService) {

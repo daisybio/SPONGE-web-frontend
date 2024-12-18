@@ -1,0 +1,35 @@
+<mat-tab-group (selectedTabChange)="refresh()">
+  <mat-tab label="Model performance">
+    <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
+  </mat-tab>
+  <mat-tab label="Class performance">
+    <app-class-performance-plot></app-class-performance-plot>
+  </mat-tab>
+  <mat-tab label="Classification">
+    <app-info type="panel">
+      <p>The spongEffects enrichment score distributions can give an insight into the model capability to
+        differentiate between the given classes.</p>
+    </app-info>
+    <div class="enrichmentPlotHolderDiv">
+      <!-- <div #enrichmentScoresByClassPlot [hidden]="enrichmentScoreDensityLoading" class="enrichmentPlotHolder"></div> -->
+    </div>
+  </mat-tab>
+  <mat-tab label="Top ceRNA centralities">
+    <app-info type="panel">
+      <p>The mean decrease in the Gini coefficient tells us how much each variable affects the consistency of
+        nodes and leaves in a random forest. If the mean decrease accuracy or mean decrease Gini score is higher,
+        it means the variable is more important in the model.</p>
+      <p>Module centralities that are at the top right of the plot below play a crucial role in distinguishing
+        between the various cancer (sub-)types.</p>
+    </app-info>
+  </mat-tab>
+  <mat-tab label="Gene set enrichment analysis">
+    <app-info type="panel">
+      <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological
+        functions are enriched in gene expression data.</p>
+      <p>The information from GSEA can help find biological differences between disease (sub-)types</p>
+    </app-info>
+    <div style="text-align: center;">
+    </div>
+  </mat-tab>
+</mat-tab-group>
