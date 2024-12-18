@@ -54,6 +54,17 @@ export class BrowseService {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
     return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined);
   })
+  private readonly _comparisons$ = resource({
+    request: computed(() => {
+      return {
+        version: this._version$(),
+        dataset: this.disease$()
+      }
+    }),
+    loader: (param) => {
+      return this.backend.getDiseaseComparisons(param.request.version, param.request.dataset);
+    }
+  });
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     this._version$ = versionsService.versionReadOnly();
@@ -69,6 +80,10 @@ export class BrowseService {
       request: requestData,
       loader: (param) => this.fetchData(param.request.version, param.request.config),
     })
+
+    effect(() => {
+      console.log(this._comparisons$.value());
+    });
 
     effect(() => {
       const graph = this.graph$();
