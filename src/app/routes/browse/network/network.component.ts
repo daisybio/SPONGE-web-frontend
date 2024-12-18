@@ -16,11 +16,11 @@ import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
-import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
 import {NodeCircleProgram} from "sigma/rendering";
 import {NodeSquareProgram} from "@sigma/node-square";
+import {InfoComponent} from "../../../components/info/info.component";
 
 const states: Record<State, {
   edgeColor: string,
@@ -73,9 +73,9 @@ const MIN_DRAG_TIME = 200;
 @Component({
   selector: 'app-network',
   imports: [
-    MatIcon,
     MatAnchor,
-    MatTooltip
+    MatTooltip,
+    InfoComponent
   ],
   templateUrl: './network.component.html',
   styleUrl: './network.component.scss'
