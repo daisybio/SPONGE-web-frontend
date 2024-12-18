@@ -15,6 +15,7 @@ import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {NodesComponent} from "./nodes/nodes.component";
+import {GSEAComponent} from "./gsea/gsea.component";
 
 @Component({
   selector: 'app-browse',
@@ -32,7 +33,8 @@ import {NodesComponent} from "./nodes/nodes.component";
     MatProgressSpinnerModule,
     MatIcon,
     MatAnchor,
-    NodesComponent
+    NodesComponent,
+    GSEAComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
