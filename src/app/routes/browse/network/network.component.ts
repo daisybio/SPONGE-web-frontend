@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -15,6 +16,9 @@ import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
+import {MatIcon} from "@angular/material/icon";
+import {MatAnchor} from "@angular/material/button";
+import {MatTooltip} from "@angular/material/tooltip";
 
 const states: Record<State, {
   edgeColor: string,
@@ -62,7 +66,11 @@ const MIN_DRAG_TIME = 200;
 
 @Component({
   selector: 'app-network',
-  imports: [],
+  imports: [
+    MatIcon,
+    MatAnchor,
+    MatTooltip
+  ],
   templateUrl: './network.component.html',
   styleUrl: './network.component.scss'
 })
@@ -74,6 +82,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   refreshSignal = input.required<any>();
   draggedNode$: WritableSignal<string | undefined> = signal(undefined);
   dragStart$ = signal<number | undefined>(undefined);
+  gProfilerUrl$ = computed(() => BrowseService.getGProfilerUrlForNodes(this.browseService.nodes$()));
 
   constructor() {
     effect(() => {
@@ -153,7 +162,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       sigma.on('upStage', event => {
         handleUpNode(event);
       })
-      
+
       this.sigma = sigma;
     });
 
