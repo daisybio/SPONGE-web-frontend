@@ -1,4 +1,4 @@
-import {Component, computed, inject, linkedSignal, Signal} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, resource, Signal} from '@angular/core';
 import {VersionsService} from "../../../services/versions.service";
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
@@ -33,8 +33,25 @@ export class GSEAComponent {
     if (!diseaseName) return [];
     return this.diseaseSubtypeMap$().get(diseaseName) || [];
   });
-  localDisease$ = linkedSignal(() => this.possibleSubtypes$()[0]);
-
+  localDisease$ = linkedSignal(() => this.possibleSubtypes$().find(dataset => !dataset.disease_subtype) ?? this.possibleSubtypes$()[0]);
+  geneSets$ = resource({
+    request: computed(() => {
+      return {
+        global: this.globalDisease$(),
+        local: this.localDisease$(),
+        version: this.versionsService.versionReadOnly()()
+      }
+    }),
+    loader: request => {
+      return this.backend.getGeneSets(request.request.version, request.request.global, request.request.local);
+    }
+  })
   protected readonly capitalize = capitalize;
   protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
+
+  constructor() {
+    effect(() => {
+      console.log(this.geneSets$.value());
+    });
+  }
 }

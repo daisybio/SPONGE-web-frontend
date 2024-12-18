@@ -476,6 +476,22 @@ export class BackendService {
     return this.http.getRequest<any[]>(this.getRequestURL(route, query));
   }
 
+  getGeneSets(version: number, disease1: Dataset | undefined, disease2: Dataset | undefined) {
+    const route = 'gseaSets';
+
+    if (!disease1 || !disease2) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID_1: disease1.dataset_ID,
+      dataset_ID_2: disease2.dataset_ID
+    }
+
+    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query).map(key => key + '=' + query[key]).join('&');
   }
