@@ -14,6 +14,9 @@ import {FormsModule} from "@angular/forms";
 import {BrowseService} from "../../services/browse.service";
 import {GeneModalComponent} from "../gene-modal/gene-modal.component";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {MatChip} from "@angular/material/chips";
+import {MatTooltip} from "@angular/material/tooltip";
+import {AS_DESCRIPTIONS} from "../../constants";
 
 @Component({
   selector: 'app-gene-modal',
@@ -27,7 +30,9 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    MatProgressSpinner
+    MatProgressSpinner,
+    MatChip,
+    MatTooltip
   ],
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss'
@@ -37,6 +42,7 @@ export class TranscriptModalComponent implements AfterViewInit {
   paginator = viewChild.required(MatPaginator);
   columns = ['event_type', 'event_name']
 
+  readonly asDescriptions = AS_DESCRIPTIONS
   readonly transcript = inject<Transcript>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);

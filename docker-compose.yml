@@ -1,6 +1,0 @@
-services:
-  web:
-    build: .
-    image: nicotru/sponge-web-frontend
-    ports:
-      - "4201:80"

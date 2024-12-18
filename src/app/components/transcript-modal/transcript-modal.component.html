@@ -37,7 +37,9 @@
         <ng-container matColumnDef="event_type">
           <th *matHeaderCellDef mat-header-cell>Type</th>
           <td *matCellDef="let asEntry" mat-cell>
-            {{ asEntry.event_type }}
+            <mat-chip [matTooltip]="asDescriptions[asEntry.event_type]" matTooltipPosition="right">
+              {{ asEntry.event_type }}
+            </mat-chip>
           </td>
         </ng-container>
 

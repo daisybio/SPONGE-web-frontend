@@ -1,2 +1,9 @@
 <div #container style="height: 500px; width: 100%"></div>
-<p>You can adjust what you see by changing the settings on the left</p>
+<div class="card-container">
+  <mat-icon>info</mat-icon>
+  <p>You can adjust what you see by changing the settings on the left</p>
+</div>
+<div class="card-container">
+  <a [href]="gProfilerUrl$()" mat-flat-button matTooltip="Open g:Profiler for all visible nodes"
+     target="_blank">g:Profiler</a>
+</div>

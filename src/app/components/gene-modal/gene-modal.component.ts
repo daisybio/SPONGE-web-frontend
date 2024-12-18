@@ -14,6 +14,8 @@ import {FormsModule} from "@angular/forms";
 import {MatChip, MatChipSet} from "@angular/material/chips";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {TranscriptModalComponent} from "../transcript-modal/transcript-modal.component";
+import {AS_DESCRIPTIONS} from "../../constants";
+import {MatTooltip} from "@angular/material/tooltip";
 
 interface ASEntry {
   enst: string;
@@ -34,7 +36,8 @@ interface ASEntry {
     FormsModule,
     MatChipSet,
     MatChip,
-    MatProgressSpinner
+    MatProgressSpinner,
+    MatTooltip
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss'
@@ -46,6 +49,7 @@ export class GeneModalComponent implements AfterViewInit {
   asColumns = ['enst', 'events']
   goFilter = model<string>('')
   dialog = inject(MatDialog);
+  readonly asDescriptions = AS_DESCRIPTIONS
 
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
