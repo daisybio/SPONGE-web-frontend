@@ -3,7 +3,7 @@
     <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
   </mat-tab>
   <mat-tab label="Class performance">
-    <app-class-performance-plot></app-class-performance-plot>
+    <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
   </mat-tab>
   <mat-tab label="Classification">
     <app-info type="panel">
