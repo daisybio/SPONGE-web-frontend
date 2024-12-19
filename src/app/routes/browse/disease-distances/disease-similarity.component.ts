@@ -2,6 +2,7 @@ import {Component, computed, effect, ElementRef, inject, input, model, OnDestroy
 import {BrowseService} from "../../../services/browse.service";
 import {capitalize} from "lodash";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
+import {InfoComponent} from "../../../components/info/info.component";
 
 declare const Plotly: any;
 
@@ -9,7 +10,8 @@ declare const Plotly: any;
   selector: 'app-disease-similarity',
   imports: [
     MatButtonToggleGroup,
-    MatButtonToggle
+    MatButtonToggle,
+    InfoComponent
   ],
   templateUrl: './disease-similarity.component.html',
   styleUrl: './disease-similarity.component.scss'

@@ -4,4 +4,10 @@
     <mat-button-toggle value="heatmap">Heatmap</mat-button-toggle>
   </mat-button-toggle-group>
 </div>
+@if (mode$() == 'heatmap') {
+  <app-info title="What do I see?">
+    <p>The heatmap is colored by the gene-wise hubness score. The gene-wise hubness score is calculated by dividing the
+      degree of the gene in the network by the number of possible edges.</p>
+  </app-info>
+}
 <div #plot style="width: 100%"></div>
