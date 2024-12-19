@@ -2,6 +2,24 @@
   <mat-accordion>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
+        <mat-panel-title>Select expression file</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="full-width" style="display: flex">
+        <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
+        <span class="spacer"></span>
+        <a mat-stroked-button>Show example file</a>
+      </div>
+      @if (!useExampleExpression$()) {
+        <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
+          <mat-label>Select or drop a file</mat-label>
+          <ngx-mat-dropzone>
+            <input fileInput type="file">
+          </ngx-mat-dropzone>
+        </mat-form-field>
+      }
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
         <mat-panel-title>Filtering thresholds</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline" class="full-width">
