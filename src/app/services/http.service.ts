@@ -24,7 +24,7 @@ export class HttpService {
   }
 
   async postRequest(request: string, payload: {}): Promise<any> {
-    const headers = new HttpHeaders({'Content-Type': 'application/json'});
+    const headers = payload instanceof FormData ? {} : new HttpHeaders({ 'Content-Type': 'application/json' });
     try {
       return lastValueFrom(this.http.post<any>(request, payload, {headers: headers}));
     } catch (error) {

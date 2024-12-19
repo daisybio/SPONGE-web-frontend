@@ -1,0 +1,17 @@
+<mat-form-field appearance="outline">
+  <mat-label>Disease</mat-label>
+  <mat-select [(value)]="localDiseaseName$">
+    @for (diseaseName of diseaseNames$(); track diseaseName) {
+      <mat-option [value]="diseaseName">{{ capitalize(diseaseName) }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<mat-form-field appearance="outline">
+  <mat-label>Subtype</mat-label>
+  @let subtypes = possibleSubtypes$();
+  <mat-select [(value)]="localDisease$" [disabled]="subtypes.length < 2">
+    @for (dataset of subtypes; track dataset.dataset_ID) {
+      <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype ?? SUBTYPE_DEFAULT) }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>

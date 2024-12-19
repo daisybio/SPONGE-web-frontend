@@ -1,0 +1,37 @@
+@if (type() == 'modal') {
+  <div class="card-container">
+    <button mat-button (click)="openDialog()">
+      <mat-icon>info</mat-icon>
+      {{ title() }}
+    </button>
+  </div>
+} @else {
+  <mat-expansion-panel style="margin: 10px">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon style="margin-right: 5px">info</mat-icon>
+        {{ title() }}
+      </mat-panel-title>
+      @if (subtitle(); as subtitle) {
+        <mat-panel-description>
+          {{ subtitle }}
+        </mat-panel-description>
+      }
+    </mat-expansion-panel-header>
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </mat-expansion-panel>
+}
+
+<ng-template #dialog>
+  <h1 mat-dialog-title>{{ title() }}</h1>
+  @if (subtitle(); as subtitle) {
+    <h2 mat-dialog-title>{{ subtitle }}</h2>
+  }
+  <mat-dialog-content>
+    <ng-container *ngTemplateOutlet="content"></ng-container>
+  </mat-dialog-content>
+</ng-template>
+
+<ng-template #content>
+  <ng-content></ng-content>
+</ng-template>

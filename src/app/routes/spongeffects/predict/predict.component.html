@@ -1,0 +1,140 @@
+
+<mat-card class="expression-upload-card" appearance="outlined" >
+    <mat-card-header>
+      <div mat-card-avatar class="circle">1</div>
+      <mat-card-title>Expression file upload</mat-card-title>
+      <mat-card-subtitle>
+        Upload gene/transcript expression for cancer type classification
+      </mat-card-subtitle>
+      <div class="example-expression-button-div" style="float: right; margin-left: auto; margin-right: 20px;">
+        <button mat-stroked-button
+                class="example-expression-button"
+                (click)="flipExampleExpression()">
+          {{buttonText("expr")}}
+        </button>
+      </div>
+    </mat-card-header>
+    <p></p>
+    <mat-card-content>
+      <ng-container *ngIf="showExpressionExample">
+        <div class="example-expression-table-div">
+          <table mat-table [dataSource]="exampleExpressionData" class="mat-elevation-z8 example-expression-table">
+            <ng-container [matColumnDef]="column" *ngFor="let column of displayedCols">
+              <th mat-header-cell *matHeaderCellDef>{{ displayedColsValueMap.get(column) }}</th>
+              <td mat-cell *matCellDef="let emp">{{ emp[column] }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedCols"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedCols"></tr>
+          </table>
+        </div>
+      </ng-container>
+      <ngx-dropzone (change)="onExpressionUpload($event)"
+                    [multiple]="false"
+                    accept="{{acceptExpressionFiles()}}"
+                    [maxFileSize]="maxFileSize"
+                    [disableClick]="expressionUploaded()">        
+        <ngx-dropzone-label>
+          <button mat-stroked-button>
+            Select a file
+          </button>
+          <!-- <img src="../../../assets/img/heat-map-svgrepo-com.png" width="15%" height="15%"> -->
+          Or drop your expression file here!
+          <button mat-stroked-button class="example-expression-button" 
+            (click)="useExampleExpression($event)">
+            Or use example expression
+          </button>
+        </ngx-dropzone-label>
+        <ngx-dropzone-preview *ngFor="let f of uploadedExpressionFiles" style="text-align: center"
+                              [removable]="true" (removed)="onRemoveExpression(f)">
+          <ngx-dropzone-label>{{ f.name }}</ngx-dropzone-label>
+        </ngx-dropzone-preview>
+      </ngx-dropzone>
+    </mat-card-content>
+  </mat-card>
+
+  <p></p>
+
+
+  <mat-card appearance="outlined" >
+    <mat-card-header class="disable-ripple">
+      <div mat-card-avatar class="circle">2</div>
+      <mat-card-title>
+        Options
+      </mat-card-title>
+      <mat-card-subtitle>
+        spongEffects prediction parameters
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+    <p></p>
+    <!-- <hr class="my-4"> -->
+    <h6>Filtering thresholds:</h6>
+    <p></p>
+    <div [formGroup]="formGroup" class="float-label-always">
+
+    <mat-form-field appearance="outline" class="prediction-params" floatLabel="always">
+      <mat-label>multiple miRNA sensitivity correlation (mscor)</mat-label>
+      <input formControlName="mscor" class="col-xs-3" type="number" [placeholder]="mscorDefault.toString()" matInput id="mscorSelect">
+      <mat-error>Please provide a number between 0 and 10</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="prediction-params">
+      <mat-label>False discovery rate (FDR)</mat-label>
+      <input formControlName="fdr" class="col-xs-4 col-xs-offset-2" type="number" [placeholder]="fdrDefault.toString()" matInput id="fdrSelect">
+      <mat-error>Please provide a number between 0 and 0.5</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="prediction-params">
+      <mat-label>Minimal expression value</mat-label>
+      <input formControlName="minExpr" class="col-xs-4 col-xs-offset-2" type="number" [placeholder]="minExprDefault.toString()" matInput id="minExprSelect">      <mat-error>Please provide a number between 0 and 1.000</mat-error>
+    </mat-form-field>
+
+    <p></p>
+
+    <h6>Further settings:</h6>
+    <p></p>
+    <mat-form-field appearance="outline" class="prediction-params">
+      <mat-label>Enrichment method</mat-label>
+      <mat-select [(value)]="methodDefault" [placeholder]="methodDefault">
+        <mat-option *ngFor="let method of methods" [value]="method">{{method}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="prediction-params">
+      <mat-label>Minimum module size</mat-label>
+      <input formControlName="minSize" class="col-xs-3" matInput id="minSizeSelect" type="number" [placeholder]="minSizeDefault.toString()">
+      <mat-error>Please provide a number between 0 and 5.000</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="prediction-params">
+      <mat-label>Maximum module size</mat-label>
+      <input formControlName="minSize" class="col-xs-3" matInput id="minSizeSelect" type="number" [placeholder]="minSizeDefault.toString()">
+      <mat-error>Please provide a number between 0 and 5.000</mat-error>
+    </mat-form-field>
+
+    <mat-checkbox class="check-box"
+                  color="primary">
+      Apply log2 scaling factor to uploaded expression
+    </mat-checkbox>
+
+    <mat-checkbox class="check-box"
+                  color="primary">
+      Predict on subtype level (can lead to longer run times)
+    </mat-checkbox>
+
+    </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="run-button-div">
+    <button mat-raised-button class="run-button-predict"
+            [disabled]="runButtonDisabled()"
+            (click)="predict()">
+      Predict!
+    </button>
+    <mat-progress-bar class="predict-run-progress-bar"
+                      [mode]="progressBarMode"
+                      [value]="progressBarValue">
+    </mat-progress-bar>
+  </div>

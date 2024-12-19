@@ -15,6 +15,9 @@ import {MatIcon} from "@angular/material/icon";
 import {MatAnchor} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {NodesComponent} from "./nodes/nodes.component";
+import {GSEAComponent} from "./gsea/gsea.component";
+import {DiseaseSimilarityComponent} from "./disease-distances/disease-similarity.component";
+import {fromEvent} from "rxjs";
 
 @Component({
   selector: 'app-browse',
@@ -32,13 +35,15 @@ import {NodesComponent} from "./nodes/nodes.component";
     MatProgressSpinnerModule,
     MatIcon,
     MatAnchor,
-    NodesComponent
+    NodesComponent,
+    GSEAComponent,
+    DiseaseSimilarityComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
 })
 export class BrowseComponent {
-  tabChange = signal(0);
+  refresh$ = signal(0);
   versionService = inject(VersionsService);
   browseService = inject(BrowseService);
   level = this.browseService.level$;
@@ -46,4 +51,11 @@ export class BrowseComponent {
   hasData$ = computed(() => this.browseService.nodes$().length > 0);
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();
+  hasNetworkResults$ = computed(() => this.browseService.networkResults$() !== undefined);
+
+  constructor() {
+    fromEvent(window, 'resize').subscribe(() => this.refresh());
+  }
+
+  refresh = () => this.refresh$.update(v => v + 1);
 }

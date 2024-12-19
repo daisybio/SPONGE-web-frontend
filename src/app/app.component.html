@@ -8,5 +8,15 @@
   @for (subpage of subpages; track subpage) {
     <a mat-button routerLink="/{{subpage.toLowerCase()}}">{{ subpage }}</a>
   }
+  <a href="https://exbio.wzw.tum.de/sponge-api/ui" mat-button target="_blank">API</a>
+  <a href="https://www.mls.ls.tum.de/en/daisybio/home/" mat-button target="_blank">Contact</a>
 </mat-toolbar>
 <router-outlet></router-outlet>
+<div class="footer">
+  <p>Copyright © SPONGE by</p>
+  <a href="https://www.mls.ls.tum.de/en/daisybio/home/"
+     style="text-decoration: none;"
+     target="_blank"
+  >Data Science in Systems Biology, School of Life Sciences,
+    TUM</a>
+</div>

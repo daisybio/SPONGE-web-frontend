@@ -1,0 +1,7 @@
+<div class="card-container">
+  <mat-button-toggle-group [(value)]="mode$">
+    <mat-button-toggle value="scatter">Scatter</mat-button-toggle>
+    <mat-button-toggle value="heatmap">Heatmap</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+<div #plot style="width: 100%"></div>

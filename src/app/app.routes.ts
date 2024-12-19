@@ -10,7 +10,10 @@ import {
 } from "./routes/documentation/browse-functionalities/browse-functionalities.component";
 import {BrowseSidebarComponent} from "./routes/documentation/browse-sidebar/browse-sidebar.component";
 import {MoreComponent} from "./routes/documentation/more/more.component";
+import {SpongEffectsComponent} from "./routes/spongeffects/spongeffects.component";
 import {GenesComponent} from "./routes/genes/genes.component";
+import {ExploreComponent} from "./routes/spongeffects/explore/explore.component";
+import {PredictComponent} from "./routes/spongeffects/predict/predict.component";
 
 export const routes: Routes = [
   {
@@ -58,6 +61,20 @@ export const routes: Routes = [
   {
     path: 'download',
     component: DownloadComponent
+  },
+  {
+    path: 'spongeffects',
+    component: SpongEffectsComponent,
+    children: [
+      {
+        path: '',
+        component: ExploreComponent
+      },
+      {
+        path: 'predict',
+        component: PredictComponent
+      }
+    ],
   },
   {
     path: '**',

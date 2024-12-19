@@ -1,0 +1,19 @@
+@if (plotOverallAccResource.isLoading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+} @else {
+  @if (!plotOverallAccResource.value()) {
+    <p>No data available</p>
+  }
+}
+<div class="overall-acc-plot-div">
+  <div #overallAccuracyPlot class="overall-acc-plot" style="width: 100%; height: auto"></div>
+</div>
+<app-info type="panel">
+  <p>
+    The models performance is compared against a model that was trained on randomly selected SPONGE centralities.
+    The model that was trained on the spongEffects modules should outperform the random approach.
+    Dotted lines represent the overall accuracy for the test split of the data and solid lines show analogously show
+    the training performance.
+    Each line start (circle) and end (diamond) mark the lower and upper balanced accuracy bounds of a specific model.
+  </p>
+</app-info>
