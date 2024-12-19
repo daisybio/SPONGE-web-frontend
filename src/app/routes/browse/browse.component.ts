@@ -17,6 +17,7 @@ import {VersionsService} from "../../services/versions.service";
 import {NodesComponent} from "./nodes/nodes.component";
 import {GSEAComponent} from "./gsea/gsea.component";
 import {DiseaseDistancesComponent} from "./disease-distances/disease-distances.component";
+import {fromEvent} from "rxjs";
 
 @Component({
   selector: 'app-browse',
@@ -42,7 +43,7 @@ import {DiseaseDistancesComponent} from "./disease-distances/disease-distances.c
   styleUrl: './browse.component.scss'
 })
 export class BrowseComponent {
-  tabChange = signal(0);
+  refresh$ = signal(0);
   versionService = inject(VersionsService);
   browseService = inject(BrowseService);
   level = this.browseService.level$;
@@ -51,4 +52,10 @@ export class BrowseComponent {
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();
   hasNetworkResults$ = computed(() => this.browseService.networkResults$() !== undefined);
+
+  constructor() {
+    fromEvent(window, 'resize').subscribe(() => this.refresh());
+  }
+
+  refresh = () => this.refresh$.update(v => v + 1);
 }

@@ -37,7 +37,6 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
@@ -45,6 +44,7 @@ export class BrowseService {
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -94,10 +94,6 @@ export class BrowseService {
       request: requestData,
       loader: (param) => this.fetchData(param.request.version, param.request.config),
     })
-
-    effect(() => {
-      console.log(this._networkResults$.value());
-    });
 
     effect(() => {
       const graph = this.graph$();

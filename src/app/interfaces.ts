@@ -450,7 +450,7 @@ export interface GeneMiRNA extends SpongeRun {
 export interface NetworkResult {
   subtype: {},
   type: {
-    "euclidian_distances": {
+    "euclidean_distances": {
       labels: string[],
       x: number[],
       y: number[]

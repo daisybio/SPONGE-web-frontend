@@ -51,7 +51,7 @@ export class GSEAComponent {
 
   constructor() {
     effect(() => {
-      console.log(this.geneSets$.value());
+      //console.log(this.geneSets$.value());
     });
   }
 }

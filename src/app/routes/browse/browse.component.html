@@ -10,10 +10,10 @@
   <mat-drawer-content>
     @if (!isLoading$()) {
       @if (hasData$()) {
-        <mat-tab-group [preserveContent]="false" (selectedTabChange)="tabChange.set($event.index)">
+        <mat-tab-group [preserveContent]="false" (selectedTabChange)="refresh()">
           <mat-tab label="Network">
             <div style="display: flex; flex-direction: row">
-              <app-network [refreshSignal]="tabChange()" style="min-width: 500px; flex-grow: 3"></app-network>
+              <app-network [refreshSignal]="refresh$()" style="min-width: 500px; flex-grow: 3"></app-network>
               <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
             </div>
           </mat-tab>
@@ -23,7 +23,7 @@
             </mat-tab>
           }
           <mat-tab label="Expression heatmap">
-            <app-heatmap [refreshSignal]="tabChange()"></app-heatmap>
+            <app-heatmap [refreshSignal]="refresh$()"></app-heatmap>
           </mat-tab>
           <mat-tab label="Nodes">
             <app-nodes></app-nodes>
@@ -36,7 +36,7 @@
           </mat-tab>
           @if (hasNetworkResults$()) {
             <mat-tab label="Disease distances">
-              <app-disease-distances></app-disease-distances>
+              <app-disease-distances [refreshSignal]="refresh$()"></app-disease-distances>
             </mat-tab>
           }
         </mat-tab-group>

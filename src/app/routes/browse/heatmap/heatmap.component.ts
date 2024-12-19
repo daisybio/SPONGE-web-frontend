@@ -2,8 +2,6 @@ import {Component, computed, effect, ElementRef, inject, input, OnDestroy, resou
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
 import {VersionsService} from "../../../services/versions.service";
-import {fromEvent} from "rxjs";
-import {toSignal} from "@angular/core/rxjs-interop";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
@@ -24,8 +22,6 @@ export class HeatmapComponent implements OnDestroy {
 
   refreshSignal = input.required<any>();
   heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
-
-  windowResizeSignal = toSignal(fromEvent(window, 'resize'));
 
   plotData = resource({
     request: computed(() => {
@@ -73,8 +69,6 @@ export class HeatmapComponent implements OnDestroy {
 
   refreshEffect = effect(() => {
     this.refreshSignal();
-    this.windowResizeSignal();
-
     this.refresh();
   });
 
