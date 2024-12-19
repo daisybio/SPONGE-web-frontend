@@ -2,7 +2,7 @@
   <mat-label>Disease</mat-label>
   <mat-select [(value)]="disease$">
     @for (disease of diseases$(); track disease) {
-      <mat-option [value]="disease">{{ disease }}</mat-option>
+      <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
     }
   </mat-select>
 </mat-form-field>
