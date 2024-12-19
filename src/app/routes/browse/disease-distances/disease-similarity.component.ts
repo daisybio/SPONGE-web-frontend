@@ -29,22 +29,22 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     if (mode == 'scatter') {
       const scatterData = data.type.euclidean_distances;
 
-      return {
+      return [{
         x: scatterData.x,
         y: scatterData.y,
         type: 'scatter',
         mode: 'markers',
         text: scatterData.labels.map(label => capitalize(label))
-      };
+      }];
     } else {
       const heatmapData = data.type.scores;
 
-      return {
+      return [{
         z: heatmapData.values,
         type: 'heatmap',
         x: heatmapData.labels.map(label => capitalize(label)),
         y: heatmapData.labels.map(label => capitalize(label)),
-      }
+      }]
     }
   });
 
@@ -54,7 +54,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     if (!plotData) return;
     const div = this.plotDiv$().nativeElement;
 
-    Plotly.newPlot(div, [plotData], {
+    Plotly.newPlot(div, plotData, {
       height: 700,
       yaxis: {automargin: true},
       xaxis: {automargin: true},
