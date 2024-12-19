@@ -8,6 +8,7 @@
   @for (subpage of subpages; track subpage) {
     <a mat-button routerLink="/{{subpage.toLowerCase()}}">{{ subpage }}</a>
   }
+  <a href="https://exbio.wzw.tum.de/sponge-api/ui" mat-button target="_blank">API</a>
   <a href="https://www.mls.ls.tum.de/en/daisybio/home/" mat-button target="_blank">Contact</a>
 </mat-toolbar>
 <router-outlet></router-outlet>
