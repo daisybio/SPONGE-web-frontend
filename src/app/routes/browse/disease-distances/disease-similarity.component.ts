@@ -6,15 +6,15 @@ import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-to
 declare const Plotly: any;
 
 @Component({
-  selector: 'app-disease-distances',
+  selector: 'app-disease-similarity',
   imports: [
     MatButtonToggleGroup,
     MatButtonToggle
   ],
-  templateUrl: './disease-distances.component.html',
-  styleUrl: './disease-distances.component.scss'
+  templateUrl: './disease-similarity.component.html',
+  styleUrl: './disease-similarity.component.scss'
 })
-export class DiseaseDistancesComponent implements OnDestroy {
+export class DiseaseSimilarityComponent implements OnDestroy {
   browseService = inject(BrowseService);
   mode$ = model<'scatter' | 'heatmap'>('scatter');
   refreshSignal = input.required<any>();

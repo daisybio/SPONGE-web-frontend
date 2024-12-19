@@ -35,8 +35,8 @@
             <app-gsea></app-gsea>
           </mat-tab>
           @if (hasNetworkResults$()) {
-            <mat-tab label="Disease distances">
-              <app-disease-distances [refreshSignal]="refresh$()"></app-disease-distances>
+            <mat-tab label="Disease similarities">
+              <app-disease-similarity [refreshSignal]="refresh$()"></app-disease-similarity>
             </mat-tab>
           }
         </mat-tab-group>

@@ -16,7 +16,7 @@ import {MatAnchor} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {NodesComponent} from "./nodes/nodes.component";
 import {GSEAComponent} from "./gsea/gsea.component";
-import {DiseaseDistancesComponent} from "./disease-distances/disease-distances.component";
+import {DiseaseSimilarityComponent} from "./disease-distances/disease-similarity.component";
 import {fromEvent} from "rxjs";
 
 @Component({
@@ -37,7 +37,7 @@ import {fromEvent} from "rxjs";
     MatAnchor,
     NodesComponent,
     GSEAComponent,
-    DiseaseDistancesComponent
+    DiseaseSimilarityComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
