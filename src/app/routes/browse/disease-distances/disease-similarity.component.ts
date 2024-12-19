@@ -58,6 +58,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
       height: 700,
       yaxis: {automargin: true},
       xaxis: {automargin: true},
+      title: this.mode$() == 'scatter' ? 'Euclidean Distances' : 'Similarity Heatmap'
     });
   });
 
