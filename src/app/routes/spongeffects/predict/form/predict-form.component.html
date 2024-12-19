@@ -1,1 +1,60 @@
-<p>form works!</p>
+<form [formGroup]="formGroup">
+  <mat-accordion>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Filtering thresholds</mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>mSCor</mat-label>
+        <input formControlName="mscor" matInput type="number">
+        <mat-error>Please provide a number between 0 and 10</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>False discovery rate (FDR)</mat-label>
+        <input formControlName="fdr" matInput type="number">
+        <mat-error>Please provide a number between 0 and 0.5</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Minimal expression value</mat-label>
+        <input formControlName="minExpr" matInput type="number">
+        <mat-error>Please provide a number between 0 and 1.000</mat-error>
+      </mat-form-field>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Further settings</mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Enrichment method</mat-label>
+        <mat-select formControlName="method">
+          <mat-option *ngFor="let method of methods" [value]="method">{{ method }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Minimum module size</mat-label>
+        <input formControlName="minSize" matInput type="number">
+        <mat-error>Please provide a number between 0 and 5.000</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Maximum module size</mat-label>
+        <input formControlName="minSize" matInput type="number">
+        <mat-error>Please provide a number between 0 and 5.000</mat-error>
+      </mat-form-field>
+
+      <mat-checkbox class="check-box" color="primary">
+        Apply log2 scaling factor to uploaded expression
+      </mat-checkbox>
+
+      <mat-checkbox class="check-box" color="primary">
+        Predict on subtype level (can lead to longer run times)
+      </mat-checkbox>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <div class="card-container">
+    <button mat-flat-button>Predict!</button>
+  </div>
+</form>
