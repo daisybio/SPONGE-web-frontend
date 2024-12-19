@@ -80,7 +80,7 @@ export class BackendService {
     const level = query.level;
     const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
 
-    if (version != query.dataset.sponge_db_version) {
+    if (version != query.dataset.sponge_db_version || (version < 2 && level == 'transcript')) {
       return Promise.resolve([]);
     }
 
@@ -496,7 +496,7 @@ export class BackendService {
   async getNetworkResults(version: number, disease: Dataset | undefined, level: 'gene' | 'transcript' | undefined) {
     const route = 'networkResults';
 
-    if (!disease || !level) {
+    if (!disease || !level || version < 2) {
       return Promise.resolve(undefined);
     }
 
