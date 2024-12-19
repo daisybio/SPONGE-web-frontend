@@ -16,6 +16,7 @@ import {
   GeneNode,
   GOTerm,
   Hallmark,
+  NetworkResult,
   OverallCounts,
   PredictCancerType,
   RunClassPerformance,
@@ -490,6 +491,23 @@ export class BackendService {
     }
 
     return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+  }
+
+  async getNetworkResults(version: number, disease: Dataset | undefined, level: 'gene' | 'transcript' | undefined) {
+    const route = 'networkResults';
+
+    if (!disease || !level) {
+      return Promise.resolve(undefined);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID: disease.dataset_ID,
+      level
+    }
+
+    const resp = await this.http.getRequest<NetworkResult>(this.getRequestURL(route, query));
+    return 'type' in resp ? resp : undefined;
   }
 
   private stringify(query: Query): string {

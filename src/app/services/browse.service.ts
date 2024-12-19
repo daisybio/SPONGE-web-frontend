@@ -5,6 +5,7 @@ import {
   Gene,
   GeneInteraction,
   GeneNode,
+  NetworkResult,
   Transcript,
   TranscriptInteraction,
   TranscriptNode
@@ -36,6 +37,7 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
@@ -43,7 +45,6 @@ export class BrowseService {
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -66,6 +67,19 @@ export class BrowseService {
     }
   });
 
+  private readonly _networkResults$ = resource({
+    request: computed(() => {
+      return {
+        version: this._version$(),
+        disease: this.disease$(),
+        level: this.level$()
+      }
+    }),
+    loader: (param) => {
+      return this.backend.getNetworkResults(param.request.version, param.request.disease, param.request.level);
+    }
+  });
+
   constructor(private backend: BackendService, versionsService: VersionsService) {
     this._version$ = versionsService.versionReadOnly();
 
@@ -82,7 +96,7 @@ export class BrowseService {
     })
 
     effect(() => {
-      console.log(this._comparisons$.value());
+      console.log(this._networkResults$.value());
     });
 
     effect(() => {
@@ -108,6 +122,11 @@ export class BrowseService {
   get level$(): Signal<'gene' | 'transcript' | undefined> {
     return computed(() => this._query$()?.level);
   }
+
+  get networkResults$(): Signal<NetworkResult | undefined> {
+    return this._networkResults$.value.asReadonly();
+  }
+
 
   public static getNodeID(node: GeneNode | TranscriptNode): string {
     return 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number;

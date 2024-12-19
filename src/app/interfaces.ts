@@ -265,12 +265,12 @@ export interface SpongEffectsRun {
   min_expr: number,
   method: string,
   cv_folds: number
-  level:  string,
-  sponge_run_ID: number, 
-  m_max: number, 
+  level: string,
+  sponge_run_ID: number,
+  m_max: number,
   log_level: string,
-  sponge_db_version:  string,
-  dataset_ID: number, 
+  sponge_db_version: string,
+  dataset_ID: number,
   disease_name: string,
   data_origin: string,
   disease_type: string,
@@ -422,7 +422,6 @@ export interface ExampleExpression {
 }
 
 
-
 export interface AlternativeSplicingEvent {
   event_name: string,
   event_type: string,
@@ -446,4 +445,19 @@ export interface GeneMiRNA extends SpongeRun {
   gene: Gene,
   mirna: MiRNA,
   coefficient: number
+}
+
+export interface NetworkResult {
+  subtype: {},
+  type: {
+    "euclidian_distances": {
+      labels: string[],
+      x: number[],
+      y: number[]
+    },
+    scores: {
+      labels: string[],
+      values: number[][]
+    }
+  }
 }

@@ -16,6 +16,7 @@ import {MatAnchor} from "@angular/material/button";
 import {VersionsService} from "../../services/versions.service";
 import {NodesComponent} from "./nodes/nodes.component";
 import {GSEAComponent} from "./gsea/gsea.component";
+import {DiseaseDistancesComponent} from "./disease-distances/disease-distances.component";
 
 @Component({
   selector: 'app-browse',
@@ -34,7 +35,8 @@ import {GSEAComponent} from "./gsea/gsea.component";
     MatIcon,
     MatAnchor,
     NodesComponent,
-    GSEAComponent
+    GSEAComponent,
+    DiseaseDistancesComponent
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss'
@@ -48,4 +50,5 @@ export class BrowseComponent {
   hasData$ = computed(() => this.browseService.nodes$().length > 0);
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();
+  hasNetworkResults$ = computed(() => this.browseService.networkResults$() !== undefined);
 }
