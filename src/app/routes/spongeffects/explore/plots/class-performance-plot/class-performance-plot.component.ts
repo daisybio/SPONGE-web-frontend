@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, inject, Renderer2, resource, ResourceRef, ViewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, Renderer2, resource, ResourceRef, viewChild, ViewChild} from '@angular/core';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatIconModule} from '@angular/material/icon';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -33,14 +33,9 @@ export class ClassPerformancePlotComponent {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
+  refreshSignal$ = input();
 
-  version$ = this.versionService.versionReadOnly;
-  level$ = this.exploreService.level$;
-  disease$ = this.exploreService.selectedDisease$;
-
-  @ViewChild("classModelPerformancePlot") classPerformancePlotDiv!: ElementRef;
-  plotClassPerformance: ResourceRef<PlotlyData | undefined>;
-
+  classPerformPlot = viewChild.required<ElementRef<HTMLDivElement>>('classPerformancePlot');
 
   performanceMeasures: SelectElement[] = [
     {value: 'balanced_accuracy', viewValue: "Balanced Accuracy"},
@@ -60,31 +55,35 @@ export class ClassPerformancePlotComponent {
   includeModuleMembers: boolean = false;
   classPerformanceLoading: boolean = true;
 
-
-  constructor(private renderer: Renderer2) {
-    // signals from explore service (explore params)
-    this.plotClassPerformance = resource({
-      request: computed(() => {
-        return {
-          version: this.versionService.versionReadOnly()(),
-          cancer: this.exploreService.selectedDisease$(),
-          level: this.exploreService.level$()
-        }
-      }),
-      loader: async (param) => {
-        const version = param.request.version;
-        const gene = param.request.cancer;
-        const level = param.request.level;
-        if (version === undefined || gene === undefined || level === undefined) return;
-        return await this.plotModelClassPerformance(version, gene, level);
+  plotClassPerformanceResource = resource({
+    request: computed(() => {
+      return {
+        version: this.versionService.versionReadOnly()(),
+        cancer: this.exploreService.selectedDisease$(),
+        level: this.exploreService.level$()
       }
+    }),
+    loader: async (param) => {
+      const version = param.request.version;
+      const gene = param.request.cancer;
+      const level = param.request.level;
+      if (version === undefined || gene === undefined || level === undefined) return;
+      return await this.plotModelClassPerformance(version, gene, level);
+    }
+  });
+
+
+  constructor() {
+    effect(() => {
+      this.refreshSignal$();
+      this.refreshPlot();
     });
   }
 
 
   async plotModelClassPerformance(version: number, cancer: string, level: string): Promise<PlotlyData> {
     const performanceData = await this.backend.getRunClassPerformance(version, cancer, level);
-
+    console.log(performanceData);
     // group the data by model type
     const traceGroups: { [key: string]: any[] } = {};
     performanceData.forEach(entry => {
@@ -112,7 +111,7 @@ export class ClassPerformancePlotComponent {
     }
     const meanTextLength: number = Math.round(sum(traces[0].x.map(d => d.length)) / traces[0].x.length);
     const textPad: number = meanTextLength * 10.5;
-    const containerWidth = this.renderer.selectRootElement(this.classPerformancePlotDiv.nativeElement).offsetWidth;
+    // const containerWidth = this.renderer.selectRootElement(this.classPerformancePlotDiv.nativeElement).offsetWidth;
     // const angle: number = meanTextLength > 15 ? 90: 0;
     // angle 90 if number of bars is greater than 10
     const uniqueBars = new Set(traces.flatMap(trace => trace.x)).size;
@@ -143,8 +142,16 @@ export class ClassPerformancePlotComponent {
       plot_bgcolor: 'rgba(0,0,0,0)'
     };
     const config = {responsive: true};
-    const data = {data: traces, layout: layout, config: config};
-    return Plotly.newPlot(this.classPerformancePlotDiv.nativeElement, data.data, data.layout, data.config);
-
+    return Plotly.newPlot(this.classPerformPlot().nativeElement, traces, layout, config);
   }
+
+  refreshPlot() {
+    const plotDiv = this.classPerformPlot().nativeElement;
+    if (plotDiv.checkVisibility()) {
+      Plotly.Plots.resize(plotDiv);
+    }
+  }
+
+
+
 }
