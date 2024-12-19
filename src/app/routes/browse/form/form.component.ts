@@ -46,7 +46,7 @@ export class FormComponent {
     interactionSorting: new FormControl<InteractionSorting>(this.interactionSortings.pAdj),
     maxInteractions: new FormControl<number>(100),
     maxPValue: new FormControl<number>(0.05),
-    minMScore: new FormControl<number>(0),
+    minMScore: new FormControl<number>(0.1),
   })
 
   diseaseSignal = toSignal(
