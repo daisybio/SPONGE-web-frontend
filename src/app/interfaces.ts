@@ -115,7 +115,7 @@ export interface BrowseQuery {
   dataset: Dataset,
   showOrphans: boolean,
   geneSorting: GeneSorting,
-  maxGenes: number,
+  maxNodes: number,
   minDegree: number,
   minBetweenness: number,
   minEigen: number,

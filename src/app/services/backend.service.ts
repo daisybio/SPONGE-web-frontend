@@ -93,7 +93,7 @@ export class BackendService {
       minEigenvector: query.minEigen,
       sorting: query.geneSorting,
       descending: true,
-      limit: query.maxGenes
+      limit: query.maxNodes
     };
 
     return this.http.getRequest<(GeneNode | TranscriptNode)[]>(this.getRequestURL(route, internalQuery));
