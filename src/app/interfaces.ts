@@ -113,6 +113,7 @@ export interface TranscriptInteraction extends SpongeRun {
 export interface BrowseQuery {
   level: 'gene' | 'transcript',
   dataset: Dataset,
+  showOrphans: boolean,
   geneSorting: GeneSorting,
   maxGenes: number,
   minDegree: number,

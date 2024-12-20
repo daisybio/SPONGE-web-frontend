@@ -5,7 +5,7 @@
     <mat-button-toggle [value]="2">v2</mat-button-toggle>
   </mat-button-toggle-group>
   <span class="spacer"></span>
-  @for (subpage of subpages; track subpage) {
+  @for (subpage of subpages$(); track subpage) {
     <a mat-button routerLink="/{{subpage.toLowerCase()}}">{{ subpage }}</a>
   }
   <a href="https://exbio.wzw.tum.de/sponge-api/ui" mat-button target="_blank">API</a>

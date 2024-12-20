@@ -11,6 +11,7 @@ import {toSignal} from "@angular/core/rxjs-interop";
 import _ from "lodash";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {SUBTYPE_DEFAULT} from "../../../constants";
+import {MatCheckbox} from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-form',
@@ -22,6 +23,7 @@ import {SUBTYPE_DEFAULT} from "../../../constants";
     MatInputModule,
     MatButtonToggleGroup,
     MatButtonToggle,
+    MatCheckbox,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
@@ -38,11 +40,12 @@ export class FormComponent {
     disease: new FormControl<string>(''),
     dataset: new FormControl<Dataset | undefined>(undefined),
     level: new FormControl<'gene' | 'transcript'>('gene'),
+    showOrphans: new FormControl<boolean>(false),
     geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
     maxGenes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),
-    minBetweenness: new FormControl<number>(0),
-    minEigen: new FormControl<number>(0),
+    minBetweenness: new FormControl<number>(0.05),
+    minEigen: new FormControl<number>(0.1),
     interactionSorting: new FormControl<InteractionSorting>(this.interactionSortings.pAdj),
     maxInteractions: new FormControl<number>(100),
     maxPValue: new FormControl<number>(0.05),

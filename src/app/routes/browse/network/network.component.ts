@@ -75,7 +75,7 @@ const MIN_DRAG_TIME = 200;
   imports: [
     MatAnchor,
     MatTooltip,
-    InfoComponent
+    InfoComponent,
   ],
   templateUrl: './network.component.html',
   styleUrl: './network.component.scss'

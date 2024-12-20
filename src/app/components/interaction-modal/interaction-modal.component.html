@@ -8,7 +8,7 @@
   }
   <table [dataSource]="tableData" [hidden]="miRNAs$.isLoading()" class="mat-elevation-z8" mat-table matSort>
     <ng-container matColumnDef="hs_nr">
-      <th *matHeaderCellDef mat-header-cell mat-sort-header>HS</th>
+      <th *matHeaderCellDef mat-header-cell mat-sort-header>Name</th>
       <td *matCellDef="let entry" mat-cell>
         {{ entry.hs_nr }}
       </td>
