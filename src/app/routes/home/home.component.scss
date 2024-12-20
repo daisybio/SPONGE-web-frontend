@@ -4,3 +4,11 @@
   max-width: 100%;
   object-fit: contain;
 }
+
+.carousel-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  overflow: hidden;
+}
