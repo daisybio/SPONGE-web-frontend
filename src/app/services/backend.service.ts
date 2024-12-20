@@ -324,7 +324,8 @@ export class BackendService {
       enst_number: ensts.join(',')
     }
 
-    return this.http.getRequest<AlternativeSplicingEvent[]>(this.getRequestURL(route, query));
+    const resp = await this.http.getRequest<AlternativeSplicingEvent[]>(this.getRequestURL(route, query));
+    return 'detail' in resp ? [] : resp;
   }
 
   getCeRNAInteractionsAll(disease: string, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
