@@ -81,14 +81,12 @@ export class HeatmapComponent implements OnDestroy {
     Plotly.newPlot(heatmap, [data], {
       title: 'Expression heatmap',
       xaxis: {
-        title: 'Sample ID'
+        title: 'Sample ID',
+        automargin: true
       },
       yaxis: {
-        title: 'Node'
-      },
-      margin: {
-        b: 300,
-        l: 200
+        title: 'Node',
+        automargin: true
       }
     });
   });

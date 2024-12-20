@@ -14,22 +14,10 @@
     </slide>
   </carousel>
   <h2>SPONGE results for each pair of genes</h2>
-  <mat-tab-group (selectedTabChange)="resize()" [preserveContent]="true">
-    <mat-tab label="Cancer">
-      @if (cancerData() === undefined) {
-        <div class="spinner-container">
-          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-        </div>
-      }
-      <div #cancerPlot class="plot-container"></div>
-    </mat-tab>
-    <mat-tab label="Non-cancer">
-      @if (nonCancerData() === undefined) {
-        <div class="spinner-container">
-          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-        </div>
-      }
-      <div #nonCancerPlot class="plot-container"></div>
-    </mat-tab>
-  </mat-tab-group>
+  @if (plotData$() === undefined) {
+    <div class="spinner-container">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+  }
+  <div #plot style="height: 700px"></div>
 </div>
