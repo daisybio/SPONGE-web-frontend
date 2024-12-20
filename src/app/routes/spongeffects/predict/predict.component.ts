@@ -24,7 +24,6 @@ import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import {ExampleExpression, PlotlyData} from '../../../interfaces';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatOption} from '@angular/material/core';
 import {timer} from 'rxjs';
 import {BackendService} from '../../../services/backend.service';
 import {VersionsService} from '../../../services/versions.service';
@@ -66,7 +65,6 @@ const EXAMPLE_GENE_EXPR: ExampleExpression[] = [
     MatTableModule,
     FormsModule,
     ReactiveFormsModule,
-    MatOption,
   ],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss'

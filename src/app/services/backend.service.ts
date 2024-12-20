@@ -510,6 +510,16 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
+  async getASPsiValues(asEventID: number) {
+    const route = 'alternativeSplicing/getPsiValues';
+
+    const query: Query = {
+      alternative_splicing_event_transcripts_ID: asEventID
+    }
+
+    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query).map(key => key + '=' + query[key]).join('&');
   }
