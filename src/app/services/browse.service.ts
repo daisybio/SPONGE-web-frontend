@@ -5,6 +5,7 @@ import {
   Gene,
   GeneInteraction,
   GeneNode,
+  InteractionSorting,
   NetworkResult,
   Transcript,
   TranscriptInteraction,
@@ -14,6 +15,7 @@ import {BackendService} from "./backend.service";
 import Graph from "graphology";
 import {VersionsService} from "./versions.service";
 import ForceSupervisor from "graphology-layout-force/worker";
+import {isEqual} from "lodash";
 
 export enum State {
   Default,
@@ -37,6 +39,7 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
@@ -44,7 +47,6 @@ export class BrowseService {
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -213,12 +215,34 @@ export class BrowseService {
     }
 
     const inverseNodes$ = this.backend.getNodes(version, inverseConfig);
-    const nodes = await this.backend.getNodes(version, config);
+    let nodes = await this.backend.getNodes(version, config);
     // Get gene IDs or transcript IDs respectively
     const identifiers = nodes.map(node => 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number);
-    const interactions =
+    let interactions =
       await this.backend.getInteractionsSpecific(version, config.dataset, config.maxPValue, identifiers, config.level);
     const inverseNodes = await inverseNodes$;
+
+    interactions = interactions.filter(interaction => interaction.mscor >= config.minMScore && interaction.p_value <= config.maxPValue);
+    interactions = interactions.sort((a, b) => {
+      switch (config.interactionSorting) {
+        case InteractionSorting.pAdj:
+          return a.p_value - b.p_value;
+        case InteractionSorting.mScor:
+          return a.mscor - b.mscor;
+        case InteractionSorting.Correlation:
+          return a.correlation - b.correlation;
+      }
+    });
+    interactions = interactions.slice(0, config.maxInteractions);
+
+    if (!config.showOrphans) {
+      const interactionNodes = interactions
+        .map(interaction => BrowseService.getInteractionObjects(interaction)).flat();
+      nodes = nodes.filter(node => {
+        const nodeObject = BrowseService.getNodeObject(node);
+        return interactionNodes.some(interactionObject => isEqual(interactionObject, nodeObject));
+      });
+    }
 
     return {
       nodes,
@@ -291,8 +315,8 @@ export class BrowseService {
     const layout = new ForceSupervisor(graph, {
       isNodeFixed: (_, attr) => attr['highlighted'],
       settings: {
-        repulsion: 0.5,
-        attraction: 0.001,
+        repulsion: 0.001,
+        attraction: 0.01,
         gravity: 0.001,
       }
     });

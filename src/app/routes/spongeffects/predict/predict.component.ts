@@ -18,7 +18,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatMenuModule} from '@angular/material/menu';
-import {NgxDropzoneModule} from 'ngx-dropzone';
 import {MatButtonModule} from '@angular/material/button';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import {ExampleExpression, PlotlyData} from '../../../interfaces';
@@ -59,7 +58,6 @@ const EXAMPLE_GENE_EXPR: ExampleExpression[] = [
     MatRadioModule,
     MatButtonToggleModule,
     MatMenuModule,
-    NgxDropzoneModule,
     MatButtonModule,
     CommonModule,
     MatTableModule,
