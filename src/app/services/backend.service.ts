@@ -36,6 +36,7 @@ import {
   TranscriptNode,
   WikiPathway
 } from "../interfaces";
+import {API_BASE} from "../constants";
 
 interface Query {
   [key: string]: any;
@@ -45,7 +46,6 @@ interface Query {
   providedIn: 'root'
 })
 export class BackendService {
-  private static API_BASE = 'https://exbio.wzw.tum.de/sponge-api'
 
   constructor(private http: HttpService) {
   }
@@ -328,7 +328,7 @@ export class BackendService {
   }
 
   getCeRNAInteractionsAll(disease: string, maxPValue: number, ensgs: string[], limit?: number, offset?: number): Promise<CeRNAInteraction[]> {
-    let request = BackendService.API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
+    let request = API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
     request += `&ensg_number=${ensgs.join(',')}`;
     request += `&pValue=${maxPValue}`;
 
@@ -343,7 +343,7 @@ export class BackendService {
   }
 
   getCeRNAInteractionsSpecific(disease: string, maxPValue: number, ensgs: string[]): Promise<CeRNAInteraction[]> {
-    let request = BackendService.API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
+    let request = API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
     request += `&ensg_number=${ensgs.join(',')}`;
     request += `&pValue=${maxPValue}`;
 
@@ -366,14 +366,14 @@ export class BackendService {
   // }
 
   getCeRNAExpression(ensgs: string[], diseaseName: string): Promise<CeRNAExpression[]> {
-    let request = BackendService.API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
+    let request = API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
     request += `&ensg_number=${ensgs.join(',')}`;
 
     return this.http.getRequest<CeRNAExpression[]>(request);
   }
 
   getTranscriptExpression(ensts: string[], disease_name?: string): Promise<TranscriptExpression[]> {
-    let request = BackendService.API_BASE + `/exprValue/getTranscript?disease_name=${disease_name}`;
+    let request = API_BASE + `/exprValue/getTranscript?disease_name=${disease_name}`;
     request += `&enst_number=${ensts.join(',')}`;
 
     return this.http.getRequest<TranscriptExpression[]>(request);
@@ -393,7 +393,7 @@ export class BackendService {
   }
 
   getSpongEffectsRuns(version: number, dataset_ID?: number, diseaseName?: string): Promise<SpongEffectsRun[]> {
-    const request = `${BackendService.API_BASE}/spongEffects/getSpongEffectsRuns?`
+    const request = `${API_BASE}/spongEffects/getSpongEffectsRuns?`
       + (dataset_ID ? `?dataset_ID=${dataset_ID}` : '')
       + (diseaseName ? `&disease_name=${diseaseName}` : '')
       + `&sponge_db_version=${version}`
@@ -401,7 +401,7 @@ export class BackendService {
   }
 
   getRunPerformance(version: number, diseaseName: string, level: string): Promise<RunPerformance[]> {
-    const request = BackendService.API_BASE + '/spongEffects/getRunPerformance' + `?disease_name=${diseaseName}` + `&level=${level}` + `&sponge_db_version=${version}`;
+    const request = API_BASE + '/spongEffects/getRunPerformance' + `?disease_name=${diseaseName}` + `&level=${level}` + `&sponge_db_version=${version}`;
     return this.http.getRequest<RunPerformance[]>(request);
   }
 
@@ -409,22 +409,22 @@ export class BackendService {
 // spongEffects services:
 
   getRunClassPerformance(version: number, diseaseName: string, level: string): Promise<RunClassPerformance[]> {
-    const request = BackendService.API_BASE + '/spongEffects/getRunClassPerformance' + `?disease_name=${diseaseName}` + `&level=${level}` + `&sponge_db_version=${version}`;
+    const request = API_BASE + '/spongEffects/getRunClassPerformance' + `?disease_name=${diseaseName}` + `&level=${level}` + `&sponge_db_version=${version}`;
     return this.http.getRequest<RunClassPerformance[]>(request);
   }
 
   getEnrichmentScoreDistributions(version: number, diseaseName: string, level: string): Promise<EnrichmentScoreDistributions[]> {
-    const request = `${BackendService.API_BASE}/spongEffects/getEnrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/getEnrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
     return this.http.getRequest<EnrichmentScoreDistributions[]>(request);
   }
 
   getSpongEffectsGeneModules(version: number, diseaseName: string): Promise<SpongEffectsGeneModules[]> {
-    const request = `${BackendService.API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
     return this.http.getRequest<SpongEffectsGeneModules[]>(request);
   }
 
   getSpongEffectsGeneModuleMembers(version: number, diseaseName: string, ensgNumber?: string, geneSymbol?: string): Promise<SpongEffectsGeneModuleMembers[]> {
-    let request = `${BackendService.API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
     if (ensgNumber) {
       request += `&ensg_number=${ensgNumber}`;
     }
@@ -435,12 +435,12 @@ export class BackendService {
   }
 
   getSpongEffectsTranscriptModules(version: number, diseaseName: string): Promise<SpongEffectsTranscriptModules[]> {
-    const request = `${BackendService.API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
     return this.http.getRequest<SpongEffectsTranscriptModules[]>(request);
   }
 
   getSpongEffectsTranscriptModuleMembers(version: number, diseaseName: string, enstNumber?: string): Promise<SpongEffectsTranscriptModuleMembers[]> {
-    let request = `${BackendService.API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
     if (enstNumber) {
       request += `&enst_number=${enstNumber}`;
     }
@@ -458,7 +458,7 @@ export class BackendService {
     formData.append('max_size', maxSize.toString());
     formData.append('min_expr', minExpr.toString());
     formData.append('method', method);
-    const request = `${BackendService.API_BASE}/spongEffects/predictCancerType?sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/predictCancerType?sponge_db_version=${version}`;
     return this.http.postRequest(request, formData);
   }
 
@@ -510,11 +510,21 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
+  async getASPsiValues(asEventID: number) {
+    const route = 'alternativeSplicing/getPsiValues';
+
+    const query: Query = {
+      alternative_splicing_event_transcripts_ID: asEventID
+    }
+
+    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query).map(key => key + '=' + query[key]).join('&');
   }
 
   private getRequestURL(route: string, query: Query): string {
-    return `${BackendService.API_BASE}/${route}?${this.stringify(query)}`;
+    return `${API_BASE}/${route}?${this.stringify(query)}`;
   }
 }

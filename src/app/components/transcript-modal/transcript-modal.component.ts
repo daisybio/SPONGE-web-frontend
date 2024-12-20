@@ -18,6 +18,10 @@ import {MatChip} from "@angular/material/chips";
 import {MatTooltip} from "@angular/material/tooltip";
 import {AS_DESCRIPTIONS} from "../../constants";
 
+interface AsEventWithPsi extends AlternativeSplicingEvent {
+  psi: number;
+}
+
 @Component({
   selector: 'app-gene-modal',
   imports: [
@@ -78,7 +82,10 @@ export class TranscriptModalComponent implements AfterViewInit {
     }
   })
   alternativeSplicingEvents = resource({
-    loader: () => this.backend.getAlternativeSplicingEvents([this.transcript.enst_number])
+    loader: async () => {
+      const asEvents = await this.backend.getAlternativeSplicingEvents([this.transcript.enst_number]);
+
+    }
   })
   protected readonly BrowseService = BrowseService;
 

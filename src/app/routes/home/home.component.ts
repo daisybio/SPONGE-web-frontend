@@ -1,21 +1,20 @@
 import {
-  AfterViewInit,
   Component,
   computed,
   effect,
   ElementRef,
+  OnDestroy,
   Resource,
   resource,
   ResourceRef,
-  ViewChild
+  viewChild
 } from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {CarouselComponent, SlideComponent} from "ngx-bootstrap/carousel";
 import {BackendService} from "../../services/backend.service";
 import {Dataset, OverallCounts} from "../../interfaces";
-import {MatTab, MatTabGroup} from "@angular/material/tabs";
 import {VersionsService} from "../../services/versions.service";
-import {fromEvent, ReplaySubject} from "rxjs";
+import {fromEvent} from "rxjs";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 declare const Plotly: any;
@@ -26,25 +25,38 @@ declare const Plotly: any;
     FormsModule,
     CarouselComponent,
     SlideComponent,
-    MatTabGroup,
-    MatTab,
     MatProgressSpinner
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements AfterViewInit {
-  @ViewChild('cancerPlot') cancerPlot!: ElementRef;
-  @ViewChild('nonCancerPlot') nonCancerPlot!: ElementRef;
+export class HomeComponent implements OnDestroy {
+  plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
 
   overallCounts: ResourceRef<OverallCounts[]>;
   diseases: Resource<Dataset[]>;
 
-  cancerData = computed(() => this.prepareData(this.diseases.value(), this.overallCounts.value(), true));
-  nonCancerData = computed(() => this.prepareData(this.diseases.value(), this.overallCounts.value(), false));
+  plotData$ = computed(() => this.prepareData(this.overallCounts.value()));
+  updatePlotEffect = effect(() => {
+    const div = this.plotDiv$().nativeElement;
+    const data = this.plotData$();
 
-  cancerDataSubject = new ReplaySubject<any[] | undefined>();
-  nonCancerDataSubject = new ReplaySubject<any[] | undefined>();
+    if (!data) {
+      return;
+    }
+
+    Plotly.newPlot(div, data, {
+      title: 'Count of significant interactions',
+
+      yaxis: {
+        type: 'log',
+        automargin: true
+      },
+      margin: {
+        b: 300
+      }
+    });
+  })
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     const version = versionsService.versionReadOnly();
@@ -55,74 +67,44 @@ export class HomeComponent implements AfterViewInit {
       loader: (param) => this.backend.getOverallCounts(param.request)
     });
 
-    effect(() => {
-      this.cancerDataSubject.next(this.cancerData());
-    });
-
-    effect(() => {
-      this.nonCancerDataSubject.next(this.nonCancerData());
-    });
-  }
-
-  async ngAfterViewInit() {
-    this.cancerDataSubject.subscribe(data => {
-      this.plot(this.cancerPlot, data);
-    });
-
-    this.nonCancerDataSubject.subscribe(data => {
-      this.plot(this.nonCancerPlot, data);
-    });
-
     fromEvent(window, 'resize').subscribe(() => {
-      this.resize();
+      const div = this.plotDiv$().nativeElement;
+      if (div.checkVisibility()) {
+        Plotly.Plots.resize(div);
+      }
     });
   }
 
-  prepareData(diseases: Dataset[] | undefined, counts: OverallCounts[] | undefined, useCancer: boolean) {
-    if (!diseases || !counts) {
+  ngOnDestroy() {
+    Plotly.purge(this.plotDiv$().nativeElement);
+    this.updatePlotEffect.destroy();
+  }
+
+  prepareData(counts: OverallCounts[] | undefined) {
+    if (!counts) {
       return undefined;
     }
 
-    const usedDiseases = diseases.filter(d => (d.disease_type === 'Cancer') === useCancer);
-    const overallCounts = counts.filter(c => usedDiseases.some(d => d.disease_name === c.disease_name));
     const countField = 'count_interactions_sign';
-    const sortedCounts = overallCounts.sort((a, b) => b[countField] - a[countField]);
+    const aggregated = counts.reduce((acc, count) => {
+      const disease = count.disease_name;
+      if (!acc.has(disease)) {
+        acc.set(disease, 0);
+      }
+      acc.set(disease, acc.get(disease)! + count[countField]);
+      return acc;
+    }, new Map<string, number>());
+
+    const aggCounts = Array.from(aggregated.entries()).map(([disease, count]) => ({
+      disease,
+      count
+    }));
+    const sortedCounts = aggCounts.sort((a, b) => b.count - a.count);
 
     return [{
-      x: sortedCounts.map(c => c.disease_name),
-      y: sortedCounts.map(c => c[countField]),
+      x: sortedCounts.map(c => c.disease),
+      y: sortedCounts.map(c => c.count),
       type: 'bar'
     }];
-  }
-
-  async plot(element: ElementRef, plotData: any[] | undefined) {
-    if (!plotData) {
-      Plotly.purge(element.nativeElement);
-      return;
-    }
-
-    Plotly.newPlot(element.nativeElement, plotData, {
-      title: 'Count of significant interactions',
-      yaxis: {
-        type: 'log'
-      },
-      margin: {
-        b: 300
-      }
-    });
-
-    this.resize();
-  }
-
-  resize() {
-    for (const el of [this.cancerPlot, this.nonCancerPlot]) {
-      this.resizeElement(el.nativeElement);
-    }
-  }
-
-  private resizeElement(el: HTMLElement) {
-    if (el.offsetParent !== null) {
-      Plotly.Plots.resize(el);
-    }
   }
 }

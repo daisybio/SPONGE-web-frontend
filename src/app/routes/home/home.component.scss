@@ -5,6 +5,11 @@
   object-fit: contain;
 }
 
-.plot-container {
-  height: 800px;
+.carousel-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  overflow: hidden;
+  padding-bottom: 30px;
 }

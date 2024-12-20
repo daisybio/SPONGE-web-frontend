@@ -23,6 +23,8 @@
     "@angular/router": "^19.0.3",
     "@angular/service-worker": "^19.0.3",
     "@fullstax/kaplan-meier-estimator": "^3.1.2",
+    "@ngx-dropzone/cdk": "^19.0.0",
+    "@ngx-dropzone/material": "^19.0.0",
     "@sigma/node-square": "^3.0.0",
     "@types/lodash": "^4.17.13",
     "graphology": "^0.25.4",

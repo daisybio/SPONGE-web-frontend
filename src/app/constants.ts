@@ -1,5 +1,7 @@
 export const SUBTYPE_DEFAULT = 'Unspecific';
 
+export const API_BASE = 'https://exbio.wzw.tum.de/sponge-api'
+
 export const AS_DESCRIPTIONS: { [key: string]: string } = {
   SE: "Skipping Exon",
   A5: "Alternative 5' Splice Site",
