@@ -511,14 +511,15 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
-  async getASPsiValues(asEventID: number) {
+  async getASPsiValues(asEventID: number, enst: string) {
     const route = 'alternativeSplicing/getPsiValues';
 
     const query: Query = {
-      alternative_splicing_event_transcripts_ID: asEventID
+      alternative_splicing_event_transcripts_ID: asEventID,
+      enst_number: enst
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<number>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

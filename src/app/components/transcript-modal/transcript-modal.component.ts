@@ -82,10 +82,12 @@ export class TranscriptModalComponent implements AfterViewInit {
     }
   })
   alternativeSplicingEvents = resource({
-    loader: async () => {
-      const asEvents = await this.backend.getAlternativeSplicingEvents([this.transcript.enst_number]);
-
+    loader: () => {
+      return this.backend.getAlternativeSplicingEvents([this.transcript.enst_number])
     }
+  })
+  hasAsEvents$ = computed(() => {
+    return (this.alternativeSplicingEvents.value() || []).length > 0;
   })
   protected readonly BrowseService = BrowseService;
 
@@ -93,6 +95,10 @@ export class TranscriptModalComponent implements AfterViewInit {
     effect(() => {
       this.asDatasource.data = this.alternativeSplicingEvents.value() || [];
     })
+
+    effect(() => {
+      console.log(this.hasAsEvents$())
+    });
   }
 
   showGene() {

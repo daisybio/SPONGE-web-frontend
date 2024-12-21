@@ -110,6 +110,8 @@
               <mat-chip-set>
                 @for (event of asEntry.events; track event) {
                   <mat-chip [matTooltip]="asDescriptions[event]">{{ event }}</mat-chip>
+                } @empty {
+                  None found.
                 }
               </mat-chip-set>
             </td>

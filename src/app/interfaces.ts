@@ -424,6 +424,7 @@ export interface ExampleExpression {
 
 
 export interface AlternativeSplicingEvent {
+  alternative_splicing_event_transcripts_ID: number,
   event_name: string,
   event_type: string,
   transcript: {
