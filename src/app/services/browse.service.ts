@@ -39,6 +39,15 @@ interface NetworkData {
   providedIn: 'root'
 })
 export class BrowseService {
+  readonly physicsEnabled$ = signal(true);
+  layout = computed(() => new ForceSupervisor(this.graph$(), {
+    isNodeFixed: (_, attr) => attr['highlighted'],
+    settings: {
+      repulsion: 0.001,
+      attraction: 0.01,
+      gravity: 0.001,
+    }
+  }))
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _currentData$: ResourceRef<NetworkData>;
@@ -68,7 +77,6 @@ export class BrowseService {
       return this.backend.getDiseaseComparisons(param.request.version, param.request.dataset);
     }
   });
-
   private readonly _networkResults$ = resource({
     request: computed(() => {
       return {
@@ -103,6 +111,16 @@ export class BrowseService {
       this._nodeStates$.set(Object.fromEntries(graph.nodes().map(node => [node, initialState])));
       this._edgeStates$.set(Object.fromEntries(graph.edges().map(edge => [edge, initialState])));
     });
+
+    effect(() => {
+      const layout = this.layout();
+      const physicsEnabled = this.physicsEnabled$();
+      if (physicsEnabled) {
+        layout.start();
+      } else {
+        layout.stop();
+      }
+    });
   }
 
   get nodeStates$(): Signal<Record<string, EntityState>> {
@@ -124,7 +142,6 @@ export class BrowseService {
   get networkResults$(): Signal<NetworkResult | undefined> {
     return this._networkResults$.value.asReadonly();
   }
-
 
   public static getNodeID(node: GeneNode | TranscriptNode): string {
     return 'gene' in node ? node.gene.ensg_number : node.transcript.enst_number;
@@ -311,16 +328,6 @@ export class BrowseService {
       }
       graph.addEdge(ids[0], ids[1]);
     });
-
-    const layout = new ForceSupervisor(graph, {
-      isNodeFixed: (_, attr) => attr['highlighted'],
-      settings: {
-        repulsion: 0.001,
-        attraction: 0.01,
-        gravity: 0.001,
-      }
-    });
-    layout.start();
 
     return graph;
   }
