@@ -494,16 +494,15 @@ export class BackendService {
     return this.http.getRequest<any[]>(this.getRequestURL(route, query));
   }
 
-  async getNetworkResults(version: number, disease: Dataset | undefined, level: 'gene' | 'transcript' | undefined) {
+  async getNetworkResults(version: number, level: 'gene' | 'transcript' | undefined) {
     const route = 'networkResults';
 
-    if (!disease || !level || version < 2) {
+    if (!level || version < 2) {
       return Promise.resolve(undefined);
     }
 
     const query: Query = {
       sponge_db_version: version,
-      dataset_ID: disease.dataset_ID,
       level
     }
 

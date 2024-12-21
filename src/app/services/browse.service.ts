@@ -40,6 +40,7 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   layout = computed(() => new ForceSupervisor(this.graph$(), {
     isNodeFixed: (_, attr) => attr['highlighted'],
     settings: {
@@ -55,7 +56,6 @@ export class BrowseService {
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -81,12 +81,11 @@ export class BrowseService {
     request: computed(() => {
       return {
         version: this._version$(),
-        disease: this.disease$(),
         level: this.level$()
       }
     }),
     loader: (param) => {
-      return this.backend.getNetworkResults(param.request.version, param.request.disease, param.request.level);
+      return this.backend.getNetworkResults(param.request.version, param.request.level);
     }
   });
 
