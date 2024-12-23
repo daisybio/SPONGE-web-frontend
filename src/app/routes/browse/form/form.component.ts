@@ -42,7 +42,7 @@ export class FormComponent {
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
     geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
-    maxGenes: new FormControl<number>(10),
+    maxNodes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),
     minBetweenness: new FormControl<number>(0.05),
     minEigen: new FormControl<number>(0.1),

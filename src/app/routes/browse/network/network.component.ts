@@ -21,6 +21,8 @@ import {MatTooltip} from "@angular/material/tooltip";
 import {NodeCircleProgram} from "sigma/rendering";
 import {NodeSquareProgram} from "@sigma/node-square";
 import {InfoComponent} from "../../../components/info/info.component";
+import {MatSlideToggle} from "@angular/material/slide-toggle";
+import {FormsModule} from "@angular/forms";
 
 const states: Record<State, {
   edgeColor: string,
@@ -76,6 +78,8 @@ const MIN_DRAG_TIME = 200;
     MatAnchor,
     MatTooltip,
     InfoComponent,
+    MatSlideToggle,
+    FormsModule,
   ],
   templateUrl: './network.component.html',
   styleUrl: './network.component.scss'
@@ -86,6 +90,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   refreshSignal = input.required<any>();
+  physicsEnabled$ = this.browseService.physicsEnabled$;
   draggedNode$: WritableSignal<string | undefined> = signal(undefined);
   dragStart$ = signal<number | undefined>(undefined);
   gProfilerUrl$ = computed(() => BrowseService.getGProfilerUrlForNodes(this.browseService.nodes$()));

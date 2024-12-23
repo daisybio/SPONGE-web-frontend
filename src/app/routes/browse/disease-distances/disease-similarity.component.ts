@@ -22,6 +22,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
   refreshSignal = input.required<any>();
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
   heatmapDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
+  dataset = this.browseService.disease$;
 
   data$ = this.browseService.networkResults$;
   plotData$ = computed(() => {
@@ -31,12 +32,23 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     if (mode == 'scatter') {
       const scatterData = data.type.euclidean_distances;
 
+      const disease = this.dataset();
+      const activeMask = scatterData.labels.map(label => disease?.disease_name == label);
+
       return [{
-        x: scatterData.x,
-        y: scatterData.y,
+        x: scatterData.x.filter((_, i) => activeMask[i]),
+        y: scatterData.y.filter((_, i) => activeMask[i]),
         type: 'scatter',
         mode: 'markers',
-        text: scatterData.labels.map(label => capitalize(label))
+        name: 'Active',
+        text: scatterData.labels.filter((_, i) => activeMask[i]).map(capitalize),
+      }, {
+        x: scatterData.x.filter((_, i) => !activeMask[i]),
+        y: scatterData.y.filter((_, i) => !activeMask[i]),
+        type: 'scatter',
+        mode: 'markers',
+        name: 'Inactive',
+        text: scatterData.labels.filter((_, i) => !activeMask[i]).map(capitalize),
       }];
     } else {
       const heatmapData = data.type.scores;

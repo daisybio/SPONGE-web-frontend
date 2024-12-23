@@ -93,7 +93,7 @@ export class BackendService {
       minEigenvector: query.minEigen,
       sorting: query.geneSorting,
       descending: true,
-      limit: query.maxGenes
+      limit: query.maxNodes
     };
 
     return this.http.getRequest<(GeneNode | TranscriptNode)[]>(this.getRequestURL(route, internalQuery));
@@ -494,16 +494,15 @@ export class BackendService {
     return this.http.getRequest<any[]>(this.getRequestURL(route, query));
   }
 
-  async getNetworkResults(version: number, disease: Dataset | undefined, level: 'gene' | 'transcript' | undefined) {
+  async getNetworkResults(version: number, level: 'gene' | 'transcript' | undefined) {
     const route = 'networkResults';
 
-    if (!disease || !level || version < 2) {
+    if (!level || version < 2) {
       return Promise.resolve(undefined);
     }
 
     const query: Query = {
       sponge_db_version: version,
-      dataset_ID: disease.dataset_ID,
       level
     }
 
@@ -511,14 +510,15 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
-  async getASPsiValues(asEventID: number) {
+  async getASPsiValues(asEventID: number, enst: string) {
     const route = 'alternativeSplicing/getPsiValues';
 
     const query: Query = {
-      alternative_splicing_event_transcripts_ID: asEventID
+      alternative_splicing_event_transcripts_ID: asEventID,
+      enst_number: enst
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<number>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

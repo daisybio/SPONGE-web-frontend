@@ -31,9 +31,11 @@
           <mat-tab label="Interactions">
             <app-interactions></app-interactions>
           </mat-tab>
-          <mat-tab label="Gene set enrichment">
-            <app-gsea></app-gsea>
-          </mat-tab>
+          @if (version$() > 1) {
+            <mat-tab label="Gene set enrichment">
+              <app-gsea></app-gsea>
+            </mat-tab>
+          }
           @if (hasNetworkResults$()) {
             <mat-tab label="Disease similarities">
               <app-disease-similarity [refreshSignal]="refresh$()"></app-disease-similarity>

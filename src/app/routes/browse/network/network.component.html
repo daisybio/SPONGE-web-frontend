@@ -1,25 +1,29 @@
 <div #container style="height: 500px; width: 100%; border: 1px solid #ccc"></div>
-<app-info title="What do I see?">
-  <p>What you see is a subset of a large ceRNA network obtained by applying SPONGE to data from TCGA. The entire
-    network is too large to visualize here. You can adjust the filter criteria using the controls on the left.</p>
-  <h3>Shapes</h3>
-  <table>
-    <tr>
-      <th>Circle</th>
-      <td>Node, where a corresponding entry is present in the opposite network. If you see a circle in the gene network,
-        there is a corresponding node in the transcript network with the same filter criteria. The same applies vice
-        versa.
-      </td>
-    </tr>
-    <tr>
-      <th>Square</th>
-      <td>Node, where no corresponding entry is present in the opposite network. If you see a square in the gene
-        network,
-        there is no corresponding node in the transcript network with the same filter criteria. The same applies vice
-        versa.
-    </tr>
-  </table>
-</app-info>
+<div class="card-container">
+  <app-info title="What do I see?">
+    <p>What you see is a subset of a large ceRNA network obtained by applying SPONGE to data from TCGA. The entire
+      network is too large to visualize here. You can adjust the filter criteria using the controls on the left.</p>
+    <h3>Shapes</h3>
+    <table>
+      <tr>
+        <th>Circle</th>
+        <td>Node, where a corresponding entry is present in the opposite network. If you see a circle in the gene
+          network,
+          there is a corresponding node in the transcript network with the same filter criteria. The same applies vice
+          versa.
+        </td>
+      </tr>
+      <tr>
+        <th>Square</th>
+        <td>Node, where no corresponding entry is present in the opposite network. If you see a square in the gene
+          network,
+          there is no corresponding node in the transcript network with the same filter criteria. The same applies vice
+          versa.
+      </tr>
+    </table>
+  </app-info>
+  <mat-slide-toggle [(ngModel)]="physicsEnabled$">Physics</mat-slide-toggle>
+</div>
 <div class="card-container">
   <a [href]="gProfilerUrl$()" mat-flat-button matTooltip="Open g:Profiler for all visible nodes"
      target="_blank">g:Profiler</a>

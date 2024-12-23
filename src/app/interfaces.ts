@@ -115,7 +115,7 @@ export interface BrowseQuery {
   dataset: Dataset,
   showOrphans: boolean,
   geneSorting: GeneSorting,
-  maxGenes: number,
+  maxNodes: number,
   minDegree: number,
   minBetweenness: number,
   minEigen: number,
@@ -424,6 +424,7 @@ export interface ExampleExpression {
 
 
 export interface AlternativeSplicingEvent {
+  alternative_splicing_event_transcripts_ID: number,
   event_name: string,
   event_type: string,
   transcript: {
