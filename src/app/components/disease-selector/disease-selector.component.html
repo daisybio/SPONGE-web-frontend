@@ -1,1 +1,16 @@
-<p>disease-selector works!</p>
+<mat-form-field appearance="outline" style="width: 90%">
+  <mat-label>Disease</mat-label>
+  <mat-select [(value)]="activeDisease$">
+    @for (disease of diseaseNames$(); track disease) {
+      <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+  <mat-form-field appearance="outline" style="width: 90%">
+    <mat-label>Subtype</mat-label>
+    <mat-select [(value)]="activeSubtype">
+      @for (dataset of possibleSubtypes$(); track dataset.dataset_ID) {
+        <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>

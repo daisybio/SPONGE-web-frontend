@@ -1,9 +1,17 @@
 import {Component, computed, effect, input, linkedSignal, model, OnDestroy, output} from '@angular/core';
 import {Dataset} from "../../interfaces";
+import {MatFormField} from "@angular/material/form-field";
+import {MatOption, MatSelect} from "@angular/material/select";
+import {capitalize} from "lodash";
+import {SUBTYPE_DEFAULT} from "../../constants";
 
 @Component({
   selector: 'app-disease-selector',
-  imports: [],
+  imports: [
+    MatFormField,
+    MatSelect,
+    MatOption
+  ],
   templateUrl: './disease-selector.component.html',
   styleUrl: './disease-selector.component.scss'
 })
@@ -33,4 +41,7 @@ export class DiseaseSelectorComponent implements OnDestroy{
   ngOnDestroy() {
     this._updateOutput.destroy();
   }
+
+  protected readonly capitalize = capitalize;
+  protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
 }
