@@ -1,16 +1,14 @@
-import {Component, computed, effect, inject, model} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
-import {BrowseQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
+import {BrowseQuery, GeneSorting, InteractionSorting} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
-import {toSignal} from "@angular/core/rxjs-interop";
 import _ from "lodash";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
-import {SUBTYPE_DEFAULT} from "../../../constants";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {DiseaseSelectorComponent} from "../../../components/disease-selector/disease-selector.component";
 
@@ -35,7 +33,7 @@ export class FormComponent {
   browseService = inject(BrowseService);
   version = this.versionsService.versionReadOnly();
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? [])
-  activeDataset = model<Dataset>()
+  activeDataset = linkedSignal(() => this.diseases$()[0])
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
@@ -55,13 +53,19 @@ export class FormComponent {
   protected readonly capitalize = _.capitalize;
 
   constructor() {
-    this.formGroup.valueChanges.subscribe((config) => {
+    const formSignal = signal(this.formGroup.value);
+    this.formGroup.valueChanges.subscribe(val => formSignal.set(val))
+
+    effect(() => {
+      const config = formSignal();
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
-      const internalConfig = config as BrowseQuery;
-      internalConfig.dataset = dataset;
+      const internalConfig = {
+        ...config,
+        dataset
+      } as BrowseQuery;
       this.browseService.runQuery(internalConfig);
-    })
+    });
   }
 
   getKeys(enumType: any): string[] {

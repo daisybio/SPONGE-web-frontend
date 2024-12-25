@@ -92,15 +92,17 @@ export class BrowseService {
   constructor(private backend: BackendService, versionsService: VersionsService) {
     this._version$ = versionsService.versionReadOnly();
 
-    const requestData = computed(() => {
-      return {
-        version: this._version$(),
-        config: this._query$()
-      }
-    })
+    effect(() => {
+      console.log('Query', this._query$())
+    });
 
     this._currentData$ = resource({
-      request: requestData,
+      request: computed(() => {
+        return {
+          version: this._version$(),
+          config: this._query$()
+        }
+      }),
       loader: (param) => this.fetchData(param.request.version, param.request.config),
     })
 
