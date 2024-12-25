@@ -60,11 +60,10 @@ export class FormComponent {
       const config = formSignal();
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
-      const internalConfig = {
+      this.browseService.runQuery({
         ...config,
         dataset
-      } as BrowseQuery;
-      this.browseService.runQuery(internalConfig);
+      } as BrowseQuery);
     });
   }
 
