@@ -1,22 +1,5 @@
 <form [formGroup]="formGroup">
-  <mat-form-field appearance="outline" style="width: 90%">
-    <mat-label>Disease</mat-label>
-    <mat-select formControlName="disease">
-      @for (disease of diseases(); track disease) {
-        <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-  @if (subtypes(); as subtypes) {
-    <mat-form-field appearance="outline" style="width: 90%">
-      <mat-label>Subtype</mat-label>
-      <mat-select formControlName="dataset">
-        @for (dataset of subtypes; track dataset.dataset_ID) {
-          <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-  }
+  <app-disease-selector [diseases$]="diseases$()" (selected)="activeDataset.set($event)"></app-disease-selector>
 
   @if (version() > 1) {
     <div class="card-container">
