@@ -1,7 +1,8 @@
 <mat-form-field appearance="outline" class="full-width" style="margin-top: 10px">
   <mat-label>Disease</mat-label>
-  <mat-select [(value)]="activeDisease$">
-    @for (disease of diseaseNames$(); track disease) {
+  @let diseaseNames = diseaseNames$();
+  <mat-select [(value)]="activeDisease$" [disabled]="diseaseNames.length < 2">
+    @for (disease of diseaseNames; track disease) {
       <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
     }
   </mat-select>

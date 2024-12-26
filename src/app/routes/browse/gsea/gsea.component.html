@@ -1,7 +1,28 @@
 @let possibleLocalDiseases = possibleLocalDiseases$();
 @if (possibleLocalDiseases.length > 0) {
-  <app-disease-selector (selected)="localDisease$.set($event)"
-                        [diseases$]="possibleLocalDiseases"></app-disease-selector>
+  <div class="card-container">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          Reference disease
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <app-disease-selector [diseases$]="[globalDisease$()!]"></app-disease-selector>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          Contrast disease
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <app-disease-selector (selected)="localDisease$.set($event)"
+                              [diseases$]="possibleLocalDiseases"></app-disease-selector>
+      </mat-card-content>
+    </mat-card>
+  </div>
 } @else {
   <div class="card-container">
     No comparisons found

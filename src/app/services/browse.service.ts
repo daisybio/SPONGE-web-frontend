@@ -40,6 +40,7 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   layout = computed(() => new ForceSupervisor(this.graph$(), {
     isNodeFixed: (_, attr) => attr['highlighted'],
     settings: {
@@ -58,18 +59,19 @@ export class BrowseService {
       return this.backend.getComparisons(param.request);
     }
   });
+  private readonly _currentData$: ResourceRef<NetworkData>;
+  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly possibleComparisons$ = computed(() => {
     const disease = this.disease$();
     const comparisons = this._comparisons$.value();
     if (disease === undefined || comparisons === undefined) return [];
-    return comparisons.filter(c => c.dataset_1.dataset_ID === disease.dataset_ID || c.dataset_2.dataset_ID === disease.dataset_ID);
+    return comparisons
+      .filter(c => c.gene_transcript == this.level$())
+      .filter(c => c.dataset_1.dataset_ID === disease.dataset_ID || c.dataset_2.dataset_ID === disease.dataset_ID);
   })
-  private readonly _currentData$: ResourceRef<NetworkData>;
-  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);

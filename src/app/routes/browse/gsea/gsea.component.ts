@@ -6,13 +6,15 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {Dataset} from "../../../interfaces";
 import {DiseaseSelectorComponent} from "../../../components/disease-selector/disease-selector.component";
+import {MatCardModule} from "@angular/material/card";
 
 @Component({
   selector: 'app-gsea',
   imports: [
     MatFormFieldModule,
     MatSelectModule,
-    DiseaseSelectorComponent
+    DiseaseSelectorComponent,
+    MatCardModule
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss'
