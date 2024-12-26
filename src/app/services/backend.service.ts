@@ -521,7 +521,7 @@ export class BackendService {
     return this.http.getRequest<number>(this.getRequestURL(route, query));
   }
 
-  getGSEAterms(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined) {
+  async getGSEAterms(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined) {
     const route = 'gseaTerms';
 
     if (!disease1 || !disease2 || !geneSet) {
@@ -536,7 +536,8 @@ export class BackendService {
       gene_set: geneSet
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    const res = await this.http.getRequest<{ term: string }[]>(this.getRequestURL(route, query));
+    return res.map(e => e.term).sort();
   }
 
   private stringify(query: Query): string {
