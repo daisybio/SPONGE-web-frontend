@@ -1,0 +1,18 @@
+<mat-form-field appearance="outline" class="full-width" style="margin-top: 10px">
+  <mat-label>Disease</mat-label>
+  @let diseaseNames = diseaseNames$();
+  <mat-select [(value)]="activeDisease$" [disabled]="diseaseNames.length < 2">
+    @for (disease of diseaseNames; track disease) {
+      <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<mat-form-field appearance="outline" class="full-width">
+  <mat-label>Subtype</mat-label>
+  @let possibleSubtypes = possibleSubtypes$();
+  <mat-select [(value)]="activeSubtype" [disabled]="possibleSubtypes.length < 2">
+    @for (dataset of possibleSubtypes; track dataset.dataset_ID) {
+      <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</mat-option>
+    }
+  </mat-select>
+</mat-form-field>

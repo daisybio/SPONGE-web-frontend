@@ -48,30 +48,8 @@
                           [results]="results.value()"></app-sunburst>
           </mat-tab>
           <mat-tab label="Table">
-            <div>
-              <mat-form-field style="width: 100%">
-                <mat-label>Disease</mat-label>
-                <mat-select [(value)]="selectedDisease">
-                  @if (diseases(); as diseases) {
-                    @for (disease of diseases; track disease) {
-                      <mat-option [value]="disease">
-                        {{ capitalize(disease) }}
-                      </mat-option>
-                    }
-                  }
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field style="width: 100%">
-                <mat-label>Subtype</mat-label>
-                <mat-select [(value)]="selectedSubtype" [disabled]="possibleSubtypes().length < 2">
-                  @for (subtype of possibleSubtypes(); track subtype.disease_subtype) {
-                    <mat-option [value]="subtype">
-                      {{ capitalize(subtype.disease_subtype || SUBTYPE_DEFAULT) }}
-                    </mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
+            <app-disease-selector [diseases$]="diseases$()"
+                                  (selected)="activeDisease.set($event)"></app-disease-selector>
             @if (interactions$.isLoading()) {
               <div class="spinner-container">
                 <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>

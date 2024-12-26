@@ -1,17 +1,68 @@
-<mat-form-field appearance="outline">
-  <mat-label>Disease</mat-label>
-  <mat-select [(value)]="localDiseaseName$">
-    @for (diseaseName of diseaseNames$(); track diseaseName) {
-      <mat-option [value]="diseaseName">{{ capitalize(diseaseName) }}</mat-option>
+@let possibleLocalDiseases = possibleLocalDiseases$();
+@if (possibleLocalDiseases.length > 0) {
+  <mat-expansion-panel style="margin: 10px">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Configuration</mat-panel-title>
+      <mat-panel-description>Specify the GSEA parameters</mat-panel-description>
+    </mat-expansion-panel-header>
+    <mat-stepper>
+      <mat-step>
+        <ng-template matStepLabel>Reference disease</ng-template>
+        <div class="full-width">
+          <p>You can only specify the condition of the reference disease here. The reference disease itself is taken
+            from the input mask on the left.</p>
+          <mat-button-toggle-group [(value)]="activeGlobalCondition$">
+            @for (condition of possibleGlobalConditions$(); track condition) {
+              <mat-button-toggle [value]="condition">{{ capitalize(condition) }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Contrast disease</ng-template>
+        <div class="full-width">
+          <p>Here, you can specify which disease the reference disease should be compared to. The selected reference
+            disease (including condition) can have an effect on the options you have here.</p>
+          <app-disease-selector (selected)="localDisease$.set($event)"
+                                [diseases$]="possibleLocalDiseases"></app-disease-selector>
+          <mat-button-toggle-group [(value)]="activeLocalCondition$">
+            @for (condition of localConditions$() | keyvalue; track condition.key) {
+              <mat-button-toggle [value]="condition.key" [disabled]="!condition.value">{{ capitalize(condition.key) }}
+              </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      </mat-step>
+
+      <mat-step>
+        <ng-template matStepLabel>Gene set</ng-template>
+        <div class="full-width">
+          <p>Select the gene set that should be searched.</p>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Active gene set</mat-label>
+            <mat-select [(value)]="activeGeneSet$">
+              @for (geneSet of geneSets$.value(); track geneSet) {
+                <mat-option [value]="geneSet">{{ geneSet }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-step>
+    </mat-stepper>
+  </mat-expansion-panel>
+  @if (gseaResults$.isLoading()) {
+    <div class="spinner-container">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+  } @else {
+    @if (gseaResults$.value(); as results) {
+      <app-gsearesults [results$]="results"></app-gsearesults>
+    } @else {
+      <p>No results found.</p>
     }
-  </mat-select>
-</mat-form-field>
-<mat-form-field appearance="outline">
-  <mat-label>Subtype</mat-label>
-  @let subtypes = possibleSubtypes$();
-  <mat-select [(value)]="localDisease$" [disabled]="subtypes.length < 2">
-    @for (dataset of subtypes; track dataset.dataset_ID) {
-      <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype ?? SUBTYPE_DEFAULT) }}</mat-option>
-    }
-  </mat-select>
-</mat-form-field>
+  }
+} @else {
+  <div class="card-container">
+    No comparisons found
+  </div>
+}

@@ -51,8 +51,24 @@ export class BrowseService {
   }))
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
+  private readonly _comparisons$ = resource({
+    request: computed(() => {
+      return this._version$()
+    }),
+    loader: (param) => {
+      return this.backend.getComparisons(param.request);
+    }
+  });
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
+  readonly possibleComparisons$ = computed(() => {
+    const disease = this.disease$();
+    const comparisons = this._comparisons$.value();
+    if (disease === undefined || comparisons === undefined) return [];
+    return comparisons
+      .filter(c => c.gene_transcript == this.level$())
+      .filter(c => c.dataset_1.dataset_ID === disease.dataset_ID || c.dataset_2.dataset_ID === disease.dataset_ID);
+  })
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
@@ -66,17 +82,6 @@ export class BrowseService {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
     return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined);
   })
-  private readonly _comparisons$ = resource({
-    request: computed(() => {
-      return {
-        version: this._version$(),
-        dataset: this.disease$()
-      }
-    }),
-    loader: (param) => {
-      return this.backend.getDiseaseComparisons(param.request.version, param.request.dataset);
-    }
-  });
   private readonly _networkResults$ = resource({
     request: computed(() => {
       return {
@@ -92,15 +97,13 @@ export class BrowseService {
   constructor(private backend: BackendService, versionsService: VersionsService) {
     this._version$ = versionsService.versionReadOnly();
 
-    const requestData = computed(() => {
-      return {
-        version: this._version$(),
-        config: this._query$()
-      }
-    })
-
     this._currentData$ = resource({
-      request: requestData,
+      request: computed(() => {
+        return {
+          version: this._version$(),
+          config: this._query$()
+        }
+      }),
       loader: (param) => this.fetchData(param.request.version, param.request.config),
     })
 

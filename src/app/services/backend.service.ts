@@ -5,6 +5,7 @@ import {
   BrowseQuery,
   CeRNAExpression,
   CeRNAInteraction,
+  Comparison,
   Dataset,
   EnrichmentScoreDistributions,
   Gene,
@@ -15,6 +16,7 @@ import {
   GeneMiRNA,
   GeneNode,
   GOTerm,
+  GseaResult,
   Hallmark,
   NetworkResult,
   OverallCounts,
@@ -463,22 +465,17 @@ export class BackendService {
     return this.http.postRequest(request, formData);
   }
 
-  getDiseaseComparisons(version: number, disease: Dataset | undefined) {
+  getComparisons(version: number) {
     const route = 'comparison';
 
-    if (!disease) {
-      return Promise.resolve([]);
-    }
-
     const query: Query = {
-      sponge_db_version: version,
-      dataset_ID: disease.dataset_ID
+      sponge_db_version: version
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<Comparison[]>(this.getRequestURL(route, query));
   }
 
-  getGeneSets(version: number, disease1: Dataset | undefined, disease2: Dataset | undefined) {
+  async getGeneSets(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string) {
     const route = 'gseaSets';
 
     if (!disease1 || !disease2) {
@@ -488,10 +485,13 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       dataset_ID_1: disease1.dataset_ID,
-      dataset_ID_2: disease2.dataset_ID
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    const res = await this.http.getRequest<{ gene_set: string }[]>(this.getRequestURL(route, query));
+    return res.map(e => e.gene_set).sort();
   }
 
   async getNetworkResults(version: number, level: 'gene' | 'transcript' | undefined) {
@@ -519,6 +519,43 @@ export class BackendService {
     }
 
     return this.http.getRequest<number>(this.getRequestURL(route, query));
+  }
+
+  async getGSEAterms(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined) {
+    const route = 'gseaTerms';
+
+    if (!disease1 || !disease2 || !geneSet) {
+      return Promise.resolve([]);
+    }
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID_1: disease1.dataset_ID,
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
+      gene_set: geneSet
+    }
+
+    const res = await this.http.getRequest<{ term: string }[]>(this.getRequestURL(route, query));
+    return res.map(e => e.term).sort();
+  }
+
+  getGSEAresults(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined) {
+    const route = 'gseaResults';
+
+    if (!disease1 || !disease2 || !geneSet) {
+      return Promise.resolve([]);
+    }
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID_1: disease1.dataset_ID,
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
+      gene_set: geneSet
+    }
+
+    return this.http.getRequest<GseaResult[]>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

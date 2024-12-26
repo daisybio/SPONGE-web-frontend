@@ -1,17 +1,16 @@
-import {Component, computed, effect, inject} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, signal} from '@angular/core';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
-import {BrowseQuery, Dataset, GeneSorting, InteractionSorting} from "../../../interfaces";
+import {BrowseQuery, GeneSorting, InteractionSorting} from "../../../interfaces";
 import {BrowseService} from "../../../services/browse.service";
 import {VersionsService} from "../../../services/versions.service";
-import {toSignal} from "@angular/core/rxjs-interop";
 import _ from "lodash";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
-import {SUBTYPE_DEFAULT} from "../../../constants";
 import {MatCheckbox} from "@angular/material/checkbox";
+import {DiseaseSelectorComponent} from "../../../components/disease-selector/disease-selector.component";
 
 @Component({
   selector: 'app-form',
@@ -24,6 +23,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
     MatButtonToggleGroup,
     MatButtonToggle,
     MatCheckbox,
+    DiseaseSelectorComponent,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss'
@@ -32,13 +32,11 @@ export class FormComponent {
   versionsService = inject(VersionsService);
   browseService = inject(BrowseService);
   version = this.versionsService.versionReadOnly();
-  diseaseSubtypeMap = this.versionsService.diseaseSubtypeMap();
-  diseases = computed(() => Array.from(this.diseaseSubtypeMap().keys()).sort((a, b) => a.localeCompare(b)));
+  diseases$ = computed(() => this.versionsService.diseases$().value() ?? [])
+  activeDataset = linkedSignal(() => this.diseases$()[0])
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
-    disease: new FormControl<string>(''),
-    dataset: new FormControl<Dataset | undefined>(undefined),
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
     geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
@@ -52,40 +50,21 @@ export class FormComponent {
     minMScore: new FormControl<number>(0.1),
   })
 
-  diseaseSignal = toSignal(
-    this.formGroup.get('disease')!.valueChanges
-  )
-
-  subtypes = computed(() => {
-    const disease = this.diseaseSignal();
-    if (!disease) {
-      return [];
-    }
-    return this.diseaseSubtypeMap().get(disease)?.sort((a, b) => a.disease_subtype?.localeCompare(b.disease_subtype || '') || 0) || [];
-  });
-  setInitialDisease = effect(() => {
-    const diseases = this.diseases();
-    this.formGroup.get('disease')?.setValue(diseases[0]);
-  })
-  setInitialSubtype = effect(() => {
-    const subtypes = this.subtypes();
-    const formField = this.formGroup.get('dataset');
-    formField?.setValue(subtypes.find((subtype) => subtype.disease_subtype === null));
-
-    if (subtypes.length <= 1) {
-      formField?.disable();
-    } else {
-      formField?.enable();
-    }
-  })
   protected readonly capitalize = _.capitalize;
-  protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
 
   constructor() {
-    this.formGroup.valueChanges.subscribe((config) => {
-      config.dataset = this.formGroup.get('dataset')?.value as Dataset;
-      this.browseService.runQuery(config as BrowseQuery);
-    })
+    const formSignal = signal(this.formGroup.value);
+    this.formGroup.valueChanges.subscribe(val => formSignal.set(val))
+
+    effect(() => {
+      const config = formSignal();
+      const dataset = this.activeDataset();
+      if (dataset === undefined) return;
+      this.browseService.runQuery({
+        ...config,
+        dataset
+      } as BrowseQuery);
+    });
   }
 
   getKeys(enumType: any): string[] {

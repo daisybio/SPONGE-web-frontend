@@ -91,7 +91,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
 
   ngOnDestroy() {
     Plotly.purge(this.plotDiv$().nativeElement);
-    Plotly.purge(this.heatmapDiv$().nativeElement);
+    //Plotly.purge(this.heatmapDiv$().nativeElement);
 
     this.refreshEffect.destroy();
     this.updatePlot.destroy();
