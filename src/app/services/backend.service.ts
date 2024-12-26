@@ -475,7 +475,7 @@ export class BackendService {
     return this.http.getRequest<Comparison[]>(this.getRequestURL(route, query));
   }
 
-  getGeneSets(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string) {
+  async getGeneSets(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string) {
     const route = 'gseaSets';
 
     if (!disease1 || !disease2) {
@@ -490,7 +490,8 @@ export class BackendService {
       condition_2: condition2,
     }
 
-    return this.http.getRequest<GeneSet[]>(this.getRequestURL(route, query));
+    const res = await this.http.getRequest<GeneSet[]>(this.getRequestURL(route, query));
+    return res.map(e => e.gene_set).sort();
   }
 
   async getNetworkResults(version: number, level: 'gene' | 'transcript' | undefined) {

@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, linkedSignal, resource, signal} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, resource, signal, WritableSignal} from '@angular/core';
 import {VersionsService} from "../../../services/versions.service";
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
@@ -35,7 +35,6 @@ export class GSEAComponent {
   localDisease$ = signal<Dataset | undefined>(undefined);
   possibleGlobalConditions$ = computed(() => this.getConditionsForDisease(this.possibleComparisons$(), this.globalDisease$()))
   activeGlobalCondition$ = linkedSignal(() => this.possibleGlobalConditions$()[0])
-
   conditionComparisons$ = computed(() => {
     const globalDisease = this.globalDisease$();
     if (globalDisease === undefined) return [];
@@ -47,7 +46,6 @@ export class GSEAComponent {
         || ((c.dataset_2.dataset_ID === globalDisease.dataset_ID)
           && (c.condition_2 === globalCondition)))
   })
-
   possibleLocalDiseases$ = computed(() => {
     const globalDisease = this.globalDisease$();
     if (globalDisease === undefined) return [];
@@ -55,7 +53,6 @@ export class GSEAComponent {
       .map(c => c.dataset_1.dataset_ID === globalDisease.dataset_ID ? c.dataset_2 : c.dataset_1)
       .filter((v, i, a) => a.findIndex(ds => ds.dataset_ID === v.dataset_ID) === i);
   })
-
   allowedLocalConditions$ = computed(() => {
     const globalDisease = this.globalDisease$();
     const localDisease = this.localDisease$();
@@ -66,7 +63,6 @@ export class GSEAComponent {
     }
     return res
   })
-
   localConditions$ = computed(() => {
     const existingLocalConditions = this.getConditionsForDisease(this.possibleComparisons$(), this.localDisease$());
     const allowedLocalConditions = this.allowedLocalConditions$();
@@ -77,7 +73,6 @@ export class GSEAComponent {
     }, {} as { [key: string]: boolean })
   })
   activeLocalCondition$ = linkedSignal(() => this.allowedLocalConditions$()[0])
-
   geneSets$ = resource({
     request: computed(() => {
       return {
@@ -92,6 +87,10 @@ export class GSEAComponent {
       return this.backend.getGeneSets(request.request.version, request.request.global, request.request.globalCondition, request.request.local, request.request.localCondition);
     }
   })
+  activeGeneSet$: WritableSignal<string | undefined> = linkedSignal(() => {
+    const geneSets = this.geneSets$.value();
+    return geneSets ? geneSets[0] : undefined;
+  });
   activeComparison$ = computed(() => {
     const localDisease = this.localDisease$();
     const localCondition = this.activeLocalCondition$();
@@ -107,7 +106,7 @@ export class GSEAComponent {
 
   constructor() {
     effect(() => {
-      console.log(this.activeComparison$())
+      console.log(this.activeGeneSet$())
     });
   }
 
