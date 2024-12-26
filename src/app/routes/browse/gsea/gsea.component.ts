@@ -13,7 +13,7 @@ import {KeyValuePipe} from "@angular/common";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {GSEAresultsComponent} from "./gsearesults/gsearesults.component";
 import {MatExpansionModule} from "@angular/material/expansion";
-import {MatGridListModule} from "@angular/material/grid-list";
+import {MatStepperModule} from "@angular/material/stepper";
 
 @Component({
   selector: 'app-gsea',
@@ -28,7 +28,7 @@ import {MatGridListModule} from "@angular/material/grid-list";
     MatProgressSpinner,
     GSEAresultsComponent,
     MatExpansionModule,
-    MatGridListModule
+    MatStepperModule
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss'
