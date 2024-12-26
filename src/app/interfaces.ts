@@ -473,6 +473,21 @@ export interface Comparison {
   gene_transcript: 'gene' | 'transcript'
 }
 
-export interface GeneSet {
-  gene_set: string
+export interface GseaResult {
+  es: number,
+  fdr: number,
+  fwerp: number,
+  gene_percent: number,
+  nes: number,
+  pvalue: number,
+  tag_percent: string,
+  term: string,
+  lead_genes: {
+    gene: Gene,
+    gsea_lead_genes_ID: number
+  }[],
+  matched_genes: {
+    gene: Gene,
+    gsea_matched_genes_ID: number
+  }
 }

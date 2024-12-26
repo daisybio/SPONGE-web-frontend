@@ -15,8 +15,8 @@ import {
   GeneInteraction,
   GeneMiRNA,
   GeneNode,
-  GeneSet,
   GOTerm,
+  GseaResult,
   Hallmark,
   NetworkResult,
   OverallCounts,
@@ -490,7 +490,7 @@ export class BackendService {
       condition_2: condition2,
     }
 
-    const res = await this.http.getRequest<GeneSet[]>(this.getRequestURL(route, query));
+    const res = await this.http.getRequest<{ gene_set: string }[]>(this.getRequestURL(route, query));
     return res.map(e => e.gene_set).sort();
   }
 
@@ -538,6 +538,24 @@ export class BackendService {
 
     const res = await this.http.getRequest<{ term: string }[]>(this.getRequestURL(route, query));
     return res.map(e => e.term).sort();
+  }
+
+  getGSEAresults(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined) {
+    const route = 'gseaResults';
+
+    if (!disease1 || !disease2 || !geneSet) {
+      return Promise.resolve([]);
+    }
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID_1: disease1.dataset_ID,
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
+      gene_set: geneSet
+    }
+
+    return this.http.getRequest<GseaResult[]>(this.getRequestURL(route, query));
   }
 
   private stringify(query: Query): string {

@@ -102,7 +102,8 @@ export class GSEAComponent {
       || ((c.dataset_2.dataset_ID === localDisease.dataset_ID)
         && (c.condition_2 === localCondition)))
   })
-  gseaTerms$ = resource({
+
+  gseaResults$ = resource({
     request: computed(() => {
       return {
         global: this.globalDisease$(),
@@ -114,7 +115,7 @@ export class GSEAComponent {
       }
     }),
     loader: params => {
-      return this.backend.getGSEAterms(
+      return this.backend.getGSEAresults(
         params.request.version,
         params.request.global,
         params.request.globalCondition,
@@ -123,11 +124,12 @@ export class GSEAComponent {
         params.request.geneSet)
     }
   })
+
   protected readonly capitalize = capitalize;
 
   constructor() {
     effect(() => {
-      console.log(this.gseaTerms$.value())
+      console.log(this.gseaResults$.value())
     });
   }
 
