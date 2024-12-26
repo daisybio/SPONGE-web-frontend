@@ -6,6 +6,9 @@
         <mat-card-title>
           Reference disease
         </mat-card-title>
+        <mat-card-subtitle>
+          Can be altered using the controls on the left
+        </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <app-disease-selector [diseases$]="[globalDisease$()!]"></app-disease-selector>
@@ -16,6 +19,9 @@
         <mat-card-title>
           Contrast disease
         </mat-card-title>
+        <mat-card-subtitle>
+          Not all diseases are available for comparison.
+        </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <app-disease-selector (selected)="localDisease$.set($event)"
