@@ -68,13 +68,10 @@ export class BrowseService {
   })
   private readonly _comparisons$ = resource({
     request: computed(() => {
-      return {
-        version: this._version$(),
-        dataset: this.disease$()
-      }
+      return this._version$()
     }),
     loader: (param) => {
-      return this.backend.getDiseaseComparisons(param.request.version, param.request.dataset);
+      return this.backend.getComparisons(param.request);
     }
   });
   private readonly _networkResults$ = resource({
@@ -93,7 +90,7 @@ export class BrowseService {
     this._version$ = versionsService.versionReadOnly();
 
     effect(() => {
-      console.log('Query', this._query$())
+      console.log('Query', this._comparisons$.value());
     });
 
     this._currentData$ = resource({

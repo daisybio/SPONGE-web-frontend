@@ -463,16 +463,11 @@ export class BackendService {
     return this.http.postRequest(request, formData);
   }
 
-  getDiseaseComparisons(version: number, disease: Dataset | undefined) {
+  getComparisons(version: number) {
     const route = 'comparison';
 
-    if (!disease) {
-      return Promise.resolve([]);
-    }
-
     const query: Query = {
-      sponge_db_version: version,
-      dataset_ID: disease.dataset_ID
+      sponge_db_version: version
     }
 
     return this.http.getRequest<any[]>(this.getRequestURL(route, query));
