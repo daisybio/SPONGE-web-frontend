@@ -1,15 +1,17 @@
-import {AfterViewInit, Component, effect, input, OnDestroy, viewChild} from '@angular/core';
+import {AfterViewInit, Component, effect, input, OnDestroy, output, viewChild} from '@angular/core';
 import {GseaResult} from "../../../../interfaces";
 import {MatTableDataSource, MatTableModule} from "@angular/material/table";
 import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
 import {MatSort, MatSortModule} from "@angular/material/sort";
+import {MatButton} from "@angular/material/button";
 
 @Component({
   selector: 'app-gsearesults',
   imports: [
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatButton
   ],
   templateUrl: './gsearesults.component.html',
   styleUrl: './gsearesults.component.scss'
@@ -19,8 +21,10 @@ export class GSEAresultsComponent implements AfterViewInit, OnDestroy {
   sort = viewChild.required(MatSort);
   results$ = input.required<GseaResult[]>();
   dataSource = new MatTableDataSource<GseaResult>();
+  termSelected = output<string>()
 
   columns = [
+    'term',
     'es',
     'fdr',
     'fwerp',
@@ -28,7 +32,7 @@ export class GSEAresultsComponent implements AfterViewInit, OnDestroy {
     'nes',
     'pvalue',
     'tag_percent',
-    'term'
+    'show_plot'
   ]
 
   updateDataSource = effect(() => {

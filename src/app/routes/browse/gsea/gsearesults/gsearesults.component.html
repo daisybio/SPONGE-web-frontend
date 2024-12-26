@@ -45,6 +45,13 @@
     <td *matCellDef="let result" mat-cell>{{ result.term }}</td>
   </ng-container>
 
+  <ng-container matColumnDef="show_plot">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Show plot</th>
+    <td *matCellDef="let result" mat-cell>
+      <button (click)="termSelected.emit(result.term)" mat-flat-button>Show</button>
+    </td>
+  </ng-container>
+
   <tr *matHeaderRowDef="columns" mat-header-row></tr>
   <tr *matRowDef="let row; columns: columns;" mat-row></tr>
 </table>
