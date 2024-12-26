@@ -1,1 +1,51 @@
-<p>gsearesults works!</p>
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
+  <ng-container matColumnDef="es">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>ES</th>
+    <td *matCellDef="let result" mat-cell>
+      {{ result.es }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="fdr">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>FDR</th>
+    <td *matCellDef="let result" mat-cell>
+      {{ result.fdr }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="fwerp">
+    <th *matHeaderCellDef mat-header-cell>FWERP</th>
+    <td *matCellDef="let result" mat-cell>
+      {{ result.fwerp }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="gene_percent">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene percent</th>
+    <td *matCellDef="let result" mat-cell>{{ result.gene_percent }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="nes">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>NES</th>
+    <td *matCellDef="let result" mat-cell>{{ result.nes }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="pvalue">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>p-Value</th>
+    <td *matCellDef="let result" mat-cell>{{ result.pvalue }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="tag_percent">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Tag percent</th>
+    <td *matCellDef="let result" mat-cell>{{ result.tag_percent }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="term">
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>Term</th>
+    <td *matCellDef="let result" mat-cell>{{ result.term }}</td>
+  </ng-container>
+
+  <tr *matHeaderRowDef="columns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+</table>
+<mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" aria-label="Select page of users"></mat-paginator>
