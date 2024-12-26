@@ -16,13 +16,14 @@ import {ReplaySubject} from "rxjs";
 import Graph from "graphology";
 import Sigma from "sigma";
 import {Settings} from "sigma/settings";
-import {MatAnchor} from "@angular/material/button";
+import {MatAnchor, MatButtonModule} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
 import {NodeCircleProgram} from "sigma/rendering";
 import {NodeSquareProgram} from "@sigma/node-square";
 import {InfoComponent} from "../../../components/info/info.component";
 import {MatSlideToggle} from "@angular/material/slide-toggle";
 import {FormsModule} from "@angular/forms";
+import {MatIconModule} from "@angular/material/icon";
 
 const states: Record<State, {
   edgeColor: string,
@@ -80,6 +81,8 @@ const MIN_DRAG_TIME = 200;
     InfoComponent,
     MatSlideToggle,
     FormsModule,
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './network.component.html',
   styleUrl: './network.component.scss'
@@ -214,6 +217,15 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sigma?.kill();
+  }
+
+  resetCamera() {
+    const camera = this.sigma?.getCamera();
+    if (camera !== undefined) {
+      camera.x = 0.5;
+      camera.y = 0.5;
+      camera.ratio = 1;
+    }
   }
 
   private updateEdges(edgeStates: Record<string, EntityState>) {

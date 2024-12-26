@@ -23,8 +23,10 @@
     </table>
   </app-info>
   <mat-slide-toggle [(ngModel)]="physicsEnabled$">Physics</mat-slide-toggle>
-</div>
-<div class="card-container">
+  <button (click)="resetCamera()" mat-button>
+    <mat-icon>home</mat-icon>
+    Reset camera
+  </button>
   <a [href]="gProfilerUrl$()" mat-flat-button matTooltip="Open g:Profiler for all visible nodes"
      target="_blank">g:Profiler</a>
 </div>

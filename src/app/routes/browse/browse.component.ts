@@ -52,6 +52,7 @@ export class BrowseComponent {
   isLoading$ = this.browseService.isLoading$;
   rawDataURL$ = this.browseService.rawDataURL();
   hasNetworkResults$ = computed(() => this.browseService.networkResults$() !== undefined);
+  hasGseaContrasts$ = computed(() => this.browseService.possibleComparisons$().length > 0);
 
   constructor() {
     fromEvent(window, 'resize').subscribe(() => this.refresh());
