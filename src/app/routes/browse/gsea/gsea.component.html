@@ -1,1 +1,9 @@
-<app-disease-selector (selected)="localDisease$.set($event)" [diseases$]="[]"></app-disease-selector>
+@let possibleLocalDiseases = possibleLocalDiseases$();
+@if (possibleLocalDiseases.length > 0) {
+  <app-disease-selector (selected)="localDisease$.set($event)"
+                        [diseases$]="possibleLocalDiseases"></app-disease-selector>
+} @else {
+  <div class="card-container">
+    No comparisons found
+  </div>
+}

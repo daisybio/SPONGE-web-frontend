@@ -50,7 +50,7 @@ export class BrowseService {
   }))
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
-  readonly _comparisons$ = resource({
+  private readonly _comparisons$ = resource({
     request: computed(() => {
       return this._version$()
     }),
@@ -58,6 +58,12 @@ export class BrowseService {
       return this.backend.getComparisons(param.request);
     }
   });
+  readonly possibleComparisons$ = computed(() => {
+    const disease = this.disease$();
+    const comparisons = this._comparisons$.value();
+    if (disease === undefined || comparisons === undefined) return [];
+    return comparisons.filter(c => c.dataset_1.dataset_ID === disease.dataset_ID || c.dataset_2.dataset_ID === disease.dataset_ID);
+  })
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);

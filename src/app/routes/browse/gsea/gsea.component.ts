@@ -22,9 +22,16 @@ export class GSEAComponent {
   browseService = inject(BrowseService);
   backend = inject(BackendService);
 
-
+  possibleComparisons$ = this.browseService.possibleComparisons$;
   globalDisease$ = this.browseService.disease$;
   localDisease$ = signal<Dataset | undefined>(undefined);
+  possibleLocalDiseases$ = computed(() => {
+    const globalDisease = this.globalDisease$();
+    if (globalDisease === undefined) return [];
+    const possibleComparisons = this.possibleComparisons$();
+    return possibleComparisons.map(c => c.dataset_1.dataset_ID === globalDisease.dataset_ID ? c.dataset_2 : c.dataset_1)
+      .filter((v, i, a) => a.findIndex(ds => ds.dataset_ID === v.dataset_ID) === i);
+  })
 
   geneSets$ = resource({
     request: computed(() => {
