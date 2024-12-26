@@ -56,7 +56,7 @@
     </div>
   } @else {
     @if (gseaResults$.value(); as results) {
-      <app-gsearesults [results$]="results"></app-gsearesults>
+      <app-gsearesults [results$]="results" (termSelected)="openTermModal($event)"></app-gsearesults>
     } @else {
       <p>No results found.</p>
     }

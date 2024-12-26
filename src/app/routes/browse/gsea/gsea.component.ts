@@ -135,6 +135,19 @@ export class GSEAComponent {
 
   protected readonly capitalize = capitalize;
 
+  async openTermModal(term: string) {
+    const resp = await this.backend.getGseaPlot(
+      this.versionsService.versionReadOnly()(),
+      this.globalDisease$(),
+      this.activeGlobalCondition$(),
+      this.localDisease$(),
+      this.activeLocalCondition$(),
+      this.activeGeneSet$(),
+      term)
+
+    console.log(resp)
+  }
+
   private getConditionsForDisease(comparisons: Comparison[], disease: Dataset | undefined) {
     if (disease === undefined) return [];
 
