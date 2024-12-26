@@ -32,7 +32,7 @@
         <app-disease-selector (selected)="localDisease$.set($event)"
                               [diseases$]="possibleLocalDiseases"></app-disease-selector>
         <mat-button-toggle-group [(value)]="activeLocalCondition$">
-          @for (condition of localConditions$() | keyvalue; track condition) {
+          @for (condition of localConditions$() | keyvalue; track condition.key) {
             <mat-button-toggle [value]="condition.key" [disabled]="!condition.value">{{ capitalize(condition.key) }}
             </mat-button-toggle>
           }

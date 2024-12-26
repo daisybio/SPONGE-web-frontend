@@ -1,4 +1,4 @@
-import {Component, computed, effect, inject, linkedSignal, resource, signal, WritableSignal} from '@angular/core';
+import {Component, computed, inject, linkedSignal, resource, signal, WritableSignal} from '@angular/core';
 import {VersionsService} from "../../../services/versions.service";
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
@@ -126,12 +126,6 @@ export class GSEAComponent {
   })
 
   protected readonly capitalize = capitalize;
-
-  constructor() {
-    effect(() => {
-      console.log(this.gseaResults$.value())
-    });
-  }
 
   private getConditionsForDisease(comparisons: Comparison[], disease: Dataset | undefined) {
     if (disease === undefined) return [];
