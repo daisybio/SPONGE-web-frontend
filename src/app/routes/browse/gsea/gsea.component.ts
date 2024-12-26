@@ -7,6 +7,8 @@ import {MatSelectModule} from "@angular/material/select";
 import {Dataset} from "../../../interfaces";
 import {DiseaseSelectorComponent} from "../../../components/disease-selector/disease-selector.component";
 import {MatCardModule} from "@angular/material/card";
+import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
+import {capitalize} from "lodash";
 
 @Component({
   selector: 'app-gsea',
@@ -14,7 +16,9 @@ import {MatCardModule} from "@angular/material/card";
     MatFormFieldModule,
     MatSelectModule,
     DiseaseSelectorComponent,
-    MatCardModule
+    MatCardModule,
+    MatButtonToggleGroup,
+    MatButtonToggle
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss'
@@ -34,6 +38,8 @@ export class GSEAComponent {
     return possibleComparisons.map(c => c.dataset_1.dataset_ID === globalDisease.dataset_ID ? c.dataset_2 : c.dataset_1)
       .filter((v, i, a) => a.findIndex(ds => ds.dataset_ID === v.dataset_ID) === i);
   })
+  possibleGlobalConditions$ = computed(() => this.getConditionsForDisease(this.globalDisease$()))
+  existingLocalConditions$ = computed(() => this.getConditionsForDisease(this.localDisease$()))
 
   geneSets$ = resource({
     request: computed(() => {
@@ -47,4 +53,21 @@ export class GSEAComponent {
       return this.backend.getGeneSets(request.request.version, request.request.global, request.request.local);
     }
   })
+  protected readonly capitalize = capitalize;
+
+  private getConditionsForDisease(disease: Dataset | undefined) {
+    if (disease === undefined) return [];
+
+    return this.possibleComparisons$().flatMap(c => {
+      const conditions = [];
+      if (c.dataset_1.dataset_ID == disease.dataset_ID) {
+        conditions.push(c.condition_1)
+      }
+      if (c.dataset_2.dataset_ID == disease.dataset_ID) {
+        conditions.push(c.condition_2)
+      }
+      return conditions;
+    }).filter((v, i, a) => a.indexOf(v) === i).sort();
+
+  }
 }
