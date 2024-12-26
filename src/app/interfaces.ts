@@ -472,3 +472,7 @@ export interface Comparison {
   dataset_2: Dataset,
   gene_transcript: 'gene' | 'transcript'
 }
+
+export interface GeneSet {
+  gene_set: string
+}

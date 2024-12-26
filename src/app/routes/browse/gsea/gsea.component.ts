@@ -83,11 +83,13 @@ export class GSEAComponent {
       return {
         global: this.globalDisease$(),
         local: this.localDisease$(),
-        version: this.versionsService.versionReadOnly()()
+        version: this.versionsService.versionReadOnly()(),
+        globalCondition: this.activeGlobalCondition$(),
+        localCondition: this.activeLocalCondition$()
       }
     }),
     loader: request => {
-      return this.backend.getGeneSets(request.request.version, request.request.global, request.request.local);
+      return this.backend.getGeneSets(request.request.version, request.request.global, request.request.globalCondition, request.request.local, request.request.localCondition);
     }
   })
   activeComparison$ = computed(() => {

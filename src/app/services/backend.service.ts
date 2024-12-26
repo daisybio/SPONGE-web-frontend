@@ -15,6 +15,7 @@ import {
   GeneInteraction,
   GeneMiRNA,
   GeneNode,
+  GeneSet,
   GOTerm,
   Hallmark,
   NetworkResult,
@@ -474,7 +475,7 @@ export class BackendService {
     return this.http.getRequest<Comparison[]>(this.getRequestURL(route, query));
   }
 
-  getGeneSets(version: number, disease1: Dataset | undefined, disease2: Dataset | undefined) {
+  getGeneSets(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string) {
     const route = 'gseaSets';
 
     if (!disease1 || !disease2) {
@@ -484,10 +485,12 @@ export class BackendService {
     const query: Query = {
       sponge_db_version: version,
       dataset_ID_1: disease1.dataset_ID,
-      dataset_ID_2: disease2.dataset_ID
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<GeneSet[]>(this.getRequestURL(route, query));
   }
 
   async getNetworkResults(version: number, level: 'gene' | 'transcript' | undefined) {
