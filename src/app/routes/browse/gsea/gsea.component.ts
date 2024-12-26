@@ -10,6 +10,8 @@ import {MatCardModule} from "@angular/material/card";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {capitalize} from "lodash";
 import {KeyValuePipe} from "@angular/common";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {GSEAresultsComponent} from "./gsearesults/gsearesults.component";
 
 @Component({
   selector: 'app-gsea',
@@ -20,7 +22,9 @@ import {KeyValuePipe} from "@angular/common";
     MatCardModule,
     MatButtonToggleGroup,
     MatButtonToggle,
-    KeyValuePipe
+    KeyValuePipe,
+    MatProgressSpinner,
+    GSEAresultsComponent
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss'

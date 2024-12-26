@@ -57,6 +57,17 @@
       </mat-card-content>
     </mat-card>
   </div>
+  @if (gseaResults$.isLoading()) {
+    <div class="spinner-container">
+      <mat-progress-spinner></mat-progress-spinner>
+    </div>
+  } @else {
+    @if (gseaResults$.value(); as results) {
+      <app-gsearesults [results$]="results"></app-gsearesults>
+    } @else {
+      <p>No results found.</p>
+    }
+  }
 } @else {
   <div class="card-container">
     No comparisons found
