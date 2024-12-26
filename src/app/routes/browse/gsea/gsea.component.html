@@ -12,7 +12,7 @@
       </mat-card-header>
       <mat-card-content>
         <app-disease-selector [diseases$]="[globalDisease$()!]"></app-disease-selector>
-        <mat-button-toggle-group>
+        <mat-button-toggle-group [(value)]="activeGlobalCondition$">
           @for (condition of possibleGlobalConditions$(); track condition) {
             <mat-button-toggle [value]="condition">{{ capitalize(condition) }}</mat-button-toggle>
           }
@@ -31,9 +31,10 @@
       <mat-card-content>
         <app-disease-selector (selected)="localDisease$.set($event)"
                               [diseases$]="possibleLocalDiseases"></app-disease-selector>
-        <mat-button-toggle-group>
-          @for (condition of existingLocalConditions$(); track condition) {
-            <mat-button-toggle [value]="condition">{{ capitalize(condition) }}</mat-button-toggle>
+        <mat-button-toggle-group [(value)]="activeLocalCondition$">
+          @for (condition of localConditions$() | keyvalue; track condition) {
+            <mat-button-toggle [value]="condition.key" [disabled]="!condition.value">{{ capitalize(condition.key) }}
+            </mat-button-toggle>
           }
         </mat-button-toggle-group>
       </mat-card-content>

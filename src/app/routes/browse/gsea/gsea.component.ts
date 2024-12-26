@@ -1,14 +1,15 @@
-import {Component, computed, inject, resource, signal} from '@angular/core';
+import {Component, computed, effect, inject, linkedSignal, resource, signal} from '@angular/core';
 import {VersionsService} from "../../../services/versions.service";
 import {BrowseService} from "../../../services/browse.service";
 import {BackendService} from "../../../services/backend.service";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
-import {Dataset} from "../../../interfaces";
+import {Comparison, Dataset} from "../../../interfaces";
 import {DiseaseSelectorComponent} from "../../../components/disease-selector/disease-selector.component";
 import {MatCardModule} from "@angular/material/card";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {capitalize} from "lodash";
+import {KeyValuePipe} from "@angular/common";
 
 @Component({
   selector: 'app-gsea',
@@ -18,7 +19,8 @@ import {capitalize} from "lodash";
     DiseaseSelectorComponent,
     MatCardModule,
     MatButtonToggleGroup,
-    MatButtonToggle
+    MatButtonToggle,
+    KeyValuePipe
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss'
@@ -31,15 +33,50 @@ export class GSEAComponent {
   possibleComparisons$ = this.browseService.possibleComparisons$;
   globalDisease$ = this.browseService.disease$;
   localDisease$ = signal<Dataset | undefined>(undefined);
+  possibleGlobalConditions$ = computed(() => this.getConditionsForDisease(this.possibleComparisons$(), this.globalDisease$()))
+  activeGlobalCondition$ = linkedSignal(() => this.possibleGlobalConditions$()[0])
+
+  conditionComparisons$ = computed(() => {
+    const globalDisease = this.globalDisease$();
+    if (globalDisease === undefined) return [];
+    const globalCondition = this.activeGlobalCondition$();
+
+    return this.possibleComparisons$()
+      .filter(c => ((c.dataset_1.dataset_ID === globalDisease.dataset_ID)
+          && (c.condition_1 === globalCondition))
+        || ((c.dataset_2.dataset_ID === globalDisease.dataset_ID)
+          && (c.condition_2 === globalCondition)))
+  })
+
   possibleLocalDiseases$ = computed(() => {
     const globalDisease = this.globalDisease$();
     if (globalDisease === undefined) return [];
-    const possibleComparisons = this.possibleComparisons$();
-    return possibleComparisons.map(c => c.dataset_1.dataset_ID === globalDisease.dataset_ID ? c.dataset_2 : c.dataset_1)
+    return this.conditionComparisons$()
+      .map(c => c.dataset_1.dataset_ID === globalDisease.dataset_ID ? c.dataset_2 : c.dataset_1)
       .filter((v, i, a) => a.findIndex(ds => ds.dataset_ID === v.dataset_ID) === i);
   })
-  possibleGlobalConditions$ = computed(() => this.getConditionsForDisease(this.globalDisease$()))
-  existingLocalConditions$ = computed(() => this.getConditionsForDisease(this.localDisease$()))
+
+  allowedLocalConditions$ = computed(() => {
+    const globalDisease = this.globalDisease$();
+    const localDisease = this.localDisease$();
+    const res = this.getConditionsForDisease(this.conditionComparisons$(), localDisease);
+    if (globalDisease?.dataset_ID === localDisease?.dataset_ID) {
+      const globalCondition = this.activeGlobalCondition$();
+      return res.filter(c => c != globalCondition)
+    }
+    return res
+  })
+
+  localConditions$ = computed(() => {
+    const existingLocalConditions = this.getConditionsForDisease(this.possibleComparisons$(), this.localDisease$());
+    const allowedLocalConditions = this.allowedLocalConditions$();
+
+    return existingLocalConditions.reduce((acc, c: string) => {
+      acc[c] = allowedLocalConditions.some(condition => condition == c)
+      return acc;
+    }, {} as { [key: string]: boolean })
+  })
+  activeLocalCondition$ = linkedSignal(() => this.allowedLocalConditions$()[0])
 
   geneSets$ = resource({
     request: computed(() => {
@@ -55,10 +92,16 @@ export class GSEAComponent {
   })
   protected readonly capitalize = capitalize;
 
-  private getConditionsForDisease(disease: Dataset | undefined) {
+  constructor() {
+    effect(() => {
+      console.log(this.conditionComparisons$())
+    });
+  }
+
+  private getConditionsForDisease(comparisons: Comparison[], disease: Dataset | undefined) {
     if (disease === undefined) return [];
 
-    return this.possibleComparisons$().flatMap(c => {
+    return comparisons.flatMap(c => {
       const conditions = [];
       if (c.dataset_1.dataset_ID == disease.dataset_ID) {
         conditions.push(c.condition_1)
