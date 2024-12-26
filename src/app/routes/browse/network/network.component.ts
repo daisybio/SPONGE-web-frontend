@@ -34,7 +34,7 @@ const states: Record<State, {
 }>
   = {
   [State.Default]: {
-    edgeColor: '#000',
+    edgeColor: '#b7b7b7',
     edgeWidth: 3,
     nodeColor: '#052444',
     nodeSize: 10,
