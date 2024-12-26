@@ -102,11 +102,32 @@ export class GSEAComponent {
       || ((c.dataset_2.dataset_ID === localDisease.dataset_ID)
         && (c.condition_2 === localCondition)))
   })
+  gseaTerms$ = resource({
+    request: computed(() => {
+      return {
+        global: this.globalDisease$(),
+        local: this.localDisease$(),
+        version: this.versionsService.versionReadOnly()(),
+        globalCondition: this.activeGlobalCondition$(),
+        localCondition: this.activeLocalCondition$(),
+        geneSet: this.activeGeneSet$()
+      }
+    }),
+    loader: params => {
+      return this.backend.getGSEAterms(
+        params.request.version,
+        params.request.global,
+        params.request.globalCondition,
+        params.request.local,
+        params.request.localCondition,
+        params.request.geneSet)
+    }
+  })
   protected readonly capitalize = capitalize;
 
   constructor() {
     effect(() => {
-      console.log(this.activeGeneSet$())
+      console.log(this.gseaTerms$.value())
     });
   }
 
