@@ -90,11 +90,22 @@ export class GSEAComponent {
       return this.backend.getGeneSets(request.request.version, request.request.global, request.request.local);
     }
   })
+  activeComparison$ = computed(() => {
+    const localDisease = this.localDisease$();
+    const localCondition = this.activeLocalCondition$();
+
+    if (localDisease === undefined) return undefined;
+
+    return this.conditionComparisons$().find(c => ((c.dataset_1.dataset_ID === localDisease.dataset_ID)
+        && (c.condition_1 === localCondition))
+      || ((c.dataset_2.dataset_ID === localDisease.dataset_ID)
+        && (c.condition_2 === localCondition)))
+  })
   protected readonly capitalize = capitalize;
 
   constructor() {
     effect(() => {
-      console.log(this.conditionComparisons$())
+      console.log(this.activeComparison$())
     });
   }
 
@@ -111,6 +122,5 @@ export class GSEAComponent {
       }
       return conditions;
     }).filter((v, i, a) => a.indexOf(v) === i).sort();
-
   }
 }
