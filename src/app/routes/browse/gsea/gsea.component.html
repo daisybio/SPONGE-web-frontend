@@ -1,62 +1,54 @@
 @let possibleLocalDiseases = possibleLocalDiseases$();
 @if (possibleLocalDiseases.length > 0) {
-  <div class="card-container">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>
-          Reference disease
-        </mat-card-title>
-        <mat-card-subtitle>
-          Can be altered using the controls on the left
-        </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <app-disease-selector [diseases$]="[globalDisease$()!]"></app-disease-selector>
-        <mat-button-toggle-group [(value)]="activeGlobalCondition$">
-          @for (condition of possibleGlobalConditions$(); track condition) {
-            <mat-button-toggle [value]="condition">{{ capitalize(condition) }}</mat-button-toggle>
-          }
-        </mat-button-toggle-group>
-      </mat-card-content>
-    </mat-card>
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>
-          Contrast disease
-        </mat-card-title>
-        <mat-card-subtitle>
-          Not all diseases are available for comparison.
-        </mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <app-disease-selector (selected)="localDisease$.set($event)"
-                              [diseases$]="possibleLocalDiseases"></app-disease-selector>
-        <mat-button-toggle-group [(value)]="activeLocalCondition$">
-          @for (condition of localConditions$() | keyvalue; track condition.key) {
-            <mat-button-toggle [value]="condition.key" [disabled]="!condition.value">{{ capitalize(condition.key) }}
-            </mat-button-toggle>
-          }
-        </mat-button-toggle-group>
-      </mat-card-content>
-    </mat-card>
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>
-          Select gene set
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <mat-form-field appearance="outline" style="margin-top: 10px">
-          <mat-label>Active gene set</mat-label>
-          <mat-select [(value)]="activeGeneSet$">
-            @for (geneSet of geneSets$.value(); track geneSet) {
-              <mat-option [value]="geneSet">{{ geneSet }}</mat-option>
+  <mat-expansion-panel style="margin: 10px">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Configuration</mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-grid-list cols="2" rowHeight="150px">
+      <mat-grid-tile colspan="1" rowspan="1">
+        <div class="full-width">
+          <h5>Reference disease</h5>
+          <p>The reference disease is the one specified using the controls on the left.</p>
+
+          <div class="card-container">
+            <p>Condition of the reference disease: </p>
+            <mat-button-toggle-group [(value)]="activeGlobalCondition$">
+              @for (condition of possibleGlobalConditions$(); track condition) {
+                <mat-button-toggle [value]="condition">{{ capitalize(condition) }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+          </div>
+        </div>
+      </mat-grid-tile>
+
+      <mat-grid-tile colspan="1" rowspan="2">
+        <div class="full-width">
+          <h5>Contrast disease</h5>
+          <app-disease-selector (selected)="localDisease$.set($event)"
+                                [diseases$]="possibleLocalDiseases"></app-disease-selector>
+          <mat-button-toggle-group [(value)]="activeLocalCondition$">
+            @for (condition of localConditions$() | keyvalue; track condition.key) {
+              <mat-button-toggle [value]="condition.key" [disabled]="!condition.value">{{ capitalize(condition.key) }}
+              </mat-button-toggle>
             }
-          </mat-select>
-        </mat-form-field>
-      </mat-card-content>
-    </mat-card>
-  </div>
+          </mat-button-toggle-group>
+        </div>
+      </mat-grid-tile>
+      <mat-grid-tile colspan="1" rowspan="1">
+        <div class="full-width">
+          <h5>Gene set</h5>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Active gene set</mat-label>
+            <mat-select [(value)]="activeGeneSet$">
+              @for (geneSet of geneSets$.value(); track geneSet) {
+                <mat-option [value]="geneSet">{{ geneSet }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-expansion-panel>
   @if (gseaResults$.isLoading()) {
     <div class="spinner-container">
       <mat-progress-spinner></mat-progress-spinner>
