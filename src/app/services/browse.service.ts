@@ -40,7 +40,6 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
-  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   layout = computed(() => new ForceSupervisor(this.graph$(), {
     isNodeFixed: (_, attr) => attr['highlighted'],
     settings: {
@@ -51,11 +50,20 @@ export class BrowseService {
   }))
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
+  readonly _comparisons$ = resource({
+    request: computed(() => {
+      return this._version$()
+    }),
+    loader: (param) => {
+      return this.backend.getComparisons(param.request);
+    }
+  });
   private readonly _currentData$: ResourceRef<NetworkData>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(() => this._currentData$.value()?.inverseNodes || []);
   readonly interactions$ = computed(() => this._currentData$.value()?.interactions || []);
+  readonly graph$ = computed(() => this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()));
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
     const activeNodeIDs = Object.entries(this._nodeStates$()).filter(([_, state]) => state[State.Active]).map(([node, _]) => node);
@@ -66,14 +74,6 @@ export class BrowseService {
     const activeEdgeIDs = Object.entries(this._edgeStates$()).filter(([_, state]) => state[State.Active]).map(([edge, _]) => edge);
     return activeEdgeIDs.map(edgeID => this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())).flat().filter(interaction => interaction !== undefined);
   })
-  private readonly _comparisons$ = resource({
-    request: computed(() => {
-      return this._version$()
-    }),
-    loader: (param) => {
-      return this.backend.getComparisons(param.request);
-    }
-  });
   private readonly _networkResults$ = resource({
     request: computed(() => {
       return {
@@ -88,10 +88,6 @@ export class BrowseService {
 
   constructor(private backend: BackendService, versionsService: VersionsService) {
     this._version$ = versionsService.versionReadOnly();
-
-    effect(() => {
-      console.log('Query', this._comparisons$.value());
-    });
 
     this._currentData$ = resource({
       request: computed(() => {

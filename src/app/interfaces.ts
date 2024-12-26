@@ -463,3 +463,12 @@ export interface NetworkResult {
     }
   }
 }
+
+export interface Comparison {
+  comparison_ID: number,
+  condition_1: string,
+  condition_2: string,
+  dataset_1: Dataset,
+  dataset_2: Dataset,
+  gene_transcript: 'gene' | 'transcript'
+}

@@ -5,6 +5,7 @@ import {
   BrowseQuery,
   CeRNAExpression,
   CeRNAInteraction,
+  Comparison,
   Dataset,
   EnrichmentScoreDistributions,
   Gene,
@@ -470,7 +471,7 @@ export class BackendService {
       sponge_db_version: version
     }
 
-    return this.http.getRequest<any[]>(this.getRequestURL(route, query));
+    return this.http.getRequest<Comparison[]>(this.getRequestURL(route, query));
   }
 
   getGeneSets(version: number, disease1: Dataset | undefined, disease2: Dataset | undefined) {
