@@ -52,7 +52,7 @@
   </mat-expansion-panel>
   @if (gseaResults$.isLoading()) {
     <div class="spinner-container">
-      <mat-progress-spinner></mat-progress-spinner>
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
   } @else {
     @if (gseaResults$.value(); as results) {

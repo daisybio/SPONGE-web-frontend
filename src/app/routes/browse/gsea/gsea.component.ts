@@ -10,7 +10,7 @@ import {MatCardModule} from "@angular/material/card";
 import {MatButtonToggle, MatButtonToggleGroup} from "@angular/material/button-toggle";
 import {capitalize} from "lodash";
 import {KeyValuePipe} from "@angular/common";
-import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {GSEAresultsComponent} from "./gsearesults/gsearesults.component";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatStepperModule} from "@angular/material/stepper";
@@ -25,7 +25,7 @@ import {MatStepperModule} from "@angular/material/stepper";
     MatButtonToggleGroup,
     MatButtonToggle,
     KeyValuePipe,
-    MatProgressSpinner,
+    MatProgressSpinnerModule,
     GSEAresultsComponent,
     MatExpansionModule,
     MatStepperModule
