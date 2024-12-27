@@ -6,13 +6,7 @@
     <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
   </mat-tab>
   <mat-tab label="Classification">
-    <app-info type="panel">
-      <p>The spongEffects enrichment score distributions can give an insight into the model capability to
-        differentiate between the given classes.</p>
-    </app-info>
-    <div class="enrichmentPlotHolderDiv">
-      <!-- <div #enrichmentScoresByClassPlot [hidden]="enrichmentScoreDensityLoading" class="enrichmentPlotHolder"></div> -->
-    </div>
+    <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
   </mat-tab>
   <mat-tab label="Top ceRNA centralities">
     <app-info type="panel">

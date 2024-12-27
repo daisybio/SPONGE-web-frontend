@@ -51,10 +51,10 @@ export class OverallAccPlotComponent {
     }),
     loader: async (param) => {
       const version = param.request.version;
-      const gene = param.request.cancer;
+      const cancer = param.request.cancer;
       const level = param.request.level;
-      if (version === undefined || gene === undefined || level === undefined) return;
-      const data = this.getOverallAccuracyData(version, gene, level);
+      if (version === undefined || cancer === undefined || level === undefined) return;
+      const data = this.getOverallAccuracyData(version, cancer, level);
       return await this.plotOverallAccuracyPlot(data);
     }
   });
