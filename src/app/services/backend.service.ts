@@ -417,7 +417,7 @@ export class BackendService {
   }
 
   getEnrichmentScoreDistributions(version: number, diseaseName: string, level: string): Promise<EnrichmentScoreDistributions[]> {
-    const request = `${API_BASE}/spongEffects/getEnrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/enrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
     return this.http.getRequest<EnrichmentScoreDistributions[]>(request);
   }
 

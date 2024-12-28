@@ -52,6 +52,7 @@ export class EnrichmentClassPlotComponent {
       const level = param.request.level;
       if (version === undefined || cancer === undefined || level === undefined) return;
       const data = this.getEnrichmentClassData(version, cancer, level);
+      console.log(data);
       return await this.plotEnrichmentClassPlot(data);
     }
   });
@@ -106,7 +107,7 @@ export class EnrichmentClassPlotComponent {
     // determine range of display
     let minScore: number = Math.round(Math.min(...data.map(d => Math.min(...d.x))));
     let maxScore: number = Math.round(Math.max(...data.map(d => Math.max(...d.x))));
-    const plot_height: number = data.length * 50;
+    const plot_height: number =  data.length * 200;
     // set general layout options
     let layout: any = {
       showlegend: false,
@@ -119,7 +120,9 @@ export class EnrichmentClassPlotComponent {
         roworder: 'bottom to top'
       },
       height: plot_height,
-      title: "spongEffects enrichment score density for predictive classes"
+      title: "spongEffects enrichment score density for predictive classes",
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
     };
     // set constant y axis layout
     const y_axis_layout = {
@@ -163,8 +166,10 @@ export class EnrichmentClassPlotComponent {
       })
     });
     layout["annotations"] = annotations;
-    const config = { responsive: true }
-    return Plotly.newPlot(this.enrichmentClassPlot().nativeElement, data, layout, config);
+    const config = { responsive: true };
+    let plot = Plotly.newPlot(this.enrichmentClassPlot().nativeElement, data, layout, config);
+    console.log(plot);
+    return plot;
   }
 
   refreshPlot() {

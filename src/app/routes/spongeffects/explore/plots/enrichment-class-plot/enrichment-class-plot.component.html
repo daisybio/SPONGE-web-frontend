@@ -1,11 +1,10 @@
 @if (plotEnrichmentClassResouce.isLoading()){
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    } 
-    <!-- else {
-    @if (!plotEnrichmentClassResouce.value()){
-        <p>No data available</p>
-    } -->
-<!-- } -->
+} @else {
+    @if (!plotEnrichmentClassResouce.value()) {
+      <p>No data available</p>
+    }
+  }
 <div class="enrichment-class-plot-div">
     <div #enrichmentClassPlot class="enrichment-class-plot" style="width: 100%; height: auto"></div>
 </div>
