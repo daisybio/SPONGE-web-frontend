@@ -317,8 +317,11 @@ export interface EnrichmentScoreDistributions {
 }
 
 export interface SpongEffectsGeneModules {
-  ensg_number: string;
-  gene_symbol: string;
+  getSpongEffectsGeneModules: number;
+  gene: {
+    ensg_number: string;
+    gene_symbol: string;
+  };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
 }
@@ -331,10 +334,9 @@ export interface SpongEffectsGeneModuleMembers {
 }
 
 export interface SpongEffectsTranscriptModules {
-  enst_number: string;
-  gene: {
-    ensg_number: string;
-    gene_symbol: string;
+  spongEffects_transcript_module_ID: number;
+  transcript: {
+    enst_number: string;
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
@@ -490,4 +492,11 @@ export interface GseaResult {
     gene: Gene,
     gsea_matched_genes_ID: number
   }
+}
+
+export interface SpongEffectsModule {
+  ensemblID: string,
+  symbol: string,
+  meanGiniDecrease: number,
+  meanAccuracyDecrease: number,
 }

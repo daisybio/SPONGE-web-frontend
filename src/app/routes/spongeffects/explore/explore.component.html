@@ -9,6 +9,7 @@
     <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
   </mat-tab>
   <mat-tab label="Top ceRNA centralities">
+    <app-lollipop-plot [refreshSignal$]="refreshSignal()"></app-lollipop-plot>
     <app-info type="panel">
       <p>The mean decrease in the Gini coefficient tells us how much each variable affects the consistency of
         nodes and leaves in a random forest. If the mean decrease accuracy or mean decrease Gini score is higher,
