@@ -270,7 +270,7 @@ export interface SpongEffectsRun {
   sponge_run_ID: number,
   m_max: number,
   log_level: string,
-  sponge_db_version: string,
+  sponge_db_version: number,
   dataset_ID: number,
   disease_name: string,
   data_origin: string,
