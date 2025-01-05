@@ -83,7 +83,6 @@ export class ClassPerformancePlotComponent {
 
   async plotModelClassPerformance(version: number, cancer: string, level: string): Promise<PlotlyData> {
     const performanceData = await this.backend.getRunClassPerformance(version, cancer, level);
-    console.log(performanceData);
     // group the data by model type
     const traceGroups: { [key: string]: any[] } = {};
     performanceData.forEach(entry => {

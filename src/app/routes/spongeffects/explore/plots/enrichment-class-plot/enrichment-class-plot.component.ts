@@ -52,17 +52,20 @@ export class EnrichmentClassPlotComponent {
       const level = param.request.level;
       if (version === undefined || cancer === undefined || level === undefined) return;
       const data = this.getEnrichmentClassData(version, cancer, level);
-      console.log(data);
       return await this.plotEnrichmentClassPlot(data);
     }
   });
 
-  constructor() {
-    effect(() => {
-      this.refreshSignal$();
-      this.refreshPlot();
-    });
-  }
+  refreshEffect = effect(() => {
+    this.refreshSignal$();
+    this.refreshPlot();
+  });
+
+  clearEffect = effect(() => {
+    this.exploreService.selectedDisease$();
+    this.exploreService.level$();
+    this.clearPlot();
+  });
 
   async getEnrichmentClassData(version: number, cancer: string, level: string): Promise<any> {
     const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level);
@@ -177,6 +180,10 @@ export class EnrichmentClassPlotComponent {
     if(plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
+  }
+
+  clearPlot() {
+    Plotly.purge(this.enrichmentClassPlot().nativeElement);
   }
 
 

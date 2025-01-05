@@ -1,45 +1,29 @@
   <!-- <mat-grid-list cols="1" rowHeight="100px">  -->
     <!-- <mat-grid-tile colspan="1" rowspan="1"> -->
       Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot.
-    <!-- </mat-grid-tile> -->
-    <!-- <mat-grid-tile colspan="1" rowspan="5"> -->
-      @if (lollipopPlotResource.isLoading()) {
+      @if (lolipopPlotData.isLoading()) {
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      }
-      <div class="lollipop-plot-div">
-        <div #lollipopPlot class="lollipop-plot"></div>
-      </div>
-    <!-- </mat-grid-tile> -->
-    <!-- <mat-grid-tile colspan="1" rowspan="5"> -->
-      <form [formGroup]="formGroup" class="select-top-n">
-        <mat-form-field appearance="outline">
-          <mat-label>Number of top rated centralities to include</mat-label>
-          <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
-          <mat-error>Please provide a number between 3 and 20</mat-error>
-        </mat-form-field>
-    <!-- </mat-grid-tile> -->
-    <!-- <mat-grid-tile colspan="30" rowspan="5"> -->
-        <mat-form-field appearance="outline" width="100%">
-          <mat-label>Number of top rated centralities to display</mat-label>
-          <input formControlName="topControl" type="number" matInput max="20" min="3" step="1">
-          <mat-error>Please provide a number between 3 and 20</mat-error>
-        </mat-form-field>
-      </form>
+      } @else {
+        <div class="lollipop-plot-div">
+          <div #lollipopPlot class="lollipop-plot"></div>
+        </div>
+        <form [formGroup]="formGroup" class="select-top-n">
+          <mat-form-field appearance="outline" [style.width.px]="400">
+            <mat-label>Number of top rated centralities to display</mat-label>
+            <input formControlName="topControl" type="number" matInput max="20" min="3" step="1">
+            <mat-error>Please provide a number between 3 and 20</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" [style.width.px]="400">
+            <mat-label>Number of top rated centralities to include</mat-label>
+            <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
+            <mat-error>Please provide a number between 3 and 20</mat-error>
+          </mat-form-field>
+          <mat-checkbox formControlName="includeModuleMembers" color="primary">
+            Include module members
+          </mat-checkbox>
+        </form>
+    }
 
-    <!-- </mat-grid-tile> -->
-    <!--<mat-grid-tile colspan="30" rowspan="5">
-      <mat-checkbox formControlName="includeModuleMembers"
-                    color="primary">
-        Include module members
-      </mat-checkbox>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="30" rowspan="5">
-      <button mat-button class="run-button"
-              (click)="exploreExpression()">
-        Investigate expressions
-      </button>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="100" rowspan="34">
       <div class="modules-table">
         <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
           <ng-container matColumnDef="ensemblID">
@@ -60,30 +44,15 @@
             <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
             <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
           </ng-container>
-          <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef>Description</th>
-            <td mat-cell *matCellDef="let el">{{el.description}}</td>
-          </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
           <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
         </table>
       </div>
-      </mat-grid-tile>
-    <mat-grid-tile colspan="50" rowspan="30">
       <div class="module-expression-heatmap">
-        <div *ngIf="elementExpressionLoading" class="loading-spinner">
-          <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-        </div>
-        <div #moduleExpressionHeatmapDiv [hidden]="elementExpressionLoading"></div>
+        <div #moduleExpressionHeatmap ></div>
       </div>
-    </mat-grid-tile>
-    <mat-grid-tile colspan="50" rowspan="30">
-      <div class="module-expression-heatmap">
-        <div *ngIf="elementExpressionLoading" class="loading-spinner">
-          <img src="../../../assets/img/spongEffects_logo.png" alt="spongEffects loading spinner">
-        </div>
+
+      <!-- <div class="module-expression-heatmap">
         <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>
-      </div>
-    </mat-grid-tile>-->
-  <!-- </mat-grid-list> -->
+      </div> -->
