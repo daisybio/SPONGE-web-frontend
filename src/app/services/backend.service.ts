@@ -167,7 +167,8 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      dataset_ID: disease.dataset_ID
+      dataset_ID: disease.dataset_ID,
+      disease_name: disease.disease_name,
     }
 
     if (level == 'gene') {
