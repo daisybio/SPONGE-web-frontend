@@ -1,19 +1,50 @@
 <form [formGroup]="formGroup">
   <mat-accordion>
-    <mat-expansion-panel>
+    <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>Select expression file</mat-panel-title>
       </mat-expansion-panel-header>
       <div class="full-width" style="display: flex">
         <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
         <span class="spacer"></span>
-        <a mat-stroked-button>Show example file</a>
+        <!-- <a mat-stroked-button>Show example file</a> -->
+        <button mat-button class="example-expression-button" (click)="flipExampleExpression()">
+        {{buttonText("expr")}}
+        </button>
       </div>
+
+      @if (showExpressionExample) {
+        <div #tableContainer style="overflow: auto; max-height: 200px;" (scroll)="onScroll($event)">
+          <table mat-table [dataSource]="exampleExpressionData" class="mat-elevation-z8">
+            <ng-container *ngFor="let key of exampleDataKeys" [matColumnDef]="key">
+              <th mat-header-cell *matHeaderCellDef>{{ key }}</th>
+              <td mat-cell *matCellDef="let row">{{ getValue(row, key) }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="exampleDataKeys"></tr>
+            <tr mat-row *matRowDef="let row; columns: exampleDataKeys;"></tr>
+          </table>
+        </div>
+        @if (exampleData.length === 0){
+          <div>
+            Loading example data...
+          </div>
+        }
+      }
+
       @if (!useExampleExpression$()) {
         <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
-            <input fileInput type="file">
+            <input type="file" fileInput [formControl]="fileCtrl" />
+            @if (fileCtrl.value) {
+              <mat-chip-row (removed)="clear()">
+                <span class="file-name" matTooltip="{{ fileCtrl.value.name }}">{{ fileCtrl.value.name }}</span>
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }          
           </ngx-mat-dropzone>
         </mat-form-field>
       }
@@ -73,6 +104,8 @@
     </mat-expansion-panel>
   </mat-accordion>
   <div class="card-container">
-    <button mat-flat-button>Predict!</button>
+    <button mat-flat-button [disabled]="runButtonDisabled()" (click)="predict()">
+      Predict!
+    </button>
   </div>
 </form>

@@ -26,6 +26,7 @@ declare var Plotly: any;
     MatProgressBarModule,
     InfoComponent
   ],
+  standalone: true,
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss'
 })
