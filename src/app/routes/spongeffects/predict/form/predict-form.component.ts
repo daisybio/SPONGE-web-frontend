@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, HostListener, inject, viewChild, ViewChild} from '@angular/core';
+import {Component, computed, ElementRef, EventEmitter, HostListener, inject, Output, Signal, signal, viewChild, ViewChild, WritableSignal} from '@angular/core';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatError, MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatInput} from "@angular/material/input";
@@ -11,7 +11,7 @@ import {MatAnchor, MatButton} from "@angular/material/button";
 import {MatDropzone} from "@ngx-dropzone/material";
 import {FileInputDirective} from "@ngx-dropzone/cdk";
 import {toSignal} from "@angular/core/rxjs-interop";
-import { ExampleExpression } from '../../../../interfaces';
+import { ExampleExpression, PredictCancerType } from '../../../../interfaces';
 import { HttpClient } from '@angular/common/http'; 
 import {firstValueFrom, lastValueFrom} from "rxjs";
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -23,6 +23,7 @@ import { BackendService } from '../../../../services/backend.service';
 import {VersionsService} from '../../../../services/versions.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PredictionResultsComponent } from '../prediction-results/prediction-results.component';
+import { compute } from '@fullstax/kaplan-meier-estimator';
 
 
 
@@ -41,7 +42,6 @@ import { PredictionResultsComponent } from '../prediction-results/prediction-res
     NgForOf,
     MatButton,
     FormsModule,
-    MatAnchor,
     MatDropzone,
     FileInputDirective,
     CommonModule,
@@ -83,7 +83,8 @@ export class PredictFormComponent {
   useExampleExpression$ = computed(() => this.query$()?.useExampleExpression);
   showExpressionExample = false;
   predictionQueried: boolean = false;
-
+  prediction: Signal<PredictCancerType> | undefined
+  
   fileCtrl = new FormControl();
 
   clear() {
@@ -94,7 +95,7 @@ export class PredictFormComponent {
     this.loadCSV();
   }
 
-  ngAfterViewInit() {
+  AfterViewChecked() {
     this.tableContainer().nativeElement.addEventListener('scroll', this.onScroll.bind(this));
   }
 
@@ -173,12 +174,15 @@ export class PredictFormComponent {
     // start timer of estimated run time
     // this.startTimer().then(_ => this.timerRunning = false);
     // start workflow
-    this.getPredictionData()
-      // .then(data => this.processPredictions(data))
-      .then(_ => this.predictionLoading = false);
-  }
+    const prediction = await this.getPredictionData()
+    this.prediction = signal(prediction);
 
-  async getPredictionData(): Promise<any> {
+      // .then(data => this.processPredictions(data))
+    this.predictionLoading = false;
+    console.log(this.prediction);
+    }
+
+  async getPredictionData(): Promise<PredictCancerType> {
     let uploadedFile: Blob;
     if (this.formGroup.get('useExampleExpression')!.value === true) {
       // const exampleDataString = Papa.unparse(this.exampleData);
@@ -193,7 +197,16 @@ export class PredictFormComponent {
     console.log(uploadedFile);
     // send file and parameters to API and return response
     if (this.formGroup.value.predictSubtypes === undefined || this.formGroup.value.logScaling === undefined || this.formGroup.value.mscor === undefined || this.formGroup.value.fdr === undefined || this.formGroup.value.minSize === undefined || this.formGroup.value.maxSize === undefined || this.formGroup.value.minExpr === undefined || this.formGroup.value.method === undefined) {
-      return;
+      return {
+        meta: {
+          runtime: 0,
+          level: '',
+          n_samples: 0,
+          type_predict: '',
+          subtype_predict: ''
+        },
+        data: []
+      };
     }  
     const prediction = this.backend.predictCancerType(this.versionService.versionReadOnly()(), uploadedFile, this.formGroup.value.predictSubtypes!, 
       this.formGroup.value.logScaling!, this.formGroup.value.mscor!, this.formGroup.value.fdr!, this.formGroup.value.minSize!, 

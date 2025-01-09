@@ -50,7 +50,6 @@ export class ModuleDataSource extends DataSource<SpongEffectsModule> {
     FormsModule,
     ReactiveFormsModule,
     MatProgressBarModule,
-    InfoComponent,
     MatGridListModule,
     MatTableModule,
     CommonModule,
@@ -103,12 +102,10 @@ export class LollipopPlotComponent {
         level: this.exploreService.level$(),
       }),
     loader: (param) => {
-      console.log("resource lolipopPlotData")
       const version = param.request.version;
       const cancer = param.request.cancer;
       const level = param.request.level;
       if (version === undefined || cancer === undefined || level === undefined) {
-        console.log("lolipopPlotData return")
         return new Promise((resolve, reject) => {
           resolve([])
         })
@@ -128,11 +125,6 @@ export class LollipopPlotComponent {
         const disease = this.exploreService.selectedDiseaseObject$()
         const level = this.exploreService.level$()
         const selectedModules = param.request.modules
-
-        console.log(version)
-        console.log(disease)
-        console.log(level)
-        console.log("moduleExpressionResource", selectedModules)
 
         if (version === undefined || disease === undefined || level === undefined || selectedModules === undefined) {
           return new Promise((resolve, reject) => {
@@ -230,8 +222,6 @@ export class LollipopPlotComponent {
     this.formGroup.valueChanges.subscribe(val => this.formSignal.set(val))
 
     effect(async () => {
-      console.log("effect")
-
       const lolipopData = this.lolipopPlotData.value();
       const formSignal = this.formSignal();
 
@@ -247,7 +237,6 @@ export class LollipopPlotComponent {
     });
 
     effect(() => {
-      console.log("effect2")
       const modules = this.moduleExpressionData.value()
       // this heatmap his too big -> page crashes 
       // this.plotModuleExpression(modules)
@@ -281,8 +270,6 @@ export class LollipopPlotComponent {
     }
 
     let giniData: SpongEffectsModule[] = plot_data;
-
-    console.log("plotLollipopPlot", giniData)
 
     const redNodes: number = this.formGroup.value.markControl ?? 0;
     const n: number = this.formGroup.value.topControl ?? 0;
@@ -320,13 +307,10 @@ export class LollipopPlotComponent {
       responsive: true
     };
 
-    // TODO add click event to add module to heatmap
     Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
   }
 
   clearEffect = effect(() => {
-    console.log("clearEffect")
-    console.log(this.exploreService.selectedDisease$())
     this.exploreService.selectedDisease$();
     this.exploreService.level$();
     // this.clearPlot();
@@ -377,10 +361,6 @@ export class LollipopPlotComponent {
     const apiResponse = await this.backend.getExpression(version, elements, disease, level)
     // only use first 10 elements
     apiResponse.splice(100);
-
-    // console.log("elements", elements)
-    // console.log("disease", disease)
-    console.log("apiResponse", apiResponse)
     
     // split into (sub-)types
     const typeSplit: Map<string, any[]> = new Map<string, any[]>();
@@ -474,8 +454,6 @@ export class LollipopPlotComponent {
     if (config === undefined) {
       return
     }
-    // console.log(config)
-    // console.log('plotModuleExpression selected Modules', this.selectedModules)
     Plotly.newPlot(this.moduleExpressionHeatmap().nativeElement, config.data, config.layout, config.config);
   }
 

@@ -171,7 +171,6 @@ export class EnrichmentClassPlotComponent {
     layout["annotations"] = annotations;
     const config = { responsive: true };
     let plot = Plotly.newPlot(this.enrichmentClassPlot().nativeElement, data, layout, config);
-    console.log(plot);
     return plot;
   }
 

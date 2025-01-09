@@ -1,52 +1,86 @@
-import { Component, ElementRef, inject, ViewChild, Input } from '@angular/core';
-import { PlotlyData } from '../../../../interfaces';
+import { Component, ElementRef, inject, ViewChild, Input, resource, effect, Signal, signal , ResourceRef} from '@angular/core';
+import { PlotlyData, PredictCancerType } from '../../../../interfaces';
 import { ClassPerformancePlotComponent } from '../../explore/plots/class-performance-plot/class-performance-plot.component';
-
+import { PredictFormComponent } from "../form/predict-form.component"
 declare var Plotly: any;
 
 @Component({
   selector: 'app-prediction-results',
   standalone: true,
   providers: [
-    ClassPerformancePlotComponent
+    ClassPerformancePlotComponent,
+    PredictFormComponent
   ],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss']
 })
 export class PredictionResultsComponent {
-  @Input() responseJson: any;
   @Input() classPerformancePlot: any;
-
   @ViewChild('typePredictPiePlot', { static: false }) typePredictPiePlot!: ElementRef<HTMLDivElement>;
 
   classPerformanceComponent = inject(ClassPerformancePlotComponent);
+  predictFormComponent = inject(PredictFormComponent);
+  prediction = this.predictFormComponent.prediction;
+
+
   predictedType: string = "None";
   predictedSubtype: string = "None";
   predictionMeta: any;
   predictionData: any;
 
-  constructor() {}
+  // prediction_plot_resource: ResourceRef<PlotlyData> = resource({
+  //   request: () => ({
+  //     prediction: this.prediction!(),
 
-  ngOnInit(): void {
-    this.classPerformancePlot = this.classPerformanceComponent.classPerformPlot;
-    console.log(this.classPerformancePlot);
-    console.log(this.responseJson);
-    this.extractPredictions(this.responseJson);
+  //   }),
+  //   loader: (param) => {
+  //     prediction = param.prediction;
+  //     if (prediction === undefined) {
+  //       return;
+  //     }
+  //     return this.extractPredictions(param.prediction);
+  //   }
+  // })
+
+  constructor() {
+    console.log('prediction constructor', this.prediction);
+
+    effect(async () => {
+      const p = this.prediction;
+      // const prediction_ = await prediction;
+      console.log('constructor 1', this.prediction)
+      console.log('constructor prediction', this.prediction!());
+      console.log('prediction', this.prediction!());
+
+    });
   }
 
-  async processPredictions(predictionResponse: any): Promise<any> {
-    // check response
-    if (!predictionResponse.ok) {
-      throw new Error(`File upload failed with status code: ${predictionResponse.status}`);
-    }
+  ngOnChanges() {
+    console.log('onchanges')
+    console.log('prediction onchanges', this.prediction!());
+    this.processPredictions(this.prediction!());
+  }
+
+  AfterViewChecked(): void {
+    this.classPerformancePlot = this.classPerformanceComponent.classPerformPlot();
+    console.log('classperform', this.classPerformancePlot);
+  }
+
+  async afterViewInit(): Promise<void> {
+    const prediction = await this.predictFormComponent.prediction;
+    this.processPredictions(prediction!());
+    console.log('prediction', prediction);
+  }
+
+
+  async processPredictions(prediction: PredictCancerType): Promise<any> {
     // save results
-    const predictionData = await predictionResponse.json();
-    this.predictionData = predictionData.data;
-    this.predictionMeta = predictionData.meta[0];
-    this.predictedType = predictionData.meta[0].type_predict;
-    this.predictedSubtype = predictionData.meta[0].subtype_predict;
+    this.predictionData = prediction.data;
+    this.predictionMeta = prediction.meta;
+    this.predictedType = prediction.meta.type_predict;
+    this.predictedSubtype = prediction.meta.subtype_predict;
     // plot predictions
-    this.extractPredictions(predictionData)
+    this.extractPredictions(prediction)
       .then(data => this.plotPredictions(data));
   }
 
@@ -91,22 +125,62 @@ export class PredictionResultsComponent {
       return accuracy !== undefined ? `${label} (${accuracy.toFixed(2)})` : label;
     });
 
-    const data: PlotlyData = {
-      data: [{
-        x: x,
-        y: y,
-        type: 'bar',
-        orientation: 'h'
-      }],
-      layout: {
-        title: 'Prediction Results',
-        xaxis: { title: 'Number of Samples' },
-        yaxis: { title: 'Predicted Types' }
+    const accValues: number[] = y.map(x_v => classToMeasure.get(x_v) ?? 0);
+    // color based on balanced accuracy
+    const barColors: string[] = accValues.map(v => this.getColorForValue(v));
+
+    let data = [{
+      x: x,
+      y: y,
+      text: accValues.map(v => "Balanced accuracy: " + v.toString()),
+      type: "bar",
+      name: "type",
+      orientation: "h",
+      marker: {
+        color: barColors
+      }
+    }];
+
+
+    // add subtype traces
+    if (this.predictFormComponent.formGroup.get('predictSubtypes')?.value) {
+      const subtypeTraces: any[] = [...typeGroups.values()].map(sv => {
+        return {
+          x: sv.length,
+          y: y,
+          text: sv,
+          name: "subtypes",
+          orientation: "h"
+        }
+      });
+      data.push(...subtypeTraces);
+    }
+
+    const layout = {
+      paper_bgcolor: "white",
+      autosize: true,
+      barmode: "group",
+      margin: {
+        l: 250,
+        r: 25,
+        t: 50,
+        b: 50
+      },
+      xaxis: {
+        title: "Number of samples classified"
       }
     };
+    const config = {
+      responsive: true
+    }
+    return {data: data, layout: layout, config: config};
+  }
 
-    Plotly.newPlot('prediction-results-plot', data.data, data.layout);
-    return data;
+  getColorForValue(value: number): string {
+    let g: number = 140;
+    let r: number = value >= 0.5 ? Math.round(255*2 * (1 - value)): 255;
+    const b: number = 0;
+    return `rgb(${r},${g},${b})`;
   }
 
   showError(message: string) {
