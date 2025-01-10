@@ -14,25 +14,6 @@
         }
       </div>
 
-      @if (showExpressionExample) {
-        <div #tableContainer style="overflow: auto; max-height: 200px;" (scroll)="onScroll($event)">
-          <table mat-table [dataSource]="exampleExpressionData" class="mat-elevation-z8">
-            <ng-container *ngFor="let key of exampleDataKeys" [matColumnDef]="key">
-              <th mat-header-cell *matHeaderCellDef>{{ key }}</th>
-              <td mat-cell *matCellDef="let row">{{ getValue(row, key) }}</td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="exampleDataKeys"></tr>
-            <tr mat-row *matRowDef="let row; columns: exampleDataKeys;"></tr>
-          </table>
-        </div>
-        @if (exampleData.length === 0) {
-          <div>
-            Loading example data...
-          </div>
-        }
-      }
-
       @if (!useExampleExpression$()) {
         <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
           <mat-label>Select or drop a file</mat-label>

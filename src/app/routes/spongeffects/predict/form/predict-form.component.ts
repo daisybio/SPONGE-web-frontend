@@ -1,12 +1,4 @@
-import {
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  Signal,
-  viewChild,
-  ViewChild,
-} from '@angular/core';
+import { Component, computed, inject, Signal, ViewChild } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -32,8 +24,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { BackendService } from '../../../../services/backend.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PredictionResultsComponent } from '../prediction-results/prediction-results.component';
-import { PredictService } from '../service/predict.service';
-import { HttpService } from '../../../../services/http.service';
 import { SPONGE_EXAMPLE_URL } from '../../../../constants';
 import { MatDialog } from '@angular/material/dialog';
 import { ExampleFileModalComponent } from './example-file-modal/example-file-modal.component';
@@ -80,14 +70,10 @@ export class PredictFormComponent {
   });
   fileCtrl = new FormControl<File | null>(null);
   fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
-  predictService = inject(PredictService);
   backend = inject(BackendService);
-  httpService = inject(HttpService);
   dialog = inject(MatDialog);
 
   predictionLoading: boolean = false;
-  tableContainer =
-    viewChild.required<ElementRef<HTMLDivElement>>('tableContainer');
   @ViewChild(PredictionResultsComponent)
   predictionResultsComponent!: PredictionResultsComponent;
   query$ = toSignal(this.formGroup.valueChanges);
@@ -95,14 +81,11 @@ export class PredictFormComponent {
     () => this.query$()?.useExampleExpression || false,
   );
   showExpressionExample = false;
-  predictionQueried: boolean = false;
   prediction: Signal<PredictCancerType> | undefined;
   exampleExpressionData: MatTableDataSource<any> =
     new MatTableDataSource<ExampleExpression>();
   exampleData: ExampleExpression[] = [];
   exampleDataKeys: (keyof ExampleExpression)[] = [];
-  allData: ExampleExpression[] = [];
-  rowsToLoad = 10;
 
   exampleDataFile = async () => {
     const response = await fetch(SPONGE_EXAMPLE_URL);
@@ -117,67 +100,6 @@ export class PredictFormComponent {
       return this.fileCtrlValue$() || undefined;
     }
   });
-
-  AfterViewChecked() {
-    this.tableContainer().nativeElement.addEventListener(
-      'scroll',
-      this.onScroll.bind(this),
-    );
-  }
-
-  flipExampleExpression() {
-    this.showExpressionExample = !this.showExpressionExample;
-  }
-
-  /*
-  loadCSV() {
-    this.http.get(this.csvFilePath, { responseType: 'text' }).subscribe(
-      (data) => {
-        Papa.parse(data, {
-          header: true,
-          complete: (result) => {
-            this.allData = result.data as ExampleExpression[];
-            this.loadMoreData();
-            if (this.exampleData.length > 0) {
-              this.exampleDataKeys = Object.keys(
-                this.exampleData[0],
-              ) as (keyof ExampleExpression)[];
-            }
-            console.log(this.exampleData);
-          },
-          error: (error: any) => {
-            console.error('Error parsing CSV file:', error);
-          },
-        });
-      },
-      (error) => {
-        console.error('Error loading CSV file:', error);
-      },
-    );
-  }
-  */
-
-  loadMoreData() {
-    const currentLength = this.exampleData.length;
-    const newData = this.allData.slice(
-      currentLength,
-      currentLength + this.rowsToLoad,
-    );
-    this.exampleData = [...this.exampleData, ...newData];
-    this.exampleExpressionData = new MatTableDataSource<any>(this.exampleData);
-  }
-
-  onScroll(event: Event) {
-    console.log('scrolling');
-    const element = event.target as HTMLElement; // Explicitly cast to HTMLElement
-    console.log(element.scrollHeight);
-    console.log(element.scrollTop);
-    console.log(element.clientHeight);
-    console.log(element.scrollHeight - element.scrollTop);
-    if (element.scrollHeight - element.scrollTop <= element.clientHeight + 10) {
-      this.loadMoreData();
-    }
-  }
 
   getValue(row: ExampleExpression, key: keyof ExampleExpression): any {
     return row[key];

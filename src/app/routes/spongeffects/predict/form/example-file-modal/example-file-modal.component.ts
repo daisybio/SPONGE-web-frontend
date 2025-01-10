@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import Papa from 'papaparse';
 
 @Component({
   selector: 'app-example-file-modal',
@@ -10,8 +11,13 @@ import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 export class ExampleFileModalComponent implements OnInit {
   dialog = inject(MatDialog);
   readonly file = inject<File>(MAT_DIALOG_DATA);
+  readonly content = (async () => {
+    return Papa.parse(await this.file.text());
+  })();
 
-  ngOnInit(): void {
-    console.log(this.file);
+  ngOnInit() {
+    this.content.then((res) => {
+      console.log(res);
+    });
   }
 }
