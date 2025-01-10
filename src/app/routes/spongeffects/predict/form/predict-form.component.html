@@ -6,11 +6,12 @@
       </mat-expansion-panel-header>
       <div class="full-width" style="display: flex">
         <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
-        <span class="spacer"></span>
-        <!-- <a mat-stroked-button>Show example file</a> -->
-        <button mat-button class="example-expression-button" (click)="flipExampleExpression()">
-        {{buttonText("expr")}}
-        </button>
+        @if (selectedExpressionFile$() | async; as selectedExpressionFile) {
+          <span class="spacer"></span>
+          <button (click)="showExpressionFile(selectedExpressionFile)" class="example-expression-button" mat-button>
+            Show expression file
+          </button>
+        }
       </div>
 
       @if (showExpressionExample) {
@@ -25,7 +26,7 @@
             <tr mat-row *matRowDef="let row; columns: exampleDataKeys;"></tr>
           </table>
         </div>
-        @if (exampleData.length === 0){
+        @if (exampleData.length === 0) {
           <div>
             Loading example data...
           </div>
@@ -36,15 +37,15 @@
         <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
-            <input type="file" fileInput [formControl]="fileCtrl" />
-            @if (fileCtrl.value) {
-              <mat-chip-row (removed)="clear()">
-                <span class="file-name" matTooltip="{{ fileCtrl.value.name }}">{{ fileCtrl.value.name }}</span>
+            <input type="file" fileInput mode="replace" [formControl]="fileCtrl"/>
+            @if (fileCtrl.value; as value) {
+              <mat-chip-row (removed)="fileCtrl.setValue(null)">
+                <span class="file-name" matTooltip="{{ value.name }}">{{ value.name }}</span>
                 <button matChipRemove>
                   <mat-icon>cancel</mat-icon>
                 </button>
               </mat-chip-row>
-            }          
+            }
           </ngx-mat-dropzone>
         </mat-form-field>
       }
@@ -104,7 +105,7 @@
     </mat-expansion-panel>
   </mat-accordion>
   <div class="card-container">
-    <button mat-flat-button [disabled]="runButtonDisabled()" (click)="predict()">
+    <button [disabled]="runButtonDisabled()" mat-flat-button>
       Predict!
     </button>
   </div>

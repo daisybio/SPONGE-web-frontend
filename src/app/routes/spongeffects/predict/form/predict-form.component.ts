@@ -4,7 +4,6 @@ import {
   ElementRef,
   inject,
   Signal,
-  signal,
   viewChild,
   ViewChild,
 } from '@angular/core';
@@ -27,16 +26,17 @@ import { MatDropzone } from '@ngx-dropzone/material';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ExampleExpression, PredictCancerType } from '../../../../interfaces';
-import { HttpClient } from '@angular/common/http';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import * as Papa from 'papaparse';
-import { HttpService } from '../../../../services/http.service';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { BackendService } from '../../../../services/backend.service';
-import { VersionsService } from '../../../../services/versions.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PredictionResultsComponent } from '../prediction-results/prediction-results.component';
+import { PredictService } from '../service/predict.service';
+import { HttpService } from '../../../../services/http.service';
+import { SPONGE_EXAMPLE_URL } from '../../../../constants';
+import { MatDialog } from '@angular/material/dialog';
+import { ExampleFileModalComponent } from './example-file-modal/example-file-modal.component';
 
 @Component({
   selector: 'app-predict-form',
@@ -78,26 +78,25 @@ export class PredictFormComponent {
     logScaling: new FormControl<boolean>(true),
     predictSubtypes: new FormControl<boolean>(false),
   });
+  fileCtrl = new FormControl<File | null>(null);
+  fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
+  predictService = inject(PredictService);
   backend = inject(BackendService);
-  versionService = inject(VersionsService);
   httpService = inject(HttpService);
-  http = inject(HttpClient);
-  predictionLoading: boolean = false;
+  dialog = inject(MatDialog);
 
+  predictionLoading: boolean = false;
   tableContainer =
     viewChild.required<ElementRef<HTMLDivElement>>('tableContainer');
   @ViewChild(PredictionResultsComponent)
   predictionResultsComponent!: PredictionResultsComponent;
-
   query$ = toSignal(this.formGroup.valueChanges);
-  csvFilePath =
-    'https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv';
-  useExampleExpression$ = computed(() => this.query$()?.useExampleExpression);
+  useExampleExpression$ = computed(
+    () => this.query$()?.useExampleExpression || false,
+  );
   showExpressionExample = false;
   predictionQueried: boolean = false;
   prediction: Signal<PredictCancerType> | undefined;
-
-  fileCtrl = new FormControl();
   exampleExpressionData: MatTableDataSource<any> =
     new MatTableDataSource<ExampleExpression>();
   exampleData: ExampleExpression[] = [];
@@ -105,13 +104,19 @@ export class PredictFormComponent {
   allData: ExampleExpression[] = [];
   rowsToLoad = 10;
 
-  clear() {
-    this.fileCtrl.setValue(null);
-  }
+  exampleDataFile = async () => {
+    const response = await fetch(SPONGE_EXAMPLE_URL);
+    const blob = await response.blob();
+    return new File([blob], 'example.csv', { type: 'text/csv' });
+  };
 
-  ngOnInit() {
-    this.loadCSV();
-  }
+  selectedExpressionFile$ = computed(async () => {
+    if (this.useExampleExpression$()) {
+      return await this.exampleDataFile();
+    } else {
+      return this.fileCtrlValue$() || undefined;
+    }
+  });
 
   AfterViewChecked() {
     this.tableContainer().nativeElement.addEventListener(
@@ -124,16 +129,7 @@ export class PredictFormComponent {
     this.showExpressionExample = !this.showExpressionExample;
   }
 
-  buttonText(btn: string) {
-    if (btn == 'expr') {
-      return this.showExpressionExample
-        ? 'Hide example file'
-        : 'Show example file';
-    } else {
-      return;
-    }
-  }
-
+  /*
   loadCSV() {
     this.http.get(this.csvFilePath, { responseType: 'text' }).subscribe(
       (data) => {
@@ -159,6 +155,7 @@ export class PredictFormComponent {
       },
     );
   }
+  */
 
   loadMoreData() {
     const currentLength = this.exampleData.length;
@@ -186,78 +183,81 @@ export class PredictFormComponent {
     return row[key];
   }
 
-  async predict() {
-    this.predictionQueried = true;
-    this.predictionLoading = true;
-    // start timer of estimated run time
-    // this.startTimer().then(_ => this.timerRunning = false);
-    // start workflow
-    const prediction = await this.getPredictionData();
-    this.prediction = signal(prediction);
+  /*
+    async predict() {
+      this.predictionQueried = true;
+      this.predictionLoading = true;
+      // start timer of estimated run time
+      // this.startTimer().then(_ => this.timerRunning = false);
+      // start workflow
+      const prediction = await this.getPredictionData();
+      this.prediction = signal(prediction);
 
-    // .then(data => this.processPredictions(data))
-    this.predictionLoading = false;
-    console.log(this.prediction);
-  }
+      // .then(data => this.processPredictions(data))
+      this.predictionLoading = false;
+      console.log(this.prediction);
+    }
 
-  async getPredictionData(): Promise<PredictCancerType> {
-    let uploadedFile: Blob;
-    if (this.formGroup.get('useExampleExpression')!.value === true) {
-      // const exampleDataString = Papa.unparse(this.exampleData);
-      // const blob = new Blob([exampleDataString], { type: 'text/csv' });
-      // uploadedFile = new File([blob], 'GSE123845_exp_tpm_matrix_processed.csv', { type: 'text/csv', lastModified: new Date().getTime() });
-      const response = await fetch(this.csvFilePath);
-      const blob = await response.blob();
-      uploadedFile = new File(
-        [blob],
-        'GSE123845_exp_tpm_matrix_processed.csv',
-        {
-          type: 'text/csv',
-          lastModified: new Date().getTime(),
-        },
+
+    async getPredictionData(): Promise<PredictCancerType> {
+      let uploadedFile: Blob;
+      if (this.formGroup.get('useExampleExpression')!.value === true) {
+        // const exampleDataString = Papa.unparse(this.exampleData);
+        // const blob = new Blob([exampleDataString], { type: 'text/csv' });
+        // uploadedFile = new File([blob], 'GSE123845_exp_tpm_matrix_processed.csv', { type: 'text/csv', lastModified: new Date().getTime() });
+        const response = await fetch(this.csvFilePath);
+        const blob = await response.blob();
+        uploadedFile = new File(
+          [blob],
+          'GSE123845_exp_tpm_matrix_processed.csv',
+          {
+            type: 'text/csv',
+            lastModified: new Date().getTime(),
+          },
+        );
+      } else {
+        uploadedFile = this.fileCtrl.value;
+      }
+      console.log(uploadedFile);
+      // send file and parameters to API and return response
+      if (
+        this.formGroup.value.predictSubtypes === undefined ||
+        this.formGroup.value.logScaling === undefined ||
+        this.formGroup.value.mscor === undefined ||
+        this.formGroup.value.fdr === undefined ||
+        this.formGroup.value.minSize === undefined ||
+        this.formGroup.value.maxSize === undefined ||
+        this.formGroup.value.minExpr === undefined ||
+        this.formGroup.value.method === undefined
+      ) {
+        return {
+          meta: {
+            runtime: 0,
+            level: '',
+            n_samples: 0,
+            type_predict: '',
+            subtype_predict: '',
+          },
+          data: [],
+        };
+      }
+      const prediction = this.backend.predictCancerType(
+        this.versionService.versionReadOnly()(),
+        uploadedFile,
+        this.formGroup.value.predictSubtypes!,
+        this.formGroup.value.logScaling!,
+        this.formGroup.value.mscor!,
+        this.formGroup.value.fdr!,
+        this.formGroup.value.minSize!,
+        this.formGroup.value.maxSize!,
+        this.formGroup.value.minExpr!,
+        this.formGroup.value.method!,
       );
-    } else {
-      uploadedFile = this.fileCtrl.value;
-    }
-    console.log(uploadedFile);
-    // send file and parameters to API and return response
-    if (
-      this.formGroup.value.predictSubtypes === undefined ||
-      this.formGroup.value.logScaling === undefined ||
-      this.formGroup.value.mscor === undefined ||
-      this.formGroup.value.fdr === undefined ||
-      this.formGroup.value.minSize === undefined ||
-      this.formGroup.value.maxSize === undefined ||
-      this.formGroup.value.minExpr === undefined ||
-      this.formGroup.value.method === undefined
-    ) {
-      return {
-        meta: {
-          runtime: 0,
-          level: '',
-          n_samples: 0,
-          type_predict: '',
-          subtype_predict: '',
-        },
-        data: [],
-      };
-    }
-    const prediction = this.backend.predictCancerType(
-      this.versionService.versionReadOnly()(),
-      uploadedFile,
-      this.formGroup.value.predictSubtypes!,
-      this.formGroup.value.logScaling!,
-      this.formGroup.value.mscor!,
-      this.formGroup.value.fdr!,
-      this.formGroup.value.minSize!,
-      this.formGroup.value.maxSize!,
-      this.formGroup.value.minExpr!,
-      this.formGroup.value.method!,
-    );
 
-    console.log(prediction);
-    return prediction;
-  }
+      console.log(prediction);
+      return prediction;
+    }
+     */
 
   runButtonDisabled(): boolean {
     return (
@@ -270,5 +270,11 @@ export class PredictFormComponent {
 
   expressionUploaded(): boolean {
     return this.fileCtrl.value !== null;
+  }
+
+  async showExpressionFile(file: File) {
+    this.dialog.open(ExampleFileModalComponent, {
+      data: file,
+    });
   }
 }
