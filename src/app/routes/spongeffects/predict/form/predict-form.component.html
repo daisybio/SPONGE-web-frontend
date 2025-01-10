@@ -18,7 +18,7 @@
         <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
-            <input type="file" fileInput mode="replace" [formControl]="fileCtrl"/>
+            <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"/>
             @if (fileCtrl.value; as value) {
               <mat-chip-row (removed)="fileCtrl.setValue(null)">
                 <span class="file-name" matTooltip="{{ value.name }}">{{ value.name }}</span>
@@ -86,7 +86,7 @@
     </mat-expansion-panel>
   </mat-accordion>
   <div class="card-container">
-    <button [disabled]="runButtonDisabled()" mat-flat-button>
+    <button (click)="predict()" [disabled]="isLoading$() || !selectedExpressionFile$()" mat-flat-button>
       Predict!
     </button>
   </div>
