@@ -37,7 +37,7 @@ export class ExploreService {
     return selectedDataset;
   });
 
-  private _runClassPerformance$ = resource({
+  readonly runClassPerformance$ = resource({
     request: computed(() => {
       return {
         version: this.versionsService.versionReadOnly()(),

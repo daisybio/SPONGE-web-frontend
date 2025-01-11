@@ -1,7 +1,7 @@
-@if (plotClassPerformanceResource.isLoading()) {
+@if (runClassPerformance$.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 } @else {
-  @if (!plotClassPerformanceResource.value()) {
+  @if (!runClassPerformance$.value()) {
     <p>No data available</p>
   }
 }
