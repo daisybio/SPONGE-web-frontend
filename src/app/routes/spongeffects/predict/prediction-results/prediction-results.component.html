@@ -1,25 +1,24 @@
-
 <div class="predict-results-plots">
-    <div class="type-prediction-div">
-        <div #typePredictPiePlot class="type-prediction"></div>
-        <div class="type-legend">
-        <div class="legend">
-            <div class="legend-item">
-            <div class="percent-color-box">
-                <div class="percent-box-labels">
-                </div>
+  <div class="type-prediction-div">
+    <div #typePredictPiePlot class="type-prediction"></div>
+    <div class="type-legend">
+      <div class="legend">
+        <div class="legend-item">
+          <div class="percent-color-box">
+            <div class="percent-box-labels">
             </div>
-            <div class="legend-labels">
-                <div class="child">1.0</div>
-                <div class="child">0.5</div>
-            </div>
-            <div class="legend-text">Overall class model accuracy</div>
-            </div>
+          </div>
+          <div class="legend-labels">
+            <div class="child">1.0</div>
+            <div class="child">0.5</div>
+          </div>
+          <div class="legend-text">Overall class model accuracy</div>
         </div>
-        </div>
+      </div>
     </div>
-</div>  
+  </div>
+</div>
 <p></p>
 <div class="type-prediction-text">
-    Predicted type over all samples: {{predictedType}}
+  Predicted type over all samples: {{ predictedType$() }}
 </div>
