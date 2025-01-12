@@ -121,6 +121,8 @@ export class PredictFormComponent {
   async showExpressionFile(file: File) {
     this.dialog.open(ExampleFileModalComponent, {
       data: file,
+      height: '400px',
+      width: '600px',
     });
   }
 }
