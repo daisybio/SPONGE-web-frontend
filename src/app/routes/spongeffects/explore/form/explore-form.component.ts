@@ -1,10 +1,11 @@
-import {Component, inject} from '@angular/core';
+import {Component, inject, Signal, linkedSignal} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {ExploreService} from "../service/explore.service";
 import {capitalize} from "lodash";
+import {Dataset} from "../../../../interfaces";
 
 @Component({
   selector: 'app-explore-form',

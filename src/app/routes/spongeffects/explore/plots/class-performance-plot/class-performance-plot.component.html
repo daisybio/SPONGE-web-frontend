@@ -1,7 +1,7 @@
-@if (plotClassPerformanceResource.isLoading()) {
+@if (runClassPerformance$.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 } @else {
-  @if (!plotClassPerformanceResource.value()) {
+  @if (!runClassPerformance$.value()) {
     <p>No data available</p>
   }
 }
@@ -14,4 +14,3 @@
     the models prediction if it is capable of outperforming its random counterpart. Interpretation of predictions
     should be made with more caution if this it not the case.</p>
 </app-info>
-<!--  -->

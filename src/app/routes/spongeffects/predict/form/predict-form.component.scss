@@ -1,0 +1,8 @@
+.file-name {
+    display: inline-block;
+    max-width: 235px; /* Adjust the width as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }

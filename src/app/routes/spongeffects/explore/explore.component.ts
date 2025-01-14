@@ -11,6 +11,8 @@ import {OverallAccPlotComponent} from "./plots/overall-acc-plot/overall-acc-plot
 import {MatTabsModule} from "@angular/material/tabs";
 import {fromEvent} from "rxjs";
 import {InfoComponent} from "../../../components/info/info.component";
+import { EnrichmentClassPlotComponent } from './plots/enrichment-class-plot/enrichment-class-plot.component';
+import { LollipopPlotComponent } from './plots/lollipop-plot/lollipop-plot.component';
 
 @Component({
   selector: 'app-explore',
@@ -27,7 +29,8 @@ import {InfoComponent} from "../../../components/info/info.component";
     OverallAccPlotComponent,
     MatTabsModule,
     InfoComponent,
-
+    EnrichmentClassPlotComponent,
+    LollipopPlotComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss']
