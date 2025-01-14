@@ -1,1 +1,58 @@
-<p>lollipop-plot works!</p>
+  <!-- <mat-grid-list cols="1" rowHeight="100px">  -->
+    <!-- <mat-grid-tile colspan="1" rowspan="1"> -->
+      Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot.
+      @if (lolipopPlotData.isLoading()) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      } @else {
+        <div class="lollipop-plot-div">
+          <div #lollipopPlot class="lollipop-plot"></div>
+        </div>
+        <form [formGroup]="formGroup" class="select-top-n">
+          <mat-form-field appearance="outline" [style.width.px]="400">
+            <mat-label>Number of top rated centralities to display</mat-label>
+            <input formControlName="topControl" type="number" matInput max="20" min="3" step="1">
+            <mat-error>Please provide a number between 3 and 20</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" [style.width.px]="400">
+            <mat-label>Number of top rated centralities to include</mat-label>
+            <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
+            <mat-error>Please provide a number between 3 and 20</mat-error>
+          </mat-form-field>
+          <mat-checkbox formControlName="includeModuleMembers" color="primary">
+            Include module members
+          </mat-checkbox>
+        </form>
+    }
+
+      <div class="modules-table">
+        <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
+          <ng-container matColumnDef="ensemblID">
+            <th mat-header-cell *matHeaderCellDef>ID</th>
+            <td mat-cell *matCellDef="let el">{{el.ensemblID}}</td>
+          </ng-container>
+          <ng-container matColumnDef="symbol">
+            <th mat-header-cell *matHeaderCellDef>Gene symbol</th>
+            <td mat-cell *matCellDef="let el">
+              {{el.symbol }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="meanGiniDecrease">
+            <th mat-header-cell *matHeaderCellDef>Mean Gini Decrease</th>
+            <td mat-cell *matCellDef="let el">{{el.meanGiniDecrease}}</td>
+          </ng-container>
+          <ng-container matColumnDef="meanAccuracyDecrease">
+            <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
+            <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
+        </table>
+      </div>
+      <div class="module-expression-heatmap">
+        <div #moduleExpressionHeatmap ></div>
+      </div>
+
+      <!-- <div class="module-expression-heatmap">
+        <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>
+      </div> -->

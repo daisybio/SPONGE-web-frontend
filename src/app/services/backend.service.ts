@@ -167,7 +167,8 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      dataset_ID: disease.dataset_ID
+      dataset_ID: disease.dataset_ID,
+      disease_name: disease.disease_name,
     }
 
     if (level == 'gene') {
@@ -417,7 +418,7 @@ export class BackendService {
   }
 
   getEnrichmentScoreDistributions(version: number, diseaseName: string, level: string): Promise<EnrichmentScoreDistributions[]> {
-    const request = `${API_BASE}/spongEffects/getEnrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/enrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
     return this.http.getRequest<EnrichmentScoreDistributions[]>(request);
   }
 

@@ -1,19 +1,32 @@
 <form [formGroup]="formGroup">
   <mat-accordion>
-    <mat-expansion-panel>
+    <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>Select expression file</mat-panel-title>
       </mat-expansion-panel-header>
       <div class="full-width" style="display: flex">
         <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
-        <span class="spacer"></span>
-        <a mat-stroked-button>Show example file</a>
+        @if (selectedExpressionFile$() | async; as selectedExpressionFile) {
+          <span class="spacer"></span>
+          <button (click)="showExpressionFile(selectedExpressionFile)" class="example-expression-button" mat-button>
+            Show expression file
+          </button>
+        }
       </div>
+
       @if (!useExampleExpression$()) {
         <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
-            <input fileInput type="file">
+            <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"/>
+            @if (fileCtrl.value; as value) {
+              <mat-chip-row (removed)="fileCtrl.setValue(null)">
+                <span class="file-name" matTooltip="{{ value.name }}">{{ value.name }}</span>
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }
           </ngx-mat-dropzone>
         </mat-form-field>
       }
@@ -73,6 +86,8 @@
     </mat-expansion-panel>
   </mat-accordion>
   <div class="card-container">
-    <button mat-flat-button>Predict!</button>
+    <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async)" mat-flat-button>
+      Predict!
+    </button>
   </div>
 </form>
