@@ -1,5 +1,12 @@
-<div class="mat-elevation-z8">
-    <table mat-table [dataSource]="dataSource">
+<div>
+    @if (dataSourceResource.isLoading()) {
+        <mat-spinner mode="indeterminate"></mat-spinner>
+    } @else {
+        @if (!dataSourceResource.value()) {
+            <p>No data available</p>
+        }
+    }
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
         <ng-container *ngFor="let key of columns" [matColumnDef]="key">
             <th mat-header-cell *matHeaderCellDef> {{ key }} </th>
             <td mat-cell *matCellDef="let element"> {{ element[key] }} </td>
@@ -8,7 +15,7 @@
         <tr mat-row *matRowDef="let row; columns: columns;"></tr>
     </table>
     <mat-paginator [pageSizeOptions]="[5, 10, 20]"
-    showFirstLastButtons
-    aria-label="Select page of periodic elements">
-</mat-paginator>
+        showFirstLastButtons
+        aria-label="Select page">
+    </mat-paginator>
 </div>

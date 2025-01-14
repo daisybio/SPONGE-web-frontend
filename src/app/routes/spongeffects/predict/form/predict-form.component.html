@@ -86,7 +86,7 @@
     </mat-expansion-panel>
   </mat-accordion>
   <div class="card-container">
-    <button (click)="predict()" [disabled]="isLoading$() || !selectedExpressionFile$()" mat-flat-button>
+    <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async)" mat-flat-button>
       Predict!
     </button>
   </div>
