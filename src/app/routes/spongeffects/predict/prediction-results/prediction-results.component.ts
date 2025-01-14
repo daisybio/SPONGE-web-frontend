@@ -1,14 +1,20 @@
 import {
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
+  input,
+  resource,
   viewChild,
 } from '@angular/core';
-import { PlotlyData } from '../../../../interfaces';
+import { PlotlyData, PredictCancerType } from '../../../../interfaces';
 import { ClassPerformancePlotComponent } from '../../explore/plots/class-performance-plot/class-performance-plot.component';
 import { PredictFormComponent } from '../form/predict-form.component';
 import { PredictService } from '../service/predict.service';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
+
 
 declare var Plotly: any;
 
@@ -16,22 +22,53 @@ declare var Plotly: any;
   selector: 'app-prediction-results',
   standalone: true,
   providers: [ClassPerformancePlotComponent, PredictFormComponent],
+  imports: [
+    MatProgressSpinner,
+    CommonModule,
+  ],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss'],
 })
 export class PredictionResultsComponent {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$;
-  typePredictPiePlot =
-    viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
+  predictionResource = this.predictService._prediction$;
+  typePredictPiePlot = viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
+  refreshSignal$ = input();
+  doneLoading = false
+
 
   predictionMeta$ = computed(() => this.prediction$()?.meta);
   predictionData$ = computed(() => this.prediction$()?.data);
   predictedType$ = computed(() => this.predictionMeta$()?.type_predict);
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);
 
-  async plotPredictions(plotlyData: PlotlyData): Promise<void> {
-    Plotly.newPlot(
+  plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
+
+  refreshEffect = effect(() => {
+    this.refreshSignal$();
+    this.refreshPlot();
+  });
+
+  plotTypePredictPieResource = resource({
+    request: computed(() => {
+      return {
+        data: this.prediction$(),
+      };
+    }),
+    loader: async (param) => {
+      const data = param.request.data;
+      if (data === undefined) return;
+      console.log('resource')
+      console.log(this.plotTypePredictPieResource.isLoading())
+      console.log(this.plotTypePredictPieResource.value())
+      const plot_data = this.extractPredictions(data);
+      return await this.plotPredictions(plot_data);
+    },
+  })
+
+  async plotPredictions(plotlyData: PlotlyData): Promise<PlotlyData> {
+    return Plotly.newPlot(
       this.typePredictPiePlot().nativeElement,
       plotlyData.data,
       plotlyData.layout,
@@ -39,8 +76,8 @@ export class PredictionResultsComponent {
     );
   }
 
-  /*
-  extractPredictions(responseJson: PredictCancerType): PlotlyData {
+  
+  extractPredictions(responseJson: any): PlotlyData {
     const typeGroups: Map<string, string[]> = new Map<string, string[]>();
     // group predictions by type
     console.log(responseJson);
@@ -66,18 +103,17 @@ export class PredictionResultsComponent {
     let x: number[] = [...sortedTypeCounts.values()];
     let y: string[] = [...sortedTypeCounts.keys()];
     // add model accuracy
-    let classPerformanceData = this.classPerformancePlot.data;
+    let classPerformanceData = this.plotlyTraces$();
     // get modules data
     classPerformanceData = classPerformanceData.filter(
       (d: { name: string }) => d.name == 'modules',
     );
-    if (classPerformanceData.length > 0) {
-      classPerformanceData = classPerformanceData[0];
-    }
+    const oneMeasure = classPerformanceData[0];
+    console.log(oneMeasure);
     // create map to value
     const classToMeasure: Map<string, number> = new Map<string, number>();
-    for (let i = 0; i < classPerformanceData.x.length; i++) {
-      classToMeasure.set(classPerformanceData.y[i], classPerformanceData.x[i]);
+    for (let i = 0; i < oneMeasure.x.length; i++) {
+      classToMeasure.set(oneMeasure.y[i], oneMeasure.x[i]);
     }
     // add accuracy to y labels
     y = y.map((label) => {
@@ -95,7 +131,7 @@ export class PredictionResultsComponent {
       {
         x: x,
         y: y,
-        text: accValues.map((v) => 'Balanced accuracy: ' + v.toString()),
+        // text: accValues.map((v) => 'Balanced accuracy: ' + v.toString()),
         type: 'bar',
         name: 'type',
         orientation: 'h',
@@ -106,7 +142,7 @@ export class PredictionResultsComponent {
     ];
 
     // add subtype traces
-    if (this.predictFormComponent.formGroup.get('predictSubtypes')?.value) {
+    if (this.predictedSubtype$() !== undefined) {
       const subtypeTraces: any[] = [...typeGroups.values()].map((sv) => {
         return {
           x: sv.length,
@@ -120,7 +156,6 @@ export class PredictionResultsComponent {
     }
 
     const layout = {
-      paper_bgcolor: 'white',
       autosize: true,
       barmode: 'group',
       margin: {
@@ -129,6 +164,8 @@ export class PredictionResultsComponent {
         t: 50,
         b: 50,
       },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
       xaxis: {
         title: 'Number of samples classified',
       },
@@ -136,7 +173,10 @@ export class PredictionResultsComponent {
     const config = {
       responsive: true,
     };
-    return { data: data, layout: layout, config: config };
+    const plot_data = { data: data, layout: layout, config: config };
+    Plotly.newPlot(this.typePredictPiePlot().nativeElement, data, layout, config);
+    this.doneLoading = true;
+    return plot_data;
   }
 
   getColorForValue(value: number): string {
@@ -144,6 +184,13 @@ export class PredictionResultsComponent {
     const r: number = value >= 0.5 ? Math.round(255 * 2 * (1 - value)) : 255;
     const b: number = 0;
     return `rgb(${r},${g},${b})`;
+  }
+
+  refreshPlot() {
+    const plotDiv = this.typePredictPiePlot().nativeElement;
+    if (plotDiv.checkVisibility()) {
+      Plotly.Plots.resize(plotDiv);
+    }
   }
 
   // validateFileContent(file: File): boolean {
@@ -160,5 +207,5 @@ export class PredictionResultsComponent {
   //   return true;
   // }
 
-   */
+  
 }

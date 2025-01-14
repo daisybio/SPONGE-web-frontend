@@ -1,0 +1,47 @@
+.type-legend {
+    width: 15%;
+    float: right;
+  }
+  
+  .type-legend {
+    margin-top: 10px;
+    margin-right: 10px;
+  }
+  
+  .legend {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .legend-text {
+    font-size: 14px;
+  }
+  
+  .child {
+    font-size: 12px;
+    display: flex;
+  }
+  
+  .legend-labels {
+    margin-right: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .child:not(:last-child) {
+    margin-bottom: 60px; /* Adjust the margin between child elements */
+  }
+  
+  .percent-color-box {
+    width: 30px;
+    height: 80px;
+    margin-right: 10px;
+    background: linear-gradient(to top, darkorange, #008c00);
+    text-orientation: sideways;
+  }

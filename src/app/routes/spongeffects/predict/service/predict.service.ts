@@ -21,7 +21,7 @@ export class PredictService {
   backend = inject(BackendService);
   private readonly _query$ = signal<Query | undefined>(undefined);
 
-  private readonly _prediction$ = resource({
+  readonly _prediction$ = resource({
     request: this._query$,
     loader: (param) => {
       const query = param.request;

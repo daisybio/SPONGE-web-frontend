@@ -1,24 +1,35 @@
-<div class="predict-results-plots">
-  <div class="type-prediction-div">
-    <div #typePredictPiePlot class="type-prediction"></div>
-    <div class="type-legend">
-      <div class="legend">
-        <div class="legend-item">
-          <div class="percent-color-box">
-            <div class="percent-box-labels">
+@if (predictionResource.isLoading()) {
+  <div style="width: 100%; display: flex; flex-direction: row; justify-content: center;">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
+} @else {
+  @if (!plotTypePredictPieResource.value()) {
+    <p>Run a prediction on your custom expression data or on our example to see the results here. Start the prediction on the left.</p>
+  }
+}
+  <div class="predict-results-plots">
+    <div class="type-prediction-div">
+      <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
+      <div class="type-legend">
+        <!-- <div class="legend">
+          <div class="legend-item">
+            <div class="percent-color-box">
+              <div class="percent-box-labels">
+              </div>
             </div>
+            <div class="legend-labels">
+              <div class="child">1.0</div>
+              <div class="child">0.5</div>
+            </div>
+            <div class="legend-text">Overall class model accuracy</div>
           </div>
-          <div class="legend-labels">
-            <div class="child">1.0</div>
-            <div class="child">0.5</div>
-          </div>
-          <div class="legend-text">Overall class model accuracy</div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
-</div>
-<p></p>
-<div class="type-prediction-text">
-  Predicted type over all samples: {{ predictedType$() }}
-</div>
+  <p></p>
+    <!-- <div class="type-prediction-text">
+      Predicted type over all samples: {{ predictedType$() }}
+    </div> -->
+
+
