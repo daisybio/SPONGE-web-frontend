@@ -14,6 +14,8 @@ import { PredictFormComponent } from '../form/predict-form.component';
 import { PredictService } from '../service/predict.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 
 
 declare var Plotly: any;
@@ -25,11 +27,12 @@ declare var Plotly: any;
   imports: [
     MatProgressSpinner,
     CommonModule,
+    MatTableModule,
   ],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss'],
 })
-export class PredictionResultsComponent {
+export class PredictionResultsComponent  {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$;
   predictionResource = this.predictService._prediction$;
@@ -37,13 +40,16 @@ export class PredictionResultsComponent {
   refreshSignal$ = input();
   doneLoading = false
 
-
   predictionMeta$ = computed(() => this.prediction$()?.meta);
   predictionData$ = computed(() => this.prediction$()?.data);
   predictedType$ = computed(() => this.predictionMeta$()?.type_predict);
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);
 
   plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
+
+  // prediction data for table
+  dataSource = computed(() => new MatTableDataSource(this.predictionData$() || []));
+  displayedColumns: string[] = ['sampleID', 'typePrediction'];
 
   refreshEffect = effect(() => {
     this.refreshSignal$();
@@ -63,6 +69,9 @@ export class PredictionResultsComponent {
       console.log(this.plotTypePredictPieResource.isLoading())
       console.log(this.plotTypePredictPieResource.value())
       const plot_data = this.extractPredictions(data);
+      console.log('resource')
+      console.log(this.dataSource())
+      
       return await this.plotPredictions(plot_data);
     },
   })
