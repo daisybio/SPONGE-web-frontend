@@ -1,6 +1,6 @@
 <table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort>
   <ng-container matColumnDef="name_1">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 1</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj1)" mat-button
               matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
@@ -10,7 +10,7 @@
   </ng-container>
 
   <ng-container matColumnDef="name_2">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 2</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$() || 'Node') }} 2</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj2)" mat-button
               matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">

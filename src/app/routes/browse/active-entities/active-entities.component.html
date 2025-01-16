@@ -1,5 +1,5 @@
 <mat-tab-group>
-  <mat-tab [label]="'Active nodes (' + nodes$().length + ')'">
+  <mat-tab [label]="'Active ' + level$() + 's (' + nodes$().length + ')'">
     @if (nodes$().length > 0) {
       <div class="card-container">
         <p>
@@ -9,7 +9,8 @@
     }
     @if (nodes$().length > 1) {
       <div class="card-container">
-        <a [href]="gProfilerUrl()" target="_blank" mat-flat-button matTooltip="Open g:Profiler for active nodes">g:Profiler</a>
+        <a [href]="gProfilerUrl()" target="_blank" mat-flat-button
+           matTooltip="Perform Functional Enrichment Analysis on active {{level$()}}s">g:Profiler</a>
       </div>
     }
 
@@ -41,12 +42,12 @@
           </mat-card-actions>
         </mat-card>
       } @empty {
-        <p>No active nodes found.</p>
+        <p>No active {{ level$() }}s found.</p>
         <p>Click on a node in the network to activate.</p>
       }
     </div>
   </mat-tab>
-  <mat-tab [label]="'Active edges (' + edges$().length + ')'">
+  <mat-tab [label]="'Active interactions (' + edges$().length + ')'">
     @if (edges$().length > 0) {
       <div class="card-container">
         <p>
@@ -96,7 +97,7 @@
           </mat-card-actions>
         </mat-card>
       } @empty {
-        <p>No active edges found.</p>
+        <p>No active interaction found.</p>
         <p>Click on an edge in the network to activate.</p>
       }
     </div>
