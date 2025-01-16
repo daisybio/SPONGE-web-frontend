@@ -10,17 +10,30 @@
   </ng-container>
 
   <ng-container matColumnDef="betweenness">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Betweenness</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="Betweenness centrality">
+        Betweenness centrality focuses on bottlenecks. A node with high betweenness centrality within a graph lies on a
+        significant proportion of the shortest paths between two other nodes.
+      </app-info>
+    </th>
     <td *matCellDef="let node" mat-cell>{{ node.betweenness }}</td>
   </ng-container>
 
   <ng-container matColumnDef="eigenvector">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Eigenvector</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="Eigenvector centrality">Eigenvector centrality is a measure of a node's influence in a network. A
+        node with high eigenvector centrality is pointed to by many nodes, which also have high eigenvector centrality.
+      </app-info>
+    </th>
     <td *matCellDef="let node" mat-cell>{{ node.eigenvector }}</td>
   </ng-container>
 
   <ng-container matColumnDef="node_degree">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Degree</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="Degree centrality">Degree centrality measures the number of edges connected to a node and
+        emphasizes the significance of hub nodes, which are recognized as pivotal elements within biological systems.
+      </app-info>
+    </th>
     <td *matCellDef="let node" mat-cell>{{ node.node_degree }}</td>
   </ng-container>
 

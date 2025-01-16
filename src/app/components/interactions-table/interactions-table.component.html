@@ -1,6 +1,6 @@
-<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort>
+<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 1</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj1)" mat-button
               matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
@@ -10,7 +10,7 @@
   </ng-container>
 
   <ng-container matColumnDef="name_2">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Node 2</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$() || 'Node') }} 2</th>
     <td *matCellDef="let interaction" mat-cell>
       <button (click)="openDialog(interaction.obj2)" mat-button
               matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
@@ -30,17 +30,32 @@
   </ng-container>
 
   <ng-container matColumnDef="correlation">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Correlation</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="Correlation">Gene-Gene correlation</app-info>
+    </th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>
   </ng-container>
 
   <ng-container matColumnDef="mscor">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>MScor</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="MScor">SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a
+        generalization of sensitivity correlation as defined by <a href="https://www.ncbi.nlm.nih.gov/pubmed/25033876">Paci
+          et al.</a>. These values capture the joint contribution
+        of several miRNAs on the ceRNA regulation of two genes while accounting for their cross-correlation.
+        <br/><br/>
+        <span #mscorEquation class="katex"></span>
+      </app-info>
+    </th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.mscor }}</td>
   </ng-container>
 
   <ng-container matColumnDef="padj">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>adj. p-Value</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header>
+      <app-info title="Adj. p-Value">SPONGE computes a null model to calculate empirical p-values for the ceRNA
+        interactions. We sampled 1,000,000 datasets to closely estimate the p-values. The interactions were then
+        FDR-corrected and filtered with a p-value cut-off of 0.01.
+      </app-info>
+    </th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.padj }}</td>
   </ng-container>
 
