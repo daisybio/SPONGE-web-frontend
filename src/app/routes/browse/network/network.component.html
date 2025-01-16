@@ -7,18 +7,12 @@
     <table>
       <tr>
         <th>Circle</th>
-        <td>Node, where a corresponding entry is present in the opposite network. If you see a circle in the gene
-          network,
-          there is a corresponding node in the transcript network with the same filter criteria. The same applies vice
-          versa.
+        <td [innerHTML]="circleExplanation$()">
         </td>
       </tr>
       <tr>
         <th>Square</th>
-        <td>Node, where no corresponding entry is present in the opposite network. If you see a square in the gene
-          network,
-          there is no corresponding node in the transcript network with the same filter criteria. The same applies vice
-          versa.
+        <td [innerHTML]="squareExplanation$()"></td>
       </tr>
     </table>
   </app-info>
