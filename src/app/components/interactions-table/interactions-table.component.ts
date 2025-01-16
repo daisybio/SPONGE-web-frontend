@@ -2,8 +2,11 @@ import {
   AfterViewInit,
   Component,
   computed,
+  effect,
+  ElementRef,
   inject,
   input,
+  viewChild,
   ViewChild,
 } from '@angular/core';
 import {
@@ -23,6 +26,8 @@ import { BrowseService } from '../../services/browse.service';
 import { TranscriptModalComponent } from '../transcript-modal/transcript-modal.component';
 import { InteractionModalComponent } from '../interaction-modal/interaction-modal.component';
 import { capitalize } from 'lodash';
+import { InfoComponent } from '../info/info.component';
+import katex from 'katex';
 
 @Component({
   selector: 'app-interactions-table',
@@ -33,6 +38,7 @@ import { capitalize } from 'lodash';
     MatSort,
     MatButton,
     MatTooltip,
+    InfoComponent,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
@@ -43,9 +49,8 @@ export class InteractionsTableComponent implements AfterViewInit {
   level$ = input<'gene' | 'transcript'>();
   interactions$ = input<(GeneInteraction | TranscriptInteraction)[]>();
   readonly dialog = inject(MatDialog);
-
+  mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
-
   dataSource$ = computed(() => {
     return new MatTableDataSource(
       (this.interactions$() || []).map((interaction) => {
@@ -70,6 +75,21 @@ export class InteractionsTableComponent implements AfterViewInit {
     );
   });
   protected readonly capitalize = capitalize;
+
+  constructor() {
+    effect(() => {
+      const element = this.mscorEquation$()?.nativeElement;
+      if (element) {
+        katex.render(
+          'mscor(g_1, g_2, M) = cor(g_1, g_2) - pcor(g_1, g_2 | M)',
+          element,
+          {
+            output: 'mathml',
+          },
+        );
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     const dataSource = this.dataSource$();
