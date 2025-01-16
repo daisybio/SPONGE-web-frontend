@@ -1,5 +1,5 @@
 <mat-tab-group>
-  <mat-tab [label]="'Active ' + level$() + 's (' + nodes$().length + ')'">
+  <mat-tab [label]="'Selected ' + level$() + 's (' + nodes$().length + ')'">
     @if (nodes$().length > 0) {
       <div class="card-container">
         <p>
@@ -10,10 +10,10 @@
     @if (nodes$().length > 1) {
       <div class="card-container">
         <a [href]="gProfilerUrl()" target="_blank" mat-flat-button
-           matTooltip="Perform Functional Enrichment Analysis on active {{level$()}}s">g:Profiler</a>
+           matTooltip="Perform Functional Enrichment Analysis on selected {{level$()}}s">g:Profiler</a>
       </div>
     }
-
+    
     <div class="card-container">
       @for (node of nodes$(); track node) {
         <mat-card>
@@ -42,12 +42,12 @@
           </mat-card-actions>
         </mat-card>
       } @empty {
-        <p>No active {{ level$() }}s found.</p>
-        <p>Click on a node in the network to activate.</p>
+        <p>No selected {{ level$() }}s found.</p>
+        <p>Click on a node in the network to select.</p>
       }
     </div>
   </mat-tab>
-  <mat-tab [label]="'Active interactions (' + edges$().length + ')'">
+  <mat-tab [label]="'Selected ceRNA interactions (' + edges$().length + ')'">
     @if (edges$().length > 0) {
       <div class="card-container">
         <p>
@@ -97,8 +97,8 @@
           </mat-card-actions>
         </mat-card>
       } @empty {
-        <p>No active interaction found.</p>
-        <p>Click on an edge in the network to activate.</p>
+        <p>No selected interactions found.</p>
+        <p>Click on an edge in the network to select.</p>
       }
     </div>
   </mat-tab>
