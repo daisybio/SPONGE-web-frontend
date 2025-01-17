@@ -1,19 +1,18 @@
-import {Routes} from '@angular/router';
-import {BrowseComponent} from "./routes/browse/browse.component";
-import {DownloadComponent} from "./routes/download/download.component";
-import {HomeComponent} from "./routes/home/home.component";
-import {DocumentationComponent} from "./routes/documentation/documentation.component";
-import {IntroductionComponent} from "./routes/documentation/introduction/introduction.component";
-import {HomeSearchBarComponent} from "./routes/documentation/home-search-bar/home-search-bar.component";
-import {
-  BrowseFunctionalitiesComponent
-} from "./routes/documentation/browse-functionalities/browse-functionalities.component";
-import {BrowseSidebarComponent} from "./routes/documentation/browse-sidebar/browse-sidebar.component";
-import {MoreComponent} from "./routes/documentation/more/more.component";
-import {SpongEffectsComponent} from "./routes/spongeffects/spongeffects.component";
-import {GenesComponent} from "./routes/genes/genes.component";
-import {ExploreComponent} from "./routes/spongeffects/explore/explore.component";
-import {PredictComponent} from "./routes/spongeffects/predict/predict.component";
+import { Routes } from '@angular/router';
+import { BrowseComponent } from './routes/browse/browse.component';
+import { DownloadComponent } from './routes/download/download.component';
+import { HomeComponent } from './routes/home/home.component';
+import { DocumentationComponent } from './routes/documentation/documentation.component';
+import { IntroductionComponent } from './routes/documentation/introduction/introduction.component';
+import { HomeSearchBarComponent } from './routes/documentation/home-search-bar/home-search-bar.component';
+import { BrowseFunctionalitiesComponent } from './routes/documentation/browse-functionalities/browse-functionalities.component';
+import { BrowseSidebarComponent } from './routes/documentation/browse-sidebar/browse-sidebar.component';
+import { MoreComponent } from './routes/documentation/more/more.component';
+import { SpongEffectsComponent } from './routes/spongeffects/spongeffects.component';
+import { GenesComponent } from './routes/genes/genes.component';
+import { ExploreComponent } from './routes/spongeffects/explore/explore.component';
+import { PredictComponent } from './routes/spongeffects/predict/predict.component';
+import { ExampleScriptComponent } from './routes/documentation/example-script/example-script.component';
 
 export const routes: Routes = [
   {
@@ -22,11 +21,11 @@ export const routes: Routes = [
   },
   {
     path: 'browse',
-    component: BrowseComponent
+    component: BrowseComponent,
   },
   {
     path: 'genes',
-    component: GenesComponent
+    component: GenesComponent,
   },
   {
     path: 'documentation',
@@ -34,33 +33,37 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: IntroductionComponent
+        component: IntroductionComponent,
+      },
+      {
+        path: 'example-script',
+        component: ExampleScriptComponent,
       },
       {
         path: 'home-search',
-        component: HomeSearchBarComponent
+        component: HomeSearchBarComponent,
       },
       {
         path: 'browse-functionalities',
-        component: BrowseFunctionalitiesComponent
+        component: BrowseFunctionalitiesComponent,
       },
       {
         path: 'browse-sidebar',
-        component: BrowseSidebarComponent
+        component: BrowseSidebarComponent,
       },
       {
         path: 'more-about-sponge',
-        component: MoreComponent
+        component: MoreComponent,
       },
       {
         path: '**',
-        redirectTo: ''
-      }
-    ]
+        redirectTo: '',
+      },
+    ],
   },
   {
     path: 'download',
-    component: DownloadComponent
+    component: DownloadComponent,
   },
   {
     path: 'spongeffects',
@@ -68,16 +71,16 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: ExploreComponent
+        component: ExploreComponent,
       },
       {
         path: 'predict',
-        component: PredictComponent
-      }
+        component: PredictComponent,
+      },
     ],
   },
   {
     path: '**',
-    redirectTo: ''
-  }
+    redirectTo: '',
+  },
 ];
