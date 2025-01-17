@@ -29,7 +29,7 @@
     "file-saver": "^2.0.5",
     "graphology": "^0.25.4",
     "graphology-layout-force": "^0.2.4",
-    "katex": "^0.16.20",
+    "katex": "^0.16.21",
     "lodash": "^4.17.21",
     "ngx-bootstrap": "^19.0.1",
     "ngx-highlightjs": "^13.0.0",
