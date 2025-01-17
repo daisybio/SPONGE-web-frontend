@@ -5,10 +5,11 @@ import { HttpService } from '../../../services/http.service';
 import { AsyncPipe } from '@angular/common';
 import FileSaver from 'file-saver';
 import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-example-script',
-  imports: [HighlightPlusModule, Highlight, AsyncPipe, MatButton],
+  imports: [HighlightPlusModule, Highlight, AsyncPipe, MatButton, MatIcon],
   templateUrl: './example-script.component.html',
   styleUrl: './example-script.component.scss',
 })
