@@ -6,14 +6,12 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideHighlightOptions } from 'ngx-highlightjs';
-import { APP_BASE_HREF } from '@angular/common';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(),
-    { provide: APP_BASE_HREF, useValue: './' },
     provideHighlightOptions({
       fullLibraryLoader: () => import('highlight.js'),
     }),

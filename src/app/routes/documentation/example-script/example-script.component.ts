@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { HighlightPlusModule } from 'ngx-highlightjs/plus';
 import { Highlight } from 'ngx-highlightjs';
 import { HttpService } from '../../../services/http.service';
-import { APP_BASE_HREF, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import FileSaver from 'file-saver';
 import { MatButton } from '@angular/material/button';
 
@@ -14,9 +14,12 @@ import { MatButton } from '@angular/material/button';
 })
 export class ExampleScriptComponent {
   http = inject(HttpService);
-  baseHref = inject(APP_BASE_HREF);
 
-  content$ = this.http.getHtmlRequest(this.baseHref + 'example.py');
+  content$ = this.http.getHtmlRequest('./example.py');
+
+  constructor() {
+    this.content$.then(console.log);
+  }
 
   async download() {
     const content = await this.content$;
