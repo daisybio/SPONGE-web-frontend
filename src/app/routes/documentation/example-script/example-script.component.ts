@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { HighlightPlusModule } from 'ngx-highlightjs/plus';
 import { Highlight } from 'ngx-highlightjs';
 import { HttpService } from '../../../services/http.service';
-import { AsyncPipe } from '@angular/common';
+import { APP_BASE_HREF, AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-example-script',
@@ -12,8 +12,9 @@ import { AsyncPipe } from '@angular/common';
 })
 export class ExampleScriptComponent {
   http = inject(HttpService);
+  baseHref = inject(APP_BASE_HREF);
 
-  content$ = this.http.getHtmlRequest('/example.py');
+  content$ = this.http.getHtmlRequest(this.baseHref + 'example.py');
 
   constructor() {
     this.content$.then((content) => console.log(content));
