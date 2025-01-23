@@ -48,6 +48,9 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly graph$ = computed(() =>
+    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
+  );
   layout = computed(
     () =>
       new ForceSupervisor(this.graph$(), {
@@ -69,6 +72,8 @@ export class BrowseService {
       return this.backend.getComparisons(param.request);
     },
   });
+  private readonly _currentData$: ResourceRef<NetworkData>;
+  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly possibleComparisons$ = computed(() => {
     const disease = this.disease$();
     const comparisons = this._comparisons$.value();
@@ -81,17 +86,12 @@ export class BrowseService {
           c.dataset_2.dataset_ID === disease.dataset_ID,
       );
   });
-  private readonly _currentData$: ResourceRef<NetworkData>;
-  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(
     () => this._currentData$.value()?.inverseNodes || [],
   );
   readonly interactions$ = computed(
     () => this._currentData$.value()?.interactions || [],
-  );
-  readonly graph$ = computed(() =>
-    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -280,6 +280,12 @@ export class BrowseService {
     return computed(() => this._query$()?.dataset?.download_url);
   }
 
+  getEdgesForNode(node: Gene | Transcript) {
+    const graph = this.graph$();
+    const edges = graph.filterEdges(BrowseService.getID(node), () => true);
+    return edges.map((edge) => graph.getEdgeAttributes(edge));
+  }
+
   async fetchData(
     version: number,
     config: BrowseQuery | undefined,
@@ -320,14 +326,14 @@ export class BrowseService {
 
     interactions = interactions.filter(
       (interaction) =>
-        interaction.mscor >= config.minMScore &&
+        interaction.mscor >= config.minMscor &&
         interaction.p_value <= config.maxPValue,
     );
     interactions = interactions.sort((a, b) => {
       switch (config.interactionSorting) {
         case InteractionSorting.pAdj:
           return a.p_value - b.p_value;
-        case InteractionSorting.mScor:
+        case InteractionSorting.mscor:
           return a.mscor - b.mscor;
         case InteractionSorting.Correlation:
           return a.correlation - b.correlation;

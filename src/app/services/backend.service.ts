@@ -96,7 +96,7 @@ export class BackendService {
       minNodeDegree: query.minDegree,
       minEigenvector: query.minEigen,
       pValue: query.maxPValue,
-      mscor: query.minMScore,
+      mscor: query.minMscor,
       sorting: query.geneSorting,
       limit: query.maxNodes,
     };

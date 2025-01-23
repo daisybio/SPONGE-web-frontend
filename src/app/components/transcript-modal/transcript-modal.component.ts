@@ -119,10 +119,6 @@ export class TranscriptModalComponent implements AfterViewInit {
     effect(() => {
       this.asDatasource.data = this.alternativeSplicingEvents.value() || [];
     });
-
-    effect(() => {
-      console.log(this.hasAsEvents$());
-    });
   }
 
   showGene() {

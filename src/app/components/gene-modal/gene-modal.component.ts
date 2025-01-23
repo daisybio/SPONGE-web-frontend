@@ -26,6 +26,7 @@ import { AS_DESCRIPTIONS } from '../../constants';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Igv } from '@visa-ge/ng-igv';
 import { ModalsService } from '../modals-service/modals.service';
+import { BrowseService } from '../../services/browse.service';
 
 interface ASEntry {
   enst: string;
@@ -62,6 +63,7 @@ export class GeneModalComponent implements AfterViewInit {
   readonly asDescriptions = AS_DESCRIPTIONS;
   modalsService = inject(ModalsService);
 
+  browseService = inject(BrowseService);
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
@@ -70,6 +72,8 @@ export class GeneModalComponent implements AfterViewInit {
 
   goDatasource = new MatTableDataSource<GOTerm>();
   asDatasource = new MatTableDataSource<ASEntry>();
+
+  edges = this.browseService.getEdgesForNode(this.gene);
 
   readonly geneInfo$ = resource({
     request: this.version$,
@@ -132,6 +136,7 @@ export class GeneModalComponent implements AfterViewInit {
     });
 
     effect(() => {
+      console.log('Transcripts', this.transcripts$.value());
       this.asDatasource.data = this.transcripts$.value() ?? [];
     });
   }

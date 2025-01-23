@@ -66,7 +66,7 @@ export enum GeneSorting {
 
 export enum InteractionSorting {
   pAdj = 'adjusted p-value',
-  mScor = 'MScor',
+  mscor = 'Mscor',
   Correlation = 'Correlation',
 }
 
@@ -122,7 +122,7 @@ export interface BrowseQuery {
   interactionSorting: InteractionSorting;
   maxInteractions: number;
   maxPValue: number;
-  minMScore: number;
+  minMscor: number;
 }
 
 export interface CeRNA {
