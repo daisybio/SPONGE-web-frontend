@@ -9,11 +9,10 @@ import {
 } from '../../../interfaces';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
-import { GeneModalComponent } from '../../../components/gene-modal/gene-modal.component';
 import { MatAnchor, MatButton } from '@angular/material/button';
-import { TranscriptModalComponent } from '../../../components/transcript-modal/transcript-modal.component';
 import { InteractionModalComponent } from '../../../components/interaction-modal/interaction-modal.component';
 import { MatTooltip } from '@angular/material/tooltip';
+import { ModalsService } from '../../../components/modals-service/modals.service';
 
 @Component({
   selector: 'app-active-entities',
@@ -24,6 +23,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 export class ActiveEntitiesComponent {
   readonly dialog = inject(MatDialog);
   protected BrowseService = BrowseService;
+  protected modalsService = inject(ModalsService);
   protected readonly browseService = inject(BrowseService);
   nodes$ = this.browseService.activeNodes$;
   gProfilerUrl = computed(() =>
@@ -41,14 +41,6 @@ export class ActiveEntitiesComponent {
   }
 
   openModal(entity: Gene | Transcript): void {
-    if ('ensg_number' in entity) {
-      this.dialog.open(GeneModalComponent, {
-        data: entity,
-      });
-    } else {
-      this.dialog.open(TranscriptModalComponent, {
-        data: entity,
-      });
-    }
+    this.modalsService.openNodeDialog(entity);
   }
 }
