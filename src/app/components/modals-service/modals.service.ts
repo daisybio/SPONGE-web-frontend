@@ -22,6 +22,8 @@ export class ModalsService {
     if ('ensg_number' in entity) {
       this.dialog.open(GeneModalComponent, {
         data: entity,
+        minWidth: '60vw',
+        minHeight: '60vh',
       });
     } else {
       this.dialog.open(TranscriptModalComponent, {
