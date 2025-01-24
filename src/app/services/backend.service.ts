@@ -95,10 +95,12 @@ export class BackendService {
       minBetweenness: query.minBetweenness,
       minNodeDegree: query.minDegree,
       minEigenvector: query.minEigen,
-      pValue: query.maxPValue,
-      mscor: query.minMscor,
-      sorting: query.geneSorting,
-      limit: query.maxNodes,
+      maxPValue: query.maxPValue,
+      minMscor: query.minMscor,
+      edgeSorting: query.interactionSorting,
+      nodeSorting: query.geneSorting,
+      maxNodes: query.maxNodes,
+      maxEdges: query.maxInteractions,
     };
 
     return this.http.getRequest<Network>(this.getRequestURL(route, _query));

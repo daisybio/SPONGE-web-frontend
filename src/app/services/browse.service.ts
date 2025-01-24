@@ -13,7 +13,6 @@ import {
   Gene,
   GeneInteraction,
   GeneNode,
-  InteractionSorting,
   NetworkResult,
   Transcript,
   TranscriptInteraction,
@@ -39,7 +38,7 @@ export interface EntityState {
 interface NetworkData {
   nodes: (GeneNode | TranscriptNode)[];
   inverseNodes: (GeneNode | TranscriptNode)[];
-  interactions: (GeneInteraction | TranscriptInteraction)[];
+  edges: (GeneInteraction | TranscriptInteraction)[];
   disease: Dataset | undefined;
 }
 
@@ -91,7 +90,7 @@ export class BrowseService {
     () => this._currentData$.value()?.inverseNodes || [],
   );
   readonly interactions$ = computed(
-    () => this._currentData$.value()?.interactions || [],
+    () => this._currentData$.value()?.edges || [],
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -294,12 +293,10 @@ export class BrowseService {
       return {
         nodes: [],
         inverseNodes: [],
-        interactions: [],
+        edges: [],
         disease: undefined,
       };
     }
-
-    this.backend.getNetwork(version, config).then((net) => console.log(net));
 
     const inverseConfig = {
       ...config,
@@ -309,40 +306,14 @@ export class BrowseService {
           : ('gene' as 'gene' | 'transcript'),
     };
 
-    const inverseNodes$ = this.backend.getNodes(version, inverseConfig);
-    let nodes = await this.backend.getNodes(version, config);
-    // Get gene IDs or transcript IDs respectively
-    const identifiers = nodes.map((node) =>
-      'gene' in node ? node.gene.ensg_number : node.transcript.enst_number,
-    );
-    let interactions = await this.backend.getInteractionsSpecific(
-      version,
-      config.dataset,
-      config.maxPValue,
-      identifiers,
-      config.level,
-    );
+    const inverseNodes$ = this.backend
+      .getNetwork(version, inverseConfig)
+      .then((network) => network.nodes);
+    let { nodes, edges } = await this.backend.getNetwork(version, config);
     const inverseNodes = await inverseNodes$;
 
-    interactions = interactions.filter(
-      (interaction) =>
-        interaction.mscor >= config.minMscor &&
-        interaction.p_value <= config.maxPValue,
-    );
-    interactions = interactions.sort((a, b) => {
-      switch (config.interactionSorting) {
-        case InteractionSorting.pAdj:
-          return a.p_value - b.p_value;
-        case InteractionSorting.mscor:
-          return a.mscor - b.mscor;
-        case InteractionSorting.Correlation:
-          return a.correlation - b.correlation;
-      }
-    });
-    interactions = interactions.slice(0, config.maxInteractions);
-
     if (!config.showOrphans) {
-      const interactionNodes = interactions
+      const interactionNodes = edges
         .map((interaction) => BrowseService.getInteractionIDs(interaction))
         .flat();
       nodes = nodes.filter((node) => {
@@ -356,7 +327,7 @@ export class BrowseService {
     return {
       nodes,
       inverseNodes,
-      interactions,
+      edges,
       disease: config.dataset,
     };
   }
