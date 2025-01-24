@@ -61,8 +61,14 @@
     </mat-tab>
 
     <mat-tab label="Genome view">
-      <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
-           [tracks]="miRNAtracks$.value() || []"></igv>
+      @if (miRNAtracks$.isLoading()) {
+        <div class="spinner-container">
+          <mat-spinner mode="indeterminate"></mat-spinner>
+        </div>
+      } @else {
+        <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
+             [tracks]="miRNAtracks$.value() || []"></igv>
+      }
     </mat-tab>
   </mat-tab-group>
 </mat-dialog-content>
