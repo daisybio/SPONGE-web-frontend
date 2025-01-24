@@ -387,7 +387,9 @@ export class BackendService {
       sponge_db_version: version,
       ensg_number: ensg,
     };
-    return this.http.getRequest<string[]>(this.getRequestURL(route, query));
+    return (
+      await this.http.getRequest<string[][]>(this.getRequestURL(route, query))
+    )[0];
   }
 
   async getMiRNAs(
