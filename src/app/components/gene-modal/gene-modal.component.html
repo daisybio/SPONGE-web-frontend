@@ -127,7 +127,7 @@
     }
     <mat-tab label="Genome view">
       <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
-           [tracks]="miRNAtracks$()"></igv>
+           [tracks]="miRNAtracks$.value() || []"></igv>
     </mat-tab>
 
   </mat-tab-group>

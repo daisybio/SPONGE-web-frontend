@@ -4,7 +4,9 @@ import {
   computed,
   effect,
   inject,
+  model,
   resource,
+  Signal,
   viewChild,
 } from '@angular/core';
 import {
@@ -31,8 +33,9 @@ import { BrowseService } from '../../services/browse.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatChip } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
-import { AS_DESCRIPTIONS } from '../../constants';
+import { AS_DESCRIPTIONS, IGV_REFGENOME } from '../../constants';
 import { ModalsService } from '../modals-service/modals.service';
+import { Igv, Location } from '@visa-ge/ng-igv';
 
 interface AsEventWithPsi extends AlternativeSplicingEvent {
   psi: number;
@@ -53,6 +56,7 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
     MatProgressSpinner,
     MatChip,
     MatTooltip,
+    Igv,
   ],
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss',
@@ -63,13 +67,16 @@ export class TranscriptModalComponent implements AfterViewInit {
   columns = ['event_type', 'event_name'];
 
   modalsService = inject(ModalsService);
+  readonly browseService = inject(BrowseService);
   readonly asDescriptions = AS_DESCRIPTIONS;
   readonly transcript = inject<Transcript>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
   readonly version$ = this.versionsService.versionReadOnly();
+  readonly activeTab$ = model<number>(0);
   asDatasource = new MatTableDataSource<AlternativeSplicingEvent>();
 
+  miRNAtracks$ = this.browseService.getMiRNATracksForNode(this.transcript);
   readonly transcriptInfo$ = resource({
     request: this.version$,
     loader: async (version) => {
@@ -113,7 +120,24 @@ export class TranscriptModalComponent implements AfterViewInit {
   hasAsEvents$ = computed(() => {
     return (this.alternativeSplicingEvents.value() || []).length > 0;
   });
+  readonly location$: Signal<Location> = computed(() => {
+    const transcriptInfo = this.transcriptInfo$.value();
+    if (!transcriptInfo) {
+      return {
+        chr: 'all',
+      };
+    } else {
+      return {
+        chr: transcriptInfo.chromosome_name,
+        range: {
+          start: transcriptInfo.start_pos,
+          end: transcriptInfo.end_pos,
+        },
+      };
+    }
+  });
   protected readonly BrowseService = BrowseService;
+  protected readonly IGV_REFGENOME = IGV_REFGENOME;
 
   constructor() {
     effect(() => {

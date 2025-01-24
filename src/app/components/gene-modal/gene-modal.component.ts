@@ -26,7 +26,7 @@ import { MatChip, MatChipSet } from '@angular/material/chips';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { AS_DESCRIPTIONS, IGV_REFGENOME } from '../../constants';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Igv, Location, Track } from '@visa-ge/ng-igv';
+import { Igv, Location } from '@visa-ge/ng-igv';
 import { ModalsService } from '../modals-service/modals.service';
 import { BrowseService } from '../../services/browse.service';
 
@@ -77,55 +77,7 @@ export class GeneModalComponent implements AfterViewInit {
   goDatasource = new MatTableDataSource<GOTerm>();
   asDatasource = new MatTableDataSource<ASEntry>();
 
-  edges$ = this.browseService.getEdgesForNode(this.gene);
-  miRNAs$ = resource({
-    request: computed(() => {
-      return {
-        edges: this.edges$(),
-        disease: this.disease$(),
-        version: this.version$(),
-      };
-    }),
-    loader: async (param) => {
-      const edges = param.request.edges;
-      const disease = param.request.disease;
-      const version = param.request.version;
-      if (!disease) {
-        return Promise.resolve([]);
-      }
-      const miRNAs$ = edges.map((edge) =>
-        this.backend
-          .getMiRNAs(
-            version,
-            disease,
-            BrowseService.getInteractionIDs(edge),
-            'gene',
-          )
-          .then((res) => res.map((mirna) => mirna.mirna.hs_nr)),
-      );
-      return (await Promise.all(miRNAs$))
-        .flat()
-        .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
-    },
-  });
-
-  miRNAtracks$ = computed((): Track[] => {
-    const miRNAs = this.miRNAs$.value();
-    if (!miRNAs) {
-      return [];
-    }
-    return miRNAs.map((miRNA) => {
-      return {
-        name: miRNA,
-        url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
-        format: 'bed',
-        type: 'annotation',
-        height: 30,
-        displayMode: 'SQUISHED',
-        indexed: false,
-      };
-    });
-  });
+  miRNAtracks$ = this.browseService.getMiRNATracksForNode(this.gene);
 
   readonly geneInfo$ = resource({
     request: this.version$,
