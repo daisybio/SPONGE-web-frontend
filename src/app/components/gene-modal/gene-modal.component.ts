@@ -1,11 +1,13 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   effect,
   inject,
   model,
   resource,
   ResourceRef,
+  Signal,
   viewChild,
 } from '@angular/core';
 import { Gene, GOTerm } from '../../interfaces';
@@ -24,7 +26,7 @@ import { MatChip, MatChipSet } from '@angular/material/chips';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { AS_DESCRIPTIONS } from '../../constants';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Igv } from '@visa-ge/ng-igv';
+import { Igv, Location, Track } from '@visa-ge/ng-igv';
 import { ModalsService } from '../modals-service/modals.service';
 import { BrowseService } from '../../services/browse.service';
 
@@ -64,6 +66,7 @@ export class GeneModalComponent implements AfterViewInit {
   modalsService = inject(ModalsService);
 
   browseService = inject(BrowseService);
+  readonly disease$ = this.browseService.disease$;
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
@@ -73,7 +76,51 @@ export class GeneModalComponent implements AfterViewInit {
   goDatasource = new MatTableDataSource<GOTerm>();
   asDatasource = new MatTableDataSource<ASEntry>();
 
-  edges = this.browseService.getEdgesForNode(this.gene);
+  edges$ = this.browseService.getEdgesForNode(this.gene);
+  miRNAs$ = resource({
+    request: computed(() => {
+      return {
+        edges: this.edges$(),
+        disease: this.disease$(),
+        version: this.version$(),
+      };
+    }),
+    loader: async (param) => {
+      const edges = param.request.edges;
+      const disease = param.request.disease;
+      const version = param.request.version;
+      if (!disease) {
+        return Promise.resolve([]);
+      }
+      const miRNAs$ = edges.map((edge) =>
+        this.backend
+          .getMiRNAs(
+            version,
+            disease,
+            BrowseService.getInteractionIDs(edge),
+            'gene',
+          )
+          .then((res) => res.map((mirna) => mirna.mirna.hs_nr)),
+      );
+      return (await Promise.all(miRNAs$)).flat();
+    },
+  });
+
+  miRNAtracks = computed((): Track[] => {
+    const miRNAs = this.miRNAs$.value();
+    if (!miRNAs) {
+      return [];
+    }
+    return miRNAs.map((miRNA) => {
+      return {
+        name: miRNA,
+        url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
+        format: 'bed',
+        type: 'annotation',
+        indexed: false,
+      };
+    });
+  });
 
   readonly geneInfo$ = resource({
     request: this.version$,
@@ -124,6 +171,21 @@ export class GeneModalComponent implements AfterViewInit {
         events: Array.from(transcriptEvents.get(t) ?? []),
       }));
     },
+  });
+
+  readonly location$: Signal<Location> = computed(() => {
+    const geneInfo = this.geneInfo$.value();
+    if (!geneInfo) {
+      return {
+        chr: 'all',
+      };
+    } else {
+      return {
+        chr: geneInfo.chromosome_name,
+        start: geneInfo.start_pos,
+        end: geneInfo.end_pos,
+      };
+    }
   });
 
   constructor() {

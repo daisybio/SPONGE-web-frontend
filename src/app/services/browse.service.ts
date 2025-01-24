@@ -280,9 +280,14 @@ export class BrowseService {
   }
 
   getEdgesForNode(node: Gene | Transcript) {
-    const graph = this.graph$();
-    const edges = graph.filterEdges(BrowseService.getID(node), () => true);
-    return edges.map((edge) => graph.getEdgeAttributes(edge));
+    const nodeId = BrowseService.getID(node);
+    return computed(() => {
+      return this.interactions$().filter((interaction) => {
+        BrowseService.getInteractionIDs(interaction).some(
+          (id) => id === nodeId,
+        );
+      });
+    });
   }
 
   async fetchData(
