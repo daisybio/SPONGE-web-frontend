@@ -38,7 +38,7 @@
 
   <ng-container matColumnDef="mscor">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>
-      <app-info title="MScor">SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a
+      <app-info title="mscor">SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a
         generalization of sensitivity correlation as defined by <a href="https://www.ncbi.nlm.nih.gov/pubmed/25033876">Paci
           et al.</a>. These values capture the joint contribution
         of several miRNAs on the ceRNA regulation of two genes while accounting for their cross-correlation.
@@ -51,7 +51,7 @@
 
   <ng-container matColumnDef="padj">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>
-      <app-info title="Adj. p-Value">SPONGE computes a null model to calculate empirical p-values for the ceRNA
+      <app-info title="Adj. p-value">SPONGE computes a null model to calculate empirical p-values for the ceRNA
         interactions. We sampled 1,000,000 datasets to closely estimate the p-values. The interactions were then
         FDR-corrected and filtered with a p-value cut-off of 0.01.
       </app-info>

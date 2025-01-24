@@ -18,10 +18,6 @@ export class ExampleScriptComponent {
 
   content$ = this.http.getHtmlRequest('./example.py');
 
-  constructor() {
-    this.content$.then(console.log);
-  }
-
   async download() {
     const content = await this.content$;
     const file = new File([content], 'example.py');
