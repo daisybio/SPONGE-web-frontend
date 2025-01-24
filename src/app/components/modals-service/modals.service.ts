@@ -28,6 +28,8 @@ export class ModalsService {
     } else {
       this.dialog.open(TranscriptModalComponent, {
         data: entity,
+        minWidth: '60vw',
+        minHeight: '60vh',
       });
     }
   }
@@ -35,6 +37,7 @@ export class ModalsService {
   openMiRNADialog(interaction: GeneInteraction | TranscriptInteraction) {
     this.dialog.open(InteractionModalComponent, {
       data: interaction,
+      minWidth: '60vw',
     });
   }
 }

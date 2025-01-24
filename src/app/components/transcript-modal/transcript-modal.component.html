@@ -3,7 +3,9 @@
   <mat-tab-group [(selectedIndex)]="activeTab$" preserveContent>
     <mat-tab label="General information">
       @if (transcriptInfo$.isLoading()) {
-        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <div class="spinner-container">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
       }
       @if (transcriptInfo$.value(); as transcriptInfo) {
         <table>
