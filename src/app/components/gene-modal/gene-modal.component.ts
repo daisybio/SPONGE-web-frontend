@@ -105,7 +105,7 @@ export class GeneModalComponent implements AfterViewInit {
       this.backend.getWikiPathways(version.request, this.gene.gene_symbol),
   });
 
-  readonly transcripts$: ResourceRef<ASEntry[]> = resource({
+  readonly transcripts$: ResourceRef<ASEntry[] | undefined> = resource({
     request: this.version$,
     loader: async (version) => {
       const transcripts = await this.backend.getGeneTranscripts(

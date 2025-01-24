@@ -81,7 +81,7 @@ export class BrowseService {
           c.dataset_2.dataset_ID === disease.dataset_ID,
       );
   });
-  private readonly _currentData$: ResourceRef<NetworkData>;
+  private readonly _currentData$: ResourceRef<NetworkData | undefined>;
   readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(
@@ -380,7 +380,9 @@ export class BrowseService {
     });
   }
 
-  getMiRNATracksForNode(node: Gene | Transcript): ResourceRef<Track[]> {
+  getMiRNATracksForNode(
+    node: Gene | Transcript,
+  ): ResourceRef<Track[] | undefined> {
     const nodeId = BrowseService.getID(node);
     const level = 'ensg_number' in node ? 'gene' : 'transcript';
 
