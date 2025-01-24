@@ -72,6 +72,7 @@ export class GeneModalComponent implements AfterViewInit {
   readonly backend = inject(BackendService);
   readonly version$ = this.versionsService.versionReadOnly();
   readonly isOpeningTranscript = model<boolean>(false);
+  readonly activeTab$ = model<number>(0);
 
   goDatasource = new MatTableDataSource<GOTerm>();
   asDatasource = new MatTableDataSource<ASEntry>();
