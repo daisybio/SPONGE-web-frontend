@@ -23,6 +23,7 @@ import Graph from 'graphology';
 import { VersionsService } from './versions.service';
 import ForceSupervisor from 'graphology-layout-force/worker';
 import { isEqual } from 'lodash';
+import { Track } from '@visa-ge/ng-igv';
 
 export enum State {
   Default,
@@ -47,9 +48,6 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
-  readonly graph$ = computed(() =>
-    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
-  );
   layout = computed(
     () =>
       new ForceSupervisor(this.graph$(), {
@@ -71,8 +69,6 @@ export class BrowseService {
       return this.backend.getComparisons(param.request);
     },
   });
-  private readonly _currentData$: ResourceRef<NetworkData>;
-  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly possibleComparisons$ = computed(() => {
     const disease = this.disease$();
     const comparisons = this._comparisons$.value();
@@ -85,12 +81,17 @@ export class BrowseService {
           c.dataset_2.dataset_ID === disease.dataset_ID,
       );
   });
+  private readonly _currentData$: ResourceRef<NetworkData>;
+  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(
     () => this._currentData$.value()?.inverseNodes || [],
   );
   readonly interactions$ = computed(
     () => this._currentData$.value()?.edges || [],
+  );
+  readonly graph$ = computed(() =>
+    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -279,17 +280,6 @@ export class BrowseService {
     return computed(() => this._query$()?.dataset?.download_url);
   }
 
-  getEdgesForNode(node: Gene | Transcript) {
-    const nodeId = BrowseService.getID(node);
-    return computed(() => {
-      return this.interactions$().filter((interaction) => {
-        return BrowseService.getInteractionIDs(interaction).some(
-          (interactionID) => interactionID == nodeId,
-        );
-      });
-    });
-  }
-
   async fetchData(
     version: number,
     config: BrowseQuery | undefined,
@@ -387,6 +377,61 @@ export class BrowseService {
         (ids[0] === source && ids[1] === target) ||
         (ids[0] === target && ids[1] === source)
       );
+    });
+  }
+
+  getMiRNATracksForNode(node: Gene | Transcript): ResourceRef<Track[]> {
+    const nodeId = BrowseService.getID(node);
+    const level = 'ensg_number' in node ? 'gene' : 'transcript';
+
+    return resource({
+      request: computed(() => {
+        return {
+          interactions: this.interactions$(),
+          disease: this.disease$(),
+          version: this._version$(),
+        };
+      }),
+      loader: async (param) => {
+        const disease = param.request.disease;
+        if (!disease) {
+          return [];
+        }
+
+        const interactions = param.request.interactions.filter(
+          (interaction) => {
+            return BrowseService.getInteractionIDs(interaction).some(
+              (interactionID) => interactionID == nodeId,
+            );
+          },
+        );
+
+        const miRNAs$ = interactions.map((edge) =>
+          this.backend
+            .getMiRNAs(
+              param.request.version,
+              disease,
+              BrowseService.getInteractionIDs(edge),
+              level,
+            )
+            .then((res) => res.map((mirna) => mirna.mirna.hs_nr)),
+        );
+        const uniqueMiRNAs = (await Promise.all(miRNAs$))
+          .flat()
+          .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
+        return uniqueMiRNAs.map((miRNA): Track => {
+          return {
+            name: miRNA,
+            url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
+            indexUrl: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz.tbi`,
+            format: 'bed',
+            type: 'annotation',
+            height: 30,
+            displayMode: 'SQUISHED',
+            indexed: false,
+          };
+        });
+      },
     });
   }
 
