@@ -26,7 +26,7 @@
     "@ngx-dropzone/cdk": "^19.0.0",
     "@ngx-dropzone/material": "^19.0.0",
     "@sigma/node-square": "^3.0.0",
-    "@visa-ge/ng-igv": "^0.0.9",
+    "@visa-ge/ng-igv": "^0.0.11",
     "file-saver": "^2.0.5",
     "graphology": "^0.25.4",
     "graphology-layout-force": "^0.2.4",

@@ -48,6 +48,9 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly graph$ = computed(() =>
+    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
+  );
   layout = computed(
     () =>
       new ForceSupervisor(this.graph$(), {
@@ -69,6 +72,8 @@ export class BrowseService {
       return this.backend.getComparisons(param.request);
     },
   });
+  private readonly _currentData$: ResourceRef<NetworkData | undefined>;
+  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly possibleComparisons$ = computed(() => {
     const disease = this.disease$();
     const comparisons = this._comparisons$.value();
@@ -81,17 +86,12 @@ export class BrowseService {
           c.dataset_2.dataset_ID === disease.dataset_ID,
       );
   });
-  private readonly _currentData$: ResourceRef<NetworkData | undefined>;
-  readonly disease$ = computed(() => this._currentData$.value()?.disease);
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(
     () => this._currentData$.value()?.inverseNodes || [],
   );
   readonly interactions$ = computed(
     () => this._currentData$.value()?.edges || [],
-  );
-  readonly graph$ = computed(() =>
-    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -425,7 +425,7 @@ export class BrowseService {
           return {
             name: miRNA,
             url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
-            indexUrl: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz.tbi`,
+            indexURL: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz.tbi`,
             format: 'bed',
             type: 'annotation',
             height: 30,
