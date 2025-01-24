@@ -283,8 +283,8 @@ export class BrowseService {
     const nodeId = BrowseService.getID(node);
     return computed(() => {
       return this.interactions$().filter((interaction) => {
-        BrowseService.getInteractionIDs(interaction).some(
-          (id) => id === nodeId,
+        return BrowseService.getInteractionIDs(interaction).some(
+          (interactionID) => interactionID == nodeId,
         );
       });
     });

@@ -8,13 +8,12 @@ import {
   resource,
   viewChild,
 } from '@angular/core';
-import { PlotlyData, PredictCancerType } from '../../../../interfaces';
+import { PlotlyData } from '../../../../interfaces';
 import { ClassPerformancePlotComponent } from '../../explore/plots/class-performance-plot/class-performance-plot.component';
 import { PredictFormComponent } from '../form/predict-form.component';
 import { PredictService } from '../service/predict.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-
 
 declare var Plotly: any;
 
@@ -22,10 +21,7 @@ declare var Plotly: any;
   selector: 'app-prediction-results',
   standalone: true,
   providers: [ClassPerformancePlotComponent, PredictFormComponent],
-  imports: [
-    MatProgressSpinner,
-    CommonModule,
-  ],
+  imports: [MatProgressSpinner, CommonModule],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss'],
 })
@@ -33,10 +29,10 @@ export class PredictionResultsComponent {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$;
   predictionResource = this.predictService._prediction$;
-  typePredictPiePlot = viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
+  typePredictPiePlot =
+    viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
-  doneLoading = false
-
+  doneLoading = false;
 
   predictionMeta$ = computed(() => this.prediction$()?.meta);
   predictionData$ = computed(() => this.prediction$()?.data);
@@ -59,13 +55,10 @@ export class PredictionResultsComponent {
     loader: async (param) => {
       const data = param.request.data;
       if (data === undefined) return;
-      console.log('resource')
-      console.log(this.plotTypePredictPieResource.isLoading())
-      console.log(this.plotTypePredictPieResource.value())
       const plot_data = this.extractPredictions(data);
       return await this.plotPredictions(plot_data);
     },
-  })
+  });
 
   async plotPredictions(plotlyData: PlotlyData): Promise<PlotlyData> {
     return Plotly.newPlot(
@@ -76,11 +69,9 @@ export class PredictionResultsComponent {
     );
   }
 
-  
   extractPredictions(responseJson: any): PlotlyData {
     const typeGroups: Map<string, string[]> = new Map<string, string[]>();
     // group predictions by type
-    console.log(responseJson);
     responseJson.data.forEach(
       (entry: { typePrediction: string; subtypePrediction: string }) => {
         if (typeGroups.has(entry.typePrediction)) {
@@ -109,7 +100,6 @@ export class PredictionResultsComponent {
       (d: { name: string }) => d.name == 'modules',
     );
     const oneMeasure = classPerformanceData[0];
-    console.log(oneMeasure);
     // create map to value
     const classToMeasure: Map<string, number> = new Map<string, number>();
     for (let i = 0; i < oneMeasure.x.length; i++) {
@@ -174,7 +164,12 @@ export class PredictionResultsComponent {
       responsive: true,
     };
     const plot_data = { data: data, layout: layout, config: config };
-    Plotly.newPlot(this.typePredictPiePlot().nativeElement, data, layout, config);
+    Plotly.newPlot(
+      this.typePredictPiePlot().nativeElement,
+      data,
+      layout,
+      config,
+    );
     this.doneLoading = true;
     return plot_data;
   }
@@ -206,6 +201,4 @@ export class PredictionResultsComponent {
   //   // Additional content validation can be added here
   //   return true;
   // }
-
-  
 }

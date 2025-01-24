@@ -102,11 +102,13 @@ export class GeneModalComponent implements AfterViewInit {
           )
           .then((res) => res.map((mirna) => mirna.mirna.hs_nr)),
       );
-      return (await Promise.all(miRNAs$)).flat();
+      return (await Promise.all(miRNAs$))
+        .flat()
+        .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
     },
   });
 
-  miRNAtracks = computed((): Track[] => {
+  miRNAtracks$ = computed((): Track[] => {
     const miRNAs = this.miRNAs$.value();
     if (!miRNAs) {
       return [];
@@ -198,8 +200,19 @@ export class GeneModalComponent implements AfterViewInit {
     });
 
     effect(() => {
-      console.log('Transcripts', this.transcripts$.value());
       this.asDatasource.data = this.transcripts$.value() ?? [];
+    });
+
+    effect(() => {
+      console.log('miRNAs', this.miRNAs$.value());
+    });
+
+    effect(() => {
+      console.log('Edges', this.edges$());
+    });
+
+    effect(() => {
+      console.log('tracks', this.miRNAtracks$());
     });
   }
 
