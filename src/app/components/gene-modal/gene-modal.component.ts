@@ -185,8 +185,10 @@ export class GeneModalComponent implements AfterViewInit {
     } else {
       return {
         chr: geneInfo.chromosome_name,
-        start: geneInfo.start_pos,
-        end: geneInfo.end_pos,
+        range: {
+          start: geneInfo.start_pos,
+          end: geneInfo.end_pos,
+        },
       };
     }
   });
@@ -205,15 +207,7 @@ export class GeneModalComponent implements AfterViewInit {
     });
 
     effect(() => {
-      console.log('miRNAs', this.miRNAs$.value());
-    });
-
-    effect(() => {
-      console.log('Edges', this.edges$());
-    });
-
-    effect(() => {
-      console.log('tracks', this.miRNAtracks$());
+      console.log('location', this.location$());
     });
   }
 
