@@ -65,9 +65,9 @@ export enum GeneSorting {
 }
 
 export enum InteractionSorting {
-  pAdj = 'adjusted p-value',
-  mscor = 'Mscor',
-  Correlation = 'Correlation',
+  pAdj = 'pValue',
+  mscor = 'mscor',
+  Correlation = 'correlation',
 }
 
 export interface Gene {
@@ -157,8 +157,8 @@ export interface CeRNAInteraction {
 }
 
 export interface Network {
-  edges: GeneInteraction[] | TranscriptInteraction[];
-  nodes: GeneNode[] | TranscriptNode[];
+  edges: (GeneInteraction | TranscriptInteraction)[];
+  nodes: (GeneNode | TranscriptNode)[];
 }
 
 export interface CeRNAExpression {
