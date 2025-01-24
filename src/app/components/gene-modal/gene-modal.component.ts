@@ -24,7 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { MatChip, MatChipSet } from '@angular/material/chips';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { AS_DESCRIPTIONS } from '../../constants';
+import { AS_DESCRIPTIONS, IGV_REFGENOME } from '../../constants';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Igv, Location, Track } from '@visa-ge/ng-igv';
 import { ModalsService } from '../modals-service/modals.service';
@@ -120,6 +120,8 @@ export class GeneModalComponent implements AfterViewInit {
         url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
         format: 'bed',
         type: 'annotation',
+        height: 30,
+        displayMode: 'SQUISHED',
         indexed: false,
       };
     });
@@ -192,6 +194,7 @@ export class GeneModalComponent implements AfterViewInit {
       };
     }
   });
+  protected readonly IGV_REFGENOME = IGV_REFGENOME;
 
   constructor() {
     effect(() => {
@@ -204,10 +207,6 @@ export class GeneModalComponent implements AfterViewInit {
 
     effect(() => {
       this.asDatasource.data = this.transcripts$.value() ?? [];
-    });
-
-    effect(() => {
-      console.log('location', this.location$());
     });
   }
 
