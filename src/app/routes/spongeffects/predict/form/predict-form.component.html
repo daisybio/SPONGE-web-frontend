@@ -35,22 +35,24 @@
       <mat-expansion-panel-header>
         <mat-panel-title>Filtering thresholds</mat-panel-title>
       </mat-expansion-panel-header>
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline" class="full-width" >
         <mat-label>mSCor</mat-label>
-        <input formControlName="mscor" matInput type="number">
-        <mat-error>Please provide a number between 0 and 10</mat-error>
+        <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10">
+        <mat-error *ngIf="formGroup.get('mscor')?.hasError('min')">Please provide a number > {{ formGroup.get('mscor')?.errors?.['min']?.min }}</mat-error>
+        <mat-error *ngIf="formGroup.get('mscor')?.hasError('max')">Please provide a number < {{ formGroup.get('mscor')?.errors?.['max']?.max }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>False discovery rate (FDR)</mat-label>
-        <input formControlName="fdr" matInput type="number">
-        <mat-error>Please provide a number between 0 and 0.5</mat-error>
+        <input formControlName="fdr" matInput type="number" min="0" max="1" step="0.10">
+        <mat-error> *ngIf="formGroup.get('fdr')?.hasError('min')">Please provide a number > {{ formGroup.get('fdr')?.errors?.['min']?.min }}</mat-error>
+        <mat-error> *ngIf="formGroup.get('fdr')?.hasError('max')">Please provide a number < {{ formGroup.get('fdr')?.errors?.['max']?.max }}</mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline" class="full-width" min="0" step="1">
         <mat-label>Minimal expression value</mat-label>
         <input formControlName="minExpr" matInput type="number">
-        <mat-error>Please provide a number between 0 and 1.000</mat-error>
+        <mat-error *ngIf="formGroup.get('minExpr')?.hasError('min')">Please provide a number > {{ formGroup.get('minExpr')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
     </mat-expansion-panel>
     <mat-expansion-panel>
@@ -66,21 +68,21 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Minimum module size</mat-label>
-        <input formControlName="minSize" matInput type="number">
-        <mat-error>Please provide a number between 0 and 5.000</mat-error>
+        <input formControlName="minSize" matInput type="number" min="0" step="1">
+        <mat-error *ngIf="formGroup.get('minSize')?.hasError('min')">Please provide a number > {{ formGroup.get('minSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Maximum module size</mat-label>
-        <input formControlName="minSize" matInput type="number">
-        <mat-error>Please provide a number between 0 and 5.000</mat-error>
+        <input formControlName="maxSize" matInput type="number" min="0" step="1">
+        <mat-error *ngIf="formGroup.get('maxSize')?.hasError('min')">Please provide a number > {{ formGroup.get('maxSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
 
-      <mat-checkbox class="check-box" color="primary">
+      <mat-checkbox class="check-box" color="primary" formControlName="logScaling">
         Apply log2 scaling factor to uploaded expression
       </mat-checkbox>
 
-      <mat-checkbox class="check-box" color="primary">
+      <mat-checkbox class="check-box" color="primary" formControlName="predictSubtypes">
         Predict on subtype level (can lead to longer run times)
       </mat-checkbox>
     </mat-expansion-panel>
