@@ -1,6 +1,8 @@
 export const SUBTYPE_DEFAULT = 'Unspecific';
 
-export const API_BASE = 'https://exbio.wzw.tum.de/sponge-api';
+export const API_BASE = 'https://exbio.wzw.tum.de/sponge-api-dev';
+// export const API_BASE = 'http://127.0.0.1:5555/sponge-api';
+
 
 export const AS_DESCRIPTIONS: { [key: string]: string } = {
   SE: 'Skipping Exon',
@@ -14,3 +16,6 @@ export const AS_DESCRIPTIONS: { [key: string]: string } = {
 
 export const SPONGE_EXAMPLE_URL =
   'https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv';
+
+export const EXAMPLE_PREDICTION_URL =
+  'https://exbio.wzw.tum.de/sponge-files/example_prediction.json';
