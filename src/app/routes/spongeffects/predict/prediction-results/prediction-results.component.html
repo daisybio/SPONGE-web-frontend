@@ -10,15 +10,14 @@
   }
 }
 @if (predictService.example_used()) {
-  <mat-expansion-panel class="info-card-small" expanded="false">
-    <mat-expansion-panel-header>
-      <mat-panel-title><mat-icon>info</mat-icon>What do I see?</mat-panel-title>
-    </mat-expansion-panel-header>
-    <div class="info-text-small-div">
-      <p>This plot shows the cancer type predictions of SpongEffects for an example dataset. You can upload your own patient's expression data on the left.</p>
-    </div>
-  </mat-expansion-panel>} 
-
+  <app-info type="panel">
+      <p>This plot shows the cancer type predictions of SpongEffects for an 
+        <a href="https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv" download='GSE123845_exp_tpm_matrix_processed.csv'>example dataset</a>
+        (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123845">GSE123845</a>).
+        You can upload your own expression data on the left.
+      </p>
+  </app-info>
+}
 <!-- @if (!predictionResource.isLoading()) { -->
   <div class="predict-results-plots">
     <div class="type-prediction-div">

@@ -16,7 +16,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { InfoComponent } from '../../../../components/info/info.component';
 
 
 
@@ -31,7 +31,7 @@ declare var Plotly: any;
     CommonModule,
     MatTableModule,
     MatExpansionModule,
-    MatIconModule,
+    InfoComponent
   ],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss'],

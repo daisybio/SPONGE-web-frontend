@@ -4,6 +4,7 @@ import { PredictCancerType } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
 
 export interface Query {
+  useExampleExpression: boolean;
   file: File;
   mscor: number;
   fdr: number;
@@ -55,7 +56,9 @@ export class PredictService {
         //   data: [],
         // });
       }
-      this.example_used.set(false)
+      if (!query.useExampleExpression) {
+        this.example_used.set(false)
+      }
       return await this.backend.predictCancerType(
         query.version,
         query.file,

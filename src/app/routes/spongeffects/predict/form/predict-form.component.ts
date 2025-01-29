@@ -57,7 +57,7 @@ import { VersionsService } from '../../../../services/versions.service';
 export class PredictFormComponent {
   methods = ['gsva', 'ssgsea', 'OE'];
   formGroup = new FormGroup({
-    useExampleExpression: new FormControl<boolean>(false),
+    useExampleExpression: new FormControl<boolean>(false, {nonNullable: true}),
     mscor: new FormControl<number>(0.1, {
       nonNullable: true,
       validators: [Validators.min(0), Validators.max(1)],
@@ -130,7 +130,7 @@ export class PredictFormComponent {
   async showExpressionFile(file: File) {
     this.dialog.open(ExampleFileModalComponent, {
       data: file,
-      height: '400px',
+      height: '410px',
       width: '600px',
     });
   }

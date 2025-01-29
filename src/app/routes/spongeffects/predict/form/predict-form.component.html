@@ -1,4 +1,4 @@
-<form [formGroup]="formGroup">
+<form [formGroup]="formGroup" style="margin: 5px">
   <mat-accordion>
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
@@ -15,7 +15,7 @@
       </div>
 
       @if (!useExampleExpression$()) {
-        <mat-form-field appearance="outline" class="full-width" style="margin: 10px">
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
             <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"/>

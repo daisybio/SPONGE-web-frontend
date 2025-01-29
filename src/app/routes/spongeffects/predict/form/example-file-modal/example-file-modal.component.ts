@@ -56,7 +56,6 @@ export class ExampleFileModalComponent implements OnInit {
   ngOnInit() {
     this.content.then((res) => {
       this.columns = res.meta.fields!;
-      // this.dataSource.value().paginator = this.paginator;
       this.isLoading = false;
     });
   }
