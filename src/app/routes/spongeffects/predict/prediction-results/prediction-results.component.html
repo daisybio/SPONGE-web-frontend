@@ -5,8 +5,11 @@
 } @else {
   @if (!plotTypePredictPieResource.value()) {
     <p>Run a prediction on your custom expression data or on our example to see the results here. Start the prediction on the left.</p>
+  }@else {
+    <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
   }
 }
+<!-- @if (!predictionResource.isLoading()) { -->
   <div class="predict-results-plots">
     <div class="type-prediction-div">
       <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
@@ -31,4 +34,4 @@
     <!-- <div class="type-prediction-text">
       Predicted type over all samples: {{ predictedType$() }}
     </div> -->
-
+<!-- } -->

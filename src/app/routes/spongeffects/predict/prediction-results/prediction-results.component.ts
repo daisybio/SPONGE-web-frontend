@@ -34,11 +34,10 @@ declare var Plotly: any;
 })
 export class PredictionResultsComponent  {
   predictService = inject(PredictService);
-  prediction$ = this.predictService.prediction$;
+  prediction$ = this.predictService.prediction$
   predictionResource = this.predictService._prediction$;
   typePredictPiePlot = viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
-  doneLoading = false
 
   predictionMeta$ = computed(() => this.prediction$()?.meta);
   predictionData$ = computed(() => this.prediction$()?.data);
@@ -56,6 +55,7 @@ export class PredictionResultsComponent  {
     this.refreshPlot();
   });
 
+
   plotTypePredictPieResource = resource({
     request: computed(() => {
       return {
@@ -65,16 +65,17 @@ export class PredictionResultsComponent  {
     loader: async (param) => {
       const data = param.request.data;
       if (data === undefined) return;
-      console.log('resource')
-      console.log(this.plotTypePredictPieResource.isLoading())
-      console.log(this.plotTypePredictPieResource.value())
-      const plot_data = this.extractPredictions(data);
-      console.log('resource')
-      console.log(this.dataSource())
-      
+      const plot_data = this.extractPredictions(data);     
       return await this.plotPredictions(plot_data);
     },
   })
+
+
+  clearEffect = effect(() => {
+    this.plotTypePredictPieResource;
+    this.clearPlot();
+  });
+  
 
   async plotPredictions(plotlyData: PlotlyData): Promise<PlotlyData> {
     return Plotly.newPlot(
@@ -87,119 +88,128 @@ export class PredictionResultsComponent  {
 
   
   extractPredictions(responseJson: any): PlotlyData {
-    const typeGroups: Map<string, string[]> = new Map<string, string[]>();
-    // group predictions by type
-    console.log(responseJson);
+    const typeGroups: Map<string, Map<string, number>> = new Map<string, Map<string, number>>();
     responseJson.data.forEach(
       (entry: { typePrediction: string; subtypePrediction: string }) => {
-        if (typeGroups.has(entry.typePrediction)) {
-          typeGroups.get(entry.typePrediction)?.push(entry.subtypePrediction);
+        if (!typeGroups.has(entry.typePrediction)) {
+          typeGroups.set(entry.typePrediction, new Map<string, number>());
+        }
+        const subtypeMap = typeGroups.get(entry.typePrediction)!;
+        if (subtypeMap.has(entry.subtypePrediction)) {
+          subtypeMap.set(entry.subtypePrediction, subtypeMap.get(entry.subtypePrediction)! + 1);
         } else {
-          typeGroups.set(entry.typePrediction, [entry.subtypePrediction]);
+          subtypeMap.set(entry.subtypePrediction, 1);
         }
       },
     );
 
-    const typeCounts: Map<string, number> = new Map(
-      [...typeGroups.entries()].map((entry) => {
-        return [entry[0], entry[1].length];
+    const sortedTypeCounts: Map<string, Map<string, number>> = new Map(
+      [...typeGroups.entries()].sort((a, b) => {
+        const aCount = [...a[1].values()].reduce((sum, count) => sum + count, 0);
+        const bCount = [...b[1].values()].reduce((sum, count) => sum + count, 0);
+        return bCount - aCount;
       }),
     );
-    // sort by amount of samples
-    const sortedTypeCounts: Map<string, number> = new Map(
-      [...typeCounts.entries()].sort((a, b) => b[1] - a[1]),
-    );
-    let x: number[] = [...sortedTypeCounts.values()];
-    let y: string[] = [...sortedTypeCounts.keys()];
-    // add model accuracy
-    let classPerformanceData = this.plotlyTraces$();
-    // get modules data
-    classPerformanceData = classPerformanceData.filter(
-      (d: { name: string }) => d.name == 'modules',
-    );
-    const oneMeasure = classPerformanceData[0];
-    console.log(oneMeasure);
-    // create map to value
-    const classToMeasure: Map<string, number> = new Map<string, number>();
-    for (let i = 0; i < oneMeasure.x.length; i++) {
-      classToMeasure.set(oneMeasure.y[i], oneMeasure.x[i]);
-    }
-    // add accuracy to y labels
-    y = y.map((label) => {
-      const accuracy = classToMeasure.get(label);
-      return accuracy !== undefined
-        ? `${label} (${accuracy.toFixed(2)})`
-        : label;
-    });
 
-    const accValues: number[] = y.map((x_v) => classToMeasure.get(x_v) ?? 0);
-    // color based on balanced accuracy
-    const barColors: string[] = accValues.map((v) => this.getColorForValue(v));
+    const data: any[] = [];
+    let colorIndex = 0;
 
-    let data = [
-      {
-        x: x,
-        y: y,
-        // text: accValues.map((v) => 'Balanced accuracy: ' + v.toString()),
-        type: 'bar',
-        name: 'type',
-        orientation: 'h',
-        marker: {
-          color: barColors,
-        },
-      },
+    const subtypeColors = [
+      '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+      '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5',
+      '#393b79', '#5254a3', '#6b6ecf', '#9c9ede', '#637939', '#8ca252', '#b5cf6b', '#cedb9c', '#8c6d31', '#bd9e39',
+      '#17becf', '#bcbd22', '#7f7f7f', '#e377c2', '#8c564b', '#9467bd', '#d62728', '#2ca02c', '#ff7f0e', '#1f77b4',
+      '#9edae5', '#dbdb8d', '#c7c7c7', '#f7b6d2', '#c49c94', '#c5b0d5', '#ff9896', '#98df8a', '#ffbb78', '#aec7e8',
+      '#bd9e39', '#8c6d31', '#cedb9c', '#b5cf6b', '#8ca252', '#637939', '#9c9ede', '#6b6ecf', '#5254a3', '#393b79'
     ];
 
-    // add subtype traces
-    if (this.predictedSubtype$() !== undefined) {
-      const subtypeTraces: any[] = [...typeGroups.values()].map((sv) => {
-        return {
-          x: sv.length,
-          y: y,
-          text: sv,
-          name: 'subtypes',
+    sortedTypeCounts.forEach((subtypeMap, type) => {
+      subtypeMap.forEach((count, subtype) => {
+        data.push({
+          x: [count],
+          y: [type],
+          text: [subtype],
+          name: subtype,
           orientation: 'h',
-        };
+          type: 'bar',
+          marker: {
+            color: subtypeColors[colorIndex % subtypeColors.length],
+          },
+        });
+        colorIndex++;
       });
-      data.push(...subtypeTraces);
-    }
+    });
 
     const layout = {
+      barmode: 'stack',
       autosize: true,
-      barmode: 'group',
       margin: {
         l: 250,
         r: 25,
         t: 50,
         b: 50,
       },
+      xaxis: {
+        title: 'Number of classified samples',
+      },
+      showlegend: false, 
+      title: 'Predicted cancer types',
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
-      xaxis: {
-        title: 'Number of samples classified',
-      },
     };
+
     const config = {
       responsive: true,
     };
-    const plot_data = { data: data, layout: layout, config: config };
-    Plotly.newPlot(this.typePredictPiePlot().nativeElement, data, layout, config);
-    this.doneLoading = true;
-    return plot_data;
+
+    return { data, layout, config };
+
+    // this does not work as before because we fetch only class performances for one selected cancer type
+    // also rethink whether it is necessary to show class performance because the accuracy is from other data
+    // add model accuracy
+    // let classPerformanceData = this.plotlyTraces$();
+    // console.log('classPerformanceData');
+    // console.log(classPerformanceData);
+    // // get modules data
+    // classPerformanceData = classPerformanceData.filter(
+    //   (d: { name: string }) => d.name == 'modules',
+    // );
+    // const oneMeasure = classPerformanceData[0];
+    // console.log(oneMeasure);
+    // // create map to value
+    // const classToMeasure: Map<string, number> = new Map<string, number>();
+    // for (let i = 0; i < oneMeasure.x.length; i++) {
+    //   classToMeasure.set(oneMeasure.y[i], oneMeasure.x[i]);
+    // }
+    // // add accuracy to y labels
+    // y = y.map((label) => {
+    //   const accuracy = classToMeasure.get(label);
+    //   return accuracy !== undefined
+    //     ? `${label} (${accuracy.toFixed(2)})`
+    //     : label;
+    // });
+
+    // const accValues: number[] = y.map((x_v) => classToMeasure.get(x_v) ?? 0);
+    // // color based on balanced accuracy
+    // const barColors: string[] = accValues.map((v) => this.getColorForValue(v));
   }
 
-  getColorForValue(value: number): string {
-    const g: number = 140;
-    const r: number = value >= 0.5 ? Math.round(255 * 2 * (1 - value)) : 255;
-    const b: number = 0;
-    return `rgb(${r},${g},${b})`;
-  }
+  // getColorForValue(value: number): string {
+  //   const g: number = 140;
+  //   const r: number = value >= 0.5 ? Math.round(255 * 2 * (1 - value)) : 255;
+  //   const b: number = 0;
+  //   return `rgb(${r},${g},${b})`;
+  // }
 
   refreshPlot() {
     const plotDiv = this.typePredictPiePlot().nativeElement;
     if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
+  }
+
+  clearPlot() {
+    Plotly.purge(this.typePredictPiePlot().nativeElement);
   }
 
   // validateFileContent(file: File): boolean {
