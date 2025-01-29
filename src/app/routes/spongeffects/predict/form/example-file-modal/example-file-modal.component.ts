@@ -3,8 +3,6 @@ import { MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
 import Papa from 'papaparse';
-import { config } from 'rxjs';
-import { ExampleExpression } from '../../../../../interfaces';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -57,9 +55,7 @@ export class ExampleFileModalComponent implements OnInit {
 
   ngOnInit() {
     this.content.then((res) => {
-      // this.dataSource = signal(new MatTableDataSource(res.data));
       this.columns = res.meta.fields!;
-      // this.dataSource.value().paginator = this.paginator;
       this.isLoading = false;
     });
   }

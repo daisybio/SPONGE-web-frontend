@@ -1,7 +1,10 @@
-import { inject, Injectable, resource, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, signal } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
+import { PredictCancerType } from '../../../../interfaces';
+import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
 
 export interface Query {
+  useExampleExpression: boolean;
   file: File;
   mscor: number;
   fdr: number;
@@ -14,30 +17,49 @@ export interface Query {
   version: number;
 }
 
+
 @Injectable({
   providedIn: 'root',
 })
 export class PredictService {
   backend = inject(BackendService);
   private readonly _query$ = signal<Query | undefined>(undefined);
+  _subtypes$ = signal<boolean>(false);
+  example_used = signal<boolean>(false);
+
+  examplePrediction = (async () => {
+    const response = await fetch(EXAMPLE_PREDICTION_URL);
+    return await response.json();
+  })();
 
   readonly _prediction$ = resource({
-    request: this._query$,
-    loader: (param) => {
-      const query = param.request;
+    request: computed(() => {
+      return {
+        query: this._query$(),
+        example: this.examplePrediction,
+    }},
+  ),
+    loader: async (param) => {
+      const query = param.request.query;
       if (!query) {
-        return Promise.resolve({
-          meta: {
-            runtime: 0,
-            level: '',
-            n_samples: 0,
-            type_predict: '',
-            subtype_predict: '',
-          },
-          data: [],
-        });
+        const example =  await this.examplePrediction
+        this.example_used.set(true);
+        return example
+        // || {
+        //   meta: {
+        //     runtime: 0,
+        //     level: '',
+        //     n_samples: 0,
+        //     type_predict: '',
+        //     subtype_predict: '',
+        //   },
+        //   data: [],
+        // });
       }
-      return this.backend.predictCancerType(
+      if (!query.useExampleExpression) {
+        this.example_used.set(false)
+      }
+      return await this.backend.predictCancerType(
         query.version,
         query.file,
         query.predictSubtypes,
@@ -52,8 +74,6 @@ export class PredictService {
     },
   });
 
-  constructor() {}
-
   public get isLoading$() {
     return this._prediction$.isLoading;
   }
@@ -63,6 +83,7 @@ export class PredictService {
   }
 
   request(query: Query) {
+    console.log('request');
     this._query$.set(query);
   }
 }

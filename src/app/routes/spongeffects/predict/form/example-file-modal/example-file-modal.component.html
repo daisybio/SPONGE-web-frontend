@@ -1,21 +1,27 @@
-<div>
+<div style="margin: 10px;">
     @if (dataSourceResource.isLoading()) {
-        <mat-spinner mode="indeterminate"></mat-spinner>
+    <div style="width: 100%; height: 260px; display: flex; justify-content: center; align-items: center;">
+            <mat-spinner mode="indeterminate"></mat-spinner>
+        </div>
     } @else {
         @if (!dataSourceResource.value()) {
             <p>No data available</p>
         }
     }
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-        <ng-container *ngFor="let key of columns" [matColumnDef]="key">
-            <th mat-header-cell *matHeaderCellDef> {{ key }} </th>
-            <td mat-cell *matCellDef="let element"> {{ element[key] }} </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="columns"></tr>
-        <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-    </table>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]"
-        showFirstLastButtons
-        aria-label="Select page">
-    </mat-paginator>
+    <div class="table-container" style="overflow: auto; max-height: 320px;">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <ng-container *ngFor="let key of columns; let i = index" [matColumnDef]="key" [sticky]="i === 0">
+                <th mat-header-cell *matHeaderCellDef> {{ key }} </th>
+                <td mat-cell *matCellDef="let element"> {{ element[key] }} </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+        </table>
+    </div>
+    <div style="align-self: bottom; padding-left: 8px; padding-right: 8px;">
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+            showFirstLastButtons
+            aria-label="Select page">
+        </mat-paginator>
+    </div>
 </div>

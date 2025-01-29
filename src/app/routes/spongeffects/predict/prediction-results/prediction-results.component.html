@@ -5,8 +5,20 @@
 } @else {
   @if (!plotTypePredictPieResource.value()) {
     <p>Run a prediction on your custom expression data or on our example to see the results here. Start the prediction on the left.</p>
+  }@else {
+    <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
   }
 }
+@if (predictService.example_used()) {
+  <app-info type="panel">
+      <p>This plot shows the cancer type predictions of SpongEffects for an 
+        <a href="https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv" download='GSE123845_exp_tpm_matrix_processed.csv'>example dataset</a>
+        (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123845">GSE123845</a>).
+        You can upload your own expression data on the left.
+      </p>
+  </app-info>
+}
+<!-- @if (!predictionResource.isLoading()) { -->
   <div class="predict-results-plots">
     <div class="type-prediction-div">
       <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
@@ -31,5 +43,4 @@
     <!-- <div class="type-prediction-text">
       Predicted type over all samples: {{ predictedType$() }}
     </div> -->
-
-
+<!-- } -->
