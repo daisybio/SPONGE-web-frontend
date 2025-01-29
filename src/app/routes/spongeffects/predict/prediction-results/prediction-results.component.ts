@@ -8,7 +8,7 @@ import {
   resource,
   viewChild,
 } from '@angular/core';
-import { PlotlyData, PredictCancerType } from '../../../../interfaces';
+import { PlotlyData } from '../../../../interfaces';
 import { ClassPerformancePlotComponent } from '../../explore/plots/class-performance-plot/class-performance-plot.component';
 import { PredictFormComponent } from '../form/predict-form.component';
 import { PredictService } from '../service/predict.service';
@@ -17,7 +17,6 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { InfoComponent } from '../../../../components/info/info.component';
-
 
 
 declare var Plotly: any;
@@ -40,7 +39,8 @@ export class PredictionResultsComponent  {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$
   predictionResource = this.predictService._prediction$;
-  typePredictPiePlot = viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
+  typePredictPiePlot =
+    viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
 
   predictionMeta$ = computed(() => this.prediction$()?.meta);
@@ -68,7 +68,7 @@ export class PredictionResultsComponent  {
       const plot_data = this.extractPredictions(data);     
       return await this.plotPredictions(plot_data);
     },
-  })
+  });
 
 
   // clearEffect = effect(() => {
@@ -86,7 +86,6 @@ export class PredictionResultsComponent  {
     );
   }
 
-  
   extractPredictions(responseJson: any): PlotlyData {
     const typeGroups: Map<string, Map<string, number>> = new Map<string, Map<string, number>>();
     responseJson.data.forEach(
@@ -225,6 +224,4 @@ export class PredictionResultsComponent  {
   //   // Additional content validation can be added here
   //   return true;
   // }
-
-  
 }

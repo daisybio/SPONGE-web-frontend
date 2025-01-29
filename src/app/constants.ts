@@ -19,3 +19,14 @@ export const SPONGE_EXAMPLE_URL =
 
 export const EXAMPLE_PREDICTION_URL =
   'https://exbio.wzw.tum.de/sponge-files/example_prediction.json';
+export const IGV_REFGENOME = {
+  id: 'hg38',
+  name: 'Human (GRCh38/hg38)',
+  assembly: 'GCA_000001405.15',
+  taxon: 9606,
+  fastaURL:
+    'https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa',
+  indexURL:
+    'https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai',
+  refGeneURL: 'https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.txt.gz',
+};

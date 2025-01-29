@@ -25,7 +25,7 @@
           <mat-tab label="Expression heatmap">
             <app-heatmap [refreshSignal]="refresh$()"></app-heatmap>
           </mat-tab>
-          <mat-tab label="Nodes">
+          <mat-tab [label]="(capitalize(level()) || 'Gene') + 's'">
             <app-nodes></app-nodes>
           </mat-tab>
           <mat-tab label="Interactions">

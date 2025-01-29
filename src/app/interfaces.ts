@@ -1,294 +1,286 @@
 export interface Dataset {
-  data_origin: string,
-  dataset_ID: number,
-  disease_name: string,
-  disease_subtype: string | null,
-  disease_type: string,
-  download_url: string,
-  sponge_db_version: number
+  data_origin: string;
+  dataset_ID: number;
+  disease_name: string;
+  disease_subtype: string | null;
+  disease_type: string;
+  download_url: string;
+  sponge_db_version: number;
 }
 
 export interface SpongeRun {
-  "sponge_run": {
-    "dataset": {
-      "data_origin": string,
-      "dataset_ID": number,
-      "disease_name": string
-    },
-    "sponge_run_ID": number
-  }
+  sponge_run: {
+    dataset: {
+      data_origin: string;
+      dataset_ID: number;
+      disease_name: string;
+    };
+    sponge_run_ID: number;
+  };
 }
 
 export interface RunInfo {
-  "coefficient_direction": string,
-  "coefficient_threshold": string,
-  "dataset": {
-    "dataset_ID": number,
-    "disease_name": string
-  },
-  "f_test": boolean,
-  "f_test_p_adj_threshold": number,
-  "ks": string,
-  "log_level": string,
-  "m_max": number,
-  "min_corr": number,
-  "number_of_datasets": number,
-  "number_of_samples": number,
-  "sponge_run_ID": number,
-  "variance_cutoff": string
+  coefficient_direction: string;
+  coefficient_threshold: string;
+  dataset: {
+    dataset_ID: number;
+    disease_name: string;
+  };
+  f_test: boolean;
+  f_test_p_adj_threshold: number;
+  ks: string;
+  log_level: string;
+  m_max: number;
+  min_corr: number;
+  number_of_datasets: number;
+  number_of_samples: number;
+  sponge_run_ID: number;
+  variance_cutoff: string;
 }
 
 export interface DatasetInfo {
-  dataset_ID: number,
-  disease_name: string,
-  data_origin: string,
-  disease_type: string,
-  download_url: string,
-  disease_subtype: string,
-  study_abbreviation: string,
-  version: number,
-  number_of_samples: number
+  dataset_ID: number;
+  disease_name: string;
+  data_origin: string;
+  disease_type: string;
+  download_url: string;
+  disease_subtype: string;
+  study_abbreviation: string;
+  version: number;
+  number_of_samples: number;
 }
 
 export interface OverallCounts {
-  count_interactions: number,
-  count_interactions_sign: number,
-  count_shared_miRNAs: number,
-  disease_name: string,
-  sponge_run_ID: number
+  count_interactions: number;
+  count_interactions_sign: number;
+  count_shared_miRNAs: number;
+  disease_name: string;
+  sponge_run_ID: number;
 }
 
 export enum GeneSorting {
-  Betweenness = "betweenness",
-  Degree = "degree",
-  Eigenvector = "eigenvector"
+  Betweenness = 'betweenness',
+  Degree = 'degree',
+  Eigenvector = 'eigenvector',
 }
 
 export enum InteractionSorting {
-  pAdj = "adjusted p-value",
-  mScor = "MScor",
-  Correlation = "Correlation"
+  pAdj = 'pValue',
+  mscor = 'mscor',
+  Correlation = 'correlation',
 }
 
 export interface Gene {
-  ensg_number: string,
-  gene_symbol?: string
+  ensg_number: string;
+  gene_symbol?: string;
 }
 
 export interface Transcript {
-  enst_number: string,
-  gene: Gene
+  enst_number: string;
+  gene: Gene;
 }
 
 export interface GeneNode extends SpongeRun {
-  betweenness: number,
-  eigenvector: number,
-  gene: Gene,
-  node_degree: number
+  betweenness: number;
+  eigenvector: number;
+  gene: Gene;
+  node_degree: number;
 }
 
 export interface TranscriptNode extends SpongeRun {
-  betweenness: number,
-  eigenvector: number,
-  transcript: Transcript,
-  node_degree: number
+  betweenness: number;
+  eigenvector: number;
+  transcript: Transcript;
+  node_degree: number;
 }
 
 export interface GeneInteraction extends SpongeRun {
-  "correlation": number,
-  "gene1": Gene,
-  "gene2": Gene,
-  "mscor": number,
-  "p_value": number,
+  correlation: number;
+  gene1: Gene;
+  gene2: Gene;
+  mscor: number;
+  p_value: number;
 }
 
 export interface TranscriptInteraction extends SpongeRun {
-  "correlation": number,
-  "mscor": number,
-  "p_value": number,
-  "transcript_1": Transcript,
-  "transcript_2": Transcript
+  correlation: number;
+  mscor: number;
+  p_value: number;
+  transcript_1: Transcript;
+  transcript_2: Transcript;
 }
 
 export interface BrowseQuery {
-  level: 'gene' | 'transcript',
-  dataset: Dataset,
-  showOrphans: boolean,
-  geneSorting: GeneSorting,
-  maxNodes: number,
-  minDegree: number,
-  minBetweenness: number,
-  minEigen: number,
-  interactionSorting: InteractionSorting,
-  maxInteractions: number,
-  maxPValue: number,
-  minMScore: number
+  level: 'gene' | 'transcript';
+  dataset: Dataset;
+  showOrphans: boolean;
+  geneSorting: GeneSorting;
+  maxNodes: number;
+  minDegree: number;
+  minBetweenness: number;
+  minEigen: number;
+  interactionSorting: InteractionSorting;
+  maxInteractions: number;
+  maxPValue: number;
+  minMscor: number;
 }
 
 export interface CeRNA {
-  betweenness: number,
-  eigenvector: number,
-  gene: Gene,
-  node_degree: number
+  betweenness: number;
+  eigenvector: number;
+  gene: Gene;
+  node_degree: number;
   run: {
     dataset: {
-      data_origin: string,
-      dataset_ID: number,
-      disease_name: string
-    },
-    run_ID: number
-  }
+      data_origin: string;
+      dataset_ID: number;
+      disease_name: string;
+    };
+    run_ID: number;
+  };
 }
 
 export interface CeRNAInteraction {
-  "correlation": number,
-  "gene1": Gene,
-  "gene2": Gene,
-  "mscor": number,
-  "p_value": number,
-  "run": {
-    "dataset": {
-      "data_origin": string,
-      "dataset_ID": number,
-      "disease_name": string
-    },
-    "run_ID": number
-  }
+  correlation: number;
+  gene1: Gene;
+  gene2: Gene;
+  mscor: number;
+  p_value: number;
+  run: {
+    dataset: {
+      data_origin: string;
+      dataset_ID: number;
+      disease_name: string;
+    };
+    run_ID: number;
+  };
 }
 
-export interface CeRNAQuery {
-  disease: Dataset,
-  geneSorting: GeneSorting,
-  maxGenes: number,
-  minDegree: number,
-  minBetweenness: number,
-  minEigen: number,
-  interactionSorting: InteractionSorting,
-  maxInteractions: number,
-  maxPValue: number,
-  minMScore: number
+export interface Network {
+  edges: (GeneInteraction | TranscriptInteraction)[];
+  nodes: (GeneNode | TranscriptNode)[];
 }
 
 export interface CeRNAExpression {
-  "dataset": string,
-  "expr_value": number,
-  "gene": Gene,
-  "sample_ID": string
+  dataset: string;
+  expr_value: number;
+  gene: Gene;
+  sample_ID: string;
 }
 
 export interface GeneExpression {
-  "dataset": string,
-  "expr_value": number,
-  "gene": Gene,
-  "sample_ID": string
+  dataset: string;
+  expr_value: number;
+  gene: Gene;
+  sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  "dataset": string,
-  "expr_value": number,
-  "sample_ID": string,
-  "transcript": Transcript
+  dataset: string;
+  expr_value: number;
+  sample_ID: string;
+  transcript: Transcript;
 }
 
 export interface SurvivalRate {
-  "dataset": string,
-  "gene": Gene,
-  "overexpression": number,
-  "patient_information": {
-    "disease_status": number,
-    "sample_ID": string,
-    "survival_time": number
-  }
+  dataset: string;
+  gene: Gene;
+  overexpression: number;
+  patient_information: {
+    disease_status: number;
+    sample_ID: string;
+    survival_time: number;
+  };
 }
 
 export interface SurvivalPValue {
-  "dataset": string,
-  "gene": Gene,
-  "pValue": number
+  dataset: string;
+  gene: Gene;
+  pValue: number;
 }
 
 export interface GeneCount extends SpongeRun {
-  "count_all": number,
-  "count_sign": number,
-  "gene": Gene
+  count_all: number;
+  count_sign: number;
+  gene: Gene;
 }
 
 export interface GeneInfo {
-  chromosome_name: string,
-  cytoband: string,
-  description: string,
-  end_pos: number,
-  ensg_number: string,
-  gene_symbol: string,
-  gene_type: string,
-  start_pos: number
+  chromosome_name: string;
+  cytoband: string;
+  description: string;
+  end_pos: number;
+  ensg_number: string;
+  gene_symbol: string;
+  gene_type: string;
+  start_pos: number;
 }
 
 export interface TranscriptInfo {
-  ensg_number: string,
-  transcript_type: string,
-  start_pos: number,
-  end_pos: number,
-  canonical_transcript: number
+  ensg_number: string;
+  transcript_type: string;
+  start_pos: number;
+  end_pos: number;
+  canonical_transcript: number;
 }
 
 export interface TranscriptInfoWithChromosome extends TranscriptInfo {
-  chromosome_name: string
+  chromosome_name: string;
 }
 
 export interface GOTerm {
-  description: string,
-  gene: Gene,
-  gene_ontology_symbol: string
+  description: string;
+  gene: Gene;
+  gene_ontology_symbol: string;
 }
 
 export interface Hallmark {
-  gene: Gene,
-  hallmark: string
+  gene: Gene;
+  hallmark: string;
 }
 
 export interface WikiPathway {
-  gene: Gene,
-  wp_key: string
+  gene: Gene;
+  wp_key: string;
 }
 
 // from spongEffects
 // route responses
 
 export interface SpongEffectsRun {
-  spongeEffects_run_ID: number,
-  m_scor_threshold: number,
-  p_adjust_threshold: number,
-  modules_cutoff: number,
-  bin_size: number,
-  min_size: number,
-  max_size: number,
-  min_expr: number,
-  method: string,
-  cv_folds: number
-  level: string,
-  sponge_run_ID: number,
-  m_max: number,
-  log_level: string,
-  sponge_db_version: number,
-  dataset_ID: number,
-  disease_name: string,
-  data_origin: string,
-  disease_type: string,
-  download_url: string,
-  disease_subtype: string,
+  spongeEffects_run_ID: number;
+  m_scor_threshold: number;
+  p_adjust_threshold: number;
+  modules_cutoff: number;
+  bin_size: number;
+  min_size: number;
+  max_size: number;
+  min_expr: number;
+  method: string;
+  cv_folds: number;
+  level: string;
+  sponge_run_ID: number;
+  m_max: number;
+  log_level: string;
+  sponge_db_version: number;
+  dataset_ID: number;
+  disease_name: string;
+  data_origin: string;
+  disease_type: string;
+  download_url: string;
+  disease_subtype: string;
 }
 
 export interface RunPerformance {
-  model_type: string,
-  split_type: string,
-  accuracy: number,
-  kappa: number,
-  accuracy_lower: number,
-  accuracy_upper: number,
-  accuracy_null: number,
-  accuracy_p_value: number,
-  mcnemar_p_value: number
+  model_type: string;
+  split_type: string;
+  accuracy: number;
+  kappa: number;
+  accuracy_lower: number;
+  accuracy_upper: number;
+  accuracy_null: number;
+  accuracy_p_value: number;
+  mcnemar_p_value: number;
 }
 
 export interface RunClassPerformance {
@@ -371,48 +363,48 @@ export interface PredictCancerType {
 }
 
 export interface ExploreQuery {
-  selectedCancer: string,
-  selectedLevel: string
+  selectedCancer: string;
+  selectedLevel: string;
 }
 
 // other interfaces for spongEffects
 
 export interface Metric {
-  name: string,
-  split: string
-  lower: number,
-  upper: number,
-  idx: number
+  name: string;
+  split: string;
+  lower: number;
+  upper: number;
+  idx: number;
 }
 
 export interface SelectElement {
-  value: string,
-  viewValue: string
+  value: string;
+  viewValue: string;
 }
 
 export interface CancerInfo {
-  text: string[],
+  text: string[];
   link: string;
 }
 
 export interface PlotData {
-  x: number[],
-  y: number[]
+  x: number[];
+  y: number[];
 }
 
 export interface PlotlyData {
-  data: any,
-  layout?: any,
-  config?: any
+  data: any;
+  layout?: any;
+  config?: any;
 }
 
 export interface Tab extends SelectElement {
-  icon: string
+  icon: string;
 }
 
 export interface LinearRegression {
-  slope: number,
-  x0: number
+  slope: number;
+  x0: number;
 }
 
 export interface ExampleExpression {
@@ -424,79 +416,78 @@ export interface ExampleExpression {
   sampleN: number;
 }
 
-
 export interface AlternativeSplicingEvent {
-  alternative_splicing_event_transcripts_ID: number,
-  event_name: string,
-  event_type: string,
+  alternative_splicing_event_transcripts_ID: number;
+  event_name: string;
+  event_type: string;
   transcript: {
-    enst_number: string
-  }
+    enst_number: string;
+  };
 }
 
 export interface MiRNA {
-  hs_nr: string,
-  mir_ID: string
+  hs_nr: string;
+  mir_ID: string;
 }
 
 export interface TranscriptMiRNA extends SpongeRun {
-  transcript: Transcript,
-  mirna: MiRNA,
-  coefficient: number
+  transcript: Transcript;
+  mirna: MiRNA;
+  coefficient: number;
 }
 
 export interface GeneMiRNA extends SpongeRun {
-  gene: Gene,
-  mirna: MiRNA,
-  coefficient: number
+  gene: Gene;
+  mirna: MiRNA;
+  coefficient: number;
 }
 
 export interface NetworkResult {
-  subtype: {},
+  subtype: {};
   type: {
-    "euclidean_distances": {
-      labels: string[],
-      x: number[],
-      y: number[]
-    },
+    euclidean_distances: {
+      labels: string[];
+      x: number[];
+      y: number[];
+    };
     scores: {
-      labels: string[],
-      values: number[][]
-    }
-  }
+      labels: string[];
+      values: number[][];
+    };
+  };
 }
 
 export interface Comparison {
-  comparison_ID: number,
-  condition_1: string,
-  condition_2: string,
-  dataset_1: Dataset,
-  dataset_2: Dataset,
-  gene_transcript: 'gene' | 'transcript'
+  comparison_ID: number;
+  condition_1: string;
+  condition_2: string;
+  dataset_1: Dataset;
+  dataset_2: Dataset;
+  gene_transcript: 'gene' | 'transcript';
 }
 
 export interface GseaResult {
-  es: number,
-  fdr: number,
-  fwerp: number,
-  gene_percent: number,
-  nes: number,
-  pvalue: number,
-  tag_percent: string,
-  term: string,
+  es: number;
+  fdr: number;
+  fwerp: number;
+  gene_percent: number;
+  nes: number;
+  pvalue: number;
+  tag_percent: string;
+  term: string;
   lead_genes: {
-    gene: Gene,
-    gsea_lead_genes_ID: number
-  }[],
+    gene: Gene;
+    gsea_lead_genes_ID: number;
+  }[];
   matched_genes: {
-    gene: Gene,
-    gsea_matched_genes_ID: number
-  }
+    gene: Gene;
+    gsea_matched_genes_ID: number;
+  };
 }
 
 export interface SpongEffectsModule {
-  ensemblID: string,
-  symbol: string,
-  meanGiniDecrease: number,
-  meanAccuracyDecrease: number,
+  ensemblID: string;
+  symbol: string;
+  meanGiniDecrease: number;
+  meanAccuracyDecrease: number;
 }

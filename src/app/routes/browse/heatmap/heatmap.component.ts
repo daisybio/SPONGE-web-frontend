@@ -1,25 +1,34 @@
-import {Component, computed, effect, ElementRef, inject, input, OnDestroy, resource, viewChild} from '@angular/core';
-import {BrowseService} from "../../../services/browse.service";
-import {BackendService} from "../../../services/backend.service";
-import {VersionsService} from "../../../services/versions.service";
-import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  OnDestroy,
+  resource,
+  viewChild,
+} from '@angular/core';
+import { BrowseService } from '../../../services/browse.service';
+import { BackendService } from '../../../services/backend.service';
+import { VersionsService } from '../../../services/versions.service';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { capitalize } from 'lodash';
 
 declare const Plotly: any;
 
-
 @Component({
   selector: 'app-heatmap',
-  imports: [
-    MatProgressSpinner
-  ],
+  imports: [MatProgressSpinner],
   templateUrl: './heatmap.component.html',
-  styleUrl: './heatmap.component.scss'
+  styleUrl: './heatmap.component.scss',
 })
 export class HeatmapComponent implements OnDestroy {
   browseService = inject(BrowseService);
   backend = inject(BackendService);
   versions = inject(VersionsService);
 
+  level$ = this.browseService.level$;
   refreshSignal = input.required<any>();
   heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
 
@@ -29,24 +38,33 @@ export class HeatmapComponent implements OnDestroy {
         nodes: this.browseService.nodes$(),
         disease: this.browseService.disease$(),
         level: this.browseService.level$(),
-        version: this.versions.versionReadOnly()()
-      }
+        version: this.versions.versionReadOnly()(),
+      };
     }),
     loader: async (param) => {
       const nodes = param.request.nodes;
       const disease = param.request.disease;
       const version = param.request.version;
       const level = param.request.level;
-      if (nodes === undefined || disease === undefined || level === undefined) return;
+      if (nodes === undefined || disease === undefined || level === undefined)
+        return;
 
-      const identifiers = nodes.map(node => BrowseService.getNodeID(node));
+      const identifiers = nodes.map((node) => BrowseService.getNodeID(node));
 
-      const expression = await this.backend.getExpression(version, identifiers, disease, level);
+      const expression = await this.backend.getExpression(
+        version,
+        identifiers,
+        disease,
+        level,
+      );
 
       const expressionMap = new Map<string, Map<string, number>>();
       const samples = new Set<string>();
       for (const expr of expression) {
-        const identifier = 'gene' in expr ? expr.gene.gene_symbol || expr.gene.ensg_number : expr.transcript.enst_number;
+        const identifier =
+          'gene' in expr
+            ? expr.gene.gene_symbol || expr.gene.ensg_number
+            : expr.transcript.enst_number;
         if (!expressionMap.has(identifier)) {
           expressionMap.set(identifier, new Map<string, number>());
         }
@@ -56,15 +74,17 @@ export class HeatmapComponent implements OnDestroy {
 
       const geneSymbols = Array.from(expressionMap.keys());
       const sampleIDs = Array.from(samples);
-      const values = geneSymbols.map(gene => sampleIDs.map(sample => expressionMap.get(gene)!.get(sample)));
+      const values = geneSymbols.map((gene) =>
+        sampleIDs.map((sample) => expressionMap.get(gene)!.get(sample)),
+      );
 
       return {
         x: sampleIDs,
         y: geneSymbols,
         z: values,
-        type: 'heatmap'
+        type: 'heatmap',
       };
-    }
+    },
   });
 
   refreshEffect = effect(() => {
@@ -79,15 +99,15 @@ export class HeatmapComponent implements OnDestroy {
     const heatmap = this.heatmap().nativeElement;
 
     Plotly.newPlot(heatmap, [data], {
-      title: 'Expression heatmap',
+      title: `${capitalize(this.level$())} Expression Heatmap - ${capitalize(this.browseService.disease$()?.disease_name)}`,
       xaxis: {
         title: 'Sample ID',
-        automargin: true
+        automargin: true,
       },
       yaxis: {
-        title: 'Node',
-        automargin: true
-      }
+        title: capitalize(this.level$()),
+        automargin: true,
+      },
     });
   });
 

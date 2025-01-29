@@ -1,5 +1,5 @@
 <form [formGroup]="formGroup">
-  <app-disease-selector [diseases$]="diseases$()" (selected)="activeDataset.set($event)"></app-disease-selector>
+  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
 
   @if (version() > 1) {
     <div class="card-container">
@@ -62,8 +62,8 @@
         <input formControlName="maxPValue" matInput max="0.2" min="0.025" step="0.025" type="number"/>
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>Min. MScore</mat-label>
-        <input formControlName="minMScore" matInput max="1" min="0.1" step="0.05" type="number"/>
+        <mat-label>Min. mscor</mat-label>
+        <input formControlName="minMscor" matInput max="1" min="0.1" step="0.05" type="number"/>
       </mat-form-field>
     </mat-expansion-panel>
   </mat-accordion>
