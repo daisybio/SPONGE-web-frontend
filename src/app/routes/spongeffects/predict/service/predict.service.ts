@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, Resource, resource, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, signal } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
 import { PredictCancerType } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
@@ -23,6 +23,7 @@ export interface Query {
 export class PredictService {
   backend = inject(BackendService);
   private readonly _query$ = signal<Query | undefined>(undefined);
+  _subtypes$ = signal<boolean>(false);
 
   examplePrediction = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);

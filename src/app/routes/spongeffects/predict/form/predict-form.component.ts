@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -92,6 +92,15 @@ export class PredictFormComponent {
   useExampleExpression$ = computed(
     () => this.query$()?.useExampleExpression || false,
   );
+
+  subtype_effect = effect(() => {
+    console.log('subtype effect form');
+    if (this.query$()?.predictSubtypes) {
+      this.predictService._subtypes$.set(true)
+    } else {
+      this.predictService._subtypes$.set(false)
+    }
+  });
 
   versionService = inject(VersionsService);
 
