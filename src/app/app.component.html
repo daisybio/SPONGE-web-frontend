@@ -1,6 +1,6 @@
 <mat-toolbar>
   <a mat-button routerLink="">SPONGE</a>
-  <mat-button-toggle-group [(ngModel)]="version">
+  <mat-button-toggle-group [(ngModel)]="version"  [disabled]="disableVersionToggle">
     <mat-button-toggle [value]="1">v1</mat-button-toggle>
     <mat-button-toggle [value]="2">v2</mat-button-toggle>
   </mat-button-toggle-group>
