@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>{{ gene.gene_symbol || gene.ensg_number }}</h1>
 <mat-dialog-content>
-  <mat-tab-group>
+  <mat-tab-group [(selectedIndex)]="activeTab$" preserveContent>
     <mat-tab label="General information">
       <mat-accordion>
         <mat-expansion-panel expanded>
@@ -125,6 +125,16 @@
 
       </mat-tab>
     }
+    <mat-tab label="Genome view">
+      @if (miRNAtracks$.isLoading()) {
+        <div class="spinner-container">
+          <mat-spinner mode="indeterminate"></mat-spinner>
+        </div>
+      } @else {
+        <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
+             [tracks]="miRNAtracks$.value() || []"></igv>
+      }
+    </mat-tab>
 
   </mat-tab-group>
 </mat-dialog-content>

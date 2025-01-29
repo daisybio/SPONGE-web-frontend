@@ -7,34 +7,29 @@ import {
   Resource,
   resource,
   ResourceRef,
-  viewChild
+  viewChild,
 } from '@angular/core';
-import {FormsModule} from "@angular/forms";
-import {CarouselComponent, SlideComponent} from "ngx-bootstrap/carousel";
-import {BackendService} from "../../services/backend.service";
-import {Dataset, OverallCounts} from "../../interfaces";
-import {VersionsService} from "../../services/versions.service";
-import {fromEvent} from "rxjs";
-import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import { FormsModule } from '@angular/forms';
+import { CarouselComponent, SlideComponent } from 'ngx-bootstrap/carousel';
+import { BackendService } from '../../services/backend.service';
+import { Dataset, OverallCounts } from '../../interfaces';
+import { VersionsService } from '../../services/versions.service';
+import { fromEvent } from 'rxjs';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 declare const Plotly: any;
 
 @Component({
   selector: 'app-home',
-  imports: [
-    FormsModule,
-    CarouselComponent,
-    SlideComponent,
-    MatProgressSpinner
-  ],
+  imports: [FormsModule, CarouselComponent, SlideComponent, MatProgressSpinner],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrl: './home.component.scss',
 })
 export class HomeComponent implements OnDestroy {
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
 
-  overallCounts: ResourceRef<OverallCounts[]>;
-  diseases: Resource<Dataset[]>;
+  overallCounts: ResourceRef<OverallCounts[] | undefined>;
+  diseases: Resource<Dataset[] | undefined>;
 
   plotData$ = computed(() => this.prepareData(this.overallCounts.value()));
   updatePlotEffect = effect(() => {
@@ -50,21 +45,24 @@ export class HomeComponent implements OnDestroy {
 
       yaxis: {
         type: 'log',
-        automargin: true
+        automargin: true,
       },
       margin: {
-        b: 300
-      }
+        b: 300,
+      },
     });
-  })
+  });
 
-  constructor(private backend: BackendService, versionsService: VersionsService) {
+  constructor(
+    private backend: BackendService,
+    versionsService: VersionsService,
+  ) {
     const version = versionsService.versionReadOnly();
     this.diseases = versionsService.diseases$();
 
     this.overallCounts = resource({
       request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request)
+      loader: (param) => this.backend.getOverallCounts(param.request),
     });
 
     fromEvent(window, 'resize').subscribe(() => {
@@ -95,16 +93,20 @@ export class HomeComponent implements OnDestroy {
       return acc;
     }, new Map<string, number>());
 
-    const aggCounts = Array.from(aggregated.entries()).map(([disease, count]) => ({
-      disease,
-      count
-    }));
+    const aggCounts = Array.from(aggregated.entries()).map(
+      ([disease, count]) => ({
+        disease,
+        count,
+      }),
+    );
     const sortedCounts = aggCounts.sort((a, b) => b.count - a.count);
 
-    return [{
-      x: sortedCounts.map(c => c.disease),
-      y: sortedCounts.map(c => c.count),
-      type: 'bar'
-    }];
+    return [
+      {
+        x: sortedCounts.map((c) => c.disease),
+        y: sortedCounts.map((c) => c.count),
+        type: 'bar',
+      },
+    ];
   }
 }

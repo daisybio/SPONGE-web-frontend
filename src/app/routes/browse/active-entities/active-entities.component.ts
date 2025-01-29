@@ -1,50 +1,46 @@
-import {Component, computed, inject} from '@angular/core';
-import {MatTabsModule} from "@angular/material/tabs";
-import {BrowseService} from "../../../services/browse.service";
-import {Gene, GeneInteraction, Transcript, TranscriptInteraction} from "../../../interfaces";
-import {MatCardModule} from "@angular/material/card";
-import {MatDialog} from "@angular/material/dialog";
-import {GeneModalComponent} from "../../../components/gene-modal/gene-modal.component";
-import {MatAnchor, MatButton} from "@angular/material/button";
-import {TranscriptModalComponent} from "../../../components/transcript-modal/transcript-modal.component";
-import {InteractionModalComponent} from "../../../components/interaction-modal/interaction-modal.component";
-import {MatTooltip} from "@angular/material/tooltip";
+import { Component, computed, inject } from '@angular/core';
+import { MatTabsModule } from '@angular/material/tabs';
+import { BrowseService } from '../../../services/browse.service';
+import {
+  Gene,
+  GeneInteraction,
+  Transcript,
+  TranscriptInteraction,
+} from '../../../interfaces';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
+import { MatAnchor, MatButton } from '@angular/material/button';
+import { InteractionModalComponent } from '../../../components/interaction-modal/interaction-modal.component';
+import { MatTooltip } from '@angular/material/tooltip';
+import { ModalsService } from '../../../components/modals-service/modals.service';
 
 @Component({
   selector: 'app-active-entities',
-  imports: [
-    MatTabsModule,
-    MatCardModule,
-    MatButton,
-    MatAnchor,
-    MatTooltip
-  ],
+  imports: [MatTabsModule, MatCardModule, MatButton, MatAnchor, MatTooltip],
   templateUrl: './active-entities.component.html',
-  styleUrl: './active-entities.component.scss'
+  styleUrl: './active-entities.component.scss',
 })
 export class ActiveEntitiesComponent {
   readonly dialog = inject(MatDialog);
-  gProfilerUrl = computed(() => BrowseService.getGProfilerUrlForNodes(this.nodes$()));
   protected BrowseService = BrowseService;
+  protected modalsService = inject(ModalsService);
   protected readonly browseService = inject(BrowseService);
   nodes$ = this.browseService.activeNodes$;
+  gProfilerUrl = computed(() =>
+    BrowseService.getGProfilerUrlForNodes(this.nodes$()),
+  );
   edges$ = this.browseService.activeInteractions$;
+  level$ = this.browseService.level$;
 
-  openInteractionModal(interaction: GeneInteraction | TranscriptInteraction): void {
+  openInteractionModal(
+    interaction: GeneInteraction | TranscriptInteraction,
+  ): void {
     this.dialog.open(InteractionModalComponent, {
-      data: interaction
+      data: interaction,
     });
   }
 
   openModal(entity: Gene | Transcript): void {
-    if ('ensg_number' in entity) {
-      this.dialog.open(GeneModalComponent, {
-        data: entity
-      })
-    } else {
-      this.dialog.open(TranscriptModalComponent, {
-        data: entity
-      })
-    }
+    this.modalsService.openNodeDialog(entity);
   }
 }

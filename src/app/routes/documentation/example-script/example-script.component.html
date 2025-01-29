@@ -1,0 +1,10 @@
+<h1>Example Python Script</h1>
+<button (click)="copy()" mat-stroked-button>
+  <mat-icon>content_copy</mat-icon>
+  Copy
+</button>
+<button (click)="download()" mat-stroked-button>
+  <mat-icon>download</mat-icon>
+  Download
+</button>
+<pre><code [highlight]="(content$ | async) || 'Something went wrong'" language="python"></code></pre>
