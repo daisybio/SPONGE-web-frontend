@@ -24,6 +24,7 @@ export class PredictService {
   backend = inject(BackendService);
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
+  example_used = signal<boolean>(false);
 
   examplePrediction = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);
@@ -41,7 +42,7 @@ export class PredictService {
       const query = param.request.query;
       if (!query) {
         const example =  await this.examplePrediction
-        console.log('resource service')
+        this.example_used.set(true);
         return example
         // || {
         //   meta: {
@@ -54,6 +55,7 @@ export class PredictService {
         //   data: [],
         // });
       }
+      this.example_used.set(false)
       return await this.backend.predictCancerType(
         query.version,
         query.file,

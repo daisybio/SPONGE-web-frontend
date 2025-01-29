@@ -14,8 +14,10 @@ import { PredictFormComponent } from '../form/predict-form.component';
 import { PredictService } from '../service/predict.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { MatTableDataSource } from '@angular/material/table';
 import { MatTableModule } from '@angular/material/table';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+
 
 
 declare var Plotly: any;
@@ -28,6 +30,8 @@ declare var Plotly: any;
     MatProgressSpinner,
     CommonModule,
     MatTableModule,
+    MatExpansionModule,
+    MatIconModule,
   ],
   templateUrl: './prediction-results.component.html',
   styleUrls: ['./prediction-results.component.scss'],
@@ -45,10 +49,6 @@ export class PredictionResultsComponent  {
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);
 
   plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
-
-  // prediction data for table
-  dataSource = computed(() => new MatTableDataSource(this.predictionData$() || []));
-  displayedColumns: string[] = ['sampleID', 'typePrediction'];
 
   refreshEffect = effect(() => {
     this.refreshSignal$();
@@ -71,10 +71,10 @@ export class PredictionResultsComponent  {
   })
 
 
-  clearEffect = effect(() => {
-    this.plotTypePredictPieResource;
-    this.clearPlot();
-  });
+  // clearEffect = effect(() => {
+  //   this.predictService._query$
+  //   this.clearPlot();
+  // });
   
 
   async plotPredictions(plotlyData: PlotlyData): Promise<PlotlyData> {

@@ -9,6 +9,16 @@
     <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
   }
 }
+@if (predictService.example_used()) {
+  <mat-expansion-panel class="info-card-small" expanded="false">
+    <mat-expansion-panel-header>
+      <mat-panel-title><mat-icon>info</mat-icon>What do I see?</mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="info-text-small-div">
+      <p>This plot shows the cancer type predictions of SpongEffects for an example dataset. You can upload your own patient's expression data on the left.</p>
+    </div>
+  </mat-expansion-panel>} 
+
 <!-- @if (!predictionResource.isLoading()) { -->
   <div class="predict-results-plots">
     <div class="type-prediction-div">
