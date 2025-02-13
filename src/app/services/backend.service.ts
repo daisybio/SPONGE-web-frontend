@@ -89,6 +89,9 @@ export class BackendService {
         ? 'ceRNAInteraction/getGeneNetwork'
         : 'ceRNAInteraction/getTranscriptNetwork';
 
+    const geneSorting: String[] = ['betweenness', 'node_degree', 'eigenvector'].filter((_, i) =>
+      [query.sortingBetweenness, query.sortingDegree, query.sortingEigenvector][i]);
+
     const _query: Query = {
       sponge_db_version: version,
       dataset_ID: query.dataset.dataset_ID,
@@ -98,7 +101,7 @@ export class BackendService {
       maxPValue: query.maxPValue,
       minMscor: query.minMscor,
       edgeSorting: query.interactionSorting,
-      nodeSorting: query.geneSorting,
+      nodeSorting: geneSorting,
       maxNodes: query.maxNodes,
       maxEdges: query.maxInteractions,
     };
@@ -106,36 +109,36 @@ export class BackendService {
     return this.http.getRequest<Network>(this.getRequestURL(route, _query));
   }
 
-  getNodes(
-    version: number,
-    query: BrowseQuery,
-  ): Promise<(GeneNode | TranscriptNode)[]> {
-    const level = query.level;
-    const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
+  // getNodes(
+  //   version: number,
+  //   query: BrowseQuery,
+  // ): Promise<(GeneNode | TranscriptNode)[]> {
+  //   const level = query.level;
+  //   const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
 
-    if (
-      version != query.dataset.sponge_db_version ||
-      (version < 2 && level == 'transcript')
-    ) {
-      return Promise.resolve([]);
-    }
+  //   if (
+  //     version != query.dataset.sponge_db_version ||
+  //     (version < 2 && level == 'transcript')
+  //   ) {
+  //     return Promise.resolve([]);
+  //   }
 
-    const internalQuery: Query = {
-      sponge_db_version: version,
-      disease_name: query.dataset.disease_name,
-      dataset_ID: query.dataset.dataset_ID,
-      minBetweenness: query.minBetweenness,
-      minNodeDegree: query.minDegree,
-      minEigenvector: query.minEigen,
-      sorting: query.geneSorting,
-      descending: true,
-      limit: query.maxNodes,
-    };
+  //   const internalQuery: Query = {
+  //     sponge_db_version: version,
+  //     disease_name: query.dataset.disease_name,
+  //     dataset_ID: query.dataset.dataset_ID,
+  //     minBetweenness: query.minBetweenness,
+  //     minNodeDegree: query.minDegree,
+  //     minEigenvector: query.minEigen,
+  //     sorting: query.geneSorting,
+  //     descending: true,
+  //     limit: query.maxNodes,
+  //   };
 
-    return this.http.getRequest<(GeneNode | TranscriptNode)[]>(
-      this.getRequestURL(route, internalQuery),
-    );
-  }
+  //   return this.http.getRequest<(GeneNode | TranscriptNode)[]>(
+  //     this.getRequestURL(route, internalQuery),
+  //   );
+  // }
 
   async getGeneInteractionsAll(
     version: number,

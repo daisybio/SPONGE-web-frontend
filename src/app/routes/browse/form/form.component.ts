@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
@@ -13,7 +14,6 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import {
   BrowseQuery,
-  GeneSorting,
   InteractionSorting,
 } from '../../../interfaces';
 import { BrowseService } from '../../../services/browse.service';
@@ -25,6 +25,7 @@ import {
 } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-form',
@@ -38,6 +39,7 @@ import { DiseaseSelectorComponent } from '../../../components/disease-selector/d
     MatButtonToggle,
     MatCheckbox,
     DiseaseSelectorComponent,
+    MatCardModule,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
@@ -48,12 +50,14 @@ export class FormComponent {
   version = this.versionsService.versionReadOnly();
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
   activeDataset = linkedSignal(() => this.diseases$()[0]);
-  geneSortings = GeneSorting;
+  geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   formGroup = new FormGroup({
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
-    geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
+    sortingBetweenness: new FormControl<boolean>(true),
+    sortingDegree: new FormControl<boolean>(false),
+    sortingEigenvector: new FormControl<boolean>(false),
     maxNodes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),
     minBetweenness: new FormControl<number>(0.05),
@@ -68,14 +72,15 @@ export class FormComponent {
 
   protected readonly capitalize = _.capitalize;
 
-  constructor() {
-    const formSignal = signal(this.formGroup.value);
-    this.formGroup.valueChanges.subscribe((val) => formSignal.set(val));
-
-    effect(() => {
-      const config = formSignal();
+  constructor(private cdr: ChangeDetectorRef) {
+    this.formGroup.valueChanges.subscribe((config) => {
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
+      if ( !config.sortingDegree && !config.sortingBetweenness && !config.sortingEigenvector ) {
+        this.formGroup.patchValue({ sortingBetweenness: true });
+        this.cdr.detectChanges();
+        config.sortingBetweenness = true;
+      }
       this.browseService.runQuery({
         ...config,
         dataset,

@@ -58,11 +58,11 @@ export interface OverallCounts {
   sponge_run_ID: number;
 }
 
-export enum GeneSorting {
-  Betweenness = 'betweenness',
-  Degree = 'degree',
-  Eigenvector = 'eigenvector',
-}
+// export enum GeneSorting {
+//   Betweenness = 'betweenness',
+//   Degree = 'node_degree',
+//   Eigenvector = 'eigenvector',
+// }
 
 export enum InteractionSorting {
   pAdj = 'pValue',
@@ -114,7 +114,9 @@ export interface BrowseQuery {
   level: 'gene' | 'transcript';
   dataset: Dataset;
   showOrphans: boolean;
-  geneSorting: GeneSorting;
+  sortingDegree: boolean;
+  sortingEigenvector: boolean;
+  sortingBetweenness: boolean;
   maxNodes: number;
   minDegree: number;
   minBetweenness: number;

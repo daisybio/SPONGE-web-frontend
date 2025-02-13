@@ -16,14 +16,14 @@
         <mat-panel-title>Nodes</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-checkbox formControlName="showOrphans">Show orphans</mat-checkbox>
-      <mat-form-field appearance="outline">
-        <mat-label>Sort by</mat-label>
-        <mat-select formControlName="geneSorting">
-          @for (sorting of getKeys(geneSortings); track sorting) {
-            <mat-option [value]="sorting">{{ sorting }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <mat-card appearance="outlined" style="margin-bottom: 20px;">
+        <mat-card-content>
+          Sort by <br>
+          <mat-checkbox formControlName="sortingBetweenness">Betweenness</mat-checkbox>
+          <mat-checkbox formControlName="sortingEigenvector">Eigenvector</mat-checkbox>
+          <mat-checkbox formControlName="sortingDegree">Degree</mat-checkbox>
+        </mat-card-content>
+      </mat-card>
       <mat-form-field appearance="outline">
         <mat-label>Max. nodes</mat-label>
         <input formControlName="maxNodes" matInput max="100" min="0" step="1" type="number"/>
