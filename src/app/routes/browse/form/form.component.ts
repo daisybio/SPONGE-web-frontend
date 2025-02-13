@@ -73,14 +73,24 @@ export class FormComponent {
   protected readonly capitalize = _.capitalize;
 
   constructor(private cdr: ChangeDetectorRef) {
+    const formSignal = signal(this.formGroup.value);
+    this.formGroup.valueChanges.subscribe((val) => {formSignal.set(val);});
+
     this.formGroup.valueChanges.subscribe((config) => {
-      const dataset = this.activeDataset();
-      if (dataset === undefined) return;
       if ( !config.sortingDegree && !config.sortingBetweenness && !config.sortingEigenvector ) {
-        this.formGroup.patchValue({ sortingBetweenness: true });
+        // this.formGroup.patchValue({ sortingBetweenness: true });
+        this.formGroup.get('sortingBetweenness')?.setValue(true, { emitEvent: false }); // Ensure UI reflects the change
         this.cdr.detectChanges();
         config.sortingBetweenness = true;
       }
+    });
+
+    
+    effect(() => {
+    const config = formSignal();
+      const dataset = this.activeDataset();
+      if (dataset === undefined) return;
+      console.log(config);
       this.browseService.runQuery({
         ...config,
         dataset,
