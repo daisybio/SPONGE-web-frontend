@@ -1,25 +1,47 @@
 <mat-drawer-container style="min-height: 500px">
   <mat-drawer [opened]="true" mode="side">
-    <mat-nav-list>
-      <a mat-list-item routerLink="./">Introduction</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="example-script">Example script</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="home-search">Home Search Bar</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="browse-functionalities">Browse functionalities</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="browse-sidebar">Browse sidebar</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item routerLink="more-about-sponge">More about SPONGE</a>
-    </mat-nav-list>
+    @if (version$() === 1){
+      <mat-nav-list>
+        <a mat-list-item routerLink="./">Introduction</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="example-script">Example script</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="home-search">Home Search Bar</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="browse-functionalities">Browse functionalities</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="browse-sidebar">Browse sidebar</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="more-about-sponge">More about SPONGE</a>
+      </mat-nav-list>
+    }@else{
+      <mat-nav-list>
+        <a mat-list-item routerLink="./">Introduction</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="example-script">Example script</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="genes-tab">Genes Tab</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="browse-tab">Browse Tab</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="browse-sidebar">Browse sidebar</a>
+      </mat-nav-list>
+      <mat-nav-list>
+        <a mat-list-item routerLink="more-about-sponge">More about SPONGE</a>
+      </mat-nav-list>
+    }
   </mat-drawer>
   <mat-drawer-content>
     <router-outlet></router-outlet>
   </mat-drawer-content>
+
 </mat-drawer-container>
