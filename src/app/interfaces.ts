@@ -250,9 +250,9 @@ export interface WikiPathway {
 // route responses
 
 export interface SpongEffectsRun {
-  spongeEffects_run_ID: number;
+  spongEffects_run_ID: number;
   m_scor_threshold: number;
-  p_adjust_threshold: number;
+  p_adj_threshold: number;
   modules_cutoff: number;
   bin_size: number;
   min_size: number;
@@ -261,7 +261,7 @@ export interface SpongEffectsRun {
   method: string;
   cv_folds: number;
   level: string;
-  sponge_run_ID: number;
+  sponge_run: SpongeRun;
   m_max: number;
   log_level: string;
   sponge_db_version: number;
@@ -283,6 +283,7 @@ export interface RunPerformance {
   accuracy_null: number;
   accuracy_p_value: number;
   mcnemar_p_value: number;
+  spongEffects_run: SpongEffectsRun;
 }
 
 export interface RunClassPerformance {
@@ -377,6 +378,7 @@ export interface Metric {
   lower: number;
   upper: number;
   idx: number;
+  spongEffecsRun: SpongEffectsRun;
 }
 
 export interface SelectElement {
