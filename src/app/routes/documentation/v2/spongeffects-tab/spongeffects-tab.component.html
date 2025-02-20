@@ -1,0 +1,44 @@
+<h1>SpongEffects Tab</h1>
+<p>SpongEffects can be used for downstream analysis of SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random forest machine learning approach.</p>
+
+<mat-accordion>
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Network Features</mat-panel-title>
+    </mat-expansion-panel-header>      
+    Select a disease and gene or transcript-level, for which you want to explore the spongEffects prediction results of our pretrained models.
+    <table [dataSource]="explore_features" mat-table>
+        <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Function</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+        <th *matHeaderCellDef mat-header-cell>Effect</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+        </ng-container>
+    
+        <tr *matHeaderRowDef="columns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+    </table>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel [expanded]="false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Prediction</mat-panel-title>
+    </mat-expansion-panel-header>
+    Visualize the top rated genes for the selected disease by mean decrease in accuracy and mean decrease in Gini-index. Open g:Profiler to do a functional enrichment analysis for those genes.
+    <table [dataSource]="explore_features" mat-table>
+        <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Function</th>
+        <td *matCellDef="let prediction" mat-cell>{{ prediction.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+        <th *matHeaderCellDef mat-header-cell>Effect</th>
+        <td *matCellDef="let prediction" mat-cell>{{ prediction.description }}</td>
+        </ng-container>
+    
+        <tr *matHeaderRowDef="columns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+    </table>
+    </mat-expansion-panel>
+</mat-accordion>

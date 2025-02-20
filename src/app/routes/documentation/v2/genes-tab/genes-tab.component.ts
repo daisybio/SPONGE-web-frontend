@@ -21,21 +21,21 @@ export class GenesTabComponent {
       description:
         'List the disease datasets, which contain interactions with the searched gene/transcript. The table shows relevant miRNAs, correlation, mscor and adjusted p-value.',
     },
-    {
-      name: 'Options Button',
-      description:
-        "Set a range for the mscor or adjusted p-value.",
-    },    
-    {
-      name: 'Show as Network Button',
-      description:
-        "Export selected table entries to create an interaction network.",
-    },    
-    {
-      name: 'Gene Set Enrichment Button',
-      description:
-        "The selected entries will be used for a gene set enrichment analysis using g:Profiler.",
-    }, 
+    // {
+    //   name: 'Options Button',
+    //   description:
+    //     "Set a range for the mscor or adjusted p-value.",
+    // },    
+    // {
+    //   name: 'Show as Network Button',
+    //   description:
+    //     "Export selected table entries to create an interaction network.",
+    // },    
+    // {
+    //   name: 'Gene Set Enrichment Button',
+    //   description:
+    //     "The selected entries will be used for a gene set enrichment analysis using g:Profiler.",
+    // }, 
   ];
   gene_transcript_features = [   
     {
@@ -58,5 +58,20 @@ export class GenesTabComponent {
       description:
         "Display all associated GO numbers for the gene/transcript and link to their entry on QuickGO.",
     },
+    {
+      name: 'Transcripts', 
+      description: 
+        "Show all transcripts for a gene.",
+    },
+    {
+      name: 'Alternative SPlicing',
+      description:
+        "Show all relevant splice events and their position for a transcript: Skipping Exon (SE), Alternative 5’ Splice Site (A5), Alternative 3’ Splice Site (A3), Mutually Exclusive Exon (MX), Retained Intron (RI), Alternative First Exon (AF), and Alternative Last Exon (AL).",
+    },
+    {
+      name: "Genome View", 
+      description: 
+        "Using IGV Browser visualizes the miRNA target sites (predicted using Tarpmir) on the selected gene/transcript.",
+    }
   ];
 }
