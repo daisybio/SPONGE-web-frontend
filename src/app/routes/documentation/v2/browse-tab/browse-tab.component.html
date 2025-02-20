@@ -1,0 +1,60 @@
+<h1>Browse Tab</h1>
+<p>Here you can browse ceRNA interaction networks for different diseases. The nodes correspond to genes or transcripts, whereas the edges correspond to the miRNAs the neighboring nodes compete over. The node size is corresponding to node degree and edge thickness is corresponding to mscor. The node shape in a transcript/gene-level network is a circle or a square depending on whether the corresponding node is found on the corresponding gene/transcript-level network with the same filtering criteria. </p>
+
+<mat-accordion>
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>Network Features</mat-panel-title>
+    </mat-expansion-panel-header>
+    <table [dataSource]="network_features" mat-table>
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Function</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th *matHeaderCellDef mat-header-cell>Effect</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+      </ng-container>
+    
+      <tr *matHeaderRowDef="columns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+    </table>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>For each Node</mat-panel-title>
+    </mat-expansion-panel-header>
+    <table [dataSource]="node_features" mat-table>
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Function</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th *matHeaderCellDef mat-header-cell>Effect</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+      </ng-container>
+    
+      <tr *matHeaderRowDef="columns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+    </table>
+
+  </mat-expansion-panel>   
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Further Analysis</mat-panel-title>
+    </mat-expansion-panel-header>
+    <table [dataSource]="analysis_features" mat-table>
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Function</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th *matHeaderCellDef mat-header-cell>Effect</th>
+        <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
+      </ng-container>
+    
+      <tr *matHeaderRowDef="columns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+    </table>
+  </mat-expansion-panel>
+</mat-accordion>
