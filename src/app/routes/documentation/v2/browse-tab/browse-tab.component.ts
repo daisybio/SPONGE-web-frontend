@@ -56,11 +56,11 @@ export class BrowseTabComponent {
       description:
         'Open g:Profiler to do a functional enrichment analysis for all visible nodes.',
     },   
-    {
-      name: 'Save as',
-      description:
-        'You can save and download the plot as .jpg or .png.',
-    },  
+    // {
+    //   name: 'Save as',
+    //   description:
+    //     'You can save and download the plot as .jpg or .png.',
+    // },  
     {
       name: 'Reset camera',
       description:
@@ -107,6 +107,11 @@ export class BrowseTabComponent {
       name: 'Survival Analysis',
       description:
         'A Kaplan-Meier Plot showing patient survival will be displayed for the node.',
+    },
+    {
+      name: 'Genome View',
+      description:
+        'Using IGV Browser visualizes the miRNA target sites (predicted using Tarpmir) on the selected gene/transcript.',
     }
   ];
   analysis_features = [
@@ -128,7 +133,7 @@ export class BrowseTabComponent {
     {
       name: 'Gene Set Enrichment',
       description:
-      'Compare the disease (or normal condition) to another disease (sub-)type via gene set enrichment analysis on a chosen gene set. Shown is a list of enrichment score (ES), FDR qvalue (adjusted False Discory Rate, FDR), family wise error rate p-values (FWERP), percent of gene list before running enrichment peak (Gene percent), normalized enrichment score (NES), nominal p-value from the null distribution of the gene set (p-value), percent of gene set before running enrichment peak (Tag percent), gene set name (Term).'
+      'Compare the disease (or normal condition) to another disease (sub-)type via gene set enrichment analysis on a chosen gene set. Shown is a list of enrichment score (ES), FDR qvalue (adjusted False Discory Rate, FDR), family wise error rate p-values (FWERP), percent of gene list before running enrichment peak (Gene percent), normalized enrichment score (NES), nominal p-value from the null distribution of the gene set (p-value), percent of gene set before running enrichment peak (Tag percent), gene set name (Term). For some cancer (sub-)types there was too little expression data available and no significant results were found.'
     },
     {
       name: 'Disease similarities',
