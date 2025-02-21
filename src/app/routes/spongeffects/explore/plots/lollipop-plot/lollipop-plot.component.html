@@ -19,9 +19,9 @@
             <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
             <mat-error>Please provide a number between 3 and 20</mat-error>
           </mat-form-field>
-          <mat-checkbox formControlName="includeModuleMembers" color="primary">
+          <!-- <mat-checkbox formControlName="includeModuleMembers" color="primary">
             Include module members
-          </mat-checkbox>
+          </mat-checkbox> -->
         </form>
     }
 
@@ -50,9 +50,9 @@
           <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
         </table>
       </div>
-      <div class="module-expression-heatmap">
+      <!-- <div class="module-expression-heatmap">
         <div #moduleExpressionHeatmap ></div>
-      </div>
+      </div> -->
 
       <!-- <div class="module-expression-heatmap">
         <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>

@@ -7,6 +7,7 @@ import {
   resource,
   ResourceRef,
   signal,
+  ViewChild,
   viewChild,
   WritableSignal,
 } from '@angular/core';
@@ -89,9 +90,9 @@ export class LollipopPlotComponent {
   // moduleExpressionData: PlotlyData = {data: [], layout: {}, config: {}};
 
   lollipopPlot = viewChild.required<ElementRef<HTMLDivElement>>('lollipopPlot');
-  moduleExpressionHeatmap = viewChild.required<ElementRef<HTMLDivElement>>(
-    'moduleExpressionHeatmap',
-  );
+  // moduleExpressionHeatmap = viewChild.required<ElementRef<HTMLDivElement>>(
+  //   'moduleExpressionHeatmap',
+  // );
 
   // plot parameters
   defaultMarkerSize: number = 12;
@@ -99,11 +100,11 @@ export class LollipopPlotComponent {
   elementExpressionLoading: boolean = true;
 
   formGroup = new FormGroup({
-    markControl: new FormControl<number>(15, [
+    markControl: new FormControl<number>(10, [
       Validators.min(3.0),
       Validators.max(100),
     ]),
-    topControl: new FormControl<number>(10, [
+    topControl: new FormControl<number>(15, [
       Validators.min(1.0),
       Validators.max(20),
     ]),
@@ -148,37 +149,37 @@ export class LollipopPlotComponent {
     },
   });
 
-  moduleExpressionData: ResourceRef<PlotlyData | undefined> = resource({
-    request: () => {
-      return {
-        modules: this.selectedModules(),
-      };
-    },
-    loader: (param) => {
-      const version = this.versionService.versionReadOnly()();
-      const disease = this.exploreService.selectedDiseaseObject$();
-      const level = this.exploreService.level$();
-      const selectedModules = param.request.modules;
+  // moduleExpressionData: ResourceRef<PlotlyData | undefined> = resource({
+  //   request: () => {
+  //     return {
+  //       modules: this.selectedModules(),
+  //     };
+  //   },
+  //   loader: (param) => {
+  //     const version = this.versionService.versionReadOnly()();
+  //     const disease = this.exploreService.selectedDiseaseObject$();
+  //     const level = this.exploreService.level$();
+  //     const selectedModules = param.request.modules;
 
-      if (
-        version === undefined ||
-        disease === undefined ||
-        level === undefined ||
-        selectedModules === undefined
-      ) {
-        return new Promise((resolve, reject) => {
-          resolve({ data: [], layout: {}, config: {} });
-        });
-      }
+  //     if (
+  //       version === undefined ||
+  //       disease === undefined ||
+  //       level === undefined ||
+  //       selectedModules === undefined
+  //     ) {
+  //       return new Promise((resolve, reject) => {
+  //         resolve({ data: [], layout: {}, config: {} });
+  //       });
+  //     }
 
-      return this.getModulesExpression(
-        version,
-        level,
-        disease,
-        selectedModules,
-      );
-    },
-  });
+  //     return this.getModulesExpression(
+  //       version,
+  //       level,
+  //       disease,
+  //       selectedModules,
+  //     );
+  //   },
+  // });
 
   // lollipopPlotResource = resource({
   //   request: computed(() => {
@@ -260,6 +261,7 @@ export class LollipopPlotComponent {
   // });
 
   // update plots on form change
+  
   clearEffect = effect(() => {
     this.exploreService.selectedDisease$();
     this.exploreService.level$();
@@ -273,7 +275,7 @@ export class LollipopPlotComponent {
     effect(async () => {
       const lolipopData = this.lolipopPlotData.value();
       const formSignal = this.formSignal();
-
+      // this.addModules(this.selectedModules(), 'test');
       this.plotLollipopPlot(lolipopData);
 
       // const config = formSignal();
@@ -285,11 +287,11 @@ export class LollipopPlotComponent {
       // this.plotModuleExpression(this.moduleExpressionData)
     });
 
-    effect(() => {
-      const modules = this.moduleExpressionData.value();
+    // effect(() => {
+    //   const modules = this.moduleExpressionData.value();
       // this heatmap his too big -> page crashes
       // this.plotModuleExpression(modules)
-    });
+    // });
   }
 
   async getLollipopData(
@@ -369,212 +371,246 @@ export class LollipopPlotComponent {
       responsive: true,
     };
 
+    // this.lollipopPlot().nativeElement.addEventListener('plotly_click', (event: any) => {
+    //   console.log('click', event);
+    //   const pointIndex = event.points[0].pointIndex;
+    //   const clickedModule = giniData[pointIndex];
+    //   this.toggleModule(clickedModule);
+    //   console.log('clicked', clickedModule);
+    // });
+
     Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
+  
+  }
+
+  toggleModule(module: SpongEffectsModule) {
+    const selectedModules = this.selectedModules();
+    const moduleIndex = selectedModules.findIndex(
+      (m) => m.ensemblID === module.ensemblID,
+    );
+
+    if (moduleIndex === -1) {
+      // Module is not selected, add it
+      this.selectedModules.set([...selectedModules, module]);
+    } else {
+      // Module is already selected, remove it
+      this.selectedModules.set(
+        selectedModules.filter((m) => m.ensemblID !== module.ensemblID),
+      );
+    }
+
+    this.dynamicModulesData.setData(this.selectedModules());
+    this.plotLollipopPlot(this.plot_data);
   }
 
   refreshPlot() {
     const plotDiv = this.lollipopPlot().nativeElement;
+    // const plotDiv2 = this.moduleExpressionHeatmap().nativeElement;
     if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
+    // if (plotDiv2.checkVisibility()) {
+    //   Plotly.Plots.resize
+    // }
   }
 
   clearPlot() {
     Plotly.purge(this.lollipopPlot().nativeElement);
     // this.selectedModules = signal([]);
     this.dynamicModulesData.setData([]);
+    // Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
   }
 
   addModules(modules: SpongEffectsModule[], clickedSymbol?: string) {
-    // console.log("addModules before", modules)
-    // if (clickedSymbol === undefined) {
-    //   this.selectedModules = signal(modules);
-    // } else {
-    //   if (this.selectedModules().filter(s => s.symbol === clickedSymbol).length === 0) {
-    //     this.selectedModules().push(...modules);
-    //   } else {
-    //     this.selectedModules = signal(this.selectedModules().filter(s => s.symbol !== clickedSymbol));
-    //   }
-    // }
-    // console.log("addModules after", this.selectedModules())
+    console.log("addModules before", modules)
+    if (clickedSymbol === undefined) {
+      this.selectedModules = signal(modules);
+    } else {
+      if (this.selectedModules().filter(s => s.symbol === clickedSymbol).length === 0) {
+        this.selectedModules().push(...modules);
+      } else {
+        this.selectedModules = signal(this.selectedModules().filter(s => s.symbol !== clickedSymbol));
+      }
+    }
+    console.log("addModules after", this.selectedModules())
 
-    this.selectedModules.set(modules);
+    // this.selectedModules.set(modules);
 
     this.dynamicModulesData.setData(this.selectedModules());
   }
 
-  async getModulesExpression(
-    version: number,
-    level: 'gene' | 'transcript',
-    disease: Dataset,
-    selectedModules: SpongEffectsModule[],
-  ): Promise<PlotlyData> {
-    const key = level === 'gene' ? 'ensg_number' : 'enst_number';
-    let elements: string[] = selectedModules.map((s) => s.ensemblID);
+  // async getModulesExpression(
+  //   version: number,
+  //   level: 'gene' | 'transcript',
+  //   disease: Dataset,
+  //   selectedModules: SpongEffectsModule[],
+  // ): Promise<PlotlyData> {
+  //   const key = level === 'gene' ? 'ensg_number' : 'enst_number';
+  //   let elements: string[] = selectedModules.map((s) => s.ensemblID);
 
-    // include module members in heatmap
-    if (this.formGroup.get('includeModuleMembers')?.value) {
-      const members: Map<string, string[]> = await this.getModuleMembers(
-        level,
-        disease.disease_name,
-        version,
-      );
-      const memberValues: string[] = Array.from(members.values()).flat();
-      elements.push(...memberValues);
-    }
-    const apiResponse = await this.backend.getExpression(
-      version,
-      elements,
-      disease,
-      level,
-    );
-    // only use first 10 elements
-    apiResponse.splice(100);
+  //   // include module members in heatmap
+  //   if (this.formGroup.get('includeModuleMembers')?.value) {
+  //     const members: Map<string, string[]> = await this.getModuleMembers(
+  //       level,
+  //       disease.disease_name,
+  //       version,
+  //     );
+  //     const memberValues: string[] = Array.from(members.values()).flat();
+  //     elements.push(...memberValues);
+  //   }
+  //   const apiResponse = await this.backend.getExpression(
+  //     version,
+  //     elements,
+  //     disease,
+  //     level,
+  //   );
+  //   // only use first 100 elements
+  //   apiResponse.splice(100);
 
-    // split into (sub-)types
-    const typeSplit: Map<string, any[]> = new Map<string, any[]>();
-    apiResponse.forEach((entry) => {
-      const dataset: string = entry.dataset;
-      if (!typeSplit.has(dataset)) {
-        typeSplit.set(dataset, []);
-      }
-      typeSplit.get(dataset)?.push(entry);
-    });
+  //   // split into (sub-)types
+  //   const typeSplit: Map<string, any[]> = new Map<string, any[]>();
+  //   apiResponse.forEach((entry) => {
+  //     const dataset: string = entry.dataset;
+  //     if (!typeSplit.has(dataset)) {
+  //       typeSplit.set(dataset, []);
+  //     }
+  //     typeSplit.get(dataset)?.push(entry);
+  //   });
 
-    // // build traces for each dataset
-    let data: any[] = [];
-    typeSplit.forEach((entry: any[], dataset: string) => {
-      // transform data of entries
-      let xSamples: string[] = [];
-      const xSet: Set<string> = new Set<string>();
-      let nX: number = -1;
-      let yElements: string[] = [];
-      const ySet: Set<string> = new Set<string>();
-      let nY: number = -1;
-      let zValues: number[][] = [[]];
+  //   // // build traces for each dataset
+  //   let data: any[] = [];
+  //   typeSplit.forEach((entry: any[], dataset: string) => {
+  //     // transform data of entries
+  //     let xSamples: string[] = [];
+  //     const xSet: Set<string> = new Set<string>();
+  //     let nX: number = -1;
+  //     let yElements: string[] = [];
+  //     const ySet: Set<string> = new Set<string>();
+  //     let nY: number = -1;
+  //     let zValues: number[][] = [[]];
 
-      entry.forEach((e) => {
-        if (!xSet.has(e.sample_ID)) {
-          xSamples.push(e.sample_ID);
-          nX += 1;
-        }
-        if (!ySet.has(e.gene[key])) {
-          yElements.push(e.gene.gene_symbol + ' (' + e.gene[key] + ')');
-          nY += 1;
-        }
-        zValues[nY][nX] = e.expr_value;
-      });
-      // add trace
-      data.push({
-        z: zValues,
-        x: xSamples,
-        y: yElements,
-        type: 'heatmap',
-        hoverongaps: false,
-        name: dataset,
-        showscale: false,
-      });
-    });
-    // only show scale on last heatmap
-    data[data.length - 1].showscale = true;
-    // add x-axis subplot for each trace
-    data.slice(1).forEach((d, i) => {
-      let idx: string = (i + 2).toString();
-      d.xaxis = 'x' + idx;
-    });
-    // set layout options
-    const layout = {
-      autosize: true,
-      showlegend: true,
-      legend: { orientation: 'h' },
-      xaxis: {
-        showgrid: false,
-        showticklabels: false,
-        showticks: false,
-      },
-      margin: {
-        b: 125,
-        l: 125,
-        r: 50,
-        t: 50,
-      },
-      title: {
-        text: 'Module expression of selected modules',
-        font: {
-          size: 14,
-        },
-      },
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(0,0,0,0)',
-      grid: {
-        rows: 1,
-        columns: data.length,
-      },
-      annotations: [],
-    };
-    let config = {
-      responsive: true,
-    };
+  //     entry.forEach((e) => {
+  //       if (!xSet.has(e.sample_ID)) {
+  //         xSamples.push(e.sample_ID);
+  //         nX += 1;
+  //       }
+  //       if (!ySet.has(e.gene[key])) {
+  //         yElements.push(e.gene.gene_symbol + ' (' + e.gene[key] + ')');
+  //         nY += 1;
+  //       }
+  //       zValues[nY][nX] = e.expr_value;
+  //     });
+  //     // add trace
+  //     data.push({
+  //       z: zValues,
+  //       x: xSamples,
+  //       y: yElements,
+  //       type: 'heatmap',
+  //       hoverongaps: false,
+  //       name: dataset,
+  //       showscale: false,
+  //     });
+  //   });
+  //   // only show scale on last heatmap
+  //   data[data.length - 1].showscale = true;
+  //   // add x-axis subplot for each trace
+  //   data.slice(1).forEach((d, i) => {
+  //     let idx: string = (i + 2).toString();
+  //     d.xaxis = 'x' + idx;
+  //   });
+  //   // set layout options
+  //   const layout = {
+  //     autosize: true,
+  //     showlegend: true,
+  //     legend: { orientation: 'h' },
+  //     xaxis: {
+  //       showgrid: false,
+  //       showticklabels: false,
+  //       showticks: false,
+  //     },
+  //     margin: {
+  //       b: 125,
+  //       l: 125,
+  //       r: 50,
+  //       t: 50,
+  //     },
+  //     title: {
+  //       text: 'Module expression of selected modules',
+  //       font: {
+  //         size: 14,
+  //       },
+  //     },
+  //     paper_bgcolor: 'rgba(0,0,0,0)',
+  //     plot_bgcolor: 'rgba(0,0,0,0)',
+  //     grid: {
+  //       rows: 1,
+  //       columns: data.length,
+  //     },
+  //     annotations: [],
+  //   };
+  //   let config = {
+  //     responsive: true,
+  //   };
 
-    return { data: data, layout: layout, config: config };
-  }
+  //   return { data: data, layout: layout, config: config };
+  // }
 
-  plotModuleExpression(config: PlotlyData | undefined) {
-    if (config === undefined) {
-      return;
-    }
-    Plotly.newPlot(
-      this.moduleExpressionHeatmap().nativeElement,
-      config.data,
-      config.layout,
-      config.config,
-    );
-  }
+  // plotModuleExpression(config: PlotlyData | undefined) {
+  //   if (config === undefined) {
+  //     return;
+  //   }
+  //   Plotly.newPlot(
+  //     this.moduleExpressionHeatmap().nativeElement,
+  //     config.data,
+  //     config.layout,
+  //     config.config,
+  //   );
+  // }
 
-  async getModuleMembers(
-    level: 'gene' | 'transcript',
-    disease_name: string,
-    version: number,
-  ): Promise<Map<string, string[]>> {
-    let response:
-      | SpongEffectsGeneModuleMembers[]
-      | SpongEffectsTranscriptModuleMembers[] = [];
-    const members: Map<string, string[]> = new Map<string, string[]>();
-    if (level === 'gene') {
-      response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version,
-        disease_name,
-        this.selectedModules()
-          .map((s) => s.ensemblID)
-          .join(','),
-      );
-      response.forEach((e) => {
-        if (!members.has(e['hub_ensg_number'] as string))
-          members.set(e['hub_ensg_number'] as string, []);
-        members
-          .get(e['hub_ensg_number'])
-          ?.push(e.member_ensg_number, e.member_gene_symbol);
-      });
-    } else {
-      response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version,
-        disease_name,
-        this.selectedModules()
-          .map((s) => s.ensemblID)
-          .join(','),
-      );
-      response.forEach((e) => {
-        if (!members.has(e['hub_enst_number']))
-          members.set(e['hub_enst_number'], []);
-        members
-          .get(e['hub_enst_number'])
-          ?.push(
-            e.member_gene.ensg_number,
-            e.member_gene.gene_symbol,
-            e.member_enst_number,
-          );
-      });
-    }
-    return members;
-  }
+  // async getModuleMembers(
+  //   level: 'gene' | 'transcript',
+  //   disease_name: string,
+  //   version: number,
+  // ): Promise<Map<string, string[]>> {
+  //   let response:
+  //     | SpongEffectsGeneModuleMembers[]
+  //     | SpongEffectsTranscriptModuleMembers[] = [];
+  //   const members: Map<string, string[]> = new Map<string, string[]>();
+  //   if (level === 'gene') {
+  //     response = await this.backend.getSpongEffectsGeneModuleMembers(
+  //       version,
+  //       disease_name,
+  //       this.selectedModules()
+  //         .map((s) => s.ensemblID)
+  //         .join(','),
+  //     );
+  //     response.forEach((e) => {
+  //       if (!members.has(e['hub_ensg_number'] as string))
+  //         members.set(e['hub_ensg_number'] as string, []);
+  //       members
+  //         .get(e['hub_ensg_number'])
+  //         ?.push(e.member_ensg_number, e.member_gene_symbol);
+  //     });
+  //   } else {
+  //     response = await this.backend.getSpongEffectsTranscriptModuleMembers(
+  //       version,
+  //       disease_name,
+  //       this.selectedModules()
+  //         .map((s) => s.ensemblID)
+  //         .join(','),
+  //     );
+  //     response.forEach((e) => {
+  //       if (!members.has(e['hub_enst_number']))
+  //         members.set(e['hub_enst_number'], []);
+  //       members
+  //         .get(e['hub_enst_number'])
+  //         ?.push(
+  //           e.member_gene.ensg_number,
+  //           e.member_gene.gene_symbol,
+  //           e.member_enst_number,
+  //         );
+  //     });
+  //   }
+  //   return members;
+  // }
 }
