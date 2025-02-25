@@ -59,15 +59,15 @@ export interface OverallCounts {
 }
 
 export enum GeneSorting {
-  Betweenness = 'betweenness',
-  Degree = 'degree',
-  Eigenvector = 'eigenvector',
+  betweenness = 'Betweenness centrality',
+  degree = 'Degree centrality',
+  eigenvector = 'Eigenvector centrality',
 }
 
 export enum InteractionSorting {
-  pAdj = 'pValue',
+  pValue = 'Adj. p-value',
   mscor = 'mscor',
-  Correlation = 'correlation',
+  correlation = 'Correlation',
 }
 
 export interface Gene {
@@ -114,7 +114,7 @@ export interface BrowseQuery {
   level: 'gene' | 'transcript';
   dataset: Dataset;
   showOrphans: boolean;
-  geneSorting: GeneSorting;
+  geneSorting: keyof GeneSorting;
   maxNodes: number;
   minDegree: number;
   minBetweenness: number;
