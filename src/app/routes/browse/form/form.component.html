@@ -1,4 +1,4 @@
-<form [formGroup]="formGroup">
+<form [formGroup]="formGroup" style="margin: 10px">
   <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
 
   @if (version() > 1) {
@@ -15,31 +15,69 @@
       <mat-expansion-panel-header>
         <mat-panel-title>Nodes</mat-panel-title>
       </mat-expansion-panel-header>
-      <mat-checkbox formControlName="showOrphans">Show orphans</mat-checkbox>
+      <mat-checkbox style="margin-bottom: 20px;" formControlName="showOrphans">Show orphans</mat-checkbox>
+      <app-info type="icon">
+        Orphan nodes are nodes that are not connected to any other node in the network. In this SPONGE network this means, that they are not involved in any interaction that pass the filter. They are often not considered in network analysis, but can be important for the understanding of the network structure.
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Sort by</mat-label>
         <mat-select formControlName="geneSorting">
-          @for (sorting of getKeys(geneSortings); track sorting) {
-            <mat-option [value]="sorting">{{ sorting }}</mat-option>
-          }
+          <mat-option *ngFor="let sorting of getEntries(geneSortings); trackBy: trackByKey" [value]="sorting.key">
+            {{ sorting.value }}
+          </mat-option> 
         </mat-select>
       </mat-form-field>
+      <app-info type="icon">
+        We computed three different node importance metrics on the SPONGE networks. You can choose by which metric the nodes should be sorted for the visualization:
+        <br/><br/>
+        <ul>
+          <li><b>Betweenness: </b> 
+            <p [innerHTML]="infoService.betweennessText"></p>
+          </li>
+          <li><b>Degree:</b> 
+            <p [innerHTML]="infoService.degreeText"></p>
+          </li>
+          <li><b>Eigenvector: </b>
+            <p [innerHTML]="infoService.eigenvectorText"></p>
+          </li>
+        </ul>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. nodes</mat-label>
         <input formControlName="maxNodes" matInput max="100" min="0" step="1" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          The visualization of the network can be limited to a certain number of nodes. This can be useful to reduce the complexity of the network and to focus on the most important nodes. Set the maximum number of nodes to be displayed in the network here.
+        </p>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. degree</mat-label>
         <input formControlName="minDegree" matInput max="100" min="0" step="1" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          The degree of a node is the number of edges connected to it. The degree of a node is a measure of its importance in the network. Set the minimum degree of nodes to be displayed in the network here.
+        </p>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. betweenness</mat-label>
         <input formControlName="minBetweenness" matInput max="1" min="0" step="0.05" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Betweenness centrality measures the number of shortest paths that pass through a node. It is a measure of its importance in the network. Set the minimum betweenness centrality of nodes to be displayed in the network here.
+        </p>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. eigenvector</mat-label>
         <input formControlName="minEigen" matInput max="1" min="0" step="0.05" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Eigenvector centrality measures the importance of a node in the network by considering the importance of its neighbors. Set the minimum eigenvector centrality of nodes to be displayed in the network here.
+        </p>
+      </app-info>
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -48,23 +86,51 @@
       <mat-form-field appearance="outline">
         <mat-label>Sort by</mat-label>
         <mat-select formControlName="interactionSorting">
-          @for (sorting of getKeys(interactionSortings); track sorting) {
-            <mat-option [value]="sorting">{{ sorting }}</mat-option>
-          }
+          <mat-option *ngFor="let sorting of getEntries(interactionSortings); trackBy: trackByKey" [value]="sorting.key">
+            {{ sorting.value }}
+          </mat-option> 
         </mat-select>
       </mat-form-field>
+      <app-info type="icon">
+        We computed three different edge importance metrics on the SPONGE networks.
+        You can choose by which metric the edges should be sorted for the visualization:
+        <br/><br/>
+        <ul>
+          <li><b>Adj. p-value: </b>
+            <p [innerHTML]="infoService.pValText"p></p>
+          </li>
+          <li><b>mscor: </b> 
+            <p [innerHTML]="infoService.mscorText"></p>
+            <span #mscorEquation class="katex"></span><br/><br/>
+          </li>
+          <li><b>Correlation: </b>
+            <p [innerHTML]="infoService.correlationText"></p>
+          </li>
+        </ul>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. interactions</mat-label>
         <input formControlName="maxInteractions" matInput max="1000" min="0" step="1" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p>The visualization of the network can be limited to a certain number of interactions. This can be useful to reduce the complexity of the network and to focus on the most important interactions. Set the maximum number of interactions to be displayed in the network here.</p>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. adj. p-value</mat-label>
         <input formControlName="maxPValue" matInput max="0.2" min="0.025" step="0.025" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p [innerHTML]="infoService.pValText"></p>
+        <span>Change the adjusted p-value threshold for the visualization here. </span>
+      </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. mscor</mat-label>
         <input formControlName="minMscor" matInput max="1" min="0.1" step="0.05" type="number"/>
       </mat-form-field>
+      <app-info type="icon">
+        <p [innerHTML]="infoService.mscorText"></p>
+        <span>Change the minimum mscor threshold for the visualization here. </span>
+      </app-info>
     </mat-expansion-panel>
   </mat-accordion>
 </form>

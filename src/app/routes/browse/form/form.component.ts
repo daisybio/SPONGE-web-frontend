@@ -2,9 +2,11 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   linkedSignal,
   signal,
+  viewChild,
 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -25,6 +27,10 @@ import {
 } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
+import { InfoComponent } from '../../../components/info/info.component';
+import {MatButtonModule} from '@angular/material/button';
+import { CommonModule } from '@angular/common';
+import { InfoService } from '../../../services/info.service';
 
 @Component({
   selector: 'app-form',
@@ -38,6 +44,9 @@ import { DiseaseSelectorComponent } from '../../../components/disease-selector/d
     MatButtonToggle,
     MatCheckbox,
     DiseaseSelectorComponent,
+    InfoComponent,
+    MatButtonModule,
+    CommonModule
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
@@ -50,16 +59,18 @@ export class FormComponent {
   activeDataset = linkedSignal(() => this.diseases$()[0]);
   geneSortings = GeneSorting;
   interactionSortings = InteractionSorting;
+  mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
+  infoService = inject(InfoService);  
   formGroup = new FormGroup({
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
-    geneSorting: new FormControl<GeneSorting>(this.geneSortings.Betweenness),
+    geneSorting: new FormControl<string>(this.getKeys(this.geneSortings)[0]),
     maxNodes: new FormControl<number>(10),
     minDegree: new FormControl<number>(1),
     minBetweenness: new FormControl<number>(0.05),
     minEigen: new FormControl<number>(0.1),
-    interactionSorting: new FormControl<InteractionSorting>(
-      this.interactionSortings.pAdj,
+    interactionSorting: new FormControl<string>(
+      this.getKeys(this.interactionSortings)[0]
     ),
     maxInteractions: new FormControl<number>(100),
     maxPValue: new FormControl<number>(0.05),
@@ -81,9 +92,24 @@ export class FormComponent {
         dataset,
       } as BrowseQuery);
     });
+
+    effect(() => {
+      this.infoService.renderMscorEquation(this.mscorEquation$()!);
+    });
   }
 
   getKeys(enumType: any): string[] {
-    return Object.values(enumType);
+    return Object.keys(enumType)
+  }
+
+  getEntries(enumType: any): {
+    key: string;
+    value: string;
+}[] {
+    return Object.entries(enumType).map(([key, value]) => ({key, value: value as string }));
+  }
+
+  trackByKey(item: any): string {
+    return item.key;
   }
 }
