@@ -13,6 +13,9 @@ import { GenesComponent } from './routes/genes/genes.component';
 import { ExploreComponent } from './routes/spongeffects/explore/explore.component';
 import { PredictComponent } from './routes/spongeffects/predict/predict.component';
 import { ExampleScriptComponent } from './routes/documentation/example-script/example-script.component';
+import { GenesTabComponent } from './routes/documentation/v2/genes-tab/genes-tab.component';
+import { BrowseTabComponent } from './routes/documentation/v2/browse-tab/browse-tab.component';
+import { SpongeffectsTabComponent } from './routes/documentation/v2/spongeffects-tab/spongeffects-tab.component';
 
 export const routes: Routes = [
   {
@@ -54,6 +57,18 @@ export const routes: Routes = [
       {
         path: 'more-about-sponge',
         component: MoreComponent,
+      },
+      {
+        path: 'genes-tab',
+        component: GenesTabComponent,
+      },      
+      {
+        path: 'browse-tab',
+        component: BrowseTabComponent,
+      },
+      {
+        path: 'spongeffects-tab',
+        component: SpongeffectsTabComponent,
       },
       {
         path: '**',
