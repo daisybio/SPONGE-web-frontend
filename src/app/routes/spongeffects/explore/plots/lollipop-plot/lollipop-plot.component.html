@@ -1,6 +1,7 @@
   <!-- <mat-grid-list cols="1" rowHeight="100px">  -->
     <!-- <mat-grid-tile colspan="1" rowspan="1"> -->
-      Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot.
+      <br>
+      The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
       @if (lolipopPlotData.isLoading()) {
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       } @else {
@@ -18,9 +19,9 @@
             <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
             <mat-error>Please provide a number between 3 and 20</mat-error>
           </mat-form-field>
-          <mat-checkbox formControlName="includeModuleMembers" color="primary">
+          <!-- <mat-checkbox formControlName="includeModuleMembers" color="primary">
             Include module members
-          </mat-checkbox>
+          </mat-checkbox> -->
         </form>
     }
 
@@ -49,9 +50,9 @@
           <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
         </table>
       </div>
-      <div class="module-expression-heatmap">
+      <!-- <div class="module-expression-heatmap">
         <div #moduleExpressionHeatmap ></div>
-      </div>
+      </div> -->
 
       <!-- <div class="module-expression-heatmap">
         <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>

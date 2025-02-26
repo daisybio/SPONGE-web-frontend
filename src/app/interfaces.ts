@@ -59,15 +59,15 @@ export interface OverallCounts {
 }
 
 // export enum GeneSorting {
-//   Betweenness = 'betweenness',
-//   Degree = 'node_degree',
-//   Eigenvector = 'eigenvector',
+//   betweenness = 'Betweenness centrality',
+//   degree = 'node_Degree centrality',
+//   eigenvector = 'Eigenvector centrality',
 // }
 
 export enum InteractionSorting {
-  pAdj = 'pValue',
+  pValue = 'Adj. p-value',
   mscor = 'mscor',
-  Correlation = 'correlation',
+  correlation = 'Correlation',
 }
 
 export interface Gene {

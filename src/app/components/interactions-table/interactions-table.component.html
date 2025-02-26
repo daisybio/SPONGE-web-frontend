@@ -31,18 +31,17 @@
 
   <ng-container matColumnDef="correlation">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>
-      <app-info title="Correlation">Gene-Gene correlation</app-info>
+      <app-info title="Correlation">
+        <p [innerHTML]="infoService.correlationText"></p>
+      </app-info>
     </th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.correlation }}</td>
   </ng-container>
 
   <ng-container matColumnDef="mscor">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>
-      <app-info title="mscor">SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a
-        generalization of sensitivity correlation as defined by <a href="https://www.ncbi.nlm.nih.gov/pubmed/25033876">Paci
-          et al.</a>. These values capture the joint contribution
-        of several miRNAs on the ceRNA regulation of two genes while accounting for their cross-correlation.
-        <br/><br/>
+      <app-info title="mscor">
+        <p [innerHTML]="infoService.mscorText"></p>
         <span #mscorEquation class="katex"></span>
       </app-info>
     </th>
@@ -51,9 +50,8 @@
 
   <ng-container matColumnDef="padj">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>
-      <app-info title="Adj. p-value">SPONGE computes a null model to calculate empirical p-values for the ceRNA
-        interactions. We sampled 1,000,000 datasets to closely estimate the p-values. The interactions were then
-        FDR-corrected and filtered with a p-value cut-off of 0.01.
+      <app-info title="Adj. p-value">
+        <p [innerHTML]="infoService.pValText"></p>
       </app-info>
     </th>
     <td *matCellDef="let interaction" mat-cell>{{ interaction.padj }}</td>
