@@ -25,6 +25,7 @@ import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
 import katex from 'katex';
 import { ModalsService } from '../modals-service/modals.service';
+import { InfoService } from '../../services/info.service';
 
 @Component({
   selector: 'app-interactions-table',
@@ -47,6 +48,7 @@ export class InteractionsTableComponent implements AfterViewInit {
   level$ = input<'gene' | 'transcript'>();
   interactions$ = input<(GeneInteraction | TranscriptInteraction)[]>();
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
+  infoService = inject(InfoService);
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
   dataSource$ = computed(() => {
     return new MatTableDataSource(
@@ -75,16 +77,7 @@ export class InteractionsTableComponent implements AfterViewInit {
 
   constructor() {
     effect(() => {
-      const element = this.mscorEquation$()?.nativeElement;
-      if (element) {
-        katex.render(
-          'mscor(g_1, g_2, M) = cor(g_1, g_2) - pcor(g_1, g_2 | M)',
-          element,
-          {
-            output: 'mathml',
-          },
-        );
-      }
+      this.infoService.renderMscorEquation(this.mscorEquation$()!);
     });
   }
 

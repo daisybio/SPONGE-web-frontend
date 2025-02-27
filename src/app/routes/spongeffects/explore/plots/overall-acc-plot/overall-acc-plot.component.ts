@@ -1,5 +1,5 @@
 import {Component, computed, effect, ElementRef, inject, input, resource, viewChild} from '@angular/core';
-import {Metric, PlotlyData, RunPerformance} from '../../../../../interfaces';
+import {Metric, PlotlyData, RunPerformance, SpongEffectsRun} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -68,15 +68,16 @@ export class OverallAccPlotComponent {
 
 
   async getOverallAccuracyData(version: number, cancer: string, level: string): Promise<Metric[]> {
-    const modelPerformances = await this.backend.getRunPerformance(version, cancer, level);
+    const modelPerformances: RunPerformance[] = await this.backend.getRunPerformance(version, cancer, level);
     return modelPerformances.map((entry: RunPerformance, idx: number): Metric => {
       return {
         name: entry.model_type,
         split: entry.split_type,
         lower: entry.accuracy_lower,
         upper: entry.accuracy_upper,
-        idx: idx + 1
-      }
+        idx: idx + 1,
+        spongEffecsRun: entry.spongEffects_run,
+      };
     });
   };
 
@@ -131,8 +132,13 @@ export class OverallAccPlotComponent {
         y: [metric.idx + 1, metric.idx + 1],
         mode: this.defaultPlotMode,
         name: metric.name + " (" + metric.split + ")",
-        text: ["Lower Bound (Accuracy)", "Upper Bound (Accuracy)"],
-        hovertemplate: "<i>%{text}: %{x:.2f}</i>",
+        text: ["Lower Bound<br>(Accuracy)", "Upper Bound<br>(Accuracy)"],
+        hovertemplate: "<i>%{text}: %{x:.2f}</i>" + 
+          "<extra>Model parameters:" + 
+          "<br>mscor threshold: " + metric.spongEffecsRun.m_scor_threshold + 
+          "<br>pAdjust threshold: " + metric.spongEffecsRun.p_adj_threshold + 
+          "<br>modules cutoff: " + metric.spongEffecsRun.modules_cutoff + 
+          "</extra>",
         line: {
           width: this.defaultLineWidth,
           color: col,

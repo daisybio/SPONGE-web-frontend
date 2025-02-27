@@ -24,8 +24,8 @@
     </app-info>
     <div class="card-container">
       <mat-button-toggle-group [(value)]="mode">
-        <mat-button-toggle value="explore">Explore</mat-button-toggle>
         <mat-button-toggle value="predict">Predict</mat-button-toggle>
+        <mat-button-toggle value="explore">Explore</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
     @if (mode() == 'explore') {
