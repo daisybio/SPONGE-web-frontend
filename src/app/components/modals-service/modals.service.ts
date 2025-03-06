@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import {
+  Dataset,
   Gene,
   GeneInteraction,
   Transcript,
@@ -34,9 +35,12 @@ export class ModalsService {
     }
   }
 
-  openMiRNADialog(interaction: GeneInteraction | TranscriptInteraction) {
+  openMiRNADialog(
+    interaction: GeneInteraction | TranscriptInteraction,
+    disease: Dataset
+  ) {
     this.dialog.open(InteractionModalComponent, {
-      data: interaction,
+      data: { interaction, disease },
       minWidth: '60vw',
     });
   }
