@@ -1,1 +1,13 @@
 <div #sunburst></div>
+@if (noData()) {
+<div class="card-container">
+  <p style="margin-top: 50px">
+    @if (onlySignificant()) {
+    No significant results found. Please try a different gene or allow all
+    results to be shown.
+    } @else {
+    No results found. Please try a different gene.
+    }
+  </p>
+</div>
+}

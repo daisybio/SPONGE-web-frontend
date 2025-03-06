@@ -137,4 +137,9 @@ export class SunburstComponent {
       type: 'sunburst',
     };
   }
+
+  noData = computed(() => {
+    const data = this.plotData();
+    return !data || data.labels.length <= 1;
+  });
 }
