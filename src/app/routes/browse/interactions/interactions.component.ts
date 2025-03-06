@@ -13,4 +13,5 @@ export class InteractionsComponent {
 
   interactions$ = this.browseService.interactions$;
   level$ = this.browseService.level$;
+  disease$ = this.browseService.disease$;
 }

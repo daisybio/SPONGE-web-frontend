@@ -49,7 +49,7 @@ interface NetworkData {
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
   readonly graph$ = computed(() =>
-    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$()),
+    this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
   layout = computed(
     () =>
@@ -60,7 +60,7 @@ export class BrowseService {
           attraction: 0.01,
           gravity: 0.001,
         },
-      }),
+      })
   );
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
@@ -83,15 +83,15 @@ export class BrowseService {
       .filter(
         (c) =>
           c.dataset_1.dataset_ID === disease.dataset_ID ||
-          c.dataset_2.dataset_ID === disease.dataset_ID,
+          c.dataset_2.dataset_ID === disease.dataset_ID
       );
   });
   readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
   readonly inverseNodes$ = computed(
-    () => this._currentData$.value()?.inverseNodes || [],
+    () => this._currentData$.value()?.inverseNodes || []
   );
   readonly interactions$ = computed(
-    () => this._currentData$.value()?.edges || [],
+    () => this._currentData$.value()?.edges || []
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -99,7 +99,7 @@ export class BrowseService {
       .filter(([_, state]) => state[State.Active])
       .map(([node, _]) => node);
     return this.nodes$().filter((node) =>
-      activeNodeIDs.includes(BrowseService.getNodeID(node)),
+      activeNodeIDs.includes(BrowseService.getNodeID(node))
     );
   });
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
@@ -109,7 +109,7 @@ export class BrowseService {
       .map(([edge, _]) => edge);
     return activeEdgeIDs
       .map((edgeID) =>
-        this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$()),
+        this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())
       )
       .flat()
       .filter((interaction) => interaction !== undefined);
@@ -124,14 +124,14 @@ export class BrowseService {
     loader: (param) => {
       return this.backend.getNetworkResults(
         param.request.version,
-        param.request.level,
+        param.request.level
       );
     },
   });
 
   constructor(
     private backend: BackendService,
-    versionsService: VersionsService,
+    versionsService: VersionsService
   ) {
     this._version$ = versionsService.versionReadOnly();
 
@@ -153,10 +153,10 @@ export class BrowseService {
         [State.Active]: false,
       };
       this._nodeStates$.set(
-        Object.fromEntries(graph.nodes().map((node) => [node, initialState])),
+        Object.fromEntries(graph.nodes().map((node) => [node, initialState]))
       );
       this._edgeStates$.set(
-        Object.fromEntries(graph.edges().map((edge) => [edge, initialState])),
+        Object.fromEntries(graph.edges().map((edge) => [edge, initialState]))
       );
     });
 
@@ -204,34 +204,34 @@ export class BrowseService {
   }
 
   public static getNodeObject(
-    node: GeneNode | TranscriptNode,
+    node: GeneNode | TranscriptNode
   ): Gene | Transcript {
     return 'gene' in node ? node.gene : node.transcript;
   }
 
   public static getInteractionIDs(
-    interaction: GeneInteraction | TranscriptInteraction,
+    interaction: GeneInteraction | TranscriptInteraction
   ): [string, string] {
     const objects = BrowseService.getInteractionObjects(interaction);
     return objects.map(BrowseService.getID) as [string, string];
   }
 
   public static getInteractionFullNames(
-    interaction: GeneInteraction | TranscriptInteraction,
+    interaction: GeneInteraction | TranscriptInteraction
   ): [string, string] {
     const objects = BrowseService.getInteractionObjects(interaction);
     return objects.map(BrowseService.getFullName) as [string, string];
   }
 
   public static getInteractionGeneNames(
-    interaction: GeneInteraction | TranscriptInteraction,
+    interaction: GeneInteraction | TranscriptInteraction
   ): [string, string] {
     const objects = BrowseService.getInteractionObjects(interaction);
     return objects.map(BrowseService.getGeneName) as [string, string];
   }
 
   public static getInteractionObjects(
-    interaction: GeneInteraction | TranscriptInteraction,
+    interaction: GeneInteraction | TranscriptInteraction
   ): [Gene, Gene] | [Transcript, Transcript] {
     return 'gene1' in interaction
       ? [interaction.gene1, interaction.gene2]
@@ -242,12 +242,14 @@ export class BrowseService {
     if ('ensg_number' in node) {
       return node.gene_symbol || node.ensg_number;
     } else {
-      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number})`;
+      return `${node.gene.gene_symbol || node.gene.ensg_number} (${
+        node.enst_number
+      })`;
     }
   }
 
   public static getGProfilerUrlForNodes(
-    nodes: (GeneNode | TranscriptNode)[],
+    nodes: (GeneNode | TranscriptNode)[]
   ): string {
     const genes = nodes
       .map((node) => {
@@ -259,7 +261,9 @@ export class BrowseService {
       })
       .map((gene) => gene.gene_symbol || gene.ensg_number);
 
-    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
+    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(
+      ' '
+    )}`;
   }
 
   private static getID(node: Gene | Transcript): string {
@@ -282,7 +286,7 @@ export class BrowseService {
 
   async fetchData(
     version: number,
-    config: BrowseQuery | undefined,
+    config: BrowseQuery | undefined
   ): Promise<NetworkData> {
     if (config === undefined) {
       return {
@@ -314,7 +318,7 @@ export class BrowseService {
       nodes = nodes.filter((node) => {
         const nodeObject = BrowseService.getNodeID(node);
         return interactionNodes.some((interactionObject) =>
-          isEqual(interactionObject, nodeObject),
+          isEqual(interactionObject, nodeObject)
         );
       });
     }
@@ -330,7 +334,7 @@ export class BrowseService {
   toggleState(
     id: string,
     entityType: 'node' | 'edge',
-    state: State.Active | State.Hover,
+    state: State.Active | State.Hover
   ) {
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
@@ -349,7 +353,7 @@ export class BrowseService {
     id: string,
     entityType: 'node' | 'edge',
     state: State,
-    value: boolean,
+    value: boolean
   ) {
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
@@ -367,7 +371,7 @@ export class BrowseService {
   getInteractionForEdge(
     edgeID: string,
     interactions: (GeneInteraction | TranscriptInteraction)[],
-    graph: Graph,
+    graph: Graph
   ): (GeneInteraction | TranscriptInteraction)[] {
     const source = graph.source(edgeID);
     const target = graph.target(edgeID);
@@ -381,7 +385,7 @@ export class BrowseService {
   }
 
   getMiRNATracksForNode(
-    node: Gene | Transcript,
+    node: Gene | Transcript
   ): ResourceRef<Track[] | undefined> {
     const nodeId = BrowseService.getID(node);
     const level = 'ensg_number' in node ? 'gene' : 'transcript';
@@ -403,9 +407,9 @@ export class BrowseService {
         const interactions = param.request.interactions.filter(
           (interaction) => {
             return BrowseService.getInteractionIDs(interaction).some(
-              (interactionID) => interactionID == nodeId,
+              (interactionID) => interactionID == nodeId
             );
-          },
+          }
         );
 
         const miRNAs$ = interactions.map((edge) =>
@@ -414,9 +418,9 @@ export class BrowseService {
               param.request.version,
               disease,
               BrowseService.getInteractionIDs(edge),
-              level,
+              level
             )
-            .then((res) => res.map((mirna) => mirna.mirna.hs_nr)),
+            .then((res) => res.map((mirna) => mirna.mirna.hs_nr))
         );
         const uniqueMiRNAs = (await Promise.all(miRNAs$))
           .flat()
@@ -440,14 +444,14 @@ export class BrowseService {
   private createGraph(
     nodes: (GeneNode | TranscriptNode)[],
     interactions: (GeneInteraction | TranscriptInteraction)[],
-    inverseNodes: (GeneNode | TranscriptNode)[],
+    inverseNodes: (GeneNode | TranscriptNode)[]
   ): Graph {
     const graph = new Graph();
 
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
       const hasInverse = inverseNodes.some(
-        (inverseNode) => BrowseService.getNodeGeneName(inverseNode) === gene,
+        (inverseNode) => BrowseService.getNodeGeneName(inverseNode) === gene
       );
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
