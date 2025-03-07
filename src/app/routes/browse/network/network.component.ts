@@ -30,6 +30,7 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { capitalize } from 'lodash';
+import { downloadAsJPEG, downloadAsPNG } from '@sigma/export-image';
 
 const states: Record<
   State,
@@ -128,7 +129,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   draggedNode$: WritableSignal<string | undefined> = signal(undefined);
   dragStart$ = signal<number | undefined>(undefined);
   gProfilerUrl$ = computed(() =>
-    BrowseService.getGProfilerUrlForNodes(this.browseService.nodes$()),
+    BrowseService.getGProfilerUrlForNodes(this.browseService.nodes$())
   );
   protected readonly capitalize = capitalize;
 
@@ -157,7 +158,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       const sigma = new Sigma(
         graph,
         this.container.nativeElement,
-        sigma_settings,
+        sigma_settings
       );
 
       sigma.on('clickNode', (event) => {
@@ -273,6 +274,17 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       camera.y = 0.5;
       camera.ratio = 1;
     }
+  }
+
+  async downloadImage() {
+    const sigma = this.sigma;
+    if (sigma === undefined) {
+      return;
+    }
+
+    await downloadAsPNG(sigma, {
+      backgroundColor: '#ffffff',
+    });
   }
 
   private updateEdges(edgeStates: Record<string, EntityState>) {

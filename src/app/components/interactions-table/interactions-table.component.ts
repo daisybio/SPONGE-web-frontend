@@ -10,6 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {
+  Dataset,
   Gene,
   GeneInteraction,
   Transcript,
@@ -46,7 +47,10 @@ export class InteractionsTableComponent implements AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   modalsService = inject(ModalsService);
   level$ = input<'gene' | 'transcript'>();
-  interactions$ = input<(GeneInteraction | TranscriptInteraction)[]>();
+  interactions$ = input.required<(GeneInteraction | TranscriptInteraction)[]>();
+  disease$ = input.required<Dataset | undefined>({
+    alias: 'disease',
+  });
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
@@ -70,7 +74,7 @@ export class InteractionsTableComponent implements AfterViewInit {
               : interaction.transcript_2,
           interaction,
         };
-      }),
+      })
     );
   });
   protected readonly capitalize = capitalize;
@@ -88,7 +92,11 @@ export class InteractionsTableComponent implements AfterViewInit {
   }
 
   openMiRNADialog(interaction: GeneInteraction | TranscriptInteraction) {
-    this.modalsService.openMiRNADialog(interaction);
+    const disease = this.disease$();
+    if (!disease) {
+      throw new Error('Disease is required');
+    }
+    this.modalsService.openMiRNADialog(interaction, disease);
   }
 
   openDialog(entity: Gene | Transcript) {

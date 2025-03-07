@@ -57,7 +57,7 @@
             } @else {
               @let interactions = interactions$.value() ?? [];
               @if (interactions.length > 0) {
-                <app-interactions-table [interactions$]="interactions"></app-interactions-table>
+                <app-interactions-table [interactions$]="interactions" [disease]="activeDisease()"></app-interactions-table>
               } @else {
                 <p>No interactions found.</p>
               }

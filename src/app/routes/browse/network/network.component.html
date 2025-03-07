@@ -1,5 +1,9 @@
 <div #container style="height: 500px; width: 100%; border: 1px solid #ccc"></div>
 <div class="card-container">
+  <button (click)="downloadImage()" mat-stroked-button>
+    <mat-icon>download</mat-icon>
+    Download image
+  </button>
   <app-info title="What do I see?">
     <p>What you see is a subset of a large ceRNA network obtained by applying SPONGE to data from TCGA. The entire
       network is too large to visualize here. You can adjust the filter criteria using the controls on the left.</p>
@@ -21,6 +25,8 @@
     <mat-icon>home</mat-icon>
     Reset camera
   </button>
-  <a [href]="gProfilerUrl$()" mat-flat-button matTooltip="Open g:Profiler for all visible nodes"
-     target="_blank">Functional enrichment analysis using g:Profiler</a>
+  <a [href]="gProfilerUrl$()" mat-stroked-button matTooltip="Open g:Profiler for all visible nodes" target="_blank">
+    <mat-icon>open_in_new</mat-icon>
+    Functional enrichment analysis using g:Profiler
+  </a>
 </div>

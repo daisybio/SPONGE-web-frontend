@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, computed, effect, inject, resource, viewChild} from '@angular/core';
-import {GeneInteraction, MiRNA, TranscriptInteraction} from "../../interfaces";
+import {GeneInteraction, MiRNA, TranscriptInteraction, Dataset} from "../../interfaces";
 import {MAT_DIALOG_DATA, MatDialogModule} from "@angular/material/dialog";
 import {BackendService} from "../../services/backend.service";
 import {VersionsService} from "../../services/versions.service";
@@ -27,11 +27,9 @@ interface TableData {
 export class InteractionModalComponent implements AfterViewInit {
   paginator = viewChild.required(MatPaginator);
   sort = viewChild.required(MatSort);
-  readonly interaction = inject<GeneInteraction | TranscriptInteraction>(MAT_DIALOG_DATA);
+  readonly data = inject<{interaction: GeneInteraction | TranscriptInteraction, disease: Dataset}>(MAT_DIALOG_DATA);
   tableData = new MatTableDataSource<TableData>();
   columns = ['hs_nr', 'mir_ID', 'node1_coefficient', 'node2_coefficient'];
-  protected readonly browseService = inject(BrowseService);
-  disease$ = this.browseService.disease$;
   protected readonly BrowseService = BrowseService;
   private readonly backend = inject(BackendService);
   private readonly versionsService = inject(VersionsService);
@@ -40,14 +38,14 @@ export class InteractionModalComponent implements AfterViewInit {
     request: computed(() => {
       return {
         version: this.version$(),
-        level: 'gene1' in this.interaction ? 'gene' : 'transcript',
-        disease: this.disease$()
+        level: 'gene1' in this.data.interaction ? 'gene' : 'transcript',
+        disease: this.data.disease
       }
     }),
     loader: async (param) => {
       const disease = param.request.disease;
       if (disease === undefined) return;
-      const identifiers = BrowseService.getInteractionIDs(this.interaction);
+      const identifiers = BrowseService.getInteractionIDs(this.data.interaction);
       return await this.backend.getMiRNAs(param.request.version, disease, identifiers, param.request.level as 'gene' | 'transcript');
     }
   })
@@ -78,7 +76,7 @@ export class InteractionModalComponent implements AfterViewInit {
       coefficient: number
     }>>());
 
-    const nodeIDs = BrowseService.getInteractionIDs(this.interaction);
+    const nodeIDs = BrowseService.getInteractionIDs(this.data.interaction);
 
     return Array.from(formatted.entries()).map(([miRNAid, nodes]) => {
       const node1 = nodes.get(nodeIDs[0]);

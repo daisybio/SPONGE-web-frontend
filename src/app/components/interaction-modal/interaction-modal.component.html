@@ -1,10 +1,10 @@
-@let fullNames = BrowseService.getInteractionFullNames(interaction);
+@let fullNames = BrowseService.getInteractionFullNames(data.interaction);
 <h1 mat-dialog-title>{{ fullNames[0] }} - {{ fullNames[1] }}</h1>
 <mat-dialog-content>
   @if (miRNAs$.isLoading()) {
-    <div class="card-container">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    </div>
+  <div class="card-container">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  </div>
   }
   <table [dataSource]="tableData" [hidden]="miRNAs$.isLoading()" class="mat-elevation-z8" mat-table matSort>
     <ng-container matColumnDef="hs_nr">
@@ -18,7 +18,7 @@
       <th *matHeaderCellDef mat-header-cell mat-sort-header>ID</th>
       <td *matCellDef="let entry" mat-cell>
         <a [href]="'https://mirbase.org/mature/' + entry.mir_ID" mat-flat-button matTooltip="Open in miRBase"
-           matTooltipPosition="right" target="_blank">{{ entry.mir_ID }}</a>
+          matTooltipPosition="right" target="_blank">{{ entry.mir_ID }}</a>
       </td>
     </ng-container>
 
@@ -36,6 +36,6 @@
     <tr *matRowDef="let row; columns: columns;" mat-row></tr>
   </table>
   <mat-paginator [hidden]="miRNAs$.isLoading()" [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10"
-                 aria-label="Select page of users"></mat-paginator>
+    aria-label="Select page of users"></mat-paginator>
 
 </mat-dialog-content>

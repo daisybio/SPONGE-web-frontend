@@ -78,7 +78,7 @@ export class BackendService {
     const route = 'getOverallCounts';
     const query: Query = { sponge_db_version: version };
     return this.http.getRequest<OverallCounts[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
   }
 
@@ -109,42 +109,42 @@ export class BackendService {
     return this.http.getRequest<Network>(this.getRequestURL(route, _query));
   }
 
-  // getNodes(
-  //   version: number,
-  //   query: BrowseQuery,
-  // ): Promise<(GeneNode | TranscriptNode)[]> {
-  //   const level = query.level;
-  //   const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
+  getNodes(
+    version: number,
+    query: BrowseQuery
+  ): Promise<(GeneNode | TranscriptNode)[]> {
+    const level = query.level;
+    const route = level == 'gene' ? 'findceRNA' : 'findceRNATranscripts';
 
-  //   if (
-  //     version != query.dataset.sponge_db_version ||
-  //     (version < 2 && level == 'transcript')
-  //   ) {
-  //     return Promise.resolve([]);
-  //   }
+    if (
+      version != query.dataset.sponge_db_version ||
+      (version < 2 && level == 'transcript')
+    ) {
+      return Promise.resolve([]);
+    }
 
-  //   const internalQuery: Query = {
-  //     sponge_db_version: version,
-  //     disease_name: query.dataset.disease_name,
-  //     dataset_ID: query.dataset.dataset_ID,
-  //     minBetweenness: query.minBetweenness,
-  //     minNodeDegree: query.minDegree,
-  //     minEigenvector: query.minEigen,
-  //     sorting: query.geneSorting,
-  //     descending: true,
-  //     limit: query.maxNodes,
-  //   };
+    const internalQuery: Query = {
+      sponge_db_version: version,
+      disease_name: query.dataset.disease_name,
+      dataset_ID: query.dataset.dataset_ID,
+      minBetweenness: query.minBetweenness,
+      minNodeDegree: query.minDegree,
+      minEigenvector: query.minEigen,
+      sorting: query.geneSorting,
+      descending: true,
+      limit: query.maxNodes,
+    };
 
-  //   return this.http.getRequest<(GeneNode | TranscriptNode)[]>(
-  //     this.getRequestURL(route, internalQuery),
-  //   );
-  // }
+    return this.http.getRequest<(GeneNode | TranscriptNode)[]>(
+      this.getRequestURL(route, internalQuery)
+    );
+  }
 
   async getGeneInteractionsAll(
     version: number,
     disease: Dataset | undefined,
     maxPValue: number,
-    ensgs: string[],
+    ensgs: string[]
   ): Promise<GeneInteraction[]> {
     const route = 'ceRNAInteraction/findAll';
 
@@ -176,7 +176,7 @@ export class BackendService {
           ...query,
           limit,
           offset,
-        }),
+        })
       );
       results.push(...data);
       offset += limit;
@@ -190,7 +190,7 @@ export class BackendService {
     disease: Dataset,
     maxPValue: number,
     identifiers: string[],
-    level: 'gene' | 'transcript',
+    level: 'gene' | 'transcript'
   ): Promise<(GeneInteraction | TranscriptInteraction)[]> {
     const route =
       level == 'gene'
@@ -215,7 +215,7 @@ export class BackendService {
     }
 
     return this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
   }
 
@@ -223,7 +223,7 @@ export class BackendService {
     version: number,
     identifiers: string[],
     disease: Dataset,
-    level: 'gene' | 'transcript',
+    level: 'gene' | 'transcript'
   ): Promise<(GeneExpression | TranscriptExpression)[]> {
     const route =
       level == 'gene' ? 'exprValue/getceRNA' : 'exprValue/getTranscriptExpr';
@@ -252,7 +252,7 @@ export class BackendService {
   getSurvivalRates(
     version: number,
     ensgs: string[],
-    disease: Dataset,
+    disease: Dataset
   ): Promise<SurvivalRate[]> {
     const route = 'survivalAnalysis/getRates';
     const query: Query = {
@@ -263,7 +263,7 @@ export class BackendService {
     };
 
     return this.http.getRequest<SurvivalRate[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
   }
 
@@ -291,7 +291,7 @@ export class BackendService {
       enst_number: enst,
     };
     return this.http.getRequest<TranscriptInfo[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
   }
 
@@ -320,7 +320,7 @@ export class BackendService {
 
   async getHallmark(
     version: number,
-    symbol: string | undefined,
+    symbol: string | undefined
   ): Promise<Hallmark[]> {
     const route = 'getHallmark';
 
@@ -333,7 +333,7 @@ export class BackendService {
       gene_symbol: symbol,
     };
     const hallmarks = await this.http.getRequest<Hallmark[] | {}>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
     if (!Array.isArray(hallmarks)) {
       return [];
@@ -343,7 +343,7 @@ export class BackendService {
 
   async getWikiPathways(
     version: number,
-    symbol: string | undefined,
+    symbol: string | undefined
   ): Promise<WikiPathway[]> {
     const route = 'getWikipathway';
 
@@ -356,7 +356,7 @@ export class BackendService {
       gene_symbol: symbol,
     };
     const wikipathways = await this.http.getRequest<WikiPathway[] | {}>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
 
     if (!Array.isArray(wikipathways)) {
@@ -365,10 +365,10 @@ export class BackendService {
     return wikipathways;
   }
 
-  getGeneCount(
+  async getGeneCount(
     version: number,
     ensgs: string[],
-    onlySignificant: boolean,
+    onlySignificant: boolean
   ): Promise<GeneCount[]> {
     if (ensgs.length === 0) {
       return Promise.resolve([]);
@@ -381,7 +381,13 @@ export class BackendService {
     if (onlySignificant) {
       query['minCountSign'] = 1;
     }
-    return this.http.getRequest<GeneCount[]>(this.getRequestURL(route, query));
+    const res = await this.http.getRequest<GeneCount[]>(
+      this.getRequestURL(route, query)
+    );
+    if ('title' in res && res.title == 'No Content') {
+      return [];
+    }
+    return res;
   }
 
   async getGeneTranscripts(version: number, ensg: string): Promise<string[]> {
@@ -399,7 +405,7 @@ export class BackendService {
     version: number,
     disease: Dataset,
     identifiers: [string, string],
-    level: 'gene' | 'transcript',
+    level: 'gene' | 'transcript'
   ) {
     const route =
       level == 'gene'
@@ -418,12 +424,12 @@ export class BackendService {
     }
 
     return this.http.getRequest<GeneMiRNA[] | TranscriptMiRNA[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
   }
 
   async getAlternativeSplicingEvents(
-    ensts: string[],
+    ensts: string[]
   ): Promise<AlternativeSplicingEvent[]> {
     const route = 'alternativeSplicing/getTranscriptEvents';
 
@@ -432,7 +438,7 @@ export class BackendService {
     };
 
     const resp = await this.http.getRequest<AlternativeSplicingEvent[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
     return 'detail' in resp ? [] : resp;
   }
@@ -442,7 +448,7 @@ export class BackendService {
     maxPValue: number,
     ensgs: string[],
     limit?: number,
-    offset?: number,
+    offset?: number
   ): Promise<CeRNAInteraction[]> {
     let request =
       API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
@@ -462,7 +468,7 @@ export class BackendService {
   getCeRNAInteractionsSpecific(
     disease: string,
     maxPValue: number,
-    ensgs: string[],
+    ensgs: string[]
   ): Promise<CeRNAInteraction[]> {
     let request =
       API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
@@ -488,7 +494,7 @@ export class BackendService {
 
   getCeRNAExpression(
     ensgs: string[],
-    diseaseName: string,
+    diseaseName: string
   ): Promise<CeRNAExpression[]> {
     let request = API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
     request += `&ensg_number=${ensgs.join(',')}`;
@@ -498,7 +504,7 @@ export class BackendService {
 
   getTranscriptExpression(
     ensts: string[],
-    disease_name?: string,
+    disease_name?: string
   ): Promise<TranscriptExpression[]> {
     let request =
       API_BASE + `/exprValue/getTranscript?disease_name=${disease_name}`;
@@ -510,7 +516,7 @@ export class BackendService {
   async getSurvivalPValues(
     version: number,
     ensgs: string[],
-    disease: Dataset,
+    disease: Dataset
   ): Promise<SurvivalPValue[]> {
     const route = 'survivalAnalysis/getPValues';
 
@@ -523,7 +529,7 @@ export class BackendService {
 
     return (
       (await this.http.getRequest<SurvivalPValue[] | undefined>(
-        this.getRequestURL(route, query),
+        this.getRequestURL(route, query)
       )) ?? []
     );
   }
@@ -531,7 +537,7 @@ export class BackendService {
   getSpongEffectsRuns(
     version: number,
     dataset_ID?: number,
-    diseaseName?: string,
+    diseaseName?: string
   ): Promise<SpongEffectsRun[]> {
     const request =
       `${API_BASE}/spongEffects/getSpongEffectsRuns?` +
@@ -544,7 +550,7 @@ export class BackendService {
   getRunPerformance(
     version: number,
     diseaseName: string,
-    level: string,
+    level: string
   ): Promise<RunPerformance[]> {
     const request =
       API_BASE +
@@ -560,7 +566,7 @@ export class BackendService {
   getRunClassPerformance(
     version: number,
     diseaseName: string,
-    level: string,
+    level: string
   ): Promise<RunClassPerformance[]> {
     const request =
       API_BASE +
@@ -574,7 +580,7 @@ export class BackendService {
   getEnrichmentScoreDistributions(
     version: number,
     diseaseName: string,
-    level: string,
+    level: string
   ): Promise<EnrichmentScoreDistributions[]> {
     const request = `${API_BASE}/spongEffects/enrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
     return this.http.getRequest<EnrichmentScoreDistributions[]>(request);
@@ -582,7 +588,7 @@ export class BackendService {
 
   getSpongEffectsGeneModules(
     version: number,
-    diseaseName: string,
+    diseaseName: string
   ): Promise<SpongEffectsGeneModules[]> {
     const request = `${API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
     return this.http.getRequest<SpongEffectsGeneModules[]>(request);
@@ -592,7 +598,7 @@ export class BackendService {
     version: number,
     diseaseName: string,
     ensgNumber?: string,
-    geneSymbol?: string,
+    geneSymbol?: string
   ): Promise<SpongEffectsGeneModuleMembers[]> {
     let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
     if (ensgNumber) {
@@ -606,7 +612,7 @@ export class BackendService {
 
   getSpongEffectsTranscriptModules(
     version: number,
-    diseaseName: string,
+    diseaseName: string
   ): Promise<SpongEffectsTranscriptModules[]> {
     const request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
     return this.http.getRequest<SpongEffectsTranscriptModules[]>(request);
@@ -615,7 +621,7 @@ export class BackendService {
   getSpongEffectsTranscriptModuleMembers(
     version: number,
     diseaseName: string,
-    enstNumber?: string,
+    enstNumber?: string
   ): Promise<SpongEffectsTranscriptModuleMembers[]> {
     let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
     if (enstNumber) {
@@ -634,7 +640,7 @@ export class BackendService {
     minSize: number,
     maxSize: number,
     minExpr: number,
-    method: string,
+    method: string
   ): Promise<PredictCancerType> {
     const formData = new FormData();
     formData.append('file', file);
@@ -665,7 +671,7 @@ export class BackendService {
     disease1: Dataset | undefined,
     condition1: string,
     disease2: Dataset | undefined,
-    condition2: string,
+    condition2: string
   ) {
     const route = 'gseaSets';
 
@@ -682,14 +688,14 @@ export class BackendService {
     };
 
     const res = await this.http.getRequest<{ gene_set: string }[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
     return res.map((e) => e.gene_set).sort();
   }
 
   async getNetworkResults(
     version: number,
-    level: 'gene' | 'transcript' | undefined,
+    level: 'gene' | 'transcript' | undefined
   ) {
     const route = 'networkResults';
 
@@ -703,7 +709,7 @@ export class BackendService {
     };
 
     const resp = await this.http.getRequest<NetworkResult>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
     return 'type' in resp ? resp : undefined;
   }
@@ -725,7 +731,7 @@ export class BackendService {
     condition1: string,
     disease2: Dataset | undefined,
     condition2: string,
-    geneSet: string | undefined,
+    geneSet: string | undefined
   ) {
     const route = 'gseaTerms';
 
@@ -742,7 +748,7 @@ export class BackendService {
     };
 
     const res = await this.http.getRequest<{ term: string }[]>(
-      this.getRequestURL(route, query),
+      this.getRequestURL(route, query)
     );
     return res.map((e) => e.term).sort();
   }
@@ -753,7 +759,7 @@ export class BackendService {
     condition1: string,
     disease2: Dataset | undefined,
     condition2: string,
-    geneSet: string | undefined,
+    geneSet: string | undefined
   ) {
     const route = 'gseaResults';
 
