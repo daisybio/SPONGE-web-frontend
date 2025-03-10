@@ -1,9 +1,18 @@
-import {AfterViewInit, Component, effect, input, OnDestroy, output, viewChild} from '@angular/core';
-import {GseaResult} from "../../../../interfaces";
-import {MatTableDataSource, MatTableModule} from "@angular/material/table";
-import {MatPaginator, MatPaginatorModule} from "@angular/material/paginator";
-import {MatSort, MatSortModule} from "@angular/material/sort";
-import {MatButton} from "@angular/material/button";
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  input,
+  OnDestroy,
+  output,
+  viewChild,
+} from '@angular/core';
+import { GseaResult } from '../../../../interfaces';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatButton } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-gsearesults',
@@ -11,17 +20,18 @@ import {MatButton} from "@angular/material/button";
     MatTableModule,
     MatSortModule,
     MatPaginatorModule,
-    MatButton
+    MatButton,
+    MatTooltipModule,
   ],
   templateUrl: './gsearesults.component.html',
-  styleUrl: './gsearesults.component.scss'
+  styleUrl: './gsearesults.component.scss',
 })
 export class GSEAresultsComponent implements AfterViewInit, OnDestroy {
   paginator = viewChild.required(MatPaginator);
   sort = viewChild.required(MatSort);
   results$ = input.required<GseaResult[]>();
   dataSource = new MatTableDataSource<GseaResult>();
-  termSelected = output<string>()
+  termSelected = output<string>();
 
   columns = [
     'term',
@@ -32,12 +42,12 @@ export class GSEAresultsComponent implements AfterViewInit, OnDestroy {
     'nes',
     'pvalue',
     'tag_percent',
-    'show_plot'
-  ]
+    'show_plot',
+  ];
 
   updateDataSource = effect(() => {
     this.dataSource.data = this.results$();
-  })
+  });
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator()!;
@@ -45,6 +55,6 @@ export class GSEAresultsComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.updateDataSource.destroy()
+    this.updateDataSource.destroy();
   }
 }

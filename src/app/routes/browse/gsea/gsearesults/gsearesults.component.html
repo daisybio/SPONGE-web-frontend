@@ -1,47 +1,50 @@
 <table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
   <ng-container matColumnDef="es">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>ES</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header matTooltip="Enrichment score">ES</th>
     <td *matCellDef="let result" mat-cell>
       {{ result.es }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="fdr">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>FDR</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header matTooltip="Adjusted False Discovery Rate q-value">FDR</th>
     <td *matCellDef="let result" mat-cell>
       {{ result.fdr }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="fwerp">
-    <th *matHeaderCellDef mat-header-cell>FWERP</th>
+    <th *matHeaderCellDef mat-header-cell matTooltip="Family wise error rate p-values">FWERP</th>
     <td *matCellDef="let result" mat-cell>
       {{ result.fwerp }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="gene_percent">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene percent</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header
+      matTooltip="Percent of gene list before running enrichment peak">Gene percent</th>
     <td *matCellDef="let result" mat-cell>{{ result.gene_percent }}</td>
   </ng-container>
 
   <ng-container matColumnDef="nes">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>NES</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header matTooltip="Normalized enrichment score">NES</th>
     <td *matCellDef="let result" mat-cell>{{ result.nes }}</td>
   </ng-container>
 
   <ng-container matColumnDef="pvalue">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>p-Value</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header
+      matTooltip="Nominal p-value from the null distribution of the gene set">p-Value</th>
     <td *matCellDef="let result" mat-cell>{{ result.pvalue }}</td>
   </ng-container>
 
   <ng-container matColumnDef="tag_percent">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Tag percent</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header
+      matTooltip="Percent of gene set before running enrichment peak">Tag percent</th>
     <td *matCellDef="let result" mat-cell>{{ result.tag_percent }}</td>
   </ng-container>
 
   <ng-container matColumnDef="term">
-    <th *matHeaderCellDef mat-header-cell mat-sort-header>Term</th>
+    <th *matHeaderCellDef mat-header-cell mat-sort-header matTooltip="Gene set name">Term</th>
     <td *matCellDef="let result" mat-cell>{{ result.term }}</td>
   </ng-container>
 
