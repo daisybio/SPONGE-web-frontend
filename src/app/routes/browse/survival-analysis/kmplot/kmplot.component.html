@@ -9,13 +9,13 @@
   </mat-card-header>
   <mat-card-content>
     @if (plotDataResource.isLoading()) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     } @else {
-      @if (!plotDataResource.value()) {
-        <p>No data available</p>
-      }
+    @if (!plotDataResource.value()) {
+    <p>No data available</p>
+    }
     }
 
-    <div #s style="width: 700px"></div>
+    <div #plot style="width: 700px"></div>
   </mat-card-content>
 </mat-card>
