@@ -775,6 +775,25 @@ export class BackendService {
     return this.http.getRequest<GseaResult[]>(this.getRequestURL(route, query));
   }
 
+  getGseaPlot(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined, term: string) {
+    const route = 'gseaPlot';
+
+    if (!disease1 || !disease2 || !geneSet) {
+      return Promise.resolve(undefined);
+    }
+    const query: Query = {
+      sponge_db_version: version,
+      dataset_ID_1: disease1.dataset_ID,
+      dataset_ID_2: disease2.dataset_ID,
+      condition_1: condition1,
+      condition_2: condition2,
+      gene_set: geneSet,
+      term: term
+    }
+
+    return this.http.getRequest<string>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query)
       .map((key) => key + '=' + query[key])
