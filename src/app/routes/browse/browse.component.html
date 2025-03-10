@@ -19,7 +19,7 @@
       </mat-tab>
       @if (version$() === 1 && level() == 'gene') {
       <mat-tab label="Survival analysis">
-        <app-survival-analysis></app-survival-analysis>
+        <app-survival-analysis [refresh]="refresh$()"></app-survival-analysis>
       </mat-tab>
       }
       <mat-tab label="Expression heatmap">
@@ -32,7 +32,7 @@
         <app-interactions></app-interactions>
       </mat-tab>
       @if (version$() > 1) {
-      <mat-tab label="Gene set enrichment" [disabled]="!hasGseaContrasts$()">
+      <mat-tab label="Gene set enrichment">
         <app-gsea [refresh$]="refresh$"></app-gsea>
       </mat-tab>
       }
