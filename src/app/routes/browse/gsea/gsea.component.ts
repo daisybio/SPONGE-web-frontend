@@ -187,25 +187,18 @@ export class GSEAComponent {
   protected readonly capitalize = capitalize;
 
   async openTermModal(term: string) {
-    const resp = await this.backend.getGseaPlot(
-      this.versionsService.versionReadOnly()(),
-      this.globalDisease$(),
-      this.activeGlobalCondition$(),
-      this.localDisease$(),
-      this.activeLocalCondition$(),
-      this.activeGeneSet$(),
-      term
-    );
-
-    if (resp) {
-      this.dialog.open(GseaPlotComponent, {
-        width: '800px',
-        data: {
-          imageBase64: resp,
-          term: term,
-        },
-      });
-    }
+    this.dialog.open(GseaPlotComponent, {
+      width: '800px',
+      data: {
+        version: Number(this.versionsService.versionReadOnly()()),
+        globalDisease: this.globalDisease$(),
+        globalCondition: this.activeGlobalCondition$(),
+        localDisease: this.localDisease$(),
+        localCondition: this.activeLocalCondition$(),
+        geneSet: this.activeGeneSet$(),
+        term: term,
+      },
+    });
   }
 
   private getConditionsForDisease(
