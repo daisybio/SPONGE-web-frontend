@@ -29,6 +29,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { GseaPlotComponent } from './gsea-plot/gsea-plot.component';
 import { CommonModule } from '@angular/common';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { GseaBarplotComponent } from './gsea-barplot/gsea-barplot.component';
+import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.component';
 
 @Component({
   selector: 'app-gsea',
@@ -48,6 +50,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
     MatButtonToggle,
     KeyValuePipe,
     GSEAresultsComponent,
+    GseaBarplotComponent,
+    GseaVolcanoplotComponent,
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss',
@@ -184,6 +188,9 @@ export class GSEAComponent {
     },
   });
 
+  currentView: WritableSignal<'table' | 'barplot' | 'volcanoplot'> =
+    signal('table');
+
   protected readonly capitalize = capitalize;
 
   async openTermModal(term: string) {
@@ -199,6 +206,10 @@ export class GSEAComponent {
         term: term,
       },
     });
+  }
+
+  setView(view: 'table' | 'barplot' | 'volcanoplot'): void {
+    this.currentView.set(view);
   }
 
   private getConditionsForDisease(
