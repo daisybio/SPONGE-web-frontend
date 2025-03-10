@@ -71,10 +71,10 @@
 <app-gsearesults [results$]="results" (termSelected)="openTermModal($event)"></app-gsearesults>
 }
 @case ('barplot') {
-<app-gsea-barplot [results]="results"></app-gsea-barplot>
+<app-gsea-barplot [results]="results" [refreshSignal]="refresh$()"></app-gsea-barplot>
 }
 @case ('volcanoplot') {
-<app-gsea-volcanoplot [results]="results"></app-gsea-volcanoplot>
+<app-gsea-volcanoplot [results]="results" [refreshSignal]="refresh$()"></app-gsea-volcanoplot>
 }
 }
 } @else {

@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   inject,
+  input,
   linkedSignal,
   resource,
   signal,
@@ -61,6 +62,7 @@ export class GSEAComponent {
   browseService = inject(BrowseService);
   backend = inject(BackendService);
   dialog = inject(MatDialog);
+  refresh$ = input.required<any>();
 
   possibleComparisons$ = this.browseService.possibleComparisons$;
   globalDisease$ = this.browseService.disease$;
