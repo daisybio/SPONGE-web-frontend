@@ -28,5 +28,5 @@ export const IGV_REFGENOME = {
     'https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa',
   indexURL:
     'https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa.fai',
-  refGeneURL: 'https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.txt.gz',
+  // refGeneURL: 'https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.txt.gz',
 };

@@ -425,18 +425,34 @@ export class BrowseService {
         const uniqueMiRNAs = (await Promise.all(miRNAs$))
           .flat()
           .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
-        return uniqueMiRNAs.map((miRNA): Track => {
-          return {
-            name: miRNA,
-            url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
-            indexURL: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz.tbi`,
-            format: 'bed',
-            type: 'annotation',
-            height: 30,
-            displayMode: 'SQUISHED',
-            indexed: false,
-          };
-        });
+          return [
+            {
+              "name": "hg38 Annotation",
+              url: "https://s3.amazonaws.com/igv.org.genomes/hg38/Homo_sapiens.GRCh38.94.chr.gff3.gz",
+              indexURL: "https://s3.amazonaws.com/igv.org.genomes/hg38/Homo_sapiens.GRCh38.94.chr.gff3.gz.tbi",
+              // url: "https://s3.amazonaws.com/igv.org.genomes/hg38/gencode.v36.annotation.gff3.gz", 
+              // indexURL: "https://s3.amazonaws.com/igv.org.genomes/hg38/gencode.v36.annotation.gff3.gz.tbi",
+              // url: "https://ftp.ensembl.org/pub/release-100/gff3/homo_sapiens/Homo_sapiens.GRCh38.100.chr.gff3.gz",
+              // url: "https://ftp.ensembl.org/pub/release-100/gff3/homo_sapiens/Homo_sapiens.GRCh38.100.chr_patch_hapl_scaff.gff3.gz",
+              "format": "gtf",
+              "sourceType": "file",
+              "type": "annotation",
+              "displayMode": "EXPANDED",
+              "indexed": false,
+              "visibilityWindow": "1000000",
+          }, 
+            ...(uniqueMiRNAs.map((miRNA): Track => {
+            return {
+              name: miRNA,
+              url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
+              indexURL: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz.tbi`,
+              format: 'bed',
+              type: 'annotation',
+              height: 30,
+              displayMode: 'SQUISHED',
+              indexed: false,
+            };
+          }))]
       },
     });
   }
