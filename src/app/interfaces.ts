@@ -1,3 +1,5 @@
+import { Data } from "@angular/router";
+
 export interface Dataset {
   data_origin: string;
   dataset_ID: number;
@@ -169,14 +171,14 @@ export interface CeRNAExpression {
 }
 
 export interface GeneExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   gene: Gene;
   sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   sample_ID: string;
   transcript: Transcript;
@@ -319,10 +321,12 @@ export interface SpongEffectsGeneModules {
 }
 
 export interface SpongEffectsGeneModuleMembers {
-  hub_ensg_number: string;
-  hub_gene_symbol: string;
-  member_ensg_number: string;
-  member_gene_symbol: string;
+  gene: {
+    ensg_number: string;
+    gene_symbol: string;
+  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
 
 export interface SpongEffectsTranscriptModules {
@@ -335,16 +339,11 @@ export interface SpongEffectsTranscriptModules {
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
-  hub_enst_number: string;
-  hub_gene: {
-    ensg_number: string;
-    gene_symbol: string;
+  transcript: {
+    enst_number: string;
   };
-  member_enst_number: string;
-  member_gene: {
-    ensg_number: string;
-    gene_symbol: string;
-  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
 
 export interface PredictCancerType {
