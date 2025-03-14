@@ -43,7 +43,7 @@ export class ClassPerformancePlotComponent {
   backend = inject(BackendService);
   refreshSignal$ = input();
 
-  classPerformPlot = viewChild.required<ElementRef<HTMLDivElement>>(
+  classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
   );
 
@@ -109,20 +109,21 @@ export class ClassPerformancePlotComponent {
 
     effect(() => {
       const traces = this.plotlyTraces$();
+      
+      if (!traces.length) {
+        return; // Don't attempt to plot if there are no traces
+      }
 
       const meanTextLength: number = Math.round(
         sum(traces[0].x.map((d) => d.length)) / traces[0].x.length,
       );
       const textPad: number = meanTextLength * 10.5;
-      // const containerWidth = this.renderer.selectRootElement(this.classPerformancePlotDiv.nativeElement).offsetWidth;
-      // const angle: number = meanTextLength > 15 ? 90: 0;
-      // angle 90 if number of bars is greater than 10
+      
       const uniqueBars = new Set(traces.flatMap((trace) => trace.x)).size;
       const angle: number = uniqueBars > 10 ? -90 : 0;
       const layout = {
         barmode: 'group',
         autosize: true,
-        // width: containerWidth,
         xaxis: {
           autosize: true,
           tickangle: angle,
@@ -134,7 +135,6 @@ export class ClassPerformancePlotComponent {
           t: 8,
           b: angle == -90 ? textPad : 40,
           l: 70,
-          // r: 0
         },
         legend: {
           orientation: 'h',
@@ -145,19 +145,22 @@ export class ClassPerformancePlotComponent {
         plot_bgcolor: 'rgba(0,0,0,0)',
       };
       const config = { responsive: true };
-      return Plotly.newPlot(
-        this.classPerformPlot().nativeElement,
-        traces,
-        layout,
-        config,
-      );
+      
+      if (this.classPerformPlot()?.nativeElement) {
+        Plotly.newPlot(
+          this.classPerformPlot()?.nativeElement,
+          traces,
+          layout,
+          config,
+        );
+      }
     });
   }
 
   refreshPlot() {
-    const plotDiv = this.classPerformPlot().nativeElement;
-    if (plotDiv.checkVisibility()) {
-      Plotly.Plots.resize(plotDiv);
+    const plotDivRef = this.classPerformPlot();
+    if (plotDivRef?.nativeElement?.checkVisibility()) {
+      Plotly.Plots.resize(plotDivRef.nativeElement);
     }
   }
 }
