@@ -7,6 +7,7 @@ import {
   resource,
   ResourceRef,
   signal,
+  ViewChild,
   viewChild,
   WritableSignal,
 } from '@angular/core';
@@ -92,9 +93,7 @@ export class LollipopPlotComponent {
   // moduleExpressionData: PlotlyData = {data: [], layout: {}, config: {}};
 
   lollipopPlot = viewChild.required<ElementRef<HTMLDivElement>>('lollipopPlot');
-  moduleExpressionHeatmap = viewChild.required<ElementRef<HTMLDivElement>>(
-    'moduleExpressionHeatmap',
-  );
+  moduleExpressionHeatmap = viewChild.required<ElementRef<HTMLDivElement>>('moduleExpressionHeatmap');
 
   // plot parameters
   defaultMarkerSize: number = 12;
@@ -106,7 +105,7 @@ export class LollipopPlotComponent {
       Validators.min(3.0),
       Validators.max(100),
     ]),
-    topControl: new FormControl<number>(10, [
+    topControl: new FormControl<number>(15, [
       Validators.min(1.0),
       Validators.max(20),
     ]),
@@ -182,6 +181,7 @@ export class LollipopPlotComponent {
   });
 
   // update plots on form change
+  
   clearEffect = effect(() => {
     this.exploreService.selectedDisease$();
     this.exploreService.level$();
@@ -206,7 +206,7 @@ export class LollipopPlotComponent {
       }
     });
     
-    effect(async () => {
+    effect(async () => {      
       const lolipopData = this.lolipopPlotData.value();
       if (lolipopData) {
         this.plotLollipopPlot(lolipopData);
@@ -298,36 +298,70 @@ export class LollipopPlotComponent {
       responsive: true,
     };
 
+    // this.lollipopPlot().nativeElement.addEventListener('plotly_click', (event: any) => {
+    //   console.log('click', event);
+    //   const pointIndex = event.points[0].pointIndex;
+    //   const clickedModule = giniData[pointIndex];
+    //   this.toggleModule(clickedModule);
+    //   console.log('clicked', clickedModule);
+    // });
+
     Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
+  
+  }
+
+  toggleModule(module: SpongEffectsModule) {
+    const selectedModules = this.selectedModules();
+    const moduleIndex = selectedModules.findIndex(
+      (m) => m.ensemblID === module.ensemblID,
+    );
+
+    if (moduleIndex === -1) {
+      // Module is not selected, add it
+      this.selectedModules.set([...selectedModules, module]);
+    } else {
+      // Module is already selected, remove it
+      this.selectedModules.set(
+        selectedModules.filter((m) => m.ensemblID !== module.ensemblID),
+      );
+    }
+
+    this.dynamicModulesData.setData(this.selectedModules());
+    this.plotLollipopPlot(this.plot_data);
   }
 
   refreshPlot() {
     const plotDiv = this.lollipopPlot().nativeElement;
+    // const plotDiv2 = this.moduleExpressionHeatmap().nativeElement;
     if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
+    // if (plotDiv2.checkVisibility()) {
+    //   Plotly.Plots.resize
+    // }
   }
 
   clearPlot() {
     Plotly.purge(this.lollipopPlot().nativeElement);
     Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
     this.dynamicModulesData.setData([]);
+    // Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
   }
 
   addModules(modules: SpongEffectsModule[], clickedSymbol?: string) {
-    // console.log("addModules before", modules)
-    // if (clickedSymbol === undefined) {
-    //   this.selectedModules = signal(modules);
-    // } else {
-    //   if (this.selectedModules().filter(s => s.symbol === clickedSymbol).length === 0) {
-    //     this.selectedModules().push(...modules);
-    //   } else {
-    //     this.selectedModules = signal(this.selectedModules().filter(s => s.symbol !== clickedSymbol));
-    //   }
-    // }
-    // console.log("addModules after", this.selectedModules())
+    console.log("addModules before", modules)
+    if (clickedSymbol === undefined) {
+      this.selectedModules = signal(modules);
+    } else {
+      if (this.selectedModules().filter(s => s.symbol === clickedSymbol).length === 0) {
+        this.selectedModules().push(...modules);
+      } else {
+        this.selectedModules = signal(this.selectedModules().filter(s => s.symbol !== clickedSymbol));
+      }
+    }
+    console.log("addModules after", this.selectedModules())
 
-    this.selectedModules.set(modules);
+    // this.selectedModules.set(modules);
 
     this.dynamicModulesData.setData(this.selectedModules());
   }
