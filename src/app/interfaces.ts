@@ -349,6 +349,20 @@ export interface SpongEffectsTranscriptModuleMembers {
   spongEffects_gene_module_members_ID: number; 
 }
 
+export interface SpongEffectsModule {
+  ensemblID: string;
+  symbol: string;
+  meanGiniDecrease: number;
+  meanAccuracyDecrease: number;
+}
+
+export interface ModuleMember {
+  ensemblID: string;
+  symbol: string;
+  moduleCenter: string;
+}
+
+
 export interface PredictCancerType {
   meta: {
     runtime: number;
@@ -486,11 +500,4 @@ export interface GseaResult {
     gene: Gene;
     gsea_matched_genes_ID: number;
   };
-}
-
-export interface SpongEffectsModule {
-  ensemblID: string;
-  symbol: string;
-  meanGiniDecrease: number;
-  meanAccuracyDecrease: number;
 }

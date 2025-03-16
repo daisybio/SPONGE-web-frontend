@@ -1,6 +1,5 @@
 <div class="lollipop-container">
   <p>
-    <!-- Select how many top rated modules you would like to include in the expression analysis and press the 'Investigate expressions' button or manually select the modules by clicking on them in the plot. -->
     The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
   </p>
   
@@ -30,38 +29,37 @@
     </form>
     
     <div class="modules-table">
-      <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
-        <ng-container matColumnDef="ensemblID">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let el">{{el.ensemblID}}</td>
-        </ng-container>
+      <table mat-table [dataSource]="tableData()" class="mat-elevation-z8" matSort>
+        <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> {{ columnNames[key] }} </th>
+          <td mat-cell *matCellDef="let element"> {{ element[key] || '-'}} </td>
+      </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         
-        <ng-container matColumnDef="symbol">
-          <th mat-header-cell *matHeaderCellDef>Gene symbol</th>
-          <td mat-cell *matCellDef="let el">
-            {{el.symbol }}
+        <!-- No data message -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="6">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
           </td>
-        </ng-container>
-        
-        <ng-container matColumnDef="meanGiniDecrease">
-          <th mat-header-cell *matHeaderCellDef>Mean Gini Decrease</th>
-          <td mat-cell *matCellDef="let el">{{el.meanGiniDecrease}}</td>
-        </ng-container>
-        
-        <ng-container matColumnDef="meanAccuracyDecrease">
-          <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
-          <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
-        </ng-container>
-        
-        <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
+        </tr>
       </table>
+      
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page">
+      </mat-paginator>
     </div>
   
   @if (moduleExpressionData.isLoading()) {
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
     <div class="module-expression-heatmap">
+      <!-- Display element limit warning message when needed -->
+      <div *ngIf="elementLimitWarning" class="warning-message">
+        Limited elements to 100 to prevent performance issues
+      </div>
       <div #moduleExpressionHeatmap></div>
     </div>
 </div>
