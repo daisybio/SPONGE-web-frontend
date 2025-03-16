@@ -6,6 +6,7 @@ import katex from 'katex';
   providedIn: 'root',
 })
 export class InfoService {
+  [key: string]: any;
   constructor(private sanitizer: DomSanitizer) {}
 
   // node info texts
@@ -17,6 +18,12 @@ export class InfoService {
   mscorText = 'SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a generalization of sensitivity correlation as defined by <a href="https://www.ncbi.nlm.nih.gov/pubmed/25033876">Paci et al.</a>. These values capture the joint contribution of several miRNAs on the ceRNA regulation of two genes while accounting for their cross-correlation.'
   pValText = 'SPONGE computes a null model to calculate empirical p-values for the ceRNA interactions. We sampled 1,000,000 datasets to closely estimate the p-values. The interactions were then FDR-corrected and filtered with a p-value cut-off of 0.01.'
   correlationText = 'The adj. p-value is a measure of the significance of the interaction between two nodes. It is based on the number of interactions between two nodes and the number of interactions of the nodes in the network. The adj. p-value is a measure of the importance of the interaction in the network.'
+
+  // top ceRNA texts
+  meanGiniDecrease = 'The mean Gini decrease is a measure of the importance of a feature in a decision tree. It is calculated by averaging the Gini decrease of a feature over all decision trees in the forest.'
+  meanAccuracyDecrease = 'The mean accuracy decrease is a measure of the importance of a feature in a decision tree. It is calculated by averaging the accuracy decrease of a feature over all decision trees in the forest.'
+  memberOrCenter = 'The table shows both module members and module centers. Module members are the genes that are part of the module, while module centers are the genes that are most connected to the module members.'
+  moduleCenter = 'Module centers are the genes that are most connected to the module members.'
 
   renderMscorEquation(element: ElementRef): void {
     if (element) {

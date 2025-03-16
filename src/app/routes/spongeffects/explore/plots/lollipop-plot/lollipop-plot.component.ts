@@ -45,6 +45,8 @@ import { VersionsService } from '../../../../../services/versions.service';
 import { ExploreService } from '../../service/explore.service';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { InfoComponent } from '../../../../../components/info/info.component';
+import { InfoService } from '../../../../../services/info.service';
 
 declare var Plotly: any;
 
@@ -66,6 +68,7 @@ declare var Plotly: any;
     MatCheckboxModule,
     MatPaginatorModule,
     MatSortModule,
+    InfoComponent,
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
@@ -73,6 +76,7 @@ declare var Plotly: any;
 export class LollipopPlotComponent implements AfterViewInit {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
+  infoService = inject(InfoService)
   backend = inject(BackendService);
   refreshSignal$ = input();
   elementLimitWarning: boolean = false;
@@ -81,7 +85,7 @@ export class LollipopPlotComponent implements AfterViewInit {
     symbol: 'Symbol',
     meanGiniDecrease: 'Mean Gini decrease',
     meanAccuracyDecrease: 'Mean accuracy decrease',
-    memberOrCenter: 'Module center or member',
+    memberOrCenter: 'Center or member',
     moduleCenter: 'Module center',
   };
   displayedColumns: string[] = Object.keys(this.columnNames);
@@ -304,6 +308,7 @@ export class LollipopPlotComponent implements AfterViewInit {
     ];
 
     const layout = {
+      title: 'Module importance',
       showlegend: false,
       autosize: true,
       hovermode: 'closest',
@@ -521,8 +526,6 @@ export class LollipopPlotComponent implements AfterViewInit {
 
     const layout = {
       autosize: true,
-      showlegend: true,
-      legend: { orientation: 'h' },
       xaxis: {
         ticks: '',
         showticklabels: false,
@@ -535,9 +538,6 @@ export class LollipopPlotComponent implements AfterViewInit {
       },
       title: {
         text: 'Expression of selected modules',
-        font: {
-          size: 14,
-        },
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
