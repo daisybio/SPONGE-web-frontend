@@ -14,7 +14,7 @@ export class InfoService {
   degreeText = 'Degree centrality measures the number of edges connected to a node and emphasizes the significance of hub nodes, which are recognized as pivotal elements within biological systems.'
   eigenvectorText = "Eigenvector centrality is a measure of a node's influence in a network. A node with high eigenvector centrality is pointed to by many nodes, which also have high eigenvector centrality."
 
-  // edge info texts
+  // edge info texts (also used for prediction)
   mscorText = 'SPONGE computes multiple miRNA sensitivity correlation values. Note that this is a generalization of sensitivity correlation as defined by <a href="https://www.ncbi.nlm.nih.gov/pubmed/25033876">Paci et al.</a>. These values capture the joint contribution of several miRNAs on the ceRNA regulation of two genes while accounting for their cross-correlation.'
   pValText = 'SPONGE computes a null model to calculate empirical p-values for the ceRNA interactions. We sampled 1,000,000 datasets to closely estimate the p-values. The interactions were then FDR-corrected and filtered with a p-value cut-off of 0.01.'
   correlationText = 'The adj. p-value is a measure of the significance of the interaction between two nodes. It is based on the number of interactions between two nodes and the number of interactions of the nodes in the network. The adj. p-value is a measure of the importance of the interaction in the network.'
