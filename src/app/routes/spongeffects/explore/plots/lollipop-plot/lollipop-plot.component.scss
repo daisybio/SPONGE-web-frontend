@@ -1,3 +1,17 @@
 mat-form-field {
     margin: 5px;
   }
+
+.warning-message {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  border-left: 4px solid #ffc107;
+  font-size: 14px;
+}
+
+.lollipop-plot {
+  cursor: pointer;
+}

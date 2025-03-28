@@ -1,59 +1,82 @@
-  <!-- <mat-grid-list cols="1" rowHeight="100px">  -->
-    <!-- <mat-grid-tile colspan="1" rowspan="1"> -->
-      <br>
-      The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
-      @if (lolipopPlotData.isLoading()) {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      } @else {
-        <div class="lollipop-plot-div">
-          <div #lollipopPlot class="lollipop-plot"></div>
-        </div>
-        <form [formGroup]="formGroup" class="select-top-n">
-          <mat-form-field appearance="outline" [style.width.px]="400">
-            <mat-label>Number of top rated centralities to display</mat-label>
-            <input formControlName="topControl" type="number" matInput max="20" min="3" step="1">
-            <mat-error>Please provide a number between 3 and 20</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline" [style.width.px]="400">
-            <mat-label>Number of top rated centralities to include</mat-label>
-            <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
-            <mat-error>Please provide a number between 3 and 20</mat-error>
-          </mat-form-field>
-          <!-- <mat-checkbox formControlName="includeModuleMembers" color="primary">
-            Include module members
-          </mat-checkbox> -->
-        </form>
-    }
+<div class="lollipop-container">
+  <p>
+    <br>
+    The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
+  </p>
+  
+  @if (lolipopPlotData.isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+    <div class="lollipop-plot-div">
+      <div #lollipopPlot class="lollipop-plot"></div>
+    </div>
+    
+    <form [formGroup]="formGroup" class="select-top-n">
+      <div class="card-container">
+      <mat-form-field appearance="outline" [style.width.px]="400">
+        <mat-label>Number of top rated centralities to display</mat-label>
+        <input formControlName="topControl" type="number" matInput max="20" min="3" step="1">
+        <mat-error>Please provide a number between 3 and 20</mat-error>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" [style.width.px]="400">
+        <mat-label>Number of top rated centralities to include</mat-label>
+        <input formControlName="markControl" matInput type="number" matInput max="20" min="3" step="1"/>
+        <mat-error>Please provide a number between 3 and 20</mat-error>
+      </mat-form-field>
+      
+      <mat-checkbox formControlName="includeModuleMembers" color="primary">
+        Include module members
+      </mat-checkbox>
 
-      <div class="modules-table">
-        <table mat-table [dataSource]="dynamicModulesData" class="mat-elevation-z8">
-          <ng-container matColumnDef="ensemblID">
-            <th mat-header-cell *matHeaderCellDef>ID</th>
-            <td mat-cell *matCellDef="let el">{{el.ensemblID}}</td>
-          </ng-container>
-          <ng-container matColumnDef="symbol">
-            <th mat-header-cell *matHeaderCellDef>Gene symbol</th>
-            <td mat-cell *matCellDef="let el">
-              {{el.symbol }}
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="meanGiniDecrease">
-            <th mat-header-cell *matHeaderCellDef>Mean Gini Decrease</th>
-            <td mat-cell *matCellDef="let el">{{el.meanGiniDecrease}}</td>
-          </ng-container>
-          <ng-container matColumnDef="meanAccuracyDecrease">
-            <th mat-header-cell *matHeaderCellDef>Mean Accuracy Decrease</th>
-            <td mat-cell *matCellDef="let el">{{el.meanAccuracyDecrease}}</td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="modulesTableColumns; sticky: true"></tr>
-          <tr mat-row *matRowDef="let row; columns: modulesTableColumns;"></tr>
-        </table>
+      <a [href]="gProfilerUrl$()" mat-stroked-button matTooltip="Open g:Profiler for all visible nodes" target="_blank">
+        <mat-icon>open_in_new</mat-icon>
+        Functional enrichment analysis using g:Profiler
+      </a>
       </div>
-      <!-- <div class="module-expression-heatmap">
-        <div #moduleExpressionHeatmap ></div>
-      </div> -->
+    </form>
+    
+    <div class="modules-table">
+      <table mat-table [dataSource]="tableData()" class="mat-elevation-z8" matSort>
+        <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+            @if (infoService.hasOwnProperty(key)) {
+              <app-info [title]="columnNames[key]">
+                <p [innerHTML]="infoService[key]"></p>
+              </app-info>
+            } @else {
+              {{columnNames[key]}}
+            }
 
-      <!-- <div class="module-expression-heatmap">
-        <div #moduleMiRnaExpressionDiv [hidden]="elementExpressionLoading"></div>
-      </div> -->
+          </th>
+          <td mat-cell *matCellDef="let element"> {{ element[key] || '-'}} </td>
+      </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        
+        <!-- No data message -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="6">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          </td>
+        </tr>
+      </table>
+      
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page">
+      </mat-paginator>
+    </div>
+  
+  @if (moduleExpressionData.isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+    <div class="module-expression-heatmap">
+      <!-- Display element limit warning message when needed -->
+      <div *ngIf="elementLimitWarning" class="warning-message">
+        Limited elements to 100 to prevent performance issues
+      </div>
+      <div #moduleExpressionHeatmap></div>
+    </div>
+</div>

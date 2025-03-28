@@ -1,3 +1,5 @@
+import { Data } from "@angular/router";
+
 export interface Dataset {
   data_origin: string;
   dataset_ID: number;
@@ -171,14 +173,14 @@ export interface CeRNAExpression {
 }
 
 export interface GeneExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   gene: Gene;
   sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   sample_ID: string;
   transcript: Transcript;
@@ -312,20 +314,23 @@ export interface EnrichmentScoreDistributions {
 }
 
 export interface SpongEffectsGeneModules {
-  getSpongEffectsGeneModules: number;
+  spongEffects_gene_module_ID: number;
   gene: {
     ensg_number: string;
     gene_symbol: string;
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsGeneModuleMembers {
-  hub_ensg_number: string;
-  hub_gene_symbol: string;
-  member_ensg_number: string;
-  member_gene_symbol: string;
+  gene: {
+    ensg_number: string;
+    gene_symbol: string;
+  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
 
 export interface SpongEffectsTranscriptModules {
@@ -335,20 +340,32 @@ export interface SpongEffectsTranscriptModules {
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
-  hub_enst_number: string;
-  hub_gene: {
-    ensg_number: string;
-    gene_symbol: string;
+  transcript: {
+    enst_number: string;
   };
-  member_enst_number: string;
-  member_gene: {
-    ensg_number: string;
-    gene_symbol: string;
-  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
+
+export interface SpongEffectsModule {
+  ensemblID: string;
+  symbol: string;
+  meanGiniDecrease: number;
+  meanAccuracyDecrease: number;
+  spongEffects_run_ID: number;
+}
+
+export interface ModuleMember {
+  ensemblID: string;
+  symbol: string;
+  moduleCenter: string;
+  spongEffects_run_ID: number;
+}
+
 
 export interface PredictCancerType {
   meta: {
@@ -487,11 +504,4 @@ export interface GseaResult {
     gene: Gene;
     gsea_matched_genes_ID: number;
   };
-}
-
-export interface SpongEffectsModule {
-  ensemblID: string;
-  symbol: string;
-  meanGiniDecrease: number;
-  meanAccuracyDecrease: number;
 }
