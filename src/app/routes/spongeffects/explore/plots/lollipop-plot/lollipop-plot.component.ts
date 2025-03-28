@@ -38,6 +38,7 @@ import {
   ModuleMember,
   PlotlyData,
   SpongEffectsModule,
+  SpongEffectsRun,
   TranscriptExpression,
 } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
@@ -87,12 +88,15 @@ export class LollipopPlotComponent implements AfterViewInit {
     meanAccuracyDecrease: 'Mean accuracy decrease',
     memberOrCenter: 'Center or member',
     moduleCenter: 'Module center',
+    // spongEffects_run_ID: 'SpongEffects run ID',
+    moduleParams: 'Module parameters',
   };
   displayedColumns: string[] = Object.keys(this.columnNames);
   elementExpressionLoading: boolean = true;
   selectedModules = signal<SpongEffectsModule[]>([]);
   moduleMembersMap = signal(new Map<string, ModuleMember[]>());
   tableData = signal(new MatTableDataSource<SpongEffectsModule | ModuleMember>([]));
+  spongEffectRuns: Map<number, SpongEffectsRun> = new Map<number, SpongEffectsRun>();
 
   // plot parameters
   defaultMarkerSize: number = 12;
@@ -174,6 +178,13 @@ export class LollipopPlotComponent implements AfterViewInit {
   });
 
   constructor() {
+    // get all spong effects runs once
+    const version = this.versionService.versionReadOnly()();
+    if (version) {
+      this.getSpongEffectRuns(version);
+    }
+    console.log('SpongEffectRuns', this.spongEffectRuns);
+
     effect(() => {
       this.exploreService.selectedDisease$();
       this.exploreService.level$();
@@ -260,6 +271,7 @@ export class LollipopPlotComponent implements AfterViewInit {
         symbol: entry.gene.gene_symbol,
         meanGiniDecrease: entry.mean_gini_decrease,
         meanAccuracyDecrease: entry.mean_accuracy_decrease,
+        spongEffects_run_ID: entry.spongEffects_run_ID,
       }));
     } else {
       const query = await this.backend.getSpongEffectsTranscriptModules(version, cancer);
@@ -268,6 +280,7 @@ export class LollipopPlotComponent implements AfterViewInit {
         symbol: entry.transcript.enst_number,
         meanGiniDecrease: entry.mean_gini_decrease,
         meanAccuracyDecrease: entry.mean_accuracy_decrease,
+        spongEffects_run_ID: entry.spongEffects_run_ID,
       }));
     }
   }
@@ -392,6 +405,7 @@ export class LollipopPlotComponent implements AfterViewInit {
       ...module,
       memberOrCenter: 'module center',
       moduleCenter: '-',
+      moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID),
     }));
 
     if (includeMembers) {
@@ -404,6 +418,7 @@ export class LollipopPlotComponent implements AfterViewInit {
         tableEntries = [...tableEntries, ...members.map(m => ({
           ...m,
           memberOrCenter: 'module member',
+          moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID),
         }))];
       }
     }
@@ -433,7 +448,8 @@ export class LollipopPlotComponent implements AfterViewInit {
         meanGiniDecrease: 0,
         meanAccuracyDecrease: 0,
         centerOrMember: 'module member',
-        moduleCenter: module.symbol
+        moduleCenter: module.symbol,
+        spongEffects_run_ID: module.spongEffects_run_ID,
       }));
     } else {
       const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
@@ -448,7 +464,8 @@ export class LollipopPlotComponent implements AfterViewInit {
         meanGiniDecrease: 0,
         meanAccuracyDecrease: 0,
         centerOrMember: 'module member',
-        moduleCenter: module.symbol
+        moduleCenter: module.symbol,
+        spongEffects_run_ID: module.spongEffects_run_ID,
       }));
     }
 
@@ -572,41 +589,23 @@ export class LollipopPlotComponent implements AfterViewInit {
     );
   }
 
-  async getModuleMembers(
-    level: 'gene' | 'transcript',
-    disease_name: string,
-    version: number,
-  ): Promise<Map<string, string[]>> {
-    const members: Map<string, string[]> = new Map<string, string[]>();
-    
-    await Promise.all(
-      this.selectedModules().map(async (s) => {
-        members.set(s.ensemblID, []);
-        
-        if (level === 'gene') {
-          const response = await this.backend.getSpongEffectsGeneModuleMembers(
-            version,
-            disease_name,
-            s.ensemblID
-          );
-          
-          response.forEach((e) => {
-            members.get(s.ensemblID)!.push(e.gene.ensg_number);
-          });
-        } else { // transcript
-          const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-            version,
-            disease_name,
-            s.ensemblID
-          );
-          
-          response.forEach((e) => {
-            members.get(s.ensemblID)!.push(e.transcript.enst_number);
-          });
-        }
-      })
-    );
-    
-    return members;
+  async getSpongEffectRuns(version: number) {
+    const SE_run: SpongEffectsRun[] = await this.backend.getSpongEffectsRuns(version);
+    // add each spongeffectsrun to the map with the spongEffectsRunID as key
+    SE_run.forEach((run) => {
+        this.spongEffectRuns.set(run.spongEffects_run_ID, run);
+    });
   }
+
+  spongEffectsRunParamsString(spongEffectsRunID: number): string {
+    const spongEffectsRun = this.spongEffectRuns.get(spongEffectsRunID);
+    if (!spongEffectsRun) {
+      return 'No parameters available';
+    }
+    const paramString: string = "mscor threshold: " + spongEffectsRun.m_scor_threshold + 
+                                "\npAdjust threshold: " + spongEffectsRun.p_adj_threshold + 
+                                "\nmodules cutoff: " + spongEffectsRun.modules_cutoff
+    return paramString
+  }
+
 }

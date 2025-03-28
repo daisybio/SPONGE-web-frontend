@@ -314,13 +314,14 @@ export interface EnrichmentScoreDistributions {
 }
 
 export interface SpongEffectsGeneModules {
-  getSpongEffectsGeneModules: number;
+  spongEffects_gene_module_ID: number;
   gene: {
     ensg_number: string;
     gene_symbol: string;
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsGeneModuleMembers {
@@ -339,6 +340,7 @@ export interface SpongEffectsTranscriptModules {
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
@@ -354,12 +356,14 @@ export interface SpongEffectsModule {
   symbol: string;
   meanGiniDecrease: number;
   meanAccuracyDecrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface ModuleMember {
   ensemblID: string;
   symbol: string;
   moduleCenter: string;
+  spongEffects_run_ID: number;
 }
 
 
