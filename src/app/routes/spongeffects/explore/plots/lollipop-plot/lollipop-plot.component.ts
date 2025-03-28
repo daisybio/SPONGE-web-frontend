@@ -32,6 +32,7 @@ import { CommonModule } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
 import {
   Dataset,
   GeneExpression,
@@ -48,6 +49,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
+import { BrowseService } from '../../../../../services/browse.service';
 
 declare var Plotly: any;
 
@@ -70,6 +72,7 @@ declare var Plotly: any;
     MatPaginatorModule,
     MatSortModule,
     InfoComponent,
+    MatButtonModule,
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
@@ -79,6 +82,7 @@ export class LollipopPlotComponent implements AfterViewInit {
   exploreService = inject(ExploreService);
   infoService = inject(InfoService)
   backend = inject(BackendService);
+  browseService = inject(BrowseService);
   refreshSignal$ = input();
   elementLimitWarning: boolean = false;
   columnNames: { [key: string]: string } = {
@@ -97,6 +101,19 @@ export class LollipopPlotComponent implements AfterViewInit {
   moduleMembersMap = signal(new Map<string, ModuleMember[]>());
   tableData = signal(new MatTableDataSource<SpongEffectsModule | ModuleMember>([]));
   spongEffectRuns: Map<number, SpongEffectsRun> = new Map<number, SpongEffectsRun>();
+    gProfilerUrl$ = computed(() =>
+      this.getGProfilerUrlForModules(this.selectedModules())
+    );
+
+  getGProfilerUrlForModules(modules: SpongEffectsModule[]): string {
+    const genes = modules
+      .map((module) => {
+        return module.symbol || module.ensemblID;
+      })
+    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(
+      ' '
+    )}`;
+  }
 
   // plot parameters
   defaultMarkerSize: number = 12;
