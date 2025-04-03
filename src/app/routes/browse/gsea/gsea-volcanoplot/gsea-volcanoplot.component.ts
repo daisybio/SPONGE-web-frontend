@@ -29,15 +29,15 @@ export class GseaVolcanoplotComponent implements OnDestroy {
     if (!results || !plotElement?.nativeElement) return;
 
     const nes = results.map((r: any) => r.nes);
-    const pvalues = results.map((r: any) => r.pvalue);
+    const fwerpValues = results.map((r: any) => r.fwerp);
     const terms = results.map((r: any) => r.term);
 
-    // Transform p-values to -log10 scale
-    const logPvalues = pvalues.map((p: number) => -Math.log10(p));
+    // Transform FWERP values to -log10 scale
+    const logFWERP = fwerpValues.map((p: number) => -Math.log10(p + 0.01));
 
     // Create color array based on significance and NES direction
     const colors = results.map((r: any) => {
-      if (r.pvalue >= 0.05) return '#9E9E9E'; // Not significant
+      if (r.fwerp >= 0.05) return '#9E9E9E'; // Not significant
       return r.nes > 0 ? '#FF5252' : '#2196F3'; // Red for positive NES, blue for negative
     });
 
@@ -46,7 +46,7 @@ export class GseaVolcanoplotComponent implements OnDestroy {
         type: 'scatter',
         mode: 'markers',
         x: nes,
-        y: logPvalues,
+        y: logFWERP,
         text: terms,
         marker: {
           color: colors,
@@ -55,9 +55,9 @@ export class GseaVolcanoplotComponent implements OnDestroy {
         hovertemplate:
           '<b>%{text}</b><br>' +
           'NES: %{x:.2f}<br>' +
-          'p-value: %{customdata:.2e}' +
+          'FWERP: %{customdata:.2e}' +
           '<extra></extra>',
-        customdata: pvalues,
+        customdata: fwerpValues,
       },
     ];
 
@@ -71,7 +71,7 @@ export class GseaVolcanoplotComponent implements OnDestroy {
         gridwidth: 1,
       },
       yaxis: {
-        title: '-log10(p-value)',
+        title: '-log10(FWERP)',
         gridcolor: '#bdbdbd',
         gridwidth: 1,
       },
