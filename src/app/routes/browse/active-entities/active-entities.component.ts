@@ -36,7 +36,10 @@ export class ActiveEntitiesComponent {
     interaction: GeneInteraction | TranscriptInteraction,
   ): void {
     this.dialog.open(InteractionModalComponent, {
-      data: interaction,
+      data: {
+        interaction: interaction,
+        disease: this.browseService.disease$()
+      }
     });
   }
 
