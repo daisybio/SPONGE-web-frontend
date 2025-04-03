@@ -233,8 +233,6 @@ export class BackendService {
     }
 
     const query: Query = {
-      sponge_db_version: version,
-      dataset_ID: disease.dataset_ID,
       disease_name: disease.disease_name,
     };
 
@@ -256,9 +254,7 @@ export class BackendService {
   ): Promise<SurvivalRate[]> {
     const route = 'survivalAnalysis/getRates';
     const query: Query = {
-      sponge_db_version: version,
       disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(','),
     };
 
@@ -521,7 +517,6 @@ export class BackendService {
     const route = 'survivalAnalysis/getPValues';
 
     const query: Query = {
-      sponge_db_version: version,
       disease_name: disease.disease_name,
       dataset_ID: disease.dataset_ID,
       ensg_number: ensgs.join(','),
