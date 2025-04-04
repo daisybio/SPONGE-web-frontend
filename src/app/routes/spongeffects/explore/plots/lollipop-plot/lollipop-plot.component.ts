@@ -138,28 +138,6 @@ export class LollipopPlotComponent implements AfterViewInit {
     includeModuleMembers: new FormControl<boolean>(false),
   });
 
-
-  // tableData = resource({
-  //   request: () => ({
-  //     modules: this.selectedModules(),
-  //     members: this.moduleMembersMap(),
-  //   }),
-  //   loader: async (param) => {
-  //     const modules = param.request.modules;
-  //     const members = param.request.members;
-  //     const data: SpongEffectsModule[] | ModuleMember[] = [...modules];
-  //     members.forEach((memberList, moduleId) => {
-  //       memberList.forEach((member) => {
-  //         data.push({ ...member, memberOrCenter: 'module member'} as ModuleMember);
-  //       });
-  //     });
-  //     const table = new MatTableDataSource(data);
-  //     table.paginator = this.paginator;
-  //     table.sort = this.sort;
-  //     return table;
-  //   },
-  // });
-
   lolipopPlotData = resource({
     request: () => ({
       version: this.versionService.versionReadOnly()(),
@@ -200,7 +178,6 @@ export class LollipopPlotComponent implements AfterViewInit {
     if (version) {
       this.getSpongEffectRuns(version);
     }
-    console.log('SpongEffectRuns', this.spongEffectRuns);
 
     effect(() => {
       this.exploreService.selectedDisease$();
