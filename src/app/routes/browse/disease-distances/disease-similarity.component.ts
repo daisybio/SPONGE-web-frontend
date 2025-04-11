@@ -72,7 +72,9 @@ export class DiseaseSimilarityComponent implements OnDestroy {
       height: 700,
       yaxis: {automargin: true},
       xaxis: {automargin: true},
-      title: this.mode$() == 'scatter' ? 'Euclidean Distances' : 'Similarity Heatmap'
+      title: this.mode$() == 'scatter' ? 'Euclidean Distances' : 'Similarity Heatmap',
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
     });
   });
 

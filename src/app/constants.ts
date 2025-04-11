@@ -1,7 +1,7 @@
 export const SUBTYPE_DEFAULT = 'Unspecific';
 
-export const API_BASE = 'https://exbio.wzw.tum.de/sponge-api';
-// export const API_BASE = 'http://127.0.0.1:5555/sponge-api';
+// export const API_BASE = 'https://exbio.wzw.tum.de/sponge-api';
+export const API_BASE = 'http://127.0.0.1:5555/sponge-api';
 
 
 export const AS_DESCRIPTIONS: { [key: string]: string } = {

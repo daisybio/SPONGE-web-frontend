@@ -54,7 +54,8 @@ export class HeatmapComponent implements OnDestroy {
       const expression = await this.backend.getExpression(
         version,
         identifiers,
-        disease,
+        disease.disease_name,
+        disease.dataset_ID,
         level,
       );
 
@@ -108,6 +109,8 @@ export class HeatmapComponent implements OnDestroy {
         title: capitalize(this.level$()),
         automargin: true,
       },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
     });
   });
 

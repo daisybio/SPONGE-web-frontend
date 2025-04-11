@@ -28,7 +28,6 @@ import { LollipopPlotComponent } from './plots/lollipop-plot/lollipop-plot.compo
     ClassPerformancePlotComponent,
     OverallAccPlotComponent,
     MatTabsModule,
-    InfoComponent,
     EnrichmentClassPlotComponent,
     LollipopPlotComponent,
   ],

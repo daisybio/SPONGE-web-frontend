@@ -222,8 +222,12 @@ export class BackendService {
   async getExpression(
     version: number,
     identifiers: string[],
-    disease: Dataset,
-    level: 'gene' | 'transcript'
+    disease_name: string,
+    dataset_ID: number | undefined,
+    level: 'gene' | 'transcript',
+    limit: number | undefined = undefined,
+    offset: number | undefined = undefined,
+    cluster: boolean = false
   ): Promise<(GeneExpression | TranscriptExpression)[]> {
     const route =
       level == 'gene' ? 'exprValue/getceRNA' : 'exprValue/getTranscriptExpr';
@@ -234,9 +238,19 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      dataset_ID: disease.dataset_ID,
-      disease_name: disease.disease_name,
+      dataset_ID: dataset_ID,
+      disease_name: disease_name,
+      limit: limit,
+      offset: offset,
+      cluster: cluster,
     };
+
+    // drop query params that are undefined
+    Object.keys(query).forEach((key) => {
+      if (query[key] === undefined) {
+        delete query[key];
+      }
+    });
 
     if (level == 'gene') {
       query['ensg_number'] = identifiers.join(',');
@@ -588,9 +602,10 @@ export class BackendService {
 
   getSpongEffectsGeneModules(
     version: number,
-    diseaseName: string
+    diseaseName: string,
+    limit?: number
   ): Promise<SpongEffectsGeneModules[]> {
-    const request = `${API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     return this.http.getRequest<SpongEffectsGeneModules[]>(request);
   }
 
@@ -598,9 +613,10 @@ export class BackendService {
     version: number,
     diseaseName: string,
     ensgNumber?: string,
-    geneSymbol?: string
+    geneSymbol?: string,
+    limit?: number
   ): Promise<SpongEffectsGeneModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     if (ensgNumber) {
       request += `&ensg_number=${ensgNumber}`;
     }
@@ -612,18 +628,20 @@ export class BackendService {
 
   getSpongEffectsTranscriptModules(
     version: number,
-    diseaseName: string
+    diseaseName: string, 
+    limit?: number,
   ): Promise<SpongEffectsTranscriptModules[]> {
-    const request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    const request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     return this.http.getRequest<SpongEffectsTranscriptModules[]>(request);
   }
 
   getSpongEffectsTranscriptModuleMembers(
     version: number,
     diseaseName: string,
-    enstNumber?: string
+    enstNumber?: string,
+    limit?: number
   ): Promise<SpongEffectsTranscriptModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     if (enstNumber) {
       request += `&enst_number=${enstNumber}`;
     }

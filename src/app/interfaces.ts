@@ -337,6 +337,10 @@ export interface SpongEffectsTranscriptModules {
   spongEffects_transcript_module_ID: number;
   transcript: {
     enst_number: string;
+    gene: {
+      ensg_number: string;
+      gene_symbol: string;
+    };
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
@@ -346,9 +350,13 @@ export interface SpongEffectsTranscriptModules {
 export interface SpongEffectsTranscriptModuleMembers {
   transcript: {
     enst_number: string;
+    gene: {
+      ensg_number: string;
+      gene_symbol: string;
+    };
   };
-  spongEffects_gene_module_ID: number
-  spongEffects_gene_module_members_ID: number; 
+  spongEffects_transcript_module_ID: number
+  spongEffects_transcript_module_members_ID: number; 
 }
 
 export interface SpongEffectsModule {
