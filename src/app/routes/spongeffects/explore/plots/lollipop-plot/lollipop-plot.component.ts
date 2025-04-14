@@ -44,6 +44,7 @@ import { ExploreService } from '../../service/explore.service';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
+import { uniqueSymbol } from 'lodash/common/common';
 
 declare var Plotly: any;
 
@@ -118,6 +119,19 @@ export class LollipopPlotComponent {
       const genes = modules.map(module => module.symbol || module.ensemblID);
       return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
     }
+  });
+
+  subtypes = computed(async () => {
+    const all_subtypes = await this.backend.getDatasets(this.versionService.versionReadOnly()(), this.exploreService.selectedDisease$()).then((datasets: Dataset[]) => {
+      const subtypes = datasets.map((dataset) => dataset.disease_subtype);
+      return [...new Set(subtypes)];
+    }
+    );
+    const subtypes = all_subtypes.filter((subtype) => subtype !== 'None' && subtype !== 'null' && subtype);
+    console.log('SUBTYPES', subtypes);
+    console.log("ALL SUBTYPES", all_subtypes);
+
+    return subtypes;
   });
 
   // the grey modules
@@ -383,8 +397,8 @@ export class LollipopPlotComponent {
     //   version, elements, disease, level, this.MAX_ELEMENTS, undefined, true
     // );
     // get expression for 100 elements per request in parallel 
-    const CHUNK_SIZE = 100000;
-    const N_PARALLEL_REQUESTS = 10;
+    const CHUNK_SIZE = 1000;
+    const N_PARALLEL_REQUESTS = 5;
     const expressionPromises = [];
     console.log('Requesting expression data for', elements.length, 'elements');
     let hasMoreData = true;
@@ -464,10 +478,13 @@ export class LollipopPlotComponent {
   }
 
   private createHeatmapConfig(
-    expressionData: any[], 
+    expressionData_full: any[], 
     level: string, 
     includeMembers: boolean | undefined
   ): PlotlyData {
+
+    // filter for expression data of subtypes 
+    const expressionData = expressionData_full.filter(e => e.dataset.disease_subtype !== 'None' && e.dataset.disease_subtype !== 'null' && e.dataset.disease_subtype);
 
       // Extract unique subtypes and map them to colors
     console.log(expressionData)
@@ -485,17 +502,20 @@ export class LollipopPlotComponent {
     console.log('x', expressionData.map(e => e.sample_ID));
     console.log('y', ['Subtype']);
     console.log('funny', subtypes.map((subtype, index) => [index / (subtypes.length - 1), subtypeColors[subtype]]))
-
+    console.log("SUBTYPES PLOTTING", this.subtypes());
 
 
     // Create a color bar for subtypes
     const subtypeBar = {
-      z: expressionData.map(e => subtypes.indexOf(e.dataset.disease_subtype)),
+      // z: expressionData.map(e => subtypes.indexOf(e.dataset.disease_subtype)),
       x: expressionData.map(e => e.sample_ID),
       // y needs to be a list of the length of expressionData
-      y: expressionData.map(e => 'Subtype'),
+      y: expressionData.map(e => 1),
       type: 'bar',
-      colorscale: subtypeColors,
+      marker: {
+        color: expressionData.map(e => subtypeColors[subtypes.indexOf(e.dataset.disease_subtype).toString()]),
+      },
+      // colorscale: subtypeColors,
       // colorscale: subtypes.map((subtype, index) => [
       //   index / (subtypes.length - 1), 
       //   subtypeColors[index.toString()]
@@ -504,9 +524,9 @@ export class LollipopPlotComponent {
       // text should contain the subtype and the sample ID
       text: expressionData.map(e => this.subtype_text(e)),
       showscale: false,
-      coloraxis: 'coloraxis2', // Use a separate color axis for the subtype bar
       xaxis: 'x',
       yaxis: 'y2',
+      showlegend: false,
     };
   
     // Main heatmap trace
@@ -519,8 +539,19 @@ export class LollipopPlotComponent {
       hoverongaps: false,
       name: 'Expression',
       showscale: true,
+      showlegend: false,
       colorscale: 'RdBu',
-      coloraxis: 'coloraxis1', // Use a separate color axis for the main heatmap
+      colorbar: {
+        len: 0.5,
+        lenmode: 'fraction',
+        // nticks: 3,
+        title: 'Normalized<br>expression',
+        xanchor: 'left',
+        yanchor: 'bottom',
+        x: 1.01, 
+        y: 0,
+        ypad: 0, 
+      },
     };
   
     // Layout configuration with proper typing
@@ -531,7 +562,8 @@ export class LollipopPlotComponent {
         columns: 1,
         subplots: [['xy2'], ['xy']],
         roworder: 'top to bottom',
-        heights: [0.1, 0.9], // Make the subtype bar smaller
+        pattern: 'independent',
+        ygap: 0.3,
       },
       xaxis: {
         ticks: '',
@@ -542,54 +574,58 @@ export class LollipopPlotComponent {
       yaxis: {
         title: `Module center ${level === 'gene' ? 'gene' : 'transcript'}${includeMembers ? ' and module members' : ''}`,
         automargin: true,
+        domain: [0, 0.9],
       },
       yaxis2: {
-        title: 'Subtype',
+        // title: {
+        //   text: 'Subtype',
+        //   standoff: 5,
+        // },
         automargin: true,
-        showticklabels: false,
-      },
-      // coloraxis2: {
-      //   colorscale: subtypes.map((subtype, index) => [index / (subtypes.length - 1), subtypeColors[index]]),
-      //   colorbar: {
-      //     title: 'Subtype',
-      //     titleside: 'right',
-      //   },
-      // },
-      coloraxis1: {
-        colorscale: 'RdBu', // Color scale for the main heatmap
-        colorbar: {
-          title: 'Expression',
-          titleside: 'right',
-        },
+        showticklabels: true,
+        tickvals: [2],
+        ticktext: ['Subtype'],
+        domain: [0.92, 1],
+        nticks: 1,
+        tickmode: 'array',
+        ticklabelstandoff: 5,
       },
       title: {
         text: 'Expression of selected modules',
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
-      // annotations: subtypes.map((subtype, i) => ({
-      //   x: 1.02,
-      //   y: 0.95 - (i * 0.05),
-      //   xref: 'paper',
-      //   yref: 'paper',
-      //   text: subtype,
-      //   showarrow: false,
-      //   font: {
-      //     size: 10,
-      //   },
-      //   bgcolor: subtypeColors[i % subtypeColors.length],
-      //   bordercolor: 'black',
-      //   borderwidth: 1,
-      //   borderpad: 1,
-      //   opacity: 0.8,
-      // })),
+
+      legend: {
+        x: 1.01,
+        y: 1,
+        xanchor: 'left',
+        yanchor: 'top',
+        title: {
+          text: 'Subtype',}
+      },
     };
   
     const config = {
       responsive: true,
     };
+
+    // Add a custom legend for subtypes
+    const subtypeLegend = subtypes.map((subtype, index) => ({
+      x: [null], // Off-screen point
+      y: [null],
+      type: 'scatter',
+      mode: 'markers',
+      marker: {
+        color: subtypeColors[index.toString()],
+        size: 10
+      },
+      name: subtype,
+      showlegend: true,
+      legendgroup: 'subtypes'
+    }));
   
-    return { data: [subtypeBar, heatmap], layout, config };
+    return { data: [subtypeBar, heatmap, ...subtypeLegend], layout, config };
   }
 
   private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {

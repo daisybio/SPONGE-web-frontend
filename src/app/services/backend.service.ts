@@ -59,7 +59,7 @@ export class BackendService {
     };
 
     if (diseaseName) {
-      query['disease'] = diseaseName;
+      query['disease_name'] = diseaseName;
     }
 
     return this.http.getRequest<Dataset[]>(this.getRequestURL(route, query));
