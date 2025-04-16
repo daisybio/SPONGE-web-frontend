@@ -1,104 +1,104 @@
-<mat-tab-group>
+<mat-tab-group [(selectedIndex)]="activeTabIndex">
   <mat-tab [label]="'Selected ' + level$() + 's (' + nodes$().length + ')'">
     @if (nodes$().length > 0) {
-      <div class="card-container">
-        <p>
-          Metrics are calculated based on the entire network, not the shown subset.
-        </p>
-      </div>
+    <div class="card-container">
+      <p>
+        Metrics are calculated based on the entire network, not the shown subset.
+      </p>
+    </div>
     }
     @if (nodes$().length > 1) {
-      <div class="card-container">
-        <a [href]="gProfilerUrl()" target="_blank" mat-flat-button
-           matTooltip="Perform Functional Enrichment Analysis on selected {{level$()}}s">g:Profiler</a>
-      </div>
+    <div class="card-container">
+      <a [href]="gProfilerUrl()" target="_blank" mat-flat-button
+        matTooltip="Perform Functional Enrichment Analysis on selected {{level$()}}s">g:Profiler</a>
+    </div>
     }
 
     <div class="card-container">
       @for (node of nodes$(); track node) {
-        <mat-card>
-          <mat-card-header>
-            <mat-card-title>{{ BrowseService.getNodeGeneName(node) }}</mat-card-title>
-            <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <table>
-              <tr>
-                <th>Betweenness</th>
-                <td>{{ node.betweenness }}</td>
-              </tr>
-              <tr>
-                <th>Eigenvector</th>
-                <td>{{ node.eigenvector }}</td>
-              </tr>
-              <tr>
-                <th>Degree</th>
-                <td>{{ node.node_degree }}</td>
-              </tr>
-            </table>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-button (click)="openModal(BrowseService.getNodeObject(node))">View Details</button>
-          </mat-card-actions>
-        </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ BrowseService.getNodeGeneName(node) }}</mat-card-title>
+          <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table>
+            <tr>
+              <th>Betweenness</th>
+              <td>{{ node.betweenness }}</td>
+            </tr>
+            <tr>
+              <th>Eigenvector</th>
+              <td>{{ node.eigenvector }}</td>
+            </tr>
+            <tr>
+              <th>Degree</th>
+              <td>{{ node.node_degree }}</td>
+            </tr>
+          </table>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button (click)="openModal(BrowseService.getNodeObject(node))">View Details</button>
+        </mat-card-actions>
+      </mat-card>
       } @empty {
-        <p>No selected {{ level$() }}s found.</p>
-        <p>Click on a node in the network to select.</p>
+      <p>No selected {{ level$() }}s found.</p>
+      <p>Click on a node in the network to select.</p>
       }
     </div>
   </mat-tab>
   <mat-tab [label]="'Selected ceRNA interactions (' + edges$().length + ')'">
     @if (edges$().length > 0) {
-      <div class="card-container">
-        <p>
-          Metrics are calculated based on the entire network, not the shown subset.
-        </p>
-      </div>
+    <div class="card-container">
+      <p>
+        Metrics are calculated based on the entire network, not the shown subset.
+      </p>
+    </div>
     }
     <div class="card-container">
       @for (interaction of edges$(); track interaction) {
-        <mat-card>
-          <mat-card-header>
-            @let names = BrowseService.getInteractionGeneNames(interaction);
-            @let ids = BrowseService.getInteractionIDs(interaction);
-            <mat-card-title>{{ names[0] }} - {{ names[1] }}
-            </mat-card-title>
-            <mat-card-subtitle>{{ ids[0] }} - {{ ids[1] }}
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <table>
-              <tr>
-                <th>Correlation</th>
-                <td>{{ interaction.correlation }}</td>
-              </tr>
-              <tr>
-                <th>mscor</th>
-                <td>{{ interaction.mscor }}</td>
-              </tr>
-              <tr>
-                <th>Adj. p-Value</th>
-                <td>{{ interaction.p_value }}</td>
-              </tr>
-              <tr>
-                <th>MiRNAs</th>
-                <td>
-                  <button mat-button (click)="openInteractionModal(interaction)">View supporting miRNAs</button>
-              </tr>
-            </table>
-          </mat-card-content>
-          <mat-card-actions>
-            @let fullNames = BrowseService.getInteractionFullNames(interaction);
-            @let objs = BrowseService.getInteractionObjects(interaction);
-            <button mat-button (click)="openModal(objs[0])">View {{ fullNames[0] }}
-            </button>
-            <button mat-button (click)="openModal(objs[1])">View {{ fullNames[1] }}
-            </button>
-          </mat-card-actions>
-        </mat-card>
+      <mat-card>
+        <mat-card-header>
+          @let names = BrowseService.getInteractionGeneNames(interaction);
+          @let ids = BrowseService.getInteractionIDs(interaction);
+          <mat-card-title>{{ names[0] }} - {{ names[1] }}
+          </mat-card-title>
+          <mat-card-subtitle>{{ ids[0] }} - {{ ids[1] }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table>
+            <tr>
+              <th>Correlation</th>
+              <td>{{ interaction.correlation }}</td>
+            </tr>
+            <tr>
+              <th>mscor</th>
+              <td>{{ interaction.mscor }}</td>
+            </tr>
+            <tr>
+              <th>Adj. p-Value</th>
+              <td>{{ interaction.p_value }}</td>
+            </tr>
+            <tr>
+              <th>MiRNAs</th>
+              <td>
+                <button mat-button (click)="openInteractionModal(interaction)">View supporting miRNAs</button>
+            </tr>
+          </table>
+        </mat-card-content>
+        <mat-card-actions>
+          @let fullNames = BrowseService.getInteractionFullNames(interaction);
+          @let objs = BrowseService.getInteractionObjects(interaction);
+          <button mat-button (click)="openModal(objs[0])">View {{ fullNames[0] }}
+          </button>
+          <button mat-button (click)="openModal(objs[1])">View {{ fullNames[1] }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
       } @empty {
-        <p>No selected interactions found.</p>
-        <p>Click on an edge in the network to select.</p>
+      <p>No selected interactions found.</p>
+      <p>Click on an edge in the network to select.</p>
       }
     </div>
   </mat-tab>
