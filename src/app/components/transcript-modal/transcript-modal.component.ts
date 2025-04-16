@@ -36,9 +36,10 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { AS_DESCRIPTIONS, IGV_REFGENOME } from '../../constants';
 import { ModalsService } from '../modals-service/modals.service';
 import { Igv, Location } from '@visa-ge/ng-igv';
+import { AsyncPipe } from '@angular/common';
 
 interface AsEventWithPsi extends AlternativeSplicingEvent {
-  psi: number;
+  psi: Promise<number>;
 }
 
 @Component({
@@ -56,6 +57,7 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
     MatProgressSpinner,
     MatChip,
     MatTooltip,
+    AsyncPipe,
     Igv,
   ],
   templateUrl: './transcript-modal.component.html',
@@ -64,7 +66,7 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
 export class TranscriptModalComponent implements AfterViewInit {
   readonly dialog = inject(MatDialog);
   paginator = viewChild.required(MatPaginator);
-  columns = ['event_type', 'event_name'];
+  columns = ['event_type', 'event_name', 'psi'];
 
   modalsService = inject(ModalsService);
   readonly browseService = inject(BrowseService);
@@ -110,13 +112,33 @@ export class TranscriptModalComponent implements AfterViewInit {
       return 'Unknown';
     }
   });
+
   alternativeSplicingEvents = resource({
-    loader: () => {
-      return this.backend.getAlternativeSplicingEvents([
+    loader: async() => {
+      const asEvents = await this.backend.getAlternativeSplicingEvents([
         this.transcript.enst_number,
       ]);
+
+      return asEvents.map((event) => ({
+        ...event,
+        psi: this.getEventPsi(event.alternative_splicing_event_transcripts_ID),
+      })) as AsEventWithPsi[];
     },
   });
+
+  async getEventPsi(eventId: number) {
+    const disease = this.browseService.disease$();
+    if (!disease) {
+      return 0;
+    }
+    return this.backend.getASPsiValues(this.version$(), eventId, this.transcript.enst_number, disease).then((values) => {
+      if (values.length === 0) {
+        return 0;
+      }
+      return values.reduce((acc, value) => acc + value.psi_value, 0) / values.length;
+    });
+  }
+
   hasAsEvents$ = computed(() => {
     return (this.alternativeSplicingEvents.value() || []).length > 0;
   });
