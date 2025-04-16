@@ -330,7 +330,7 @@ export interface SpongEffectsGeneModuleMembers {
     gene_symbol: string;
   };
   spongEffects_gene_module_ID: number
-  spongEffects_gene_module_members_ID: number; 
+  spongEffects_gene_module_members_ID: number;
 }
 
 export interface SpongEffectsTranscriptModules {
@@ -348,7 +348,7 @@ export interface SpongEffectsTranscriptModuleMembers {
     enst_number: string;
   };
   spongEffects_gene_module_ID: number
-  spongEffects_gene_module_members_ID: number; 
+  spongEffects_gene_module_members_ID: number;
 }
 
 export interface SpongEffectsModule {
@@ -444,6 +444,13 @@ export interface AlternativeSplicingEvent {
   transcript: {
     enst_number: string;
   };
+}
+
+export interface ASPsiValue {
+  alternative_splicing_event_transcripts: AlternativeSplicingEvent;
+  psi_value: number;
+  psivec_ID: number;
+  sample_ID: string;
 }
 
 export interface MiRNA {
