@@ -403,8 +403,9 @@ export class LollipopPlotComponent {
     console.log('Requesting expression data for', elements.length, 'elements');
     let hasMoreData = true;
     let offset = 0;
-    while (hasMoreData) {
+    while (hasMoreData && (expressionPromises.length < this.MAX_ELEMENTS)) {
       // Fetch multiple pages in parallel
+      console.log('expressionPromises.length', expressionPromises.length);
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
         return this.backend.getExpression(version, elements, disease_name, undefined, level, CHUNK_SIZE, currentOffset, true);
@@ -426,8 +427,34 @@ export class LollipopPlotComponent {
       offset += CHUNK_SIZE * N_PARALLEL_REQUESTS; // Move to the next batch of pages
     }
     const expressionData = expressionPromises.flat();
-    
+
+    // special case Pancancer: there is no disease name in the expression response so we need to fetch this separately 
+    // because we want to show it in the heatmap
+    if (disease_name === 'pancancer') {
+      // fetch the mapping from TSS codes to disease names
+      const mapping = await this.backend.getDiseaseFromSample()
+      console.log('mapping', mapping);
+      // add the disease name to the expression data in the field disease_subtype
+      for (const e of expressionData) {
+        const sample_ID = e.sample_ID;
+        const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
+        e.dataset.disease_subtype = diseaseName;
+      }
+      console.log('expressionData', expressionData);
+    }
     return this.createHeatmapConfig(expressionData, level, includeMembers);
+  }
+
+  private async mapSampleToDisease(sample_ID: string, mapping: { [key: string]: string }): Promise<string> {
+    // a sample ID has the form TCGA-K1-A6RT-01___pancancer. Extract the TSS code which is in this case K1
+    const tssCode = sample_ID.split('-')[1];
+    // use the mapping to get the disease name
+    const diseaseName = mapping[tssCode];
+    if (diseaseName) {
+      return diseaseName;
+    } else {
+      return 'Unknown';
+    }
   }
 
   private async getTableData(
@@ -490,13 +517,15 @@ export class LollipopPlotComponent {
     console.log(expressionData)
     const subtypes = [...new Set(expressionData.map(e => e.dataset.disease_subtype))];
     console.log('subtypes', subtypes);
-    // const subtypeColors: { [key: string]: string } = {};
-    // subtypes.forEach((subtype, index) => {
-    //   subtypeColors[index] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
-    // });
-    const subtypeColors: { [key: string]: string } = {0: 'hsl(0, 70%, 50%)', 1: 'hsl(90, 70%, 50%)', 2: 'hsl(180, 70%, 50%)', 3: 'hsl(270, 70%, 50%)'}
+    const subtypeColors: { [key: string]: string } = {};
+    subtypes.forEach((subtype, index) => {
+      subtypeColors[index] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
+    });
+    // this gives for example: 
+    // const subtypeColors: { [key: string]: string } = {0: 'hsl(0, 70%, 50%)', 1: 'hsl(90, 70%, 50%)', 2: 'hsl(180, 70%, 50%)', 3: 'hsl(270, 70%, 50%)'}
 
-
+    console.log('expressionData_full', expressionData_full);
+    console.log('expressionData', expressionData);
     console.log('subtypeColors', subtypeColors);
     console.log('z', expressionData.map(e => subtypes.indexOf(e.dataset.disease_subtype)));
     console.log('x', expressionData.map(e => e.sample_ID));
@@ -602,7 +631,8 @@ export class LollipopPlotComponent {
         xanchor: 'left',
         yanchor: 'top',
         title: {
-          text: 'Subtype',}
+          text: 'Subtype'
+        },
       },
     };
   
@@ -624,6 +654,11 @@ export class LollipopPlotComponent {
       showlegend: true,
       legendgroup: 'subtypes'
     }));
+
+    // if disease is pancancer, put the legend below the plot
+    if (this.exploreService.selectedDisease$() === 'pancancer') {
+      layout.legend!.x = 1.15;
+    }
   
     return { data: [subtypeBar, heatmap, ...subtypeLegend], layout, config };
   }

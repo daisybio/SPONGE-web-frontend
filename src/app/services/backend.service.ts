@@ -815,6 +815,16 @@ export class BackendService {
     return this.http.getRequest<string>(this.getRequestURL(route, query));
   }
 
+  getDiseaseFromSample(sample_ID?: string): any{
+    const route = 'get_disease_from_sample';
+    const query: Query = {
+    };
+    if (sample_ID) {
+      query['sample_ID'] = sample_ID;
+    }
+    return this.http.getRequest<string>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query)
       .map((key) => key + '=' + query[key])
