@@ -1,4 +1,4 @@
-<form [formGroup]="formGroup" style="margin: 5px">
+<form [formGroup]="formGroup" style="margin: 10px">
   <mat-accordion>
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
@@ -36,47 +36,93 @@
         <mat-panel-title>Filtering thresholds</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline" class="full-width" >
-        <mat-label>mSCor</mat-label>
+        <mat-label>Min. mscor</mat-label>
         <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10">
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('min')">Please provide a number > {{ formGroup.get('mscor')?.errors?.['min']?.min }}</mat-error>
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('max')">Please provide a number < {{ formGroup.get('mscor')?.errors?.['max']?.max }}</mat-error>
       </mat-form-field>
+      <app-info type="icon">
+        <p [innerHTML]="infoService.mscorText "></p>
+        <p>Use only modules with a mscor value above this threshold for the prediction.</p>
+        </app-info>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>False discovery rate (FDR)</mat-label>
+        <mat-label>Min. false discovery rate (FDR)</mat-label>
         <input formControlName="fdr" matInput type="number" min="0" max="1" step="0.10">
         <mat-error> *ngIf="formGroup.get('fdr')?.hasError('min')">Please provide a number > {{ formGroup.get('fdr')?.errors?.['min']?.min }}</mat-error>
         <mat-error> *ngIf="formGroup.get('fdr')?.hasError('max')">Please provide a number < {{ formGroup.get('fdr')?.errors?.['max']?.max }}</mat-error>
       </mat-form-field>
+      <app-info type="icon">
+        <!-- <p [innerHTML]="infoService.pValText"></p> -->
+        <p>
+          Use only modues with a false discovery rate (FDR) below this threshold for the prediction.
+        </p>
+      </app-info>
 
       <mat-form-field appearance="outline" class="full-width" min="0" step="1">
-        <mat-label>Minimal expression value</mat-label>
+        <mat-label>Min. expression value</mat-label>
         <input formControlName="minExpr" matInput type="number">
         <mat-error *ngIf="formGroup.get('minExpr')?.hasError('min')">Please provide a number > {{ formGroup.get('minExpr')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Use only modules with a higher expression value than this threshold for the prediction.
+        </p>
+      </app-info>
+
     </mat-expansion-panel>
+
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Further settings</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline" class="full-width">
+
         <mat-label>Enrichment method</mat-label>
         <mat-select formControlName="method">
-          <mat-option *ngFor="let method of methods" [value]="method">{{ method }}</mat-option>
+          <mat-option *ngFor="let method of methods | keyvalue" [value]="method.key">
+            {{ method.value }}    
+          </mat-option>    
         </mat-select>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Choose the enrichment method to be used for the prediction. Possible options are:
+        </p>
+        <ul>
+          <li><b>OE:</b>
+          <p>Overall Enrichment (OE) computes an enrichment score for each module in each sample by comparing the average expression of module genes to a background distribution of randomly selected genes with similar expression profiles.</p>  
+          </li>
+          <li><b>GSVA:</b>
+            <p>Gene Set Variation Analysis (GSVA) is a non-parametric, unsupervised method for estimating variation of gene set enrichment through the samples of a expression data set.</p>
+          </li>
+          <li><b>ssGSEA:</b>
+            <p>Single-sample Gene Set Enrichment Analysis (ssGSEA) calculates an enrichment score for each individual sample and gene set pair, indicating the degree to which genes in that set are coordinately up- or down-regulated within that specific sample.</p>
+          </li>
+        </ul>
+      </app-info>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Minimum module size</mat-label>
         <input formControlName="minSize" matInput type="number" min="0" step="1">
         <mat-error *ngIf="formGroup.get('minSize')?.hasError('min')">Please provide a number > {{ formGroup.get('minSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Use only modules with a size above this threshold for the prediction.
+        </p>
+      </app-info>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Maximum module size</mat-label>
         <input formControlName="maxSize" matInput type="number" min="0" step="1">
         <mat-error *ngIf="formGroup.get('maxSize')?.hasError('min')">Please provide a number > {{ formGroup.get('maxSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
+      <app-info type="icon">
+        <p>
+          Use only modules with a size below this threshold for the prediction.
+        </p>
+      </app-info>
 
       <mat-checkbox class="check-box" color="primary" formControlName="logScaling">
         Apply log2 scaling factor to uploaded expression

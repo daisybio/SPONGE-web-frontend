@@ -26,6 +26,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExampleFileModalComponent } from './example-file-modal/example-file-modal.component';
 import { PredictService } from '../service/predict.service';
 import { VersionsService } from '../../../../services/versions.service';
+import { InfoComponent } from '../../../../components/info/info.component';
+import { InfoService } from '../../../../services/info.service';
 
 @Component({
   selector: 'app-predict-form',
@@ -50,12 +52,19 @@ import { VersionsService } from '../../../../services/versions.service';
     MatChipsModule,
     MatIconModule,
     MatTooltipModule,
+    InfoComponent
   ],
   templateUrl: './predict-form.component.html',
   styleUrl: './predict-form.component.scss',
 })
 export class PredictFormComponent {
-  methods = ['gsva', 'ssgsea', 'OE'];
+  infoService = inject(InfoService);
+  // methods = ['gsva', 'ssgsea', 'OE'];
+  methods = {
+    gsva: 'GSVA',
+    ssgsea: 'ssGSEA',
+    OE: 'OE',
+  }
   formGroup = new FormGroup({
     useExampleExpression: new FormControl<boolean>(false, {nonNullable: true}),
     mscor: new FormControl<number>(0.1, {
@@ -78,7 +87,7 @@ export class PredictFormComponent {
       nonNullable: true,
       validators: [Validators.min(0)],
     }),
-    method: new FormControl(this.methods[0], { nonNullable: true }),
+    method: new FormControl(Object.keys(this.methods)[0], { nonNullable: true }),
     logScaling: new FormControl<boolean>(true, { nonNullable: true }),
     predictSubtypes: new FormControl<boolean>(false, { nonNullable: true }),
   });

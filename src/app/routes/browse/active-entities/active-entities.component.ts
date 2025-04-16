@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, linkedSignal, model } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowseService } from '../../../services/browse.service';
 import {
@@ -23,8 +23,16 @@ import { ModalsService } from '../../../components/modals-service/modals.service
 export class ActiveEntitiesComponent {
   readonly dialog = inject(MatDialog);
   protected BrowseService = BrowseService;
+  protected activeTabIndex = model<number>(0);
   protected modalsService = inject(ModalsService);
   protected readonly browseService = inject(BrowseService);
+
+  constructor() {
+    effect(() => {
+      this.activeTabIndex.set(this.browseService.lastClicked() === 'node' ? 0 : 1);
+    });
+  }
+
   nodes$ = this.browseService.activeNodes$;
   gProfilerUrl = computed(() =>
     BrowseService.getGProfilerUrlForNodes(this.nodes$()),
@@ -36,7 +44,10 @@ export class ActiveEntitiesComponent {
     interaction: GeneInteraction | TranscriptInteraction,
   ): void {
     this.dialog.open(InteractionModalComponent, {
-      data: interaction,
+      data: {
+        interaction: interaction,
+        disease: this.browseService.disease$()
+      }
     });
   }
 

@@ -1,13 +1,14 @@
 @if (runClassPerformance$.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 } @else {
-  @if (!runClassPerformance$.value()) {
+  @if (!runClassPerformance$.value() || runClassPerformance$.value()!.length === 0) {
     <p>No data available</p>
+  } @else {
+    <div class="class-performance-plot-div">
+      <div #classPerformancePlot class="class-performance-plot"></div>
+    </div>
   }
 }
-<div class="class-performance-plot-div">
-  <div #classPerformancePlot class="class-performance-plot"></div>
-</div>
 <app-info type="panel">
   <p>This plot shows the performance of the individual class predictions of the model that was trained with the
     spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in

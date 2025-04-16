@@ -1,3 +1,5 @@
+import { Data } from "@angular/router";
+
 export interface Dataset {
   data_origin: string;
   dataset_ID: number;
@@ -58,16 +60,16 @@ export interface OverallCounts {
   sponge_run_ID: number;
 }
 
-export enum GeneSorting {
-  Betweenness = 'betweenness',
-  Degree = 'degree',
-  Eigenvector = 'eigenvector',
-}
+// export enum GeneSorting {
+//   betweenness = 'Betweenness centrality',
+//   degree = 'node_Degree centrality',
+//   eigenvector = 'Eigenvector centrality',
+// }
 
 export enum InteractionSorting {
-  pAdj = 'pValue',
+  pValue = 'Adj. p-value',
   mscor = 'mscor',
-  Correlation = 'correlation',
+  correlation = 'Correlation',
 }
 
 export interface Gene {
@@ -114,7 +116,9 @@ export interface BrowseQuery {
   level: 'gene' | 'transcript';
   dataset: Dataset;
   showOrphans: boolean;
-  geneSorting: GeneSorting;
+  sortingDegree: boolean;
+  sortingEigenvector: boolean;
+  sortingBetweenness: boolean;
   maxNodes: number;
   minDegree: number;
   minBetweenness: number;
@@ -169,14 +173,14 @@ export interface CeRNAExpression {
 }
 
 export interface GeneExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   gene: Gene;
   sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  dataset: string;
+  dataset: Dataset;
   expr_value: number;
   sample_ID: string;
   transcript: Transcript;
@@ -248,9 +252,9 @@ export interface WikiPathway {
 // route responses
 
 export interface SpongEffectsRun {
-  spongeEffects_run_ID: number;
+  spongEffects_run_ID: number;
   m_scor_threshold: number;
-  p_adjust_threshold: number;
+  p_adj_threshold: number;
   modules_cutoff: number;
   bin_size: number;
   min_size: number;
@@ -259,7 +263,7 @@ export interface SpongEffectsRun {
   method: string;
   cv_folds: number;
   level: string;
-  sponge_run_ID: number;
+  sponge_run: SpongeRun;
   m_max: number;
   log_level: string;
   sponge_db_version: number;
@@ -281,6 +285,7 @@ export interface RunPerformance {
   accuracy_null: number;
   accuracy_p_value: number;
   mcnemar_p_value: number;
+  spongEffects_run: SpongEffectsRun;
 }
 
 export interface RunClassPerformance {
@@ -309,20 +314,23 @@ export interface EnrichmentScoreDistributions {
 }
 
 export interface SpongEffectsGeneModules {
-  getSpongEffectsGeneModules: number;
+  spongEffects_gene_module_ID: number;
   gene: {
     ensg_number: string;
     gene_symbol: string;
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsGeneModuleMembers {
-  hub_ensg_number: string;
-  hub_gene_symbol: string;
-  member_ensg_number: string;
-  member_gene_symbol: string;
+  gene: {
+    ensg_number: string;
+    gene_symbol: string;
+  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
 
 export interface SpongEffectsTranscriptModules {
@@ -332,20 +340,32 @@ export interface SpongEffectsTranscriptModules {
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
+  spongEffects_run_ID: number;
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
-  hub_enst_number: string;
-  hub_gene: {
-    ensg_number: string;
-    gene_symbol: string;
+  transcript: {
+    enst_number: string;
   };
-  member_enst_number: string;
-  member_gene: {
-    ensg_number: string;
-    gene_symbol: string;
-  };
+  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_members_ID: number; 
 }
+
+export interface SpongEffectsModule {
+  ensemblID: string;
+  symbol: string;
+  meanGiniDecrease: number;
+  meanAccuracyDecrease: number;
+  spongEffects_run_ID: number;
+}
+
+export interface ModuleMember {
+  ensemblID: string;
+  symbol: string;
+  moduleCenter: string;
+  spongEffects_run_ID: number;
+}
+
 
 export interface PredictCancerType {
   meta: {
@@ -375,6 +395,7 @@ export interface Metric {
   lower: number;
   upper: number;
   idx: number;
+  spongEffecsRun: SpongEffectsRun;
 }
 
 export interface SelectElement {
@@ -483,11 +504,4 @@ export interface GseaResult {
     gene: Gene;
     gsea_matched_genes_ID: number;
   };
-}
-
-export interface SpongEffectsModule {
-  ensemblID: string;
-  symbol: string;
-  meanGiniDecrease: number;
-  meanAccuracyDecrease: number;
 }

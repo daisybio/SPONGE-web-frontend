@@ -33,7 +33,7 @@ export class SpongEffectsComponent {
   versionsService = inject(VersionsService);
   backend = inject(BackendService);
   version$ = this.versionsService.versionReadOnly();
-  mode = model<'explore' | 'predict'>('explore');
+  mode = model<'explore' | 'predict'>('predict');
 
   spongeEffectsRuns = resource({
     request: this.version$,
