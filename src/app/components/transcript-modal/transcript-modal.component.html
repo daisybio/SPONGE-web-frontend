@@ -3,38 +3,38 @@
   <mat-tab-group [(selectedIndex)]="activeTab$" preserveContent>
     <mat-tab label="General information">
       @if (transcriptInfo$.isLoading()) {
-        <div class="spinner-container">
-          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-        </div>
+      <div class="spinner-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
       }
       @if (transcriptInfo$.value(); as transcriptInfo) {
-        <table>
-          <tr>
-            <th>Ensembl ID</th>
-            <td>{{ transcript.enst_number }}</td>
-          </tr>
-          <tr>
-            <th>Parent gene</th>
-            <td>
-              <button (click)="showGene()" mat-button>Show {{ BrowseService.getFullName(transcript.gene) }}</button>
-            </td>
-          </tr>
-          <tr>
-            <th>Position</th>
-            <td>{{ transcriptInfo.chromosome_name }}:{{ transcriptInfo.start_pos }}-{{ transcriptInfo.end_pos }}</td>
-          </tr>
-          <tr>
-            <th>Type</th>
-            <td>{{ transcriptInfo.transcript_type }}</td>
-          </tr>
-          <tr>
-            <th>Canonical</th>
-            <td>{{ isCanonical$() }}</td>
-          </tr>
-        </table>
+      <table>
+        <tr>
+          <th>Ensembl ID</th>
+          <td>{{ transcript.enst_number }}</td>
+        </tr>
+        <tr>
+          <th>Parent gene</th>
+          <td>
+            <button (click)="showGene()" mat-button>Show {{ BrowseService.getFullName(transcript.gene) }}</button>
+          </td>
+        </tr>
+        <tr>
+          <th>Position</th>
+          <td>{{ transcriptInfo.chromosome_name }}:{{ transcriptInfo.start_pos }}-{{ transcriptInfo.end_pos }}</td>
+        </tr>
+        <tr>
+          <th>Type</th>
+          <td>{{ transcriptInfo.transcript_type }}</td>
+        </tr>
+        <tr>
+          <th>Canonical</th>
+          <td>{{ isCanonical$() }}</td>
+        </tr>
+      </table>
       }
     </mat-tab>
-    <mat-tab label="Alternative splicing">
+    <mat-tab label="Alternative splicing" [disabled]="!hasAsEvents$()">
       <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
         <ng-container matColumnDef="event_type">
           <th *matHeaderCellDef mat-header-cell>Type</th>
@@ -52,22 +52,28 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="psi">
+          <th *matHeaderCellDef mat-header-cell>Psivec</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            {{ asEntry.psi | async }}
+          </td>
+        </ng-container>
+
         <tr *matHeaderRowDef="columns" mat-header-row></tr>
         <tr *matRowDef="let row; columns: columns;" mat-row></tr>
       </table>
-      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
-                     aria-label="Select page of users"></mat-paginator>
+      <mat-paginator [pageSizeOptions]="[5, 10]" [pageSize]="5" aria-label="Select page of users"></mat-paginator>
 
     </mat-tab>
 
     <mat-tab label="Genome view">
       @if (miRNAtracks$.isLoading()) {
-        <div class="spinner-container">
-          <mat-spinner mode="indeterminate"></mat-spinner>
-        </div>
+      <div class="spinner-container">
+        <mat-spinner mode="indeterminate"></mat-spinner>
+      </div>
       } @else {
-        <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
-             [tracks]="miRNAtracks$.value() || []"></igv>
+      <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
+        [tracks]="miRNAtracks$.value() || []"></igv>
       }
     </mat-tab>
   </mat-tab-group>

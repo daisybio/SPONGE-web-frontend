@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import {
   AlternativeSplicingEvent,
+  ASPsiValue,
   BrowseQuery,
   CeRNAExpression,
   CeRNAInteraction,
@@ -710,15 +711,19 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
-  async getASPsiValues(asEventID: number, enst: string) {
+  async getASPsiValues(version: number, asEventID: number, enst: string, disease: Dataset): Promise<ASPsiValue[]> {
     const route = 'alternativeSplicing/getPsiValues';
 
     const query: Query = {
       alternative_splicing_event_transcripts_ID: asEventID,
       enst_number: enst,
+      dataset_ID: disease.dataset_ID,
+      sponge_db_version: version,
     };
 
-    return this.http.getRequest<number>(this.getRequestURL(route, query));
+    const resp = await this.http.getRequest<ASPsiValue[]>(this.getRequestURL(route, query));
+
+    return 'detail' in resp ? [] : resp;
   }
 
   async getGSEAterms(
