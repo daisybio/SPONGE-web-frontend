@@ -48,6 +48,7 @@ interface NetworkData {
 })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly lastClicked = signal<'node' | 'edge'>('node');
   readonly graph$ = computed(() =>
     this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
@@ -338,6 +339,7 @@ export class BrowseService {
   ) {
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
+    this.lastClicked.set(entityType);
     states.update((entityStates) => {
       return {
         ...entityStates,
