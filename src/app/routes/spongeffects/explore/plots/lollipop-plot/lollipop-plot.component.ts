@@ -121,18 +121,18 @@ export class LollipopPlotComponent {
     }
   });
 
-  subtypes = computed(async () => {
-    const all_subtypes = await this.backend.getDatasets(this.versionService.versionReadOnly()(), this.exploreService.selectedDisease$()).then((datasets: Dataset[]) => {
-      const subtypes = datasets.map((dataset) => dataset.disease_subtype);
-      return [...new Set(subtypes)];
-    }
-    );
-    const subtypes = all_subtypes.filter((subtype) => subtype !== 'None' && subtype !== 'null' && subtype);
-    console.log('SUBTYPES', subtypes);
-    console.log("ALL SUBTYPES", all_subtypes);
+  // subtypes = computed(async () => {
+  //   const all_subtypes = await this.backend.getDatasets(this.versionService.versionReadOnly()(), this.exploreService.selectedDisease$()).then((datasets: Dataset[]) => {
+  //     const subtypes = datasets.map((dataset) => dataset.disease_subtype);
+  //     return [...new Set(subtypes)];
+  //   }
+  //   );
+  //   const subtypes = all_subtypes.filter((subtype) => subtype !== 'None' && subtype !== 'null' && subtype);
+  //   console.log('SUBTYPES', subtypes);
+  //   console.log("ALL SUBTYPES", all_subtypes);
 
-    return subtypes;
-  });
+  //   return subtypes;
+  // });
 
   // the grey modules
   lolipopPlotData = resource({
@@ -157,6 +157,9 @@ export class LollipopPlotComponent {
   selectedModules = resource({
     request: () => ({
       redNodes: this.redNodes() ?? 5,
+      version: this.versionService.versionReadOnly()(),
+      cancer: this.exploreService.selectedDisease$(),
+      level: this.exploreService.level$(),
     }),
     loader: async ({ request }) => {
       const { redNodes } = request;
@@ -172,19 +175,22 @@ export class LollipopPlotComponent {
   // expression values
   moduleExpressionData = resource({
     request: () => ({
-      version: this.versionService.versionReadOnly()(),
-      disease: this.exploreService.selectedDisease$(),
-      level: this.exploreService.level$(),
+      // version: this.versionService.versionReadOnly()(),
+      // disease: this.exploreService.selectedDisease$(),
+      // level: this.exploreService.level$(),
       modules: this.selectedModules.value(),
       includeMembers: this.includeModuleMembers()
     }),
     loader: async ({ request }) => {
       console.log('Loading module expression data');
-      const { version, disease, level, modules, includeMembers } = request;
-      if (!version || !disease || !level || !modules || modules.length === 0) {
+      // const { version, disease, level, modules, includeMembers } = request;
+      // if (!version || !disease || !level || !modules || modules.length === 0) {
+      const modules = request.modules;
+      const includeMembers = request.includeMembers;
+      if (!modules || modules.length === 0) {
         return { data: [], layout: {}, config: {} };
       }
-      return this.getModuleExpressionData(version, disease, level, modules, includeMembers ?? undefined);
+      return this.getModuleExpressionData(this.versionService.versionReadOnly()(), this.exploreService.selectedDisease$(), this.exploreService.level$(), modules, includeMembers ?? undefined);
     }
   });
   
@@ -199,6 +205,7 @@ export class LollipopPlotComponent {
     }),
     loader: async ({ request }) => {
       const { version, disease, level, modules, includeMembers } = request;
+      console.log('table request', modules)
       if (!version || !disease || !level || !modules || modules.length === 0) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }
@@ -235,6 +242,7 @@ export class LollipopPlotComponent {
     
     effect(() => {
       const expressionData = this.moduleExpressionData.value();
+      console.log('expression data effect', expressionData, this.moduleExpressionData.isLoading());
       if (this.moduleExpressionData.isLoading()) {
         Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
       } else {
@@ -275,6 +283,7 @@ export class LollipopPlotComponent {
 
     effect(() => {
       if ((this.selectedModules.value()?.length ?? 0) === 0 && this.lolipopPlotData && (this.lolipopPlotData.value()?.length ?? 0) > 0) {
+        console.log('No selected modules, reloading');
         this.selectedModules.reload();
       }
     });
@@ -403,7 +412,7 @@ export class LollipopPlotComponent {
     console.log('Requesting expression data for', elements.length, 'elements');
     let hasMoreData = true;
     let offset = 0;
-    while (hasMoreData && (expressionPromises.length < this.MAX_ELEMENTS)) {
+    while (hasMoreData) {
       // Fetch multiple pages in parallel
       console.log('expressionPromises.length', expressionPromises.length);
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
@@ -440,9 +449,9 @@ export class LollipopPlotComponent {
         const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
         e.dataset.disease_subtype = diseaseName;
       }
-      console.log('expressionData', expressionData);
     }
-    return this.createHeatmapConfig(expressionData, level, includeMembers);
+    console.log('getModuleExpressionData expressionData', expressionData);
+    return this.createHeatmapConfig(expressionData, level, includeMembers, disease_name === 'pancancer');
   }
 
   private async mapSampleToDisease(sample_ID: string, mapping: { [key: string]: string }): Promise<string> {
@@ -507,7 +516,8 @@ export class LollipopPlotComponent {
   private createHeatmapConfig(
     expressionData_full: any[], 
     level: string, 
-    includeMembers: boolean | undefined
+    includeMembers: boolean | undefined,
+    is_pancancer: boolean = false
   ): PlotlyData {
 
     // filter for expression data of subtypes 
@@ -524,19 +534,10 @@ export class LollipopPlotComponent {
     // this gives for example: 
     // const subtypeColors: { [key: string]: string } = {0: 'hsl(0, 70%, 50%)', 1: 'hsl(90, 70%, 50%)', 2: 'hsl(180, 70%, 50%)', 3: 'hsl(270, 70%, 50%)'}
 
-    console.log('expressionData_full', expressionData_full);
     console.log('expressionData', expressionData);
-    console.log('subtypeColors', subtypeColors);
-    console.log('z', expressionData.map(e => subtypes.indexOf(e.dataset.disease_subtype)));
-    console.log('x', expressionData.map(e => e.sample_ID));
-    console.log('y', ['Subtype']);
-    console.log('funny', subtypes.map((subtype, index) => [index / (subtypes.length - 1), subtypeColors[subtype]]))
-    console.log("SUBTYPES PLOTTING", this.subtypes());
-
 
     // Create a color bar for subtypes
     const subtypeBar = {
-      // z: expressionData.map(e => subtypes.indexOf(e.dataset.disease_subtype)),
       x: expressionData.map(e => e.sample_ID),
       // y needs to be a list of the length of expressionData
       y: expressionData.map(e => 1),
@@ -544,11 +545,6 @@ export class LollipopPlotComponent {
       marker: {
         color: expressionData.map(e => subtypeColors[subtypes.indexOf(e.dataset.disease_subtype).toString()]),
       },
-      // colorscale: subtypeColors,
-      // colorscale: subtypes.map((subtype, index) => [
-      //   index / (subtypes.length - 1), 
-      //   subtypeColors[index.toString()]
-      // ]),
       hoverinfo: 'text',
       // text should contain the subtype and the sample ID
       text: expressionData.map(e => this.subtype_text(e)),
@@ -656,7 +652,7 @@ export class LollipopPlotComponent {
     }));
 
     // if disease is pancancer, put the legend below the plot
-    if (this.exploreService.selectedDisease$() === 'pancancer') {
+    if (is_pancancer) {
       layout.legend!.x = 1.15;
     }
   
