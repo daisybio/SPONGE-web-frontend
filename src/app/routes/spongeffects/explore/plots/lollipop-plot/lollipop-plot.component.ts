@@ -45,6 +45,7 @@ import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
 import { uniqueSymbol } from 'lodash/common/common';
+import { compute } from '@fullstax/kaplan-meier-estimator';
 
 declare var Plotly: any;
 
@@ -76,6 +77,7 @@ export class LollipopPlotComponent {
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
   infoService = inject(InfoService);
+  selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()()));
 
   refreshSignal$ = input();
 
@@ -139,13 +141,15 @@ export class LollipopPlotComponent {
       cancer: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
       topN: this.topN() ?? 15,
+      selectedParamSets: this.exploreService.selectedParamSets$()()
     }),
     loader: ({ request }) => {
-      const { version, cancer, level, topN } = request;
-      if (!version || !cancer || !level) {
+      const { version, cancer, level, topN, selectedParamSets } = request;
+      if (!version || !cancer || !level || !selectedParamSets) {
         return Promise.resolve([]); 
       }
-      const greyModules = this.getLollipopData(version, cancer, level, topN); 
+      console.log('lillipop resource', selectedParamSets)
+      const greyModules = this.getLollipopData(version, cancer, level, topN, selectedParamSets); 
       return greyModules;
     },
   });
@@ -157,6 +161,7 @@ export class LollipopPlotComponent {
       version: this.versionService.versionReadOnly()(),
       cancer: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
+      selectedParamSets: this.exploreService.selectedParamSets$()()
     }),
     loader: async ({ request }) => {
       const { redNodes } = request;
@@ -182,7 +187,7 @@ export class LollipopPlotComponent {
       // if (!version || !disease || !level || !modules || modules.length === 0) {
       const modules = request.modules;
       const includeMembers = request.includeMembers;
-      if (!modules || modules.length === 0) {
+      if (!modules || modules.length === 0 || (this.selectedModules && this.selectedModules.isLoading())) {
         return { data: [], layout: {}, config: {} };
       }
       return this.getModuleExpressionData(this.versionService.versionReadOnly()(), this.exploreService.selectedDisease$(), this.exploreService.level$(), modules, includeMembers ?? undefined);
@@ -295,32 +300,38 @@ export class LollipopPlotComponent {
     return `${module.ensemblID}_${module.spongEffects_run_ID}`;
   }
 
-  private getLollipopData(version: number, cancer: string, level: string, topN: number): Promise<SpongEffectsModule[]> {
+  private async getLollipopData(version: number, cancer: string, level: string, topN: number, selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
+    const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
-      return this.backend.getSpongEffectsGeneModules(version, cancer, topN).then(query => {
-        const data = query.map(entry => ({
+      for (const [key, paramSet] of Object.entries(selectedParamSets)) {
+        let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN)
+        // tmp = tmp.slice(0, Math.min(topN, data.length))
+        console.log(tmp)
+        tmp.map((entry) => {
+          data.push({
           ensemblID: entry.gene.ensg_number,
           symbol: entry.gene.gene_symbol,
           meanGiniDecrease: entry.mean_gini_decrease,
           meanAccuracyDecrease: entry.mean_accuracy_decrease,
           spongEffects_run_ID: entry.spongEffects_run_ID
-        }));
-        const limitedData = data.slice(0, Math.min(topN, data.length));
-        return limitedData;
-      });
+        })}
+      );
+      console.log('data:', data)
+      };
     } else {
-      return this.backend.getSpongEffectsTranscriptModules(version, cancer, topN).then(query => {
-        const data = query.map(entry => ({
+      for (const [key, paramSet] of Object.entries(selectedParamSets)) {
+        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN)
+        tmp.slice(0, Math.min(topN, data.length)).map(entry => ({
           ensemblID: entry.transcript.enst_number,
           symbol: entry.transcript.gene.gene_symbol,
           meanGiniDecrease: entry.mean_gini_decrease,
           meanAccuracyDecrease: entry.mean_accuracy_decrease,
           spongEffects_run_ID: entry.spongEffects_run_ID
         }));
-        const limitedData = data.slice(0, Math.min(topN, data.length));
-        return limitedData;
-      });
+      };
     }
+    console.log('Lollipop data:', data);
+    return data;
   }
 
   private async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {

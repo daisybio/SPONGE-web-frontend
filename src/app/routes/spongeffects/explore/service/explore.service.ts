@@ -10,7 +10,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
-import { Dataset } from '../../../../interfaces';
+import { Dataset, RunClassPerformance } from '../../../../interfaces';
 import { VersionsService } from '../../../../services/versions.service';
 import { BackendService } from '../../../../services/backend.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -79,7 +79,6 @@ export class ExploreService {
   });
 
   selectedParamSets$ = signal(() => {
-    console.log('signal selectedParamSets', this.paramSets$());
     const formGroup = this.formGroup$();
     const selectedParamSets: { [key: string]: any } = {};
     const controls = formGroup.controls;
@@ -99,7 +98,6 @@ export class ExploreService {
     effect(() => {
       const formGroup = this.formGroup$();
       formGroup.valueChanges.subscribe(() => {
-        console.log('Form group value changed:', formGroup.value);
         const selectedParamSets: { [key: string]: any } = {};
         const controls = formGroup.controls;
         Object.keys(controls).forEach((key) => {
@@ -110,17 +108,11 @@ export class ExploreService {
           }
         }
         );
-        console.log('Selected param sets:', selectedParamSets);
         this.selectedParamSets$.set(() => {return selectedParamSets});
         return selectedParamSets;
       });
     }
     );
-
-    effect(() => {
-      const highestKey = this.highestKey;
-      console.log('highestKey', highestKey);
-    });
 
     // effect(() => {
     //   const highestKey = this.highestKey;
@@ -140,7 +132,7 @@ export class ExploreService {
         version: this.versionsService.versionReadOnly()(),
         cancer: this.selectedDisease$(),
         level: this.level$(),
-        params: this.selectedParamSets$(),
+        params: this.selectedParamSets$()(),
       };
     }),
     loader: async (param) => {
@@ -150,7 +142,14 @@ export class ExploreService {
       const params = param.request.params;
       if (version === undefined || cancer === undefined || level === undefined || params === undefined)
         return [];
-      return await this.backend.getRunClassPerformance(version, cancer, level, param);
+      const modelPerformances: RunClassPerformance[] = [];
+      for (const [key, paramSet] of Object.entries(params)) {
+        const tmp = await this.backend.getRunClassPerformance(version, cancer, level, paramSet);
+        tmp.map((entry: RunClassPerformance) => {
+          modelPerformances.push(entry);
+        });
+      }
+      return modelPerformances;
     },
   });
 }

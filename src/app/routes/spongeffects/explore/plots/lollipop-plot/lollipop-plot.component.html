@@ -77,10 +77,14 @@
     </mat-paginator>
   </div>
   
-  @if (moduleExpressionData.isLoading()) {
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-  }
   <div class="module-expression-heatmap">
+    @if (moduleExpressionData.isLoading()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    } @else {
+      @if (!moduleExpressionData.value()) {
+      <p>No data available</p>
+      }
+    }
     <div #moduleExpressionHeatmap></div>
       <!-- Display element limit warning message when needed -->
       <div *ngIf="elementLimitWarning() && MAX_ELEMENTS" class="warning-message">

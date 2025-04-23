@@ -33,6 +33,7 @@ export class OverallAccPlotComponent {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
+  name_to_runPerformanceID: Map<number, string> = new Map<number, string>();
 
   overallAccPlot = viewChild.required<ElementRef<HTMLDivElement>>('overallAccuracyPlot');
 
@@ -56,7 +57,6 @@ export class OverallAccPlotComponent {
       const level = param.request.level;
       const params = param.request.params;
       if (version === undefined || cancer === undefined || level === undefined || params === undefined ) return;
-      console.log('overall acc plot paras', params)
       const data = this.getOverallAccuracyData(version, cancer, level, params);
       return await this.plotOverallAccuracyPlot(data);
     }
@@ -67,10 +67,15 @@ export class OverallAccPlotComponent {
       this.refreshSignal$();
       this.refreshPlot();
     });
+
+    effect(() => {
+      if (this.plotOverallAccResource.isLoading()) {
+        Plotly.purge(this.overallAccPlot().nativeElement);
+      }
+  });
   }
 
   
-  name_to_runPerformanceID: Map<number, string> = new Map<number, string>();
   async getOverallAccuracyData(version: number, cancer: string, level: string, params: {[key: string]: any}): Promise<Metric[]> {
     const modelPerformances: RunPerformance[] = [];
     let highest_accuracy: number = 0;
@@ -99,10 +104,6 @@ export class OverallAccPlotComponent {
     // the first time this is executed, all available params are wanted to all models are fetched
     // we create model Names (Model 1, Model 2, ...) and add them to the y-axis labels only if all models are fetched
 
-    console.log('highest accuracy', highest_accuracy);
-    console.log('highest key', highest_key);
-    console.log('parmas in model perfomances', params);
-    console.log('modelPerformances', modelPerformances);
     let metric = modelPerformances.map((entry: RunPerformance, idx: number): Metric => {
       // if id not yet in map, add it
       if (!this.name_to_runPerformanceID.has(entry.spongEffects_run_performance_ID)) {
@@ -118,7 +119,6 @@ export class OverallAccPlotComponent {
         spongEffects_run_performance_ID: entry.spongEffects_run_performance_ID
       };
     });
-    console.log('map', this.name_to_runPerformanceID)
     return metric;
   };
 
@@ -166,8 +166,6 @@ export class OverallAccPlotComponent {
       const col: string = metric.name == "modules" ? "green" : "orange"
       // Add model name to y-axis labels
       layout.yaxis.tickvals.push(metric.idx + 1);
-      console.log(this.name_to_runPerformanceID)
-      console.log('id', metric.spongEffects_run_performance_ID)
       // this is a sequential numbering of the displayed models
       // layout.yaxis.ticktext.push(`Model ${metric.idx}`);
       // this is a fixed naming of the models 
