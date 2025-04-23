@@ -1,4 +1,5 @@
-<mat-form-field appearance="outline" style="width: 90%">
+<form [formGroup]="formGroup()" style="margin: 10px">
+  <mat-form-field appearance="outline" class="full-width">
   <mat-label>Disease</mat-label>
   <mat-select [(value)]="disease$">
     @for (disease of diseases$(); track disease) {
@@ -6,9 +7,64 @@
     }
   </mat-select>
 </mat-form-field>
+
+<mat-card appearance="outlined">
+  <mat-card-content>
+    Select model
+    <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
+      Select the models to display based on the paramers.
+      </mat-card-subtitle>
+  <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px;">
+    <!-- First column with parameter names (not clickable) -->
+    <div style="width: 140px;">
+      <div style="margin-top: 11px; height: 25px;">mscor threshold</div>
+      <div style="margin-top: 15px; height: 25px;">pAdjust threshold</div>
+      <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">modules cutoff</div>
+    </div>
+    
+    <!-- Parameter set columns as clickable chips -->
+    <div style="display: flex; flex: 1; width: 80px;">
+      <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true" style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
+        @for (paramSet of paramSets(); track paramSet; let i = $index) {
+          <mat-chip-option 
+            disableRipple="true"
+            [selected]="formGroup().get('paramSet_' + (i + 1))?.value"
+            (selectionChange)="formGroup().get('paramSet_' + (i + 1))?.setValue($event.selected)"
+            style="flex: 1; height: auto;">
+            <div style="width: 80%; align-items: center; display: flex; flex-direction: column;">
+              <div style="margin-top: 10px; height: 25px;">
+                {{ paramSet.m_scor_threshold }}
+              </div>
+              <div style="margin-top: 15px; height: 25px;">
+                {{ paramSet.p_adj_threshold }}
+              </div>
+              <div style="margin-top: 15px; margin-bottom: 0px; height: 25px;">
+                {{ paramSet.modules_cutoff }}
+              </div>
+              <div style="margin-top: 0px; margin-bottom: 15px; height: 5px;">
+                {{ highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}
+                <!-- <span style="margin-left: 2px;">*</span> -->
+              </div>
+            </div>
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+  </div>
+  <mat-card-footer>
+    <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
+      {{ highestKey().length > 0 ? '*Best model according to accuracy.' : '' }}
+    </mat-card-subtitle>
+  </mat-card-footer>
+</mat-card-content>  
+</mat-card>
+
 <div class="card-container">
   <mat-button-toggle-group [(value)]="level$">
     <mat-button-toggle value="gene">Gene</mat-button-toggle>
     <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
   </mat-button-toggle-group>
 </div>
+
+</form>
+

@@ -16,6 +16,7 @@ export interface SpongeRun {
       data_origin: string;
       dataset_ID: number;
       disease_name: string;
+      disease_subtype: string;
     };
     sponge_run_ID: number;
   };
@@ -286,6 +287,7 @@ export interface RunPerformance {
   accuracy_p_value: number;
   mcnemar_p_value: number;
   spongEffects_run: SpongEffectsRun;
+  spongEffects_run_performance_ID: number;
 }
 
 export interface RunClassPerformance {
@@ -404,6 +406,7 @@ export interface Metric {
   upper: number;
   idx: number;
   spongEffecsRun: SpongEffectsRun;
+  spongEffects_run_performance_ID: number;
 }
 
 export interface SelectElement {

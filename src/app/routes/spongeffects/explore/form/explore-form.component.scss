@@ -1,3 +1,37 @@
-mat-form-field {
-    margin: 5px;
-  }
+// Center chip content and prevent shifting
+::ng-deep .mat-mdc-chip-option {
+  justify-content: center !important;
+}
+
+// Remove the checkmark graphic (you already had this)
+::ng-deep .mdc-evolution-chip__action[aria-selected='true'] .mdc-evolution-chip__graphic.mat-mdc-chip-graphic {
+  display: none !important;
+}
+
+// Ensure content stays centered by fixing width and alignment
+::ng-deep .mat-mdc-chip-action-label {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+// Ensure the chip content doesn't shift when selected
+::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__action-container {
+  justify-content: center;
+  padding: 0 !important;
+}
+
+::ng-deep .mdc-evolution-chip__cell--primary {
+  /* align-items: center; */
+  flex-basis: 0% !important;
+}
+
+::ng-deep .mat-mdc-standard-chip.mdc-evolution-chip--with-primary-graphic .mdc-evolution-chip__action--primary {
+  padding-left: 0 !important;
+  padding-right: 0px !important;
+}
+
+::ng-deep .mdc-evolution-chip--selectable:not(.mdc-evolution-chip--selected):not(.mdc-evolution-chip--with-primary-icon) .mdc-evolution-chip__graphic {
+  width: 0;
+  padding: 0;
+}

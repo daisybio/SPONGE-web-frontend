@@ -548,6 +548,9 @@ export class BackendService {
     );
   }
 
+    // spongEffects services:
+
+
   getSpongEffectsRuns(
     version: number,
     dataset_ID?: number,
@@ -561,34 +564,58 @@ export class BackendService {
     return this.http.getRequest<SpongEffectsRun[]>(request);
   }
 
-  getRunPerformance(
+  async getRunPerformance(
     version: number,
     diseaseName: string,
-    level: string
+    level: string,
+    params: {[key: string]: any}
   ): Promise<RunPerformance[]> {
-    const request =
-      API_BASE +
-      '/spongEffects/getRunPerformance' +
-      `?disease_name=${diseaseName}` +
-      `&level=${level}` +
-      `&sponge_db_version=${version}`;
-    return this.http.getRequest<RunPerformance[]>(request);
+
+    const route = 'spongEffects/getRunPerformance';
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: diseaseName,
+      level: level,
+    };
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+    return (
+      (await this.http.getRequest<RunPerformance[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
   }
 
-  // spongEffects services:
 
-  getRunClassPerformance(
+  async getRunClassPerformance(
     version: number,
     diseaseName: string,
-    level: string
+    level: string,
+    params: {[key: string]: any}
   ): Promise<RunClassPerformance[]> {
-    const request =
-      API_BASE +
-      '/spongEffects/getRunClassPerformance' +
-      `?disease_name=${diseaseName}` +
-      `&level=${level}` +
-      `&sponge_db_version=${version}`;
-    return this.http.getRequest<RunClassPerformance[]>(request);
+    const route = 'spongEffects/getRunClassPerformance';
+
+    const query: Query = {
+        sponge_db_version: version,
+        disease_name: diseaseName,
+        level: level
+      };
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+
+    return (
+      (await this.http.getRequest<RunClassPerformance[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
   }
 
   getEnrichmentScoreDistributions(

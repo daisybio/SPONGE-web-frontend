@@ -128,8 +128,6 @@ export class LollipopPlotComponent {
   //   }
   //   );
   //   const subtypes = all_subtypes.filter((subtype) => subtype !== 'None' && subtype !== 'null' && subtype);
-  //   console.log('SUBTYPES', subtypes);
-  //   console.log("ALL SUBTYPES", all_subtypes);
 
   //   return subtypes;
   // });
@@ -143,7 +141,6 @@ export class LollipopPlotComponent {
       topN: this.topN() ?? 15,
     }),
     loader: ({ request }) => {
-      console.log('Loading lollipop plot data');
       const { version, cancer, level, topN } = request;
       if (!version || !cancer || !level) {
         return Promise.resolve([]); 
@@ -164,7 +161,6 @@ export class LollipopPlotComponent {
     loader: async ({ request }) => {
       const { redNodes } = request;
       const modules = this.lolipopPlotData.value();
-      console.log('Loading selected modules');
       if (!modules || modules.length === 0) {
         return [];
       }
@@ -182,7 +178,6 @@ export class LollipopPlotComponent {
       includeMembers: this.includeModuleMembers()
     }),
     loader: async ({ request }) => {
-      console.log('Loading module expression data');
       // const { version, disease, level, modules, includeMembers } = request;
       // if (!version || !disease || !level || !modules || modules.length === 0) {
       const modules = request.modules;
@@ -205,7 +200,6 @@ export class LollipopPlotComponent {
     }),
     loader: async ({ request }) => {
       const { version, disease, level, modules, includeMembers } = request;
-      console.log('table request', modules)
       if (!version || !disease || !level || !modules || modules.length === 0) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }
@@ -242,7 +236,6 @@ export class LollipopPlotComponent {
     
     effect(() => {
       const expressionData = this.moduleExpressionData.value();
-      console.log('expression data effect', expressionData, this.moduleExpressionData.isLoading());
       if (this.moduleExpressionData.isLoading()) {
         Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
       } else {
@@ -283,7 +276,6 @@ export class LollipopPlotComponent {
 
     effect(() => {
       if ((this.selectedModules.value()?.length ?? 0) === 0 && this.lolipopPlotData && (this.lolipopPlotData.value()?.length ?? 0) > 0) {
-        console.log('No selected modules, reloading');
         this.selectedModules.reload();
       }
     });
@@ -398,7 +390,6 @@ export class LollipopPlotComponent {
     this.elementLimitWarning.set(false);
     if (this.MAX_ELEMENTS && elements.length > this.MAX_ELEMENTS) {
       elements = elements.slice(0, this.MAX_ELEMENTS);
-      console.log('Warning: too many elements, limiting to', this.MAX_ELEMENTS);
       this.elementLimitWarning.set(true);
     }
     
@@ -409,12 +400,10 @@ export class LollipopPlotComponent {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
     const expressionPromises = [];
-    console.log('Requesting expression data for', elements.length, 'elements');
     let hasMoreData = true;
     let offset = 0;
     while (hasMoreData) {
       // Fetch multiple pages in parallel
-      console.log('expressionPromises.length', expressionPromises.length);
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
         return this.backend.getExpression(version, elements, disease_name, undefined, level, CHUNK_SIZE, currentOffset, true);
@@ -442,7 +431,6 @@ export class LollipopPlotComponent {
     if (disease_name === 'pancancer') {
       // fetch the mapping from TSS codes to disease names
       const mapping = await this.backend.getDiseaseFromSample()
-      console.log('mapping', mapping);
       // add the disease name to the expression data in the field disease_subtype
       for (const e of expressionData) {
         const sample_ID = e.sample_ID;
@@ -450,7 +438,6 @@ export class LollipopPlotComponent {
         e.dataset.disease_subtype = diseaseName;
       }
     }
-    console.log('getModuleExpressionData expressionData', expressionData);
     return this.createHeatmapConfig(expressionData, level, includeMembers, disease_name === 'pancancer');
   }
 
@@ -524,17 +511,13 @@ export class LollipopPlotComponent {
     const expressionData = expressionData_full.filter(e => e.dataset.disease_subtype !== 'None' && e.dataset.disease_subtype !== 'null' && e.dataset.disease_subtype);
 
       // Extract unique subtypes and map them to colors
-    console.log(expressionData)
     const subtypes = [...new Set(expressionData.map(e => e.dataset.disease_subtype))];
-    console.log('subtypes', subtypes);
     const subtypeColors: { [key: string]: string } = {};
     subtypes.forEach((subtype, index) => {
       subtypeColors[index] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
     });
     // this gives for example: 
     // const subtypeColors: { [key: string]: string } = {0: 'hsl(0, 70%, 50%)', 1: 'hsl(90, 70%, 50%)', 2: 'hsl(180, 70%, 50%)', 3: 'hsl(270, 70%, 50%)'}
-
-    console.log('expressionData', expressionData);
 
     // Create a color bar for subtypes
     const subtypeBar = {
