@@ -24,6 +24,7 @@ import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatSliderModule } from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
 import { BrowseService } from '../../services/browse.service';
 import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
@@ -42,6 +43,7 @@ import { InfoService } from '../../services/info.service';
     InfoComponent,
     MatSliderModule,
     FormsModule,
+    DecimalPipe,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
