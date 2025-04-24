@@ -156,11 +156,4 @@ export class InteractionsTableComponent implements AfterViewInit {
   openDialog(entity: Gene | Transcript) {
     this.modalsService.openNodeDialog(entity);
   }
-
-  formatLabel(value: number): string {
-    if (value < 0.01) {
-      return value.toExponential(2);
-    }
-    return value.toFixed(3);
-  }
 }
