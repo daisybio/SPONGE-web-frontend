@@ -1,0 +1,42 @@
+.filter-container {
+  padding: 16px;
+  background: white;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .sliders-row {
+    display: flex;
+    gap: 32px;
+    padding: 0 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .slider-group {
+    flex: 1;
+    min-width: 0; // Prevents flex items from overflowing
+    max-width: 500px; // Limit maximum width of each slider group
+
+    .slider-header {
+      margin-bottom: 8px;
+
+      label {
+        font-weight: 500;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .value-display {
+        font-weight: normal;
+        color: rgba(0, 0, 0, 0.6);
+      }
+    }
+
+    mat-slider {
+      width: 100%;
+    }
+  }
+}

@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  model,
   viewChild,
   ViewChild,
 } from '@angular/core';
@@ -21,10 +22,12 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
+import { MatSliderModule } from '@angular/material/slider';
+import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
 import { BrowseService } from '../../services/browse.service';
 import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
-import katex from 'katex';
 import { ModalsService } from '../modals-service/modals.service';
 import { InfoService } from '../../services/info.service';
 
@@ -38,6 +41,9 @@ import { InfoService } from '../../services/info.service';
     MatButton,
     MatTooltip,
     InfoComponent,
+    MatSliderModule,
+    FormsModule,
+    DecimalPipe,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
@@ -54,9 +60,46 @@ export class InteractionsTableComponent implements AfterViewInit {
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
+
+  minPValue = model(0);
+  maxPValue = model(1);
+  minMscor = model(0);
+  maxMscor = model(1);
+
+  // Compute data limits
+  pValueLimits = computed(() => {
+    const interactions = this.interactions$() || [];
+    const pValues = interactions.map(i => i.p_value);
+    return {
+      min: Math.min(...pValues),
+      max: Math.max(...pValues),
+      step: Math.pow(10, Math.floor(Math.log10(Math.min(...pValues)))) / 10 // One decimal place smaller than smallest value
+    };
+  });
+
+  mscorLimits = computed(() => {
+    const interactions = this.interactions$() || [];
+    const mscors = interactions.map(i => i.mscor);
+    return {
+      min: Math.min(...mscors),
+      max: Math.max(...mscors),
+      step: 0.001 // Fixed small step for mscor
+    };
+  });
+
   dataSource$ = computed(() => {
+    const interactions = this.interactions$() || [];
+    const filteredInteractions = interactions.filter(interaction => {
+      const pValue = interaction.p_value;
+      const mscor = interaction.mscor;
+      return pValue >= this.minPValue() &&
+             pValue <= this.maxPValue() &&
+             mscor >= this.minMscor() &&
+             mscor <= this.maxMscor();
+    });
+
     return new MatTableDataSource(
-      (this.interactions$() || []).map((interaction) => {
+      filteredInteractions.map((interaction) => {
         const names = BrowseService.getInteractionFullNames(interaction);
         return {
           name_1: names[0],
@@ -82,6 +125,17 @@ export class InteractionsTableComponent implements AfterViewInit {
   constructor() {
     effect(() => {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
+    });
+
+    // Initialize slider values to data limits
+    effect(() => {
+      const pLimits = this.pValueLimits();
+      const mLimits = this.mscorLimits();
+
+      this.minPValue.set(pLimits.min);
+      this.maxPValue.set(pLimits.max);
+      this.minMscor.set(mLimits.min);
+      this.maxMscor.set(mLimits.max);
     });
   }
 
