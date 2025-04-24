@@ -2,7 +2,7 @@
   <mat-drawer [opened]="true" mode="side" style="padding: 10px">
     <form>
       <mat-form-field class="example-chip-list">
-        <mat-label>Selected genes</mat-label>
+        <mat-label>Select genes</mat-label>
         <mat-chip-grid #chipGrid aria-label="Gene selection">
           @for (gene of activeGenes(); track $index) {
             <mat-chip-row (removed)="remove(gene)">
