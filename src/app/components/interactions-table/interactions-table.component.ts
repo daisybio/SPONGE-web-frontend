@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  model,
   viewChild,
   ViewChild,
 } from '@angular/core';
@@ -21,10 +22,11 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
+import { MatSliderModule } from '@angular/material/slider';
+import { FormsModule } from '@angular/forms';
 import { BrowseService } from '../../services/browse.service';
 import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
-import katex from 'katex';
 import { ModalsService } from '../modals-service/modals.service';
 import { InfoService } from '../../services/info.service';
 
@@ -38,6 +40,8 @@ import { InfoService } from '../../services/info.service';
     MatButton,
     MatTooltip,
     InfoComponent,
+    MatSliderModule,
+    FormsModule,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
@@ -54,9 +58,26 @@ export class InteractionsTableComponent implements AfterViewInit {
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
+
+
+  minPValue = model(0);
+  maxPValue = model(1);
+  minMscor = model(0);
+  maxMscor = model(1);
+
   dataSource$ = computed(() => {
+    const interactions = this.interactions$() || [];
+    const filteredInteractions = interactions.filter(interaction => {
+      const pValue = interaction.p_value;
+      const mscor = interaction.mscor;
+      return pValue >= this.minPValue() &&
+             pValue <= this.maxPValue() &&
+             mscor >= this.minMscor() &&
+             mscor <= this.maxMscor();
+    });
+
     return new MatTableDataSource(
-      (this.interactions$() || []).map((interaction) => {
+      filteredInteractions.map((interaction) => {
         const names = BrowseService.getInteractionFullNames(interaction);
         return {
           name_1: names[0],
@@ -101,5 +122,9 @@ export class InteractionsTableComponent implements AfterViewInit {
 
   openDialog(entity: Gene | Transcript) {
     this.modalsService.openNodeDialog(entity);
+  }
+
+  formatLabel(value: number): string {
+    return value.toFixed(2);
   }
 }
