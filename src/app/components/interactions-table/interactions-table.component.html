@@ -5,7 +5,8 @@
         <label>P-value Range: <span class="value-display">{{ minPValue() | number:'1.2-2' }} - {{ maxPValue() |
             number:'1.2-2' }}</span></label>
       </div>
-      <mat-slider [min]="0" [max]="1" [step]="0.01" [discrete]="true" [displayWith]="formatLabel">
+      <mat-slider [min]="pValueLimits().min" [max]="pValueLimits().max" [step]="pValueLimits().step" [discrete]="true"
+        [displayWith]="formatLabel">
         <input [(ngModel)]="minPValue" matSliderStartThumb>
         <input [(ngModel)]="maxPValue" matSliderEndThumb>
       </mat-slider>
@@ -16,7 +17,8 @@
         <label>Mscor Range: <span class="value-display">{{ minMscor() | number:'1.2-2' }} - {{ maxMscor() |
             number:'1.2-2' }}</span></label>
       </div>
-      <mat-slider [min]="0" [max]="1" [step]="0.01" [discrete]="true" [displayWith]="formatLabel">
+      <mat-slider [min]="mscorLimits().min" [max]="mscorLimits().max" [step]="mscorLimits().step" [discrete]="true"
+        [displayWith]="formatLabel">
         <input [(ngModel)]="minMscor" matSliderStartThumb>
         <input [(ngModel)]="maxMscor" matSliderEndThumb>
       </mat-slider>

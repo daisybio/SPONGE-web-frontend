@@ -61,11 +61,31 @@ export class InteractionsTableComponent implements AfterViewInit {
   infoService = inject(InfoService);
   columns = ['name_1', 'name_2', 'mirna', 'correlation', 'mscor', 'padj'];
 
-
   minPValue = model(0);
   maxPValue = model(1);
   minMscor = model(0);
   maxMscor = model(1);
+
+  // Compute data limits
+  pValueLimits = computed(() => {
+    const interactions = this.interactions$() || [];
+    const pValues = interactions.map(i => i.p_value);
+    return {
+      min: Math.min(...pValues),
+      max: Math.max(...pValues),
+      step: Math.pow(10, Math.floor(Math.log10(Math.min(...pValues)))) / 10 // One decimal place smaller than smallest value
+    };
+  });
+
+  mscorLimits = computed(() => {
+    const interactions = this.interactions$() || [];
+    const mscors = interactions.map(i => i.mscor);
+    return {
+      min: Math.min(...mscors),
+      max: Math.max(...mscors),
+      step: 0.001 // Fixed small step for mscor
+    };
+  });
 
   dataSource$ = computed(() => {
     const interactions = this.interactions$() || [];
@@ -106,6 +126,17 @@ export class InteractionsTableComponent implements AfterViewInit {
     effect(() => {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
     });
+
+    // Initialize slider values to data limits
+    effect(() => {
+      const pLimits = this.pValueLimits();
+      const mLimits = this.mscorLimits();
+
+      this.minPValue.set(pLimits.min);
+      this.maxPValue.set(pLimits.max);
+      this.minMscor.set(mLimits.min);
+      this.maxMscor.set(mLimits.max);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -127,6 +158,9 @@ export class InteractionsTableComponent implements AfterViewInit {
   }
 
   formatLabel(value: number): string {
-    return value.toFixed(2);
+    if (value < 0.01) {
+      return value.toExponential(2);
+    }
+    return value.toFixed(3);
   }
 }
