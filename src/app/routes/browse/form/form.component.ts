@@ -12,7 +12,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import {
   BrowseQuery,
@@ -62,45 +62,50 @@ export class FormComponent {
   geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
-  infoService = inject(InfoService);  
+  infoService = inject(InfoService);
   formGroup = new FormGroup({
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
     sortingBetweenness: new FormControl<boolean>(true),
     sortingDegree: new FormControl<boolean>(false),
     sortingEigenvector: new FormControl<boolean>(false),
-    maxNodes: new FormControl<number>(10),
-    minDegree: new FormControl<number>(1),
-    minBetweenness: new FormControl<number>(0.05),
-    minEigen: new FormControl<number>(0.1),
+    maxNodes: new FormControl<number>(10, [Validators.min(0), Validators.max(100)]),
+    minDegree: new FormControl<number>(1, [Validators.min(0), Validators.max(100)]),
+    minBetweenness: new FormControl<number>(0.05, [Validators.min(0), Validators.max(1)]),
+    minEigen: new FormControl<number>(0.1, [Validators.min(0), Validators.max(1)]),
     interactionSorting: new FormControl<string>(
       this.getKeys(this.interactionSortings)[0]
     ),
-    maxInteractions: new FormControl<number>(100),
-    maxPValue: new FormControl<number>(0.05),
-    minMscor: new FormControl<number>(0.1),
+    maxInteractions: new FormControl<number>(100, [Validators.min(0), Validators.max(1000)]),
+    maxPValue: new FormControl<number>(0.05, [Validators.min(0.025), Validators.max(0.2)]),
+    minMscor: new FormControl<number>(0.1, [Validators.min(0.1), Validators.max(1)]),
   });
 
   protected readonly capitalize = _.capitalize;
 
   constructor(private cdr: ChangeDetectorRef) {
     const formSignal = signal(this.formGroup.value);
-    this.formGroup.valueChanges.subscribe((val) => {formSignal.set(val);});
+    this.formGroup.valueChanges.subscribe((val) => {
+      formSignal.set(val);
+      // Mark all controls as touched to show validation messages
+      Object.keys(this.formGroup.controls).forEach(key => {
+        this.formGroup.get(key)?.markAsTouched();
+      });
+    });
 
     this.formGroup.valueChanges.subscribe((config) => {
       if ( !config.sortingDegree && !config.sortingBetweenness && !config.sortingEigenvector ) {
-        // this.formGroup.patchValue({ sortingBetweenness: true });
-        this.formGroup.get('sortingBetweenness')?.setValue(true, { emitEvent: false }); // Ensure UI reflects the change
+        this.formGroup.get('sortingBetweenness')?.setValue(true, { emitEvent: false });
         this.cdr.detectChanges();
         config.sortingBetweenness = true;
       }
     });
 
-    
     effect(() => {
     const config = formSignal();
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
+      if (!this.formGroup.valid) return;
       console.log(config);
       this.browseService.runQuery({
         ...config,
