@@ -36,38 +36,29 @@ const states: Record<
   State,
   {
     edgeColor: string;
-    edgeWidth: number;
     nodeColor: string;
-    nodeSize: number;
     highlight: boolean;
   }
 > = {
   [State.Default]: {
     edgeColor: '#b7b7b7',
-    edgeWidth: 3,
     nodeColor: '#052444',
-    nodeSize: 10,
     highlight: false,
   },
   [State.Hover]: {
     edgeColor: '#ff0000',
-    edgeWidth: 6,
     nodeColor: '#ff0000',
-    nodeSize: 10,
     highlight: true,
   },
   [State.Active]: {
     nodeColor: '#008cff',
     edgeColor: '#008cff',
-    edgeWidth: 6,
-    nodeSize: 15,
     highlight: true,
   },
 };
 
 const sigma_settings: Partial<Settings> = {
   defaultEdgeColor: states[State.Default].edgeColor,
-  minEdgeThickness: states[State.Default].edgeWidth,
   defaultNodeColor: states[State.Default].nodeColor,
   enableEdgeEvents: true,
   allowInvalidContainer: true,
@@ -239,9 +230,6 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     this.sigma
       ?.getGraph()
       .setEdgeAttribute(edge, 'color', states[state].edgeColor);
-    this.sigma
-      ?.getGraph()
-      .setEdgeAttribute(edge, 'size', states[state].edgeWidth);
   }
 
   setNodeState(node: string, state: State) {
@@ -251,9 +239,6 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     this.sigma
       ?.getGraph()
       .setNodeAttribute(node, 'color', states[state].nodeColor);
-    this.sigma
-      ?.getGraph()
-      .setNodeAttribute(node, 'size', states[state].nodeSize);
     this.sigma
       ?.getGraph()
       .setNodeAttribute(node, 'highlighted', states[state].highlight);
