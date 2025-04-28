@@ -21,6 +21,7 @@ import {
   Network,
   NetworkResult,
   OverallCounts,
+  PatientInformation,
   PredictCancerType,
   RunClassPerformance,
   RunInfo,
@@ -543,6 +544,34 @@ export class BackendService {
 
     return (
       (await this.http.getRequest<SurvivalPValue[] | undefined>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
+  }
+
+  async getSampleInfo(
+    dataset_ID?: number,
+    disease_name?: string,
+    disease_subtype?: string,
+    sample_ID?: string,
+  ): Promise<PatientInformation[]> {
+    const route = 'survivalAnalysis/sampleInformation';
+    const query: Query = {
+    };
+    if (dataset_ID) {
+      query['dataset_ID'] = dataset_ID;
+    }
+    if (disease_name) {
+      query['disease_name'] = disease_name;
+    }
+    if (disease_subtype) {
+      query['disease_subtype'] = disease_subtype;
+    }
+    if (sample_ID) {
+      query['sample_ID'] = sample_ID;
+    }
+    return (
+      (await this.http.getRequest<PatientInformation[] | undefined>(
         this.getRequestURL(route, query)
       )) ?? []
     );

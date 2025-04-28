@@ -448,7 +448,25 @@ export class LollipopPlotComponent {
         const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
         e.dataset.disease_subtype = diseaseName;
       }
+    } else {
+      // get the disease subtype
+      const sampleInformation = await this.backend.getSampleInfo(undefined, disease_name)
+      const mapping: { [key: string]: string } = {};
+      sampleInformation.forEach((sample) => {
+        const sampleID = sample.sample_ID;
+        mapping[sampleID] = sample.disease.disease_subtype;
+      });
+      // add the disease name to the expression data in the field disease_subtype
+      console.log('subtype mapping', mapping)
+      for (const e of expressionData) {
+        // sample_ID has the form TCGA-DH-A7UR-01___None. We need TCGA-DH-A7UR as the patient ID (without everything from the last - on)
+        const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
+        e.dataset.disease_subtype = mapping[patientID]
+        console.log('sample ID', e.sample_ID, "patient ID: ", patientID, 'disease subtype', e.dataset.disease_subtype)
+      }
+      console.log('expression data', expressionData)
     }
+
     return this.createHeatmapConfig(expressionData, level, includeMembers, disease_name === 'pancancer');
   }
 
@@ -573,7 +591,6 @@ export class LollipopPlotComponent {
       },
     };
   
-    // Layout configuration with proper typing
     const layout = {
       autosize: true,
       grid: {
@@ -614,7 +631,6 @@ export class LollipopPlotComponent {
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
-
       legend: {
         x: 1.01,
         y: 1,

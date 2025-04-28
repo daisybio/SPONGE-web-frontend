@@ -1,4 +1,5 @@
 import { Data } from "@angular/router";
+import { List } from "lodash";
 
 export interface Dataset {
   data_origin: string;
@@ -248,6 +249,24 @@ export interface WikiPathway {
   gene: Gene;
   wp_key: string;
 }
+
+export interface PatientInformation {
+  dataset: {
+    dataset_ID: number;
+    disease_name: string;
+  }
+  disease_status: number;
+  sample_ID: string;
+  survival_time: number;
+  disease: Disease;
+}
+
+export interface Disease {
+  disease_ID: number;
+  disease_name: string;
+  disease_subtype: string;
+}
+
 
 // from spongEffects
 // route responses
