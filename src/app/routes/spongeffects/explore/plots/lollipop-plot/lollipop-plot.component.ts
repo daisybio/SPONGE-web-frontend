@@ -46,6 +46,7 @@ import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
 import { uniqueSymbol } from 'lodash/common/common';
 import { compute } from '@fullstax/kaplan-meier-estimator';
+import { sample } from 'lodash';
 
 declare var Plotly: any;
 
@@ -148,7 +149,6 @@ export class LollipopPlotComponent {
       if (!version || !cancer || !level || !selectedParamSets) {
         return Promise.resolve([]); 
       }
-      console.log('lillipop resource', selectedParamSets)
       const greyModules = this.getLollipopData(version, cancer, level, topN, selectedParamSets); 
       return greyModules;
     },
@@ -306,7 +306,6 @@ export class LollipopPlotComponent {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
         let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN)
         // tmp = tmp.slice(0, Math.min(topN, data.length))
-        console.log(tmp)
         tmp.map((entry) => {
           data.push({
           ensemblID: entry.gene.ensg_number,
@@ -316,7 +315,6 @@ export class LollipopPlotComponent {
           spongEffects_run_ID: entry.spongEffects_run_ID
         })}
       );
-      console.log('data:', data)
       };
     } else {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
@@ -330,7 +328,6 @@ export class LollipopPlotComponent {
         }));
       };
     }
-    console.log('Lollipop data:', data);
     return data;
   }
 
@@ -413,11 +410,12 @@ export class LollipopPlotComponent {
     const expressionPromises = [];
     let hasMoreData = true;
     let offset = 0;
+    const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
     while (hasMoreData) {
       // Fetch multiple pages in parallel
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
-        return this.backend.getExpression(version, elements, disease_name, undefined, level, CHUNK_SIZE, currentOffset, true);
+        return this.backend.getExpression(version, elements, undefined, dataset_ID, level, CHUNK_SIZE, currentOffset, true);
       });
   
       const pageResults = await Promise.all(pagePromises);
@@ -446,7 +444,7 @@ export class LollipopPlotComponent {
       for (const e of expressionData) {
         const sample_ID = e.sample_ID;
         const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
-        e.dataset.disease_subtype = diseaseName;
+        e.disease_subtype = diseaseName;
       }
     } else {
       // get the disease subtype
@@ -457,15 +455,13 @@ export class LollipopPlotComponent {
         mapping[sampleID] = sample.disease.disease_subtype;
       });
       // add the disease name to the expression data in the field disease_subtype
-      console.log('subtype mapping', mapping)
       for (const e of expressionData) {
         // sample_ID has the form TCGA-DH-A7UR-01___None. We need TCGA-DH-A7UR as the patient ID (without everything from the last - on)
         const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
-        e.dataset.disease_subtype = mapping[patientID]
-        console.log('sample ID', e.sample_ID, "patient ID: ", patientID, 'disease subtype', e.dataset.disease_subtype)
+        e.disease_subtype = mapping[patientID] || 'NA'
       }
-      console.log('expression data', expressionData)
     }
+    console.log("expressionData", expressionData)
 
     return this.createHeatmapConfig(expressionData, level, includeMembers, disease_name === 'pancancer');
   }
@@ -521,50 +517,58 @@ export class LollipopPlotComponent {
     return new MatTableDataSource(tableEntries);
   }
 
-  private subtype_text(e: any): string {
-    let subtype = e.dataset.disease_subtype || 'Unspecific';
-    if (subtype === 'None' || subtype === 'null') {
-      subtype = 'Unspecific';
+  private subtype_text(sample: string, subtype: string): string {
+    if (subtype === 'None' || subtype === 'null' || subtype === null || subtype === undefined) {
+      subtype = 'NA';
     }
-    return `${subtype} (${e.sample_ID})`
+    return `${subtype} (${sample})`
   }
 
   private createHeatmapConfig(
-    expressionData_full: any[], 
+    expressionData: any[], 
     level: string, 
     includeMembers: boolean | undefined,
     is_pancancer: boolean = false
   ): PlotlyData {
 
-    // filter for expression data of subtypes 
-    const expressionData = expressionData_full.filter(e => e.dataset.disease_subtype !== 'None' && e.dataset.disease_subtype !== 'null' && e.dataset.disease_subtype);
+    console.log('createheatmapconfig', expressionData);
 
       // Extract unique subtypes and map them to colors
-    const subtypes = [...new Set(expressionData.map(e => e.dataset.disease_subtype))];
+    const subtypes = [...new Set(expressionData.map(e => e.disease_subtype).filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA' && subtype !== undefined && subtype !== null))];
+    console.log('subtypes', subtypes);
     const subtypeColors: { [key: string]: string } = {};
     subtypes.forEach((subtype, index) => {
-      subtypeColors[index] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
+      subtypeColors[subtype] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
     });
+    // Add a color for unspecific subtype
+    subtypeColors['Unspecific'] = 'grey'; 
+    subtypeColors['None'] = 'grey'; 
+    subtypeColors['null'] = 'grey';
+    subtypeColors['NA'] = 'grey';
+    subtypes.push("NA")
     // this gives for example: 
     // const subtypeColors: { [key: string]: string } = {0: 'hsl(0, 70%, 50%)', 1: 'hsl(90, 70%, 50%)', 2: 'hsl(180, 70%, 50%)', 3: 'hsl(270, 70%, 50%)'}
 
     // Create a color bar for subtypes
+    const samples: {sample_ID: string, disease_subtype: string}[] = [...new Set(expressionData.map(e => ({ sample_ID: e.sample_ID, disease_subtype: e.disease_subtype })))];
     const subtypeBar = {
-      x: expressionData.map(e => e.sample_ID),
-      // y needs to be a list of the length of expressionData
-      y: expressionData.map(e => 1),
+      x: samples.map(s => s.sample_ID),
+      // y needs to be a list of the length of the samples
+      y: Array(samples.length).fill(1),
       type: 'bar',
       marker: {
-        color: expressionData.map(e => subtypeColors[subtypes.indexOf(e.dataset.disease_subtype).toString()]),
+        color: samples.map(s => subtypeColors[s.disease_subtype] || 'grey'),
       },
       hoverinfo: 'text',
       // text should contain the subtype and the sample ID
-      text: expressionData.map(e => this.subtype_text(e)),
+      text: samples.map(s => this.subtype_text(s.sample_ID, s.disease_subtype)),
       showscale: false,
       xaxis: 'x',
       yaxis: 'y2',
       showlegend: false,
     };
+
+    console.log('z', expressionData.map(e => e.expr_value))
   
     // Main heatmap trace
     const heatmap = {
@@ -592,6 +596,7 @@ export class LollipopPlotComponent {
     };
   
     const layout = {
+      bargap: 0,
       autosize: true,
       grid: {
         rows: 2,
@@ -647,13 +652,15 @@ export class LollipopPlotComponent {
     };
 
     // Add a custom legend for subtypes
+    console.log("subtypes", subtypes)
+    console.log("subtypeColors", subtypeColors)
     const subtypeLegend = subtypes.map((subtype, index) => ({
       x: [null], // Off-screen point
       y: [null],
       type: 'scatter',
       mode: 'markers',
       marker: {
-        color: subtypeColors[index.toString()],
+        color: subtypeColors[subtype],
         size: 10
       },
       name: subtype,

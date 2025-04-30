@@ -175,14 +175,14 @@ export interface CeRNAExpression {
 }
 
 export interface GeneExpression {
-  dataset: Dataset;
+  disease_subtype: string;
   expr_value: number;
   gene: Gene;
   sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  dataset: Dataset;
+  disease_subtype: string;
   expr_value: number;
   sample_ID: string;
   transcript: Transcript;

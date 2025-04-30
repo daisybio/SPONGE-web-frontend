@@ -223,7 +223,7 @@ export class BackendService {
   async getExpression(
     version: number,
     identifiers: string[],
-    disease_name: string,
+    disease_name: string | undefined,
     dataset_ID: number | undefined,
     level: 'gene' | 'transcript',
     limit: number | undefined = undefined,

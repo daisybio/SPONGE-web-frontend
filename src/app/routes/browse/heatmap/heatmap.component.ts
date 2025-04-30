@@ -32,12 +32,11 @@ export class HeatmapComponent implements OnDestroy {
   refreshSignal = input.required<any>();
   heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
 
-  private subtype_text(e: any): string {
-    let subtype = e.dataset.disease_subtype || 'Unspecific';
-    if (subtype === 'None' || subtype === 'null') {
-      subtype = 'Unspecific';
+  private subtype_text(sample: string, subtype: string): string {
+    if (subtype === 'None' || subtype === 'null' || subtype === null || subtype === undefined) {
+      subtype = 'NA';
     }
-    return `${subtype} (${e.sample_ID})`
+    return `${subtype} (${sample})`
   }
 
 
@@ -81,7 +80,7 @@ export class HeatmapComponent implements OnDestroy {
         // Fetch multiple pages in parallel
         const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
           const currentOffset = offset + i * CHUNK_SIZE;
-          return this.backend.getExpression(version, identifiers, disease.disease_name, disease.dataset_ID, level, CHUNK_SIZE, currentOffset, true);
+          return this.backend.getExpression(version, identifiers, undefined, disease.dataset_ID, level, CHUNK_SIZE, currentOffset, true);
         });
     
         const pageResults = await Promise.all(pagePromises);
@@ -101,7 +100,7 @@ export class HeatmapComponent implements OnDestroy {
       }
       const expressionData = expressionPromises.flat();
 
-          // special case Pancancer: there is no disease name in the expression response so we need to fetch this separately 
+      // special case Pancancer: there is no disease name in the expression response so we need to fetch this separately 
       // because we want to show it in the heatmap
       if (disease.disease_name === 'pancancer') {
         // fetch the mapping from TSS codes to disease names
@@ -110,13 +109,11 @@ export class HeatmapComponent implements OnDestroy {
         for (const e of expressionData) {
           const sample_ID = e.sample_ID;
           const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
-          e.dataset.disease_subtype = diseaseName;
+          e.disease_subtype = diseaseName;
         }
       } else {
         // get the disease subtype
-        console.log('disease name', disease.disease_name)
         const sampleInformation = await this.backend.getSampleInfo(undefined, disease.disease_name)
-        console.log('sample information', sampleInformation)
         const mapping: { [key: string]: string } = {};
         if (sampleInformation.length > 0) {
           sampleInformation.forEach((sample) => {
@@ -124,43 +121,19 @@ export class HeatmapComponent implements OnDestroy {
             mapping[sampleID] = sample.disease.disease_subtype;
           });
           // add the disease name to the expression data in the field disease_subtype
-          console.log('subtype mapping', mapping)
           for (const e of expressionData) {
-            // sample_ID has the form TCGA-DH-A7UR-01___None. We need TCGA-DH-A7UR as the patient ID (without everything from the last - on)
+            // sample_ID has the form TCGA-DH-A7UR-01. We need TCGA-DH-A7UR as the patient ID (without everything from the last - on)
             const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
-            e.dataset.disease_subtype = mapping[patientID]
-            console.log('sample ID', e.sample_ID, "patient ID: ", patientID, 'disease subtype', e.dataset.disease_subtype)
+            e.disease_subtype = mapping[patientID] || 'NA'
           }
-          console.log('expression data', expressionData)
         }
       }
 
-      const expressionMap = new Map<string, Map<string, number>>();
-      const samples = new Set<string>();
-      for (const expr of expressionData) {
-        const identifier =
-          'gene' in expr
-            ? expr.gene.gene_symbol || expr.gene.ensg_number
-        : expr.transcript.enst_number;
-
-        if (!expressionMap.has(identifier)) {
-          expressionMap.set(identifier, new Map<string, number>());
-        }
-        samples.add(expr.sample_ID);
-        expressionMap.get(identifier)!.set(expr.sample_ID, expr.expr_value);
-      }
-
-
-      const geneSymbols = Array.from(expressionMap.keys());
-      const sampleIDs = Array.from(samples);
-      const values = geneSymbols.map((gene) =>
-        sampleIDs.map((sample) => expressionMap.get(gene)!.get(sample)),
-      );
-
+      const samples: {sample_ID: string, disease_subtype: string}[] = [...new Set(expressionData.map(e => ({ sample_ID: e.sample_ID, disease_subtype: e.disease_subtype || 'NA' })))];
       const heatmap =  {
-        x: sampleIDs,
-        y: geneSymbols,
-        z: values,
+        z: expressionData.map(e => e.expr_value),
+        x: expressionData.map(e => e.sample_ID),
+        y: expressionData.map(e => 'gene' in e ? e.gene.gene_symbol : e.transcript.enst_number),
         type: 'heatmap',
         zmid: 0,
         showscale: true, 
@@ -180,32 +153,36 @@ export class HeatmapComponent implements OnDestroy {
       };
 
       // Extract unique subtypes and map them to colors
-      const subtypes = [...new Set(expressionData.map(e => e.dataset.disease_subtype))];
+      const subtypes = [...new Set(expressionData.map(e => e.disease_subtype).filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA' && subtype !== undefined && subtype !== null))];
       if (subtypes.length > 1) {
         const subtypeColors: { [key: string]: string } = {};
         subtypes.forEach((subtype, index) => {
-          subtypeColors[index] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
+          subtypeColors[subtype!] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`; // Generate unique colors
         });
+        // Add a color for unspecific subtype
+        subtypeColors['Unspecific'] = 'grey'; 
+        subtypeColors['None'] = 'grey'; 
+        subtypeColors['null'] = 'grey';
+        subtypeColors['NA'] = 'grey';
+        subtypes.push("NA")
 
         // Create a color bar for subtypes
         const subtypeBar = {
-          x: expressionData.map(e => e.sample_ID),
-          // y needs to be a list of the length of expressionData
-          y: expressionData.map(e => 1),
+          x: samples.map(s => s.sample_ID),
+          // y needs to be a list of the length of the samples
+          y: Array(samples.length).fill(1),
           type: 'bar',
           marker: {
-            color: expressionData.map(e => subtypeColors[subtypes.indexOf(e.dataset.disease_subtype).toString()]),
+            color: samples.map(s => subtypeColors[s.disease_subtype] || 'grey'),
           },
           hoverinfo: 'text',
           // text should contain the subtype and the sample ID
-          text: expressionData.map(e => this.subtype_text(e)),
+          text: samples.map(s => this.subtype_text(s.sample_ID, s.disease_subtype)),
           showscale: false,
           xaxis: 'x',
           yaxis: 'y2',
           showlegend: false,
         };
-
-
 
         // Add a custom legend for subtypes
         const subtypeLegend = subtypes.map((subtype, index) => ({
@@ -214,7 +191,7 @@ export class HeatmapComponent implements OnDestroy {
           type: 'scatter',
           mode: 'markers',
           marker: {
-            color: subtypeColors[index.toString()],
+            color: subtypeColors[subtype || 'NA'],
             size: 10
           },
           name: subtype,
@@ -251,6 +228,7 @@ export class HeatmapComponent implements OnDestroy {
     const heatmap = this.heatmap().nativeElement;
 
     const layout = {
+      bargap: 0,
       autosize: true,
       grid: {
         rows: 2,
@@ -308,14 +286,12 @@ export class HeatmapComponent implements OnDestroy {
       // if there are not subtypes, remove the second yaxis
       layout.yaxis2.domain = [0, 0]
       layout.yaxis2.domain = [1, 1]
-      console.log('if', data)
     };
 
     if (this.browseService.disease$() && this.browseService.disease$()!.disease_name === 'pancancer') {
       // if disease is pancancer, put the legend below the plot
       layout.legend!.x = 1.15;
     }
-
 
     Plotly.newPlot(heatmap, data, layout, config);
     // Plotly.newPlot(heatmap, [subtypeBar, heatmap, ..subtypeLegend], layout, {
