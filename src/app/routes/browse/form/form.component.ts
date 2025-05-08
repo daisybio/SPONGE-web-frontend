@@ -12,12 +12,14 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import {
-  BrowseQuery,
-  InteractionSorting,
-} from '../../../interfaces';
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { BrowseQuery, InteractionSorting } from '../../../interfaces';
 import { BrowseService } from '../../../services/browse.service';
 import { VersionsService } from '../../../services/versions.service';
 import _ from 'lodash';
@@ -48,7 +50,7 @@ import { MatCardModule } from '@angular/material/card';
     MatCardModule,
     InfoComponent,
     MatButtonModule,
-    CommonModule
+    CommonModule,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
@@ -69,16 +71,37 @@ export class FormComponent {
     sortingBetweenness: new FormControl<boolean>(true),
     sortingDegree: new FormControl<boolean>(false),
     sortingEigenvector: new FormControl<boolean>(false),
-    maxNodes: new FormControl<number>(10, [Validators.min(0), Validators.max(100)]),
-    minDegree: new FormControl<number>(1, [Validators.min(0), Validators.max(100)]),
-    minBetweenness: new FormControl<number>(0.05, [Validators.min(0), Validators.max(1)]),
-    minEigen: new FormControl<number>(0.1, [Validators.min(0), Validators.max(1)]),
+    maxNodes: new FormControl<number>(10, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    minDegree: new FormControl<number>(1, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    minBetweenness: new FormControl<number>(0.05, [
+      Validators.min(0),
+      Validators.max(1),
+    ]),
+    minEigen: new FormControl<number>(0.1, [
+      Validators.min(0),
+      Validators.max(1),
+    ]),
     interactionSorting: new FormControl<string>(
       this.getKeys(this.interactionSortings)[0]
     ),
-    maxInteractions: new FormControl<number>(100, [Validators.min(0), Validators.max(1000)]),
-    maxPValue: new FormControl<number>(0.05, [Validators.min(0.025), Validators.max(0.2)]),
-    minMscor: new FormControl<number>(0.1, [Validators.min(0.1), Validators.max(1)]),
+    maxInteractions: new FormControl<number>(100, [
+      Validators.min(0),
+      Validators.max(1000),
+    ]),
+    maxPValue: new FormControl<number>(0.05, [
+      Validators.min(0.025),
+      Validators.max(0.2),
+    ]),
+    minMscor: new FormControl<number>(0.1, [
+      Validators.min(0.1),
+      Validators.max(1),
+    ]),
   });
 
   protected readonly capitalize = _.capitalize;
@@ -88,21 +111,27 @@ export class FormComponent {
     this.formGroup.valueChanges.subscribe((val) => {
       formSignal.set(val);
       // Mark all controls as touched to show validation messages
-      Object.keys(this.formGroup.controls).forEach(key => {
+      Object.keys(this.formGroup.controls).forEach((key) => {
         this.formGroup.get(key)?.markAsTouched();
       });
     });
 
     this.formGroup.valueChanges.subscribe((config) => {
-      if ( !config.sortingDegree && !config.sortingBetweenness && !config.sortingEigenvector ) {
-        this.formGroup.get('sortingBetweenness')?.setValue(true, { emitEvent: false });
+      if (
+        !config.sortingDegree &&
+        !config.sortingBetweenness &&
+        !config.sortingEigenvector
+      ) {
+        this.formGroup
+          .get('sortingBetweenness')
+          ?.setValue(true, { emitEvent: false });
         this.cdr.detectChanges();
         config.sortingBetweenness = true;
       }
     });
 
     effect(() => {
-    const config = formSignal();
+      const config = formSignal();
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
       if (!this.formGroup.valid) return;
@@ -119,14 +148,17 @@ export class FormComponent {
   }
 
   getKeys(enumType: any): string[] {
-    return Object.keys(enumType)
+    return Object.keys(enumType);
   }
 
   getEntries(enumType: any): {
     key: string;
     value: string;
-}[] {
-    return Object.entries(enumType).map(([key, value]) => ({key, value: value as string }));
+  }[] {
+    return Object.entries(enumType).map(([key, value]) => ({
+      key,
+      value: value as string,
+    }));
   }
 
   trackByKey(item: any): string {
