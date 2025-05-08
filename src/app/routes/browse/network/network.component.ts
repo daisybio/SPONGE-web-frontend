@@ -92,6 +92,8 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   level$ = this.browseService.level$;
+  allNodesSelected$ = this.browseService.allNodesSelected$;
+  allEdgesSelected$ = this.browseService.allEdgesSelected$;
 
   circleExplanation$: Signal<string> = computed(() => {
     switch (this.level$()) {
@@ -282,5 +284,13 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     Object.entries(nodeStates).forEach(([node, state]) => {
       this.setNodeState(node, this.determineState(state));
     });
+  }
+
+  setAllNodesState(state: boolean) {
+    this.browseService.setAllNodesState(state);
+  }
+
+  setAllEdgesState(state: boolean) {
+    this.browseService.setAllEdgesState(state);
   }
 }

@@ -7,6 +7,8 @@
   <app-info title="What do I see?">
     <p>What you see is a subset of a large ceRNA network obtained by applying SPONGE to data from TCGA. The entire
       network is too large to visualize here. You can adjust the filter criteria using the controls on the left.</p>
+    <p>The size of the nodes is proportional to the degree of the node. The thickness of the edges is proportional to
+      the mscor value of the interaction.</p>
     <h3>Shapes</h3>
     <table>
       <tr>
@@ -29,4 +31,8 @@
     <mat-icon>open_in_new</mat-icon>
     Functional enrichment analysis using g:Profiler
   </a>
+  <button (click)="setAllNodesState(!allNodesSelected$())" mat-stroked-button>{{allNodesSelected$() ? 'Deselect' :
+    'Select'}} all visible nodes</button>
+  <button (click)="setAllEdgesState(!allEdgesSelected$())" mat-stroked-button>{{allEdgesSelected$() ? 'Deselect' :
+    'Select'}} all visible edges</button>
 </div>

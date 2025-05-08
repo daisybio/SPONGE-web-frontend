@@ -451,12 +451,14 @@ export class BrowseService {
     const graph = new Graph();
 
     // Find max node degree for normalization
-    const maxNodeDegree = Math.max(...nodes.map(node => node.node_degree));
+    const maxNodeDegree = Math.max(...nodes.map((node) => node.node_degree));
 
     // Find max mscor for normalization
-    const maxMscor = Math.max(...interactions.map(interaction =>
-      'gene1' in interaction ? interaction.mscor : interaction.mscor
-    ));
+    const maxMscor = Math.max(
+      ...interactions.map((interaction) =>
+        'gene1' in interaction ? interaction.mscor : interaction.mscor
+      )
+    );
 
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
@@ -465,7 +467,7 @@ export class BrowseService {
       );
 
       // Calculate normalized node size based on degree (range: 5-20)
-      const normalizedSize = 5 + (15 * (node.node_degree / maxNodeDegree));
+      const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);
 
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
@@ -484,14 +486,55 @@ export class BrowseService {
       }
 
       // Calculate normalized edge size based on mscor (range: 1-5)
-      const mscor = 'gene1' in interaction ? interaction.mscor : interaction.mscor;
-      const normalizedSize = 1 + (6 * (mscor / maxMscor));
+      const mscor =
+        'gene1' in interaction ? interaction.mscor : interaction.mscor;
+      const normalizedSize = 1 + 6 * (mscor / maxMscor);
 
       graph.addEdge(ids[0], ids[1], {
-        size: normalizedSize
+        size: normalizedSize,
       });
     });
 
     return graph;
   }
+
+  setAllNodesState(state: boolean) {
+    this._nodeStates$.update((entityStates) => {
+      return Object.fromEntries(
+        Object.keys(entityStates).map((key) => [
+          key,
+          {
+            ...entityStates[key],
+            [State.Active]: state,
+          },
+        ])
+      );
+    });
+  }
+
+  allNodesSelected$ = computed(() => {
+    return Object.values(this._nodeStates$()).every(
+      (state) => state[State.Active]
+    );
+  });
+
+  setAllEdgesState(state: boolean) {
+    this._edgeStates$.update((entityStates) => {
+      return Object.fromEntries(
+        Object.keys(entityStates).map((key) => [
+          key,
+          {
+            ...entityStates[key],
+            [State.Active]: state,
+          },
+        ])
+      );
+    });
+  }
+
+  allEdgesSelected$ = computed(() => {
+    return Object.values(this._edgeStates$()).every(
+      (state) => state[State.Active]
+    );
+  });
 }
