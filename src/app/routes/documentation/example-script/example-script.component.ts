@@ -32,7 +32,4 @@ export class ExampleScriptComponent {
   async copy() {
     await navigator.clipboard.writeText(await this.content$);
   }
-  constructor(){
-    console.log(this.file)
-  }
 }
