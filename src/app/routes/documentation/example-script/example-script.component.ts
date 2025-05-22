@@ -6,6 +6,7 @@ import { AsyncPipe } from '@angular/common';
 import FileSaver from 'file-saver';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { VersionsService } from '../../../services/versions.service';
 
 @Component({
   selector: 'app-example-script',
@@ -14,13 +15,17 @@ import { MatIcon } from '@angular/material/icon';
   styleUrl: './example-script.component.scss',
 })
 export class ExampleScriptComponent {
+  versionService = inject(VersionsService);
+  version = this.versionService.versionReadOnly()();
+  file = "example_v" + this.version + ".py";
+
   http = inject(HttpService);
 
-  content$ = this.http.getHtmlRequest('./example.py');
+  content$ = this.http.getHtmlRequest('./' + this.file);
 
   async download() {
     const content = await this.content$;
-    const file = new File([content], 'example.py');
+    const file = new File([content], this.file);
     FileSaver.saveAs(file);
   }
 
