@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
 import { InteractionsTableComponent } from '../../interactions-table/interactions-table.component';
 
@@ -9,9 +9,12 @@ import { InteractionsTableComponent } from '../../interactions-table/interaction
   styleUrl: './interactions.component.scss',
 })
 export class InteractionsComponent {
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
 
-  interactions$ = this.browseService.interactions$;
-  level$ = this.browseService.level$;
-  disease$ = this.browseService.disease$;
+  interactions$ = computed(() => this.browseService().interactions$());
+  activeInteractions$ = computed(() =>
+    this.browseService().activeInteractions$()
+  );
+  level$ = computed(() => this.browseService().level$());
+  disease$ = computed(() => this.browseService().disease$());
 }

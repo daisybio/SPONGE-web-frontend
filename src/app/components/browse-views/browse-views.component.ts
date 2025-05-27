@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -42,17 +42,17 @@ import { capitalize } from 'lodash';
 export class BrowseViewsComponent {
   refresh$ = signal(0);
   versionService = inject(VersionsService);
-  browseService = inject(BrowseService);
-  level = this.browseService.level$;
+  browseService = input.required<BrowseService>();
+  level = computed(() => this.browseService().level$());
   version$ = this.versionService.versionReadOnly();
-  hasData$ = computed(() => this.browseService.nodes$().length > 0);
-  isLoading$ = this.browseService.isLoading$;
-  rawDataURL$ = this.browseService.rawDataURL();
+  hasData$ = computed(() => this.browseService().nodes$().length > 0);
+  isLoading$ = computed(() => this.browseService().isLoading$());
+  rawDataURL$ = computed(() => this.browseService().rawDataURL()());
   hasNetworkResults$ = computed(
-    () => this.browseService.networkResults$() !== undefined
+    () => this.browseService().networkResults$() !== undefined
   );
   hasGseaContrasts$ = computed(
-    () => this.browseService.possibleComparisons$().length > 0
+    () => this.browseService().possibleComparisons$().length > 0
   );
   protected readonly capitalize = capitalize;
 

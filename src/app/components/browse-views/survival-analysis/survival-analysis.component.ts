@@ -1,4 +1,4 @@
-import { Component, inject, input, Signal } from '@angular/core';
+import { Component, computed, inject, input, Signal } from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
 import { KMPlotComponent } from './kmplot/kmplot.component';
 import { GeneNode } from '../../../interfaces';
@@ -10,8 +10,8 @@ import { GeneNode } from '../../../interfaces';
   styleUrl: './survival-analysis.component.scss',
 })
 export class SurvivalAnalysisComponent {
-  browseService = inject(BrowseService);
-  nodes$ = this.browseService.activeNodes$ as Signal<GeneNode[]>;
+  browseService = input.required<BrowseService>();
+  nodes$ = computed(() => this.browseService().activeNodes$() as GeneNode[]);
   refresh$ = input<any>(0, { alias: 'refresh' });
-  disease$ = this.browseService.disease$;
+  disease$ = computed(() => this.browseService().disease$());
 }

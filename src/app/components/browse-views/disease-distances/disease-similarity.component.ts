@@ -26,14 +26,14 @@ declare const Plotly: any;
   styleUrl: './disease-similarity.component.scss',
 })
 export class DiseaseSimilarityComponent implements OnDestroy {
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   mode$ = model<'scatter' | 'heatmap'>('scatter');
   refreshSignal = input.required<any>();
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
   heatmapDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
-  dataset = this.browseService.disease$;
+  dataset = computed(() => this.browseService().disease$());
 
-  data$ = this.browseService.networkResults$;
+  data$ = computed(() => this.browseService().networkResults$());
   plotData$ = computed(() => {
     const data = this.data$();
     if (!data) return;

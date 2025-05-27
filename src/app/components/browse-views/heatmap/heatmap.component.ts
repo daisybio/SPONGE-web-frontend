@@ -24,20 +24,20 @@ declare const Plotly: any;
   styleUrl: './heatmap.component.scss',
 })
 export class HeatmapComponent implements OnDestroy {
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   backend = inject(BackendService);
   versions = inject(VersionsService);
 
-  level$ = this.browseService.level$;
+  level$ = computed(() => this.browseService().level$());
   refreshSignal = input.required<any>();
   heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
 
   plotData = resource({
     request: computed(() => {
       return {
-        nodes: this.browseService.nodes$(),
-        disease: this.browseService.disease$(),
-        level: this.browseService.level$(),
+        nodes: this.browseService().nodes$(),
+        disease: this.browseService().disease$(),
+        level: this.browseService().level$(),
         version: this.versions.versionReadOnly()(),
       };
     }),
@@ -55,7 +55,7 @@ export class HeatmapComponent implements OnDestroy {
         version,
         identifiers,
         disease,
-        level,
+        level
       );
 
       const expressionMap = new Map<string, Map<string, number>>();
@@ -75,7 +75,7 @@ export class HeatmapComponent implements OnDestroy {
       const geneSymbols = Array.from(expressionMap.keys());
       const sampleIDs = Array.from(samples);
       const values = geneSymbols.map((gene) =>
-        sampleIDs.map((sample) => expressionMap.get(gene)!.get(sample)),
+        sampleIDs.map((sample) => expressionMap.get(gene)!.get(sample))
       );
 
       return {
@@ -99,7 +99,9 @@ export class HeatmapComponent implements OnDestroy {
     const heatmap = this.heatmap().nativeElement;
 
     Plotly.newPlot(heatmap, [data], {
-      title: `${capitalize(this.level$())} Expression Heatmap - ${capitalize(this.browseService.disease$()?.disease_name)}`,
+      title: `${capitalize(this.level$())} Expression Heatmap - ${capitalize(
+        this.browseService().disease$()?.disease_name
+      )}`,
       xaxis: {
         title: 'Sample ID',
         automargin: true,

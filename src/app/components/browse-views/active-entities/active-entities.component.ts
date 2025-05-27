@@ -5,6 +5,7 @@ import {
   inject,
   linkedSignal,
   model,
+  input,
 } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowseService } from '../../../services/browse.service';
@@ -32,22 +33,22 @@ export class ActiveEntitiesComponent {
   protected BrowseService = BrowseService;
   protected activeTabIndex = model<number>(0);
   protected modalsService = inject(ModalsService);
-  protected readonly browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
 
   constructor() {
     effect(() => {
       this.activeTabIndex.set(
-        this.browseService.lastClicked() === 'node' ? 0 : 1
+        this.browseService().lastClicked() === 'node' ? 0 : 1
       );
     });
   }
 
-  nodes$ = this.browseService.activeNodes$;
+  nodes$ = computed(() => this.browseService().activeNodes$());
   gProfilerUrl = computed(() =>
     BrowseService.getGProfilerUrlForNodes(this.nodes$())
   );
-  edges$ = this.browseService.activeInteractions$;
-  level$ = this.browseService.level$;
+  edges$ = computed(() => this.browseService().activeInteractions$());
+  level$ = computed(() => this.browseService().level$());
 
   openInteractionModal(
     interaction: GeneInteraction | TranscriptInteraction
@@ -55,7 +56,7 @@ export class ActiveEntitiesComponent {
     this.dialog.open(InteractionModalComponent, {
       data: {
         interaction: interaction,
-        disease: this.browseService.disease$(),
+        disease: this.browseService().disease$(),
       },
     });
   }
