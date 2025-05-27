@@ -25,7 +25,7 @@ import { MatAnchor, MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { NodeCircleProgram } from 'sigma/rendering';
 import { NodeSquareProgram } from '@sigma/node-square';
-import { InfoComponent } from '../../../components/info/info.component';
+import { InfoComponent } from '../../info/info.component';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
