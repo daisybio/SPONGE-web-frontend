@@ -11,7 +11,6 @@ import { SurvivalAnalysisComponent } from '../../components/browse-views/surviva
 import { ActiveEntitiesComponent } from '../../components/browse-views/active-entities/active-entities.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIcon } from '@angular/material/icon';
-import { MatAnchor } from '@angular/material/button';
 import { VersionsService } from '../../services/versions.service';
 import { NodesComponent } from '../../components/browse-views/nodes/nodes.component';
 import { GSEAComponent } from '../../components/browse-views/gsea/gsea.component';

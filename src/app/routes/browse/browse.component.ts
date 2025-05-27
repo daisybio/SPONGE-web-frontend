@@ -1,24 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { FormComponent } from './form/form.component';
-import { InteractionsComponent } from '../../components/browse-views/interactions/interactions.component';
-import { NetworkComponent } from '../../components/browse-views/network/network.component';
-import { HeatmapComponent } from '../../components/browse-views/heatmap/heatmap.component';
-import { BrowseService } from '../../services/browse.service';
-import { SurvivalAnalysisComponent } from '../../components/browse-views/survival-analysis/survival-analysis.component';
-import { ActiveEntitiesComponent } from '../../components/browse-views/active-entities/active-entities.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIcon } from '@angular/material/icon';
-import { MatAnchor } from '@angular/material/button';
-import { VersionsService } from '../../services/versions.service';
-import { NodesComponent } from '../../components/browse-views/nodes/nodes.component';
-import { GSEAComponent } from '../../components/browse-views/gsea/gsea.component';
-import { DiseaseSimilarityComponent } from '../../components/browse-views/disease-distances/disease-similarity.component';
-import { fromEvent } from 'rxjs';
-import { capitalize } from 'lodash';
 import { BrowseViewsComponent } from '../../components/browse-views/browse-views.component';
 
 @Component({
