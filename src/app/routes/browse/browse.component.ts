@@ -6,6 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormComponent } from './form/form.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowseViewsComponent } from '../../components/browse-views/browse-views.component';
+import { BrowseService } from '../../services/browse.service';
 
 @Component({
   selector: 'app-browse',
@@ -20,5 +21,8 @@ import { BrowseViewsComponent } from '../../components/browse-views/browse-views
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss',
+  providers: [BrowseService],
 })
-export class BrowseComponent {}
+export class BrowseComponent {
+  constructor(public browseService: BrowseService) {}
+}

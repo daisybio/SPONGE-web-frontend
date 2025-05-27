@@ -59,13 +59,15 @@ import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.co
 })
 export class GSEAComponent {
   versionsService = inject(VersionsService);
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   backend = inject(BackendService);
   dialog = inject(MatDialog);
   refresh$ = input.required<any>();
 
-  possibleComparisons$ = this.browseService.possibleComparisons$;
-  globalDisease$ = this.browseService.disease$;
+  possibleComparisons$ = computed(() =>
+    this.browseService().possibleComparisons$()
+  );
+  globalDisease$ = computed(() => this.browseService().disease$());
   localDisease$ = signal<Dataset | undefined>(undefined);
   possibleGlobalConditions$ = computed(() =>
     this.getConditionsForDisease(
