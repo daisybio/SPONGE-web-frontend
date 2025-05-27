@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+When writing angular code, always use signals and the new @if, @else, @for and @empty control flow.
+Component inputs and outputs should be implemented using the signal-based API.
+Angular Material is installed and should be used for the UI.
