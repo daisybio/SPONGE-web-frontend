@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
-import { InteractionsTableComponent } from '../../../components/interactions-table/interactions-table.component';
+import { InteractionsTableComponent } from '../../interactions-table/interactions-table.component';
 
 @Component({
   selector: 'app-interactions',

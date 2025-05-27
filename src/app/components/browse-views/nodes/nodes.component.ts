@@ -12,8 +12,8 @@ import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
-import { InfoComponent } from '../../../components/info/info.component';
-import { ModalsService } from '../../../components/modals-service/modals.service';
+import { InfoComponent } from '../../info/info.component';
+import { ModalsService } from '../../modals-service/modals.service';
 
 @Component({
   selector: 'app-nodes',
@@ -47,7 +47,7 @@ export class NodesComponent implements AfterViewInit {
           node_degree: node.node_degree,
           obj: 'gene' in node ? node.gene : node.transcript,
         };
-      }),
+      })
     );
   }
 

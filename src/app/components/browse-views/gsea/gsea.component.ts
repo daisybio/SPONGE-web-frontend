@@ -14,7 +14,7 @@ import { BackendService } from '../../../services/backend.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Comparison, Dataset } from '../../../interfaces';
-import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
+import { DiseaseSelectorComponent } from '../../disease-selector/disease-selector.component';
 import { MatCardModule } from '@angular/material/card';
 import {
   MatButtonToggle,

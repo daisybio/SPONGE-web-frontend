@@ -3,7 +3,6 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { FormComponent } from './form/form.component';
 import { InteractionsComponent } from '../../components/browse-views/interactions/interactions.component';
 import { NetworkComponent } from '../../components/browse-views/network/network.component';
 import { HeatmapComponent } from '../../components/browse-views/heatmap/heatmap.component';
@@ -19,20 +18,48 @@ import { GSEAComponent } from '../../components/browse-views/gsea/gsea.component
 import { DiseaseSimilarityComponent } from '../../components/browse-views/disease-distances/disease-similarity.component';
 import { fromEvent } from 'rxjs';
 import { capitalize } from 'lodash';
-import { BrowseViewsComponent } from '../../components/browse-views/browse-views.component';
 
 @Component({
-  selector: 'app-browse',
+  selector: 'app-browse-views',
   imports: [
     MatSidenavModule,
     MatTabsModule,
     ReactiveFormsModule,
     MatExpansionModule,
-    FormComponent,
+    InteractionsComponent,
+    NetworkComponent,
+    HeatmapComponent,
+    SurvivalAnalysisComponent,
+    ActiveEntitiesComponent,
     MatProgressSpinnerModule,
-    BrowseViewsComponent,
+    MatIcon,
+    NodesComponent,
+    GSEAComponent,
+    DiseaseSimilarityComponent,
   ],
-  templateUrl: './browse.component.html',
-  styleUrl: './browse.component.scss',
+  templateUrl: './browse-views.component.html',
+  styleUrl: './browse-views.component.scss',
 })
-export class BrowseComponent {}
+export class BrowseViewsComponent {
+  refresh$ = signal(0);
+  versionService = inject(VersionsService);
+  browseService = inject(BrowseService);
+  level = this.browseService.level$;
+  version$ = this.versionService.versionReadOnly();
+  hasData$ = computed(() => this.browseService.nodes$().length > 0);
+  isLoading$ = this.browseService.isLoading$;
+  rawDataURL$ = this.browseService.rawDataURL();
+  hasNetworkResults$ = computed(
+    () => this.browseService.networkResults$() !== undefined
+  );
+  hasGseaContrasts$ = computed(
+    () => this.browseService.possibleComparisons$().length > 0
+  );
+  protected readonly capitalize = capitalize;
+
+  constructor() {
+    fromEvent(window, 'resize').subscribe(() => this.refresh());
+  }
+
+  refresh = () => this.refresh$.update((v) => v + 1);
+}
