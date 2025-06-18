@@ -1,62 +1,13 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
     <app-form></app-form>
-    @if (rawDataURL$(); as rawDataURL) {
+    <!-- @if (rawDataURL$(); as rawDataURL) {
     <div class="card-container">
       <a target="_blank" [href]="rawDataURL" mat-flat-button>View raw data</a>
     </div>
-    }
+    }-->
   </mat-drawer>
   <mat-drawer-content>
-    @if (!isLoading$()) {
-    @if (hasData$()) {
-    <mat-tab-group [preserveContent]="false" (selectedTabChange)="refresh()">
-      <mat-tab label="Network">
-        <div style="display: flex; flex-direction: row">
-          <app-network [refreshSignal]="refresh$()" style="min-width: 500px; flex-grow: 3"></app-network>
-          <app-active-entities style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
-        </div>
-      </mat-tab>
-      @if (level() == 'gene') {
-      <mat-tab label="Survival analysis">
-        <app-survival-analysis [refresh]="refresh$()"></app-survival-analysis>
-      </mat-tab>
-      }
-      <mat-tab label="Expression heatmap">
-        <app-heatmap [refreshSignal]="refresh$()"></app-heatmap>
-      </mat-tab>
-      <mat-tab [label]="(capitalize(level()) || 'Gene') + 's'">
-        <app-nodes></app-nodes>
-      </mat-tab>
-      <mat-tab label="Interactions">
-        <app-interactions></app-interactions>
-      </mat-tab>
-      @if (version$() > 1) {
-      <mat-tab label="Gene set enrichment">
-        <app-gsea [refresh$]="refresh$"></app-gsea>
-      </mat-tab>
-      }
-      <mat-tab label="Disease similarities" [disabled]="!hasNetworkResults$()">
-        <app-disease-similarity [refreshSignal]="refresh$()"></app-disease-similarity>
-      </mat-tab>
-    </mat-tab-group>
-    } @else {
-    <div class="card-container" style="margin-top: 50px">
-      <mat-icon>
-        warning
-      </mat-icon>
-      <p>
-        The configuration you have selected does not have any data.
-      </p>
-      <p>
-        Consider increasing the thresholds or selecting a different configuration.
-      </p>
-    </div>
-    }
-    } @else {
-    <div class="spinner-container">
-      <mat-spinner mode="indeterminate"></mat-spinner>
-    </div>
-    }
+    <app-browse-views [browseService]="browseService"></app-browse-views>
   </mat-drawer-content>
 </mat-drawer-container>
