@@ -26,7 +26,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { NodeCircleProgram } from 'sigma/rendering';
 import { NodeSquareProgram } from '@sigma/node-square';
 import { InfoComponent } from '../../info/info.component';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { capitalize } from 'lodash';
@@ -78,7 +78,7 @@ const MIN_DRAG_TIME = 200;
     MatAnchor,
     MatTooltip,
     InfoComponent,
-    MatSlideToggle,
+    MatSlideToggleModule,
     FormsModule,
     MatButtonModule,
     MatIconModule,
@@ -292,5 +292,9 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
   setAllEdgesState(state: boolean) {
     this.browseService().setAllEdgesState(state);
+  }
+
+  togglePhysics() {
+    this.browseService().physicsEnabled$.update((enabled) => !enabled);
   }
 }
