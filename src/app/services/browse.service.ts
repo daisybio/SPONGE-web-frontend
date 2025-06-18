@@ -43,9 +43,7 @@ interface NetworkData {
   disease: Dataset | undefined;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
   readonly lastClicked = signal<'node' | 'edge'>('node');
