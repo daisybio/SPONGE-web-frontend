@@ -51,6 +51,20 @@ export class DiseaseSelectorComponent implements OnDestroy {
   readonly possibleSubtypes$ = computed(
     () => this._diseaseSubtypeMap$().get(this.activeDisease$()) ?? []
   );
+
+  // Calculate sample counts for each disease by summing up all subtypes
+  readonly diseaseSampleCounts$ = computed(() => {
+    const counts = new Map<string, number>();
+    this._diseaseSubtypeMap$().forEach((subtypes, diseaseName) => {
+      const totalCount = subtypes.reduce(
+        (sum, dataset) => sum + dataset.sample_count,
+        0
+      );
+      counts.set(diseaseName, totalCount);
+    });
+    return counts;
+  });
+
   private readonly _updateOutput = effect(() =>
     this.selected.emit(this.activeSubtype())
   );
