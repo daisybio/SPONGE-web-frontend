@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   inject,
   model,
   resource,
@@ -29,6 +30,7 @@ import { VersionsService } from '../../services/versions.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { SunburstComponent } from './sunburst/sunburst.component';
 import { DiseaseSelectorComponent } from '../../components/disease-selector/disease-selector.component';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-genes',
@@ -47,6 +49,7 @@ import { DiseaseSelectorComponent } from '../../components/disease-selector/dise
     MatProgressSpinner,
     SunburstComponent,
     DiseaseSelectorComponent,
+    MatButtonToggleModule,
   ],
   templateUrl: './genes.component.html',
   styleUrl: './genes.component.scss',
@@ -58,6 +61,7 @@ export class GenesComponent {
   readonly version = this.versionsService.versionReadOnly();
   readonly tabChange = signal<number>(0);
 
+  readonly level = signal<'gene' | 'transcript'>('gene');
   readonly currentInput = model<string | Gene>('');
   readonly onlySignificant = model(true);
 
