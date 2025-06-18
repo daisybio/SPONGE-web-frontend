@@ -33,6 +33,7 @@ import {
   SpongEffectsTranscriptModules,
   SurvivalPValue,
   SurvivalRate,
+  Transcript,
   TranscriptExpression,
   TranscriptInfo,
   TranscriptInteraction,
@@ -90,8 +91,18 @@ export class BackendService {
         ? 'ceRNAInteraction/getGeneNetwork'
         : 'ceRNAInteraction/getTranscriptNetwork';
 
-    const geneSorting: String[] = ['betweenness', 'node_degree', 'eigenvector'].filter((_, i) =>
-      [query.sortingBetweenness, query.sortingDegree, query.sortingEigenvector][i]);
+    const geneSorting: String[] = [
+      'betweenness',
+      'node_degree',
+      'eigenvector',
+    ].filter(
+      (_, i) =>
+        [
+          query.sortingBetweenness,
+          query.sortingDegree,
+          query.sortingEigenvector,
+        ][i]
+    );
 
     const _query: Query = {
       sponge_db_version: version,
@@ -280,6 +291,16 @@ export class BackendService {
     } catch (e) {
       return Promise.resolve([]);
     }
+  }
+
+  stringSearchTranscript(query: string): Promise<Transcript[]> {
+    const route = 'stringSearchTranscript';
+    const queryObj: Query = {
+      searchString: query,
+    };
+    return this.http.getRequest<Transcript[]>(
+      this.getRequestURL(route, queryObj)
+    );
   }
 
   getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
@@ -711,7 +732,12 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
-  async getASPsiValues(version: number, asEventID: number, enst: string, disease: Dataset): Promise<ASPsiValue[]> {
+  async getASPsiValues(
+    version: number,
+    asEventID: number,
+    enst: string,
+    disease: Dataset
+  ): Promise<ASPsiValue[]> {
     const route = 'alternativeSplicing/getPsiValues';
 
     const query: Query = {
@@ -721,7 +747,9 @@ export class BackendService {
       sponge_db_version: version,
     };
 
-    const resp = await this.http.getRequest<ASPsiValue[]>(this.getRequestURL(route, query));
+    const resp = await this.http.getRequest<ASPsiValue[]>(
+      this.getRequestURL(route, query)
+    );
 
     return 'detail' in resp ? [] : resp;
   }
@@ -779,7 +807,15 @@ export class BackendService {
     return this.http.getRequest<GseaResult[]>(this.getRequestURL(route, query));
   }
 
-  getGseaPlot(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined, term: string) {
+  getGseaPlot(
+    version: number,
+    disease1: Dataset | undefined,
+    condition1: string,
+    disease2: Dataset | undefined,
+    condition2: string,
+    geneSet: string | undefined,
+    term: string
+  ) {
     const route = 'gseaPlot';
 
     if (!disease1 || !disease2 || !geneSet) {
@@ -792,8 +828,8 @@ export class BackendService {
       condition_1: condition1,
       condition_2: condition2,
       gene_set: geneSet,
-      term: term
-    }
+      term: term,
+    };
 
     return this.http.getRequest<string>(this.getRequestURL(route, query));
   }
