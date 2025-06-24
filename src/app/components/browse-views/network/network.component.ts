@@ -25,8 +25,8 @@ import { MatAnchor, MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { NodeCircleProgram } from 'sigma/rendering';
 import { NodeSquareProgram } from '@sigma/node-square';
-import { InfoComponent } from '../../../components/info/info.component';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { InfoComponent } from '../../info/info.component';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { capitalize } from 'lodash';
@@ -78,7 +78,7 @@ const MIN_DRAG_TIME = 200;
     MatAnchor,
     MatTooltip,
     InfoComponent,
-    MatSlideToggle,
+    MatSlideToggleModule,
     FormsModule,
     MatButtonModule,
     MatIconModule,
@@ -88,12 +88,12 @@ const MIN_DRAG_TIME = 200;
 })
 export class NetworkComponent implements AfterViewInit, OnDestroy {
   @ViewChild('container') container!: ElementRef;
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
-  level$ = this.browseService.level$;
-  allNodesSelected$ = this.browseService.allNodesSelected$;
-  allEdgesSelected$ = this.browseService.allEdgesSelected$;
+  level$ = computed(() => this.browseService().level$());
+  allNodesSelected$ = computed(() => this.browseService().allNodesSelected$());
+  allEdgesSelected$ = computed(() => this.browseService().allEdgesSelected$());
 
   circleExplanation$: Signal<string> = computed(() => {
     switch (this.level$()) {
@@ -118,25 +118,25 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   });
 
   refreshSignal = input.required<any>();
-  physicsEnabled$ = this.browseService.physicsEnabled$;
+  physicsEnabled$ = computed(() => this.browseService().physicsEnabled$());
   draggedNode$: WritableSignal<string | undefined> = signal(undefined);
   dragStart$ = signal<number | undefined>(undefined);
   gProfilerUrl$ = computed(() =>
-    BrowseService.getGProfilerUrlForNodes(this.browseService.nodes$())
+    BrowseService.getGProfilerUrlForNodes(this.browseService().nodes$())
   );
   protected readonly capitalize = capitalize;
 
   constructor() {
     effect(() => {
-      this.graph$.next(this.browseService.graph$());
+      this.graph$.next(this.browseService().graph$());
     });
 
     effect(() => {
-      this.updateEdges(this.browseService.edgeStates$());
+      this.updateEdges(this.browseService().edgeStates$());
     });
 
     effect(() => {
-      this.updateNodes(this.browseService.nodeStates$());
+      this.updateNodes(this.browseService().nodeStates$());
     });
 
     effect(() => {
@@ -157,23 +157,23 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       sigma.on('clickNode', (event) => {
         const dragStart = this.dragStart$();
         if (dragStart && Date.now() - dragStart > MIN_DRAG_TIME) return;
-        this.browseService.toggleState(event.node, 'node', State.Active);
+        this.browseService().toggleState(event.node, 'node', State.Active);
       });
 
       sigma.on('clickEdge', (event) => {
-        this.browseService.toggleState(event.edge, 'edge', State.Active);
+        this.browseService().toggleState(event.edge, 'edge', State.Active);
       });
 
       sigma.on('enterEdge', (event) => {
-        this.browseService.setState(event.edge, 'edge', State.Hover, true);
+        this.browseService().setState(event.edge, 'edge', State.Hover, true);
       });
 
       sigma.on('leaveEdge', (event) => {
-        this.browseService.setState(event.edge, 'edge', State.Hover, false);
+        this.browseService().setState(event.edge, 'edge', State.Hover, false);
       });
 
       sigma.on('downNode', (event) => {
-        this.browseService.setState(event.node, 'node', State.Hover, true);
+        this.browseService().setState(event.node, 'node', State.Hover, true);
         if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
         this.draggedNode$.set(event.node);
         this.dragStart$.set(Date.now());
@@ -197,7 +197,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
         const node = this.draggedNode$();
         if (node === undefined) return;
 
-        this.browseService.setState(node, 'node', State.Hover, false);
+        this.browseService().setState(node, 'node', State.Hover, false);
         this.draggedNode$.set(undefined);
       };
 
@@ -211,8 +211,8 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       this.sigma = sigma;
     });
 
-    this.updateNodes(this.browseService.nodeStates$());
-    this.updateEdges(this.browseService.edgeStates$());
+    this.updateNodes(this.browseService().nodeStates$());
+    this.updateEdges(this.browseService().edgeStates$());
   }
 
   determineState(entityState: EntityState): State {
@@ -287,10 +287,14 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   }
 
   setAllNodesState(state: boolean) {
-    this.browseService.setAllNodesState(state);
+    this.browseService().setAllNodesState(state);
   }
 
   setAllEdgesState(state: boolean) {
-    this.browseService.setAllEdgesState(state);
+    this.browseService().setAllEdgesState(state);
+  }
+
+  togglePhysics() {
+    this.browseService().physicsEnabled$.update((enabled) => !enabled);
   }
 }

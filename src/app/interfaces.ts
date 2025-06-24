@@ -6,6 +6,7 @@ export interface Dataset {
   disease_type: string;
   download_url: string;
   sponge_db_version: number;
+  sample_count: number;
 }
 
 export interface SpongeRun {
@@ -207,6 +208,12 @@ export interface GeneCount extends SpongeRun {
   gene: Gene;
 }
 
+export interface TranscriptCount extends SpongeRun {
+  count_all: number;
+  count_sign: number;
+  transcript: Transcript;
+}
+
 export interface GeneInfo {
   chromosome_name: string;
   cytoband: string;
@@ -327,7 +334,7 @@ export interface SpongEffectsGeneModuleMembers {
     ensg_number: string;
     gene_symbol: string;
   };
-  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_ID: number;
   spongEffects_gene_module_members_ID: number;
 }
 
@@ -345,7 +352,7 @@ export interface SpongEffectsTranscriptModuleMembers {
   transcript: {
     enst_number: string;
   };
-  spongEffects_gene_module_ID: number
+  spongEffects_gene_module_ID: number;
   spongEffects_gene_module_members_ID: number;
 }
 
@@ -363,7 +370,6 @@ export interface ModuleMember {
   moduleCenter: string;
   spongEffects_run_ID: number;
 }
-
 
 export interface PredictCancerType {
   meta: {
