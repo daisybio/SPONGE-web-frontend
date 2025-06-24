@@ -208,6 +208,12 @@ export interface GeneCount extends SpongeRun {
   gene: Gene;
 }
 
+export interface TranscriptCount extends SpongeRun {
+  count_all: number;
+  count_sign: number;
+  transcript: Transcript;
+}
+
 export interface GeneInfo {
   chromosome_name: string;
   cytoband: string;
