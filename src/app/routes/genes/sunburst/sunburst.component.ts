@@ -7,7 +7,7 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { Dataset, GeneCount } from '../../../interfaces';
+import { Dataset, GeneCount, TranscriptCount } from '../../../interfaces';
 import { capitalize } from 'lodash';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
@@ -25,7 +25,7 @@ declare const Plotly: any;
 export class SunburstComponent {
   versionsService = inject(VersionsService);
   sunburst = viewChild.required<ElementRef<HTMLDivElement>>('sunburst');
-  results = input.required<GeneCount[] | undefined>();
+  results = input.required<GeneCount[] | TranscriptCount[] | undefined>();
   refresh = input<any>();
   datasets = this.versionsService.diseases$().value;
   onlySignificant = input.required<boolean>();
@@ -69,7 +69,7 @@ export class SunburstComponent {
   }
 
   private createSunburstData(
-    results: GeneCount[] | undefined,
+    results: GeneCount[] | TranscriptCount[] | undefined,
     datasets: Dataset[] | undefined,
     onlySignificant: boolean
   ): any {

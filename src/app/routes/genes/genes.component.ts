@@ -140,9 +140,11 @@ export class GenesComponent {
           param.request.onlySignificant
         );
       } else {
-        // For transcripts, we'll need to implement a similar method or adapt the existing one
-        // For now, return empty array until transcript count method is available
-        return [];
+        return this.backend.getTranscriptCount(
+          param.request.version,
+          param.request.ensts,
+          param.request.onlySignificant
+        );
       }
     },
   });
@@ -178,16 +180,18 @@ export class GenesComponent {
           param.request.ensgs
         );
       } else {
-        // For transcripts, we'll need to implement transcript interactions
-        // For now, return empty array until transcript interaction method is available
-        return [];
+        return this.backend.getTranscriptInteractionsAll(
+          param.request.version,
+          param.request.disease,
+          param.request.onlySignificant ? 0.05 : 1,
+          param.request.ensts
+        );
       }
     },
   });
 
   diseases$ = computed(() => {
     const results = this.results.value() ?? [];
-    console.log(results);
     const datasetIDs =
       results
         .map((r) => r.sponge_run.dataset.dataset_ID)

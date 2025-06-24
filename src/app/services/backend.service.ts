@@ -34,6 +34,7 @@ import {
   SurvivalPValue,
   SurvivalRate,
   Transcript,
+  TranscriptCount,
   TranscriptExpression,
   TranscriptInfo,
   TranscriptInteraction,
@@ -184,6 +185,47 @@ export class BackendService {
 
     do {
       data = await this.http.getRequest<GeneInteraction[]>(
+        this.getRequestURL(route, {
+          ...query,
+          limit,
+          offset,
+        })
+      );
+      results.push(...data);
+      offset += limit;
+    } while (data.length === limit);
+
+    return results;
+  }
+
+  async getTranscriptInteractionsAll(
+    version: number,
+    disease: Dataset | undefined,
+    maxPValue: number,
+    ensts: string[]
+  ): Promise<TranscriptInteraction[]> {
+    const route = 'ceRNAInteraction/findAllTranscripts';
+
+    if (ensts.length === 0 || !disease || version != disease.sponge_db_version) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
+      enst_number: ensts.join(','),
+      pValue: maxPValue,
+    };
+
+    const results: TranscriptInteraction[] = [];
+    const limit = 1000;
+    let offset = 0;
+
+    let data: TranscriptInteraction[];
+
+    do {
+      data = await this.http.getRequest<TranscriptInteraction[]>(
         this.getRequestURL(route, {
           ...query,
           limit,
@@ -405,6 +447,31 @@ export class BackendService {
       query['minCountSign'] = 1;
     }
     const res = await this.http.getRequest<GeneCount[]>(
+      this.getRequestURL(route, query)
+    );
+    if ('title' in res && res.title == 'No Content') {
+      return [];
+    }
+    return res;
+  }
+
+  async getTranscriptCount(
+    version: number,
+    ensts: string[],
+    onlySignificant: boolean
+  ): Promise<TranscriptCount[]> {
+    if (ensts.length === 0) {
+      return Promise.resolve([]);
+    }
+    const route = 'getTranscriptCount';
+    const query: Query = {
+      sponge_db_version: version,
+      enst_number: ensts.join(','),
+    };
+    if (onlySignificant) {
+      query['minCountSign'] = 1;
+    }
+    const res = await this.http.getRequest<TranscriptCount[]>(
       this.getRequestURL(route, query)
     );
     if ('title' in res && res.title == 'No Content') {
