@@ -3,10 +3,11 @@
     <form>
       <div style="display: flex; justify-content: center;">
         <mat-button-toggle-group [(value)]="level" name="modeToggle" style="margin-bottom: 15px;">
-          <mat-button-toggle value="gene">Gene</mat-button-toggle>
-          <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+          <mat-button-toggle value="gene">Genes</mat-button-toggle>
+          <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
+      @if (level() === 'gene') {
       <mat-form-field class="example-chip-list">
 
         <mat-label>Select genes</mat-label>
@@ -29,7 +30,30 @@
           }
         </mat-autocomplete>
       </mat-form-field>
+      } @else {
+      <mat-form-field class="example-chip-list">
 
+        <mat-label>Select transcripts</mat-label>
+        <mat-chip-grid #transcriptChipGrid aria-label="Transcript selection">
+          @for (transcript of activeTranscripts(); track $index) {
+          <mat-chip-row (removed)="removeTranscript(transcript)">
+            {{ transcript.enst_number }} ({{ transcript.gene.gene_symbol }})
+            <button matChipRemove [attr.aria-label]="'remove ' + transcript.enst_number">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          }
+        </mat-chip-grid>
+        <input #transcriptInput [(ngModel)]="currentTranscriptInput" [matAutocomplete]="transcriptAuto"
+          [matChipInputFor]="transcriptChipGrid" name="currentTranscript" placeholder="Add transcript..." />
+        <mat-autocomplete #transcriptAuto="matAutocomplete"
+          (optionSelected)="selectedTranscript($event); transcriptInput.value = ''" autoActiveFirstOption>
+          @for (transcript of possibleTranscripts.value(); track transcript) {
+          <mat-option [value]="transcript">{{ transcript.enst_number }} ({{ transcript.gene.gene_symbol }})</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+      }
       <mat-checkbox [(ngModel)]="onlySignificant" name="onlySignificant">Show only significant results</mat-checkbox>
     </form>
 
@@ -41,7 +65,8 @@
     </div>
     }
     <div [hidden]="this.results.isLoading()">
-      @if (activeGenes().length > 0) {
+      @if ((level() === 'gene' && activeGenes().length > 0) || (level() === 'transcript' && activeTranscripts().length >
+      0)) {
 
       <mat-tab-group [(selectedIndex)]="tabChange">
         <mat-tab label="Sunburst chart">
@@ -67,7 +92,8 @@
       } @else {
       <div class="card-container">
         <p style="margin-top: 50px">
-          Select genes to see in which disease-specific ceRNA networks the gene was
+          Select {{ level() === 'gene' ? 'genes' : 'transcripts' }} to see in which disease-specific ceRNA networks the
+          {{ level() === 'gene' ? 'gene' : 'transcript' }} was
           detected.
         </p>
       </div>

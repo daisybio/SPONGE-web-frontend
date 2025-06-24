@@ -294,6 +294,10 @@ export class BackendService {
   }
 
   stringSearchTranscript(query: string): Promise<Transcript[]> {
+    if (query.length < 2) {
+      return Promise.resolve([]);
+    }
+
     const route = 'stringSearchTranscript';
     const queryObj: Query = {
       searchString: query,
