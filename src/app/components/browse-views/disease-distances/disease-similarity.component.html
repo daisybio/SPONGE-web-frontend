@@ -5,18 +5,20 @@
   </mat-button-toggle-group>
 </div>
 @switch (mode$()) {
-  @case ('heatmap') {
-    <app-info title="What do I see?">
-      <p>The heatmap is colored by the gene-wise hubness score. The gene-wise hubness score is calculated by dividing
-        the
-        degree of the gene in the network by the number of possible edges.</p>
-    </app-info>
-  }
-  @case ('scatter') {
-    <app-info title="What do I see?">
-      <p>Shown are Euclidean distances between the hubness scores in order to visualize similarities of networks in a
-        two-dimensional space.</p>
-    </app-info>
-  }
+@case ('heatmap') {
+<app-info title="What do I see?">
+  <p>The heatmap is colored by the normalized degree centrality. The normalized degree centrality is calculated by
+    dividing
+    the
+    degree of the gene in the network by the number of possible edges.</p>
+</app-info>
+}
+@case ('scatter') {
+<app-info title="What do I see?">
+  <p>Shown are Euclidean distances between the normalized degree centralities in order to visualize similarities of
+    networks in a
+    two-dimensional space.</p>
+</app-info>
+}
 }
 <div #plot style="width: 100%"></div>
