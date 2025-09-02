@@ -53,6 +53,7 @@ export class ClassPerformancePlotComponent {
   backend = inject(BackendService);
   refreshSignal$ = input();
   selectedDisease = this.exploreService.selectedDisease$;
+  selectedModels = this.exploreService.selectedParamSets$;
 
   classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
@@ -135,10 +136,10 @@ export class ClassPerformancePlotComponent {
     });
   }
 
+  // split the data into two subplots for test and train 
   private groupBySplits(data: PerformanceEntry[]): Record<string, PerformanceEntry[]> {
     return groupBy(data, (entry) => {
       const run = entry.spongEffects_run;
-      // Create split identifier - adjust based on your actual data structure
       const split_type = run.split_type === 'train' ? 'Train' : 'Test';
       return split_type;
     });
@@ -204,7 +205,7 @@ export class ClassPerformancePlotComponent {
   ): any {
     const cols = 1;
     const rows = 2;
-
+    console.log("MODELS: ", this.selectedModels()(),Object.keys(this.selectedModels()()).length );
     const layout: any = {
       height: 500,
       showlegend: true,
@@ -228,7 +229,6 @@ export class ClassPerformancePlotComponent {
         rows: rows,
         columns: cols,
         pattern: 'independent',
-        // subplots: subplotSpecs.flat().filter(spec => spec !== null).map((_, i) => [`xy${i + 1}`]),
       },
       yaxis1: {
         domain: this.selectedDisease() === 'pancancer' ? [0, 0.1] : [0, 0.35],
@@ -268,7 +268,9 @@ export class ClassPerformancePlotComponent {
       },
       // yaxis label
       {
-        text: `${measureLabel}<br>(mean over models selected on the left)<br> <br> `,
+        text: Object.keys(this.selectedModels()()).length > 1
+          ? `${measureLabel}<br>(mean over models selected on the left)<br> <br> ` // newlines added for spacing
+          : `${measureLabel}<br>(of model selected on the left)<br> <br> `,
         x: 0,
         y: 0.5,
         xref: 'paper',
