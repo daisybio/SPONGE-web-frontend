@@ -113,6 +113,9 @@ export class ClassPerformancePlotComponent {
   });
 
   constructor() {
+    this.refreshSignal$();
+    this.refreshPlot();
+
     effect(() => {
       this.refreshSignal$();
       this.refreshPlot();
@@ -205,6 +208,8 @@ export class ClassPerformancePlotComponent {
   ): any {
     const cols = 1;
     const rows = 2;
+
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
     console.log("MODELS: ", this.selectedModels()(),Object.keys(this.selectedModels()()).length );
     const layout: any = {
       height: 500,
@@ -214,7 +219,7 @@ export class ClassPerformancePlotComponent {
       plot_bgcolor: 'rgba(0,0,0,0)',
       margin: {
         t: 0,
-        b: maxClassCount > 5 ? 120 : 60,
+        b: maxClassCount > 10 ? 150 : 60,
         l: 80,
         r: 10,
       },
@@ -222,7 +227,7 @@ export class ClassPerformancePlotComponent {
         orientation: 'h',
         x: 1,
         xanchor: 'right',
-        y: 1,
+        y: 1.1,
         yanchor: 'bottom',
       },
       grid: {
@@ -231,17 +236,17 @@ export class ClassPerformancePlotComponent {
         pattern: 'independent',
       },
       yaxis1: {
-        domain: this.selectedDisease() === 'pancancer' ? [0, 0.1] : [0, 0.35],
+        domain: this.selectedDisease() === 'pancancer' ? [0, 0.15] : [0, 0.35],
       },
       yaxis2: {
-        domain: this.selectedDisease() === 'pancancer' ? [0.9, 1] : [0.65, 1],
+        domain: this.selectedDisease() === 'pancancer' ? [0.85, 1] : [0.65, 1],
       },
       xaxis1:  {
-        title: this.selectedDisease() === 'pancancer' ? 'Prediction class (Cancer type)' : 'Prediction class (Cancer subtype)' 
+        title: `Prediction class (${type_or_subtype})`
       },
       // Add subplot titles
       annotations: [{
-        text: subplotTitles[0],  // Train 
+        text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
         x: 0.5,
         y: 1,
         xref: 'paper',
@@ -250,20 +255,20 @@ export class ClassPerformancePlotComponent {
         yanchor: 'bottom',
         showarrow: false,
         font: {
-          size: 18,
+          size: 16,
         },
       },
       {
-        text: subplotTitles[1],  // Test
+        text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[1]}`,  // Test
         x: 0.5,
-        y: 0.35,
+        y: this.selectedDisease() === 'pancancer' ? 0.15 : 0.35,
         xref: 'paper',
         yref: 'paper',
         xanchor: 'center',
         yanchor: 'bottom',
         showarrow: false,
         font: {
-          size: 18,
+          size: 16,
         },
       },
       // yaxis label
