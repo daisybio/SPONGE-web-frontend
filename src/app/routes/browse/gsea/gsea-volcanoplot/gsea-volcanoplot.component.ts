@@ -91,7 +91,8 @@ export class GseaVolcanoplotComponent implements OnDestroy {
         },
       ],
       showlegend: false,
-    };
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',    };
 
     Plotly.newPlot(plotElement.nativeElement, data, layout);
   });

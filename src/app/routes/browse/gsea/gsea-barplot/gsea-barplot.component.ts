@@ -58,11 +58,15 @@ export class GseaBarplotComponent implements OnDestroy {
       yaxis: {
         title: 'Gene Set',
         automargin: true,
+        tickmode: 'linear',
+        dtick: 1, // This ensures that each term is displayed in any zoom level 
       },
       height: Math.max(400, terms.length * 20), // Adjust height based on number of terms
       margin: {
         l: 200, // Increase left margin for term labels
       },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
     };
 
     Plotly.newPlot(plotElement.nativeElement, data, layout);
