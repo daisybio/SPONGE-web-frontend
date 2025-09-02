@@ -89,7 +89,6 @@ export class ClassPerformancePlotComponent {
 
   plotlyData$ = computed(() => {
     const performanceData = this.runClassPerformance$.value() as PerformanceEntry[];
-    console.log("CLASS PERFORMANCE DATA:")
     const selectedMeasure = this.performanceMeasure$();
 
     if (!performanceData?.length) {
@@ -98,11 +97,8 @@ export class ClassPerformancePlotComponent {
 
     // Group data by training/testing split combination
     const splitGroups = this.groupBySplits(performanceData);
-    console.log("SPLIT GROUPS:", splitGroups);
     const uniqueClasses = this.getUniqueClasses(performanceData);
-    console.log("UNIQUE CLASSES:", uniqueClasses);
     const uniqueModelTypes = this.getUniqueModelTypes(performanceData);
-    console.log("UNIQUE MODEL TYPES:", uniqueModelTypes);
 
     // Create subplot structure
     const subplotTitles = Object.keys(splitGroups);
@@ -197,7 +193,6 @@ export class ClassPerformancePlotComponent {
         traces.push(trace);
       });
     });
-    console.log("TRACES:", traces);
     return traces;
   }
 
@@ -210,7 +205,6 @@ export class ClassPerformancePlotComponent {
     const rows = 2;
 
     const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
-    console.log("MODELS: ", this.selectedModels()(),Object.keys(this.selectedModels()()).length );
     const layout: any = {
       height: 500,
       showlegend: true,
