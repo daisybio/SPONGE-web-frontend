@@ -1,4 +1,4 @@
-@if (runClassPerformance$.isLoading()) {
+<!-- @if (runClassPerformance$.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 } @else {
   @if (!runClassPerformance$.value() || runClassPerformance$.value()!.length === 0) {
@@ -8,7 +8,48 @@
       <div #classPerformancePlot class="class-performance-plot"></div>
     </div>
   }
+} -->
+<div style="margin: 20px; align-items: center;">
+<mat-form-field appearance="outline" style="align-content: center; width: 300px;">
+  <mat-label>Performance Measure</mat-label>
+  <mat-select 
+    [value]="performanceMeasure$()" 
+    (selectionChange)="onPerformanceMeasureChange($event.value)"
+    [compareWith]="compareSelectElements">
+    @for (measure of performanceMeasures; track measure.value) {
+      <mat-option [value]="measure">
+        {{ measure.viewValue }}
+      </mat-option>
+    }
+  </mat-select>
+</mat-form-field>
+<div>
+
+@if (runClassPerformance$.isLoading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p class="loading-text">Loading performance data...</p>
 }
+
+@if (runClassPerformance$.error()) {
+  <div class="error-container">
+    <mat-icon class="error-icon">error</mat-icon>
+    <p class="error-text">Failed to load performance data. Please try again.</p>
+  </div>
+}
+
+@if (runClassPerformance$.value() && !runClassPerformance$.isLoading()) {
+  <div>
+    <div #classPerformancePlot class="plotly-chart"></div>
+  </div>
+}
+
+@if (!runClassPerformance$.value() && !runClassPerformance$.isLoading() && !runClassPerformance$.error()) {
+  <div class="no-data-container">
+    <mat-icon class="no-data-icon">assessment</mat-icon>
+    <p class="no-data-text">No performance data available. Run a classification analysis to see results.</p>
+  </div>
+}
+
 <app-info type="panel">
   <p>This plot shows the performance of the individual class predictions of the model that was trained with the
     spongEffects central modules against a model with randomly selected modules. We can strengthen the confidence in

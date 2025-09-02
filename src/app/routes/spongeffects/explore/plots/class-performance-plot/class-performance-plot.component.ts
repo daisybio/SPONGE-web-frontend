@@ -16,11 +16,21 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SelectElement } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
-import { sum } from 'lodash';
+import { sum, groupBy, uniq } from 'lodash';
 import { ExploreService } from '../../service/explore.service';
 import { InfoComponent } from '../../../../../components/info/info.component';
-
+import { MatCard } from "@angular/material/card";
+// 
 declare var Plotly: any;
+
+interface PerformanceEntry {
+  prediction_class: string;
+  spongEffects_run: {
+    model_type: string;
+    split_type: string;
+  };
+  [key: string]: any;
+}
 
 @Component({
   selector: 'app-class-performance-plot',
@@ -33,7 +43,7 @@ declare var Plotly: any;
     ReactiveFormsModule,
     MatProgressBarModule,
     InfoComponent,
-  ],
+],
   standalone: true,
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss',
@@ -42,6 +52,7 @@ export class ClassPerformancePlotComponent {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
+  selectedDisease = this.exploreService.selectedDisease$;
 
   classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
@@ -64,41 +75,40 @@ export class ClassPerformancePlotComponent {
   ];
 
   performanceMeasure$ = signal<SelectElement>(this.performanceMeasures[0]);
-  includeModuleMembers$ = signal<boolean>(false);
 
-  plotlyTraces$ = computed(() => {
-    const performanceData = this.runClassPerformance$.value();
+  private readonly plotConfig = {
+    responsive: true,
+    displayModeBar: false,
+  };
 
-    if (!performanceData) {
-      return [];
+  private readonly colorPalette: Record<string, string> = {
+    modules: 'green',
+    random: 'orange',
+  };
+
+  plotlyData$ = computed(() => {
+    const performanceData = this.runClassPerformance$.value() as PerformanceEntry[];
+    console.log("CLASS PERFORMANCE DATA:")
+    const selectedMeasure = this.performanceMeasure$();
+
+    if (!performanceData?.length) {
+      return { traces: [], layout: {} };
     }
 
-    const traceGroups: { [key: string]: any[] } = {};
-    performanceData.forEach((entry) => {
-      const modelType = entry.spongEffects_run.model_type;
-      if (!traceGroups[modelType]) {
-        traceGroups[modelType] = [];
-      }
-      traceGroups[modelType].push(entry);
-    });
-    // build actual traces
-    const traces = [];
-    for (const modelType in traceGroups) {
-      if (traceGroups.hasOwnProperty(modelType)) {
-        const group = traceGroups[modelType];
+    // Group data by training/testing split combination
+    const splitGroups = this.groupBySplits(performanceData);
+    console.log("SPLIT GROUPS:", splitGroups);
+    const uniqueClasses = this.getUniqueClasses(performanceData);
+    console.log("UNIQUE CLASSES:", uniqueClasses);
+    const uniqueModelTypes = this.getUniqueModelTypes(performanceData);
+    console.log("UNIQUE MODEL TYPES:", uniqueModelTypes);
 
-        const trace = {
-          x: group.map((entry) => entry.prediction_class),
-          y: group.map((entry) => entry[this.performanceMeasure$().value]),
-          type: 'bar',
-          name: modelType,
-        };
+    // Create subplot structure
+    const subplotTitles = Object.keys(splitGroups);
+    const traces = this.createTraces(splitGroups, selectedMeasure.value, uniqueModelTypes, uniqueClasses);
+    const layout = this.createLayout(subplotTitles, selectedMeasure.viewValue, uniqueClasses.length);
 
-        traces.push(trace);
-      }
-    }
-
-    return traces;
+    return { traces, layout };
   });
 
   constructor() {
@@ -108,59 +118,187 @@ export class ClassPerformancePlotComponent {
     });
 
     effect(() => {
-      const traces = this.plotlyTraces$();
+      const { traces, layout } = this.plotlyData$();
       
       if (!traces.length) {
-        return; // Don't attempt to plot if there are no traces
+        return;
       }
 
-      const meanTextLength: number = Math.round(
-        sum(traces[0].x.map((d) => d.length)) / traces[0].x.length,
-      );
-      const textPad: number = meanTextLength * 10.5;
-      
-      const uniqueBars = new Set(traces.flatMap((trace) => trace.x)).size;
-      const angle: number = uniqueBars > 10 ? -90 : 0;
-      const layout = {
-        barmode: 'group',
-        autosize: true,
-        xaxis: {
-          autosize: true,
-          tickangle: angle,
-        },
-        yaxis: {
-          title: this.performanceMeasure$().viewValue,
-        },
-        margin: {
-          t: 8,
-          b: angle == -90 ? textPad : 40,
-          l: 70,
-        },
-        legend: {
-          orientation: 'h',
-          x: 0.5,
-          y: 1.25,
-        },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-      };
-      const config = { responsive: true };
-      
       if (this.classPerformPlot()?.nativeElement) {
         Plotly.newPlot(
           this.classPerformPlot()?.nativeElement,
           traces,
           layout,
-          config,
+          this.plotConfig,
         );
       }
     });
   }
 
-  refreshPlot() {
+  private groupBySplits(data: PerformanceEntry[]): Record<string, PerformanceEntry[]> {
+    return groupBy(data, (entry) => {
+      const run = entry.spongEffects_run;
+      // Create split identifier - adjust based on your actual data structure
+      const split_type = run.split_type === 'train' ? 'Train' : 'Test';
+      return split_type;
+    });
+  }
+
+  private getUniqueClasses(data: PerformanceEntry[]): string[] {
+    return uniq(data.map(entry => entry.prediction_class)).sort();
+  }
+
+  private getUniqueModelTypes(data: PerformanceEntry[]): string[] {
+    return uniq(data.map(entry => entry.spongEffects_run.model_type)).sort();
+  }
+
+  private createTraces(
+    splitGroups: Record<string, PerformanceEntry[]>,
+    measureKey: string,
+    modelTypes: string[],
+    classes: string[]
+  ): any[] {
+    const traces: any[] = [];
+    const subplotTitles = Object.keys(splitGroups);
+    
+    subplotTitles.forEach((splitKey, splitIndex) => {
+      const splitData = splitGroups[splitKey];
+      const modelGroups = groupBy(splitData, entry => entry.spongEffects_run.model_type);
+
+      modelTypes.forEach((modelType, modelIndex) => {
+        const modelData = modelGroups[modelType] || [];
+        
+        if (modelData.length === 0) return;
+
+        const trace = {
+          x: classes,
+          y: classes.map(predictionClass => {
+            const entriesForClass = modelData.filter(entry => entry.prediction_class === predictionClass);
+            const values = entriesForClass.map(entry => entry[measureKey]);
+            if (values.length === 0) return null;
+            // Calculate mean
+            return values.reduce((sum, v) => sum + v, 0) / values.length;
+          }),
+          type: 'bar',
+          name: modelType,
+          legendgroup: modelType,
+          showlegend: splitIndex === 0, // Only show legend for first subplot
+          marker: {
+            color: this.colorPalette[modelType] || 'gray',
+          },
+          xaxis: `x${splitIndex + 1}`,
+          yaxis: `y${splitIndex + 1}`,
+        };
+
+        traces.push(trace);
+      });
+    });
+    console.log("TRACES:", traces);
+    return traces;
+  }
+
+  private createLayout(
+    subplotTitles: string[],
+    measureLabel: string,
+    maxClassCount: number
+  ): any {
+    const cols = 1;
+    const rows = 2;
+
+    const layout: any = {
+      height: 500,
+      showlegend: true,
+      barmode: 'group',
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      margin: {
+        t: 0,
+        b: maxClassCount > 5 ? 120 : 60,
+        l: 80,
+        r: 10,
+      },
+      legend: {
+        orientation: 'h',
+        x: 1,
+        xanchor: 'right',
+        y: 1,
+        yanchor: 'bottom',
+      },
+      grid: {
+        rows: rows,
+        columns: cols,
+        pattern: 'independent',
+        // subplots: subplotSpecs.flat().filter(spec => spec !== null).map((_, i) => [`xy${i + 1}`]),
+      },
+      yaxis1: {
+        domain: this.selectedDisease() === 'pancancer' ? [0, 0.1] : [0, 0.35],
+      },
+      yaxis2: {
+        domain: this.selectedDisease() === 'pancancer' ? [0.9, 1] : [0.65, 1],
+      },
+      xaxis1:  {
+        title: this.selectedDisease() === 'pancancer' ? 'Prediction class (Cancer type)' : 'Prediction class (Cancer subtype)' 
+      },
+      // Add subplot titles
+      annotations: [{
+        text: subplotTitles[0],  // Train 
+        x: 0.5,
+        y: 1,
+        xref: 'paper',
+        yref: 'paper',
+        xanchor: 'center',
+        yanchor: 'bottom',
+        showarrow: false,
+        font: {
+          size: 18,
+        },
+      },
+      {
+        text: subplotTitles[1],  // Test
+        x: 0.5,
+        y: 0.35,
+        xref: 'paper',
+        yref: 'paper',
+        xanchor: 'center',
+        yanchor: 'bottom',
+        showarrow: false,
+        font: {
+          size: 18,
+        },
+      },
+      // yaxis label
+      {
+        text: `${measureLabel}<br>(mean over models selected on the left)<br> <br> `,
+        x: 0,
+        y: 0.5,
+        xref: 'paper',
+        yref: 'paper',
+        xanchor: 'right',
+        yanchor: 'middle',
+        showarrow: false,
+        font: {
+          size: 14,
+        },
+        textangle: -90,
+      }
+    ]
+    };
+
+    return layout;
+  }
+
+  onPerformanceMeasureChange(measure: SelectElement): void {
+    this.performanceMeasure$.set(measure);
+  }
+
+  refreshPlot(): void {
     const plotDivRef = this.classPerformPlot();
     if (plotDivRef?.nativeElement?.checkVisibility()) {
       Plotly.Plots.resize(plotDivRef.nativeElement);
     }
+  }
+
+  compareSelectElements(a: SelectElement, b: SelectElement): boolean {
+    return a && b && a.value === b.value;
   }
 }
