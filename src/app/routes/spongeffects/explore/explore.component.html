@@ -1,14 +1,14 @@
 <mat-tab-group (selectedTabChange)="refresh()">
-  <mat-tab label="Model performance">
+  <mat-tab label="Model Performance">
     <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
   </mat-tab>
-  <mat-tab label="Class performance">
+  <mat-tab label="Class Performance">
     <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
   </mat-tab>
-  <mat-tab label="Classification">
+  <mat-tab label="SpongEffects Score Distribution">
     <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
   </mat-tab>
-  <mat-tab label="Top ceRNA centralities">
+  <mat-tab label="Top ceRNA Modules">
     <app-lollipop-plot [refreshSignal$]="refreshSignal()"></app-lollipop-plot>
   </mat-tab>
   <!-- <mat-tab label="Gene set enrichment analysis">
