@@ -1,0 +1,10 @@
+@if (heatmapResource.isLoading()) {
+  <div style="width: 100%; display: flex; flex-direction: row; justify-content: center; align-items: center;">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+} @else {
+  @if (!heatmapResource.value()) {
+    <p>No data available</p>
+  }
+}
+<div #heatmap class="heatmap-container" [style.width]="width()" [style.height]="height()"></div>
