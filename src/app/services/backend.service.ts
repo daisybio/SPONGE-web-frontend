@@ -75,9 +75,9 @@ export class BackendService {
     return this.http.getRequest<RunInfo[]>(this.getRequestURL(route, query));
   }
 
-  getOverallCounts(version: number): Promise<OverallCounts[]> {
+  getOverallCounts(version: number, level: string): Promise<OverallCounts[]> {
     const route = 'getOverallCounts';
-    const query: Query = { sponge_db_version: version };
+    const query: Query = { sponge_db_version: version, level: level };
     return this.http.getRequest<OverallCounts[]>(
       this.getRequestURL(route, query)
     );
@@ -528,6 +528,39 @@ export class BackendService {
     return this.http.getRequest<TranscriptExpression[]>(request);
   }
 
+  async fetchExpressionData(version: number, identifiers: string[], datasetId: number | undefined, disease_name: string | undefined, level: "gene" | "transcript"): Promise<any[]> {
+    const CHUNK_SIZE = 1000;
+    const N_PARALLEL_REQUESTS = 5;
+    const expressionPromises = [];
+    let hasMoreData = true;
+    let offset = 0;
+    
+    while (hasMoreData) {
+      // Fetch multiple pages in parallel
+      const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
+        const currentOffset = offset + i * CHUNK_SIZE;
+        return this.getExpression(version, identifiers, disease_name, datasetId, level, CHUNK_SIZE, currentOffset, true);
+      });
+  
+      const pageResults = await Promise.all(pagePromises);
+  
+      // Flatten and add results
+      for (const page of pageResults) {
+        if (page.length > 0) {
+          expressionPromises.push(...page);
+        }
+        // If a page has fewer rows than CHUNK_SIZE, we've reached the end
+        if (page.length < CHUNK_SIZE) {
+          hasMoreData = false;
+        }
+      }
+  
+      offset += CHUNK_SIZE * N_PARALLEL_REQUESTS; // Move to the next batch of pages
+    }
+    
+    return expressionPromises.flat();
+  }
+
   async getSurvivalPValues(
     version: number,
     ensgs: string[],
@@ -676,23 +709,30 @@ export class BackendService {
 
   async getSpongEffectsGeneModules(
     version: number,
-    diseaseName: string,
-    params: {[key: string]: any},
+    diseaseName?: string,
+    params?: {[key: string]: any},
     limit?: number,
+    ensg_number?: string
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: diseaseName,
     };
+    if (diseaseName) {
+      query['disease_name'] = diseaseName;
+    }
     if (limit) {
       query['limit'] = limit;
     }
-
-    for (const [key, param] of Object.entries(params)) {
-      if (param) {
-        query[key] = param;
+    if (ensg_number) {
+      query['ensg_number'] = ensg_number;
+    }
+    if (params) {
+      for (const [key, param] of Object.entries(params)) {
+        if (param) {
+          query[key] = param;
+        }
       }
     }
 
@@ -725,6 +765,7 @@ export class BackendService {
     diseaseName: string, 
     params: {[key: string]: any},
     limit?: number,
+    enst_number?: string
   ): Promise<SpongEffectsTranscriptModules[]> {
     const route = '/spongEffects/getSpongEffectsTranscriptModules';
 
@@ -734,6 +775,9 @@ export class BackendService {
     };
     if (limit) {
       query['limit'] = limit;
+    }
+    if (enst_number) {
+      query['enst_number'] = enst_number;
     }
 
     for (const [key, param] of Object.entries(params)) {
@@ -948,4 +992,5 @@ export class BackendService {
   private getRequestURL(route: string, query: Query): string {
     return `${API_BASE}/${route}?${this.stringify(query)}`;
   }
+  
 }
