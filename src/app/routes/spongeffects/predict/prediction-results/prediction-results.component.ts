@@ -6,6 +6,7 @@ import {
   inject,
   input,
   resource,
+  signal,
   viewChild,
 } from '@angular/core';
 import { PlotlyData } from '../../../../interfaces';
@@ -48,7 +49,7 @@ export class PredictionResultsComponent  {
   predictedType$ = computed(() => this.predictionMeta$()?.type_predict);
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);
 
-  plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
+  // plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
 
   refreshEffect = effect(() => {
     this.refreshSignal$();

@@ -1,7 +1,8 @@
-import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, Signal, signal, WritableSignal } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
 import { PredictCancerType } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
+import { compute } from '@fullstax/kaplan-meier-estimator';
 
 export interface Query {
   useExampleExpression: boolean;
@@ -26,13 +27,31 @@ export class PredictService {
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
   example_used = signal<boolean>(false);
+  level: 'gene' | 'transcript' = 'gene';
+
+  allPredictedTypes$: Signal<string[]> = computed(() => {
+    if (!this.prediction$()) return [];
+    const data = this.prediction$().data;
+    if (!data) return [];
+    return Array.from(
+      new Set(data.map((entry: { typePrediction: string }) => entry.typePrediction)),
+    );
+  });
+  selectedPredictedType$ = computed(() => {
+    const prediction = this._prediction$.value();
+    if (!prediction || !prediction.meta) return undefined;
+    console.log('selectedPredictedType', prediction.meta.type_predict);
+    return prediction.meta.type_predict || undefined;
+  });
 
   examplePrediction = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);
-    return await response.json();
+    const prediction = await response.json();
+    console.log('examplePrediction', prediction);
+    return prediction;
   })();
 
-  readonly _prediction$ = resource({
+  readonly _prediction$: ResourceRef<PredictCancerType> = resource({
     request: computed(() => {
       return {
         query: this._query$(),
@@ -59,7 +78,7 @@ export class PredictService {
       if (!query.useExampleExpression) {
         this.example_used.set(false)
       }
-      return await this.backend.predictCancerType(
+      const prediction = await this.backend.predictCancerType(
         query.version,
         query.file,
         query.predictSubtypes,
@@ -71,6 +90,8 @@ export class PredictService {
         query.minExpr,
         query.method,
       );
+      console.log('prediction', prediction);
+      return prediction;
     },
   });
 

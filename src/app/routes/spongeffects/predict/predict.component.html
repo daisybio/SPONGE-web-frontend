@@ -1,5 +1,16 @@
 <div class="predict-results">
-  <app-prediction-results>[refreshSignal$]="refreshSignal()"</app-prediction-results>
-  <app-prediction-table>[refreshSignal$]="refreshSignal()"</app-prediction-table>
-
+<mat-tab-group>
+  <mat-tab label="Prediction Results">
+    <app-prediction-results>[refreshSignal$]="refreshSignal()"</app-prediction-results>
+    <app-prediction-table>[refreshSignal$]="refreshSignal()"</app-prediction-table>
+  </mat-tab>
+  <mat-tab label="Classification">
+    TODO: Like Explore-Classification Density plot with additionally user-enrichment-scores.
+  </mat-tab>
+  <mat-tab label="Top ceRNA Centralities">
+    <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+    <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+    TODO: Like Top ceRNA Centralities Tab in Explore (improved version with subnetwork & compressed table) but for user data.
+  </mat-tab>
+</mat-tab-group>
 </div>
