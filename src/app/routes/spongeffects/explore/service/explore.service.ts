@@ -39,7 +39,11 @@ export class ExploreService {
     }
     return selectedDataset;
   });
-  highestKey: WritableSignal<string> = signal<string>('');
+  highestKey: WritableSignal<string> = signal<string>(''); // this is the best model for the selected disease and level, e.g. 'paramSet_1'
+  highestParamSet = computed(() => {
+    const index = this.highestKey().split('_')[1];
+    return this.paramSets$()[parseInt(index, 10) - 1];
+  });
 
   // for each disease, there are multiple spongeffects runs. Filter spongEffectsService.SpongeffectsRuns$ to get the runs for the selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
@@ -64,8 +68,8 @@ export class ExploreService {
     return paramSets.filter((paramSet, index, self) =>
       index === self.findIndex((d) => d.m_scor_threshold === paramSet.m_scor_threshold && d.p_adj_threshold === paramSet.p_adj_threshold && d.modules_cutoff === paramSet.modules_cutoff)
     );
-  }
-  );
+  });
+
   formGroup$ = computed(() => {
     const paramSets = this.paramSets$();
     const controls: { [key: string]: any } = {};
