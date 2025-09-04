@@ -60,8 +60,6 @@ export class ModuleHeatmapComponent {
     // Effect to process scores when they change
     effect(() => {
       this.processEnrichmentScores(this.enrichmentScores$());
-      console.log('Enrichment scores updated:', this.enrichmentScores$());
-      console.log('prediction:', this.prediction$());
     });
   }
   
@@ -79,7 +77,6 @@ export class ModuleHeatmapComponent {
       this.error.set(null);
       
       let transformedData: any[] = [];
-      console.log('unprocessed scores:', scores);
 
       // if a predicted type is selected, filter scores
       if (this.selectedPredictedType$()) {
@@ -91,9 +88,6 @@ export class ModuleHeatmapComponent {
         scores.values = scores.values.map((row: number[]) =>
           row.filter((_, index: number) => scores.samples[index] !== undefined)
         );
-        console.log('Filtered scores for selected type:', scores);
-      } else {
-        console.log('No predicted type selected, using all scores');
       }
 
       // Make a deep copy so you don't mutate the original data!

@@ -47,8 +47,8 @@ import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../../components/heatmap-plot/heatmap-plot.component';
-import { NetworkComponent } from '../../../../browse/network/network.component';
-import { ActiveEntitiesComponent } from '../../../../browse/active-entities/active-entities.component';
+import { NetworkComponent } from '../../../../../components/browse-views/network/network.component';
+import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
 
 declare var Plotly: any;
 
@@ -200,7 +200,6 @@ export class LollipopPlotComponent {
         elements = elements.slice(0, this.MAX_ELEMENTS);
         this.elementLimitWarning.set(true);
       }
-      console.log('disease:', disease);
       const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
       const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
 

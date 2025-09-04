@@ -49,12 +49,10 @@ export class ExploreService {
   spongeEffectsRuns$ = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
     let runs = this.spongEffectsService.spongEffectsRuns$.value() || [];
-    runs = runs.filter((run) => run.disease_name === selectedDisease);
     // then filter
-    return runs
+    runs = runs.filter((run) => run.disease_name === selectedDisease);
+    return runs;
   });
-
-
 
   // get the unique param sets (m_scor_threshold, p_adj_threshold, modules_cutoff)
   paramSets$ = computed(() => {
@@ -93,7 +91,6 @@ export class ExploreService {
         selectedParamSets[key] = paramSet;
       }
     });
-    console.log('selectedParamSets', selectedParamSets);
     return selectedParamSets;
   }
   );
@@ -116,7 +113,7 @@ export class ExploreService {
         return selectedParamSets;
       });
     }
-    );
+  );
 
     // effect(() => {
     //   const highestKey = this.highestKey;

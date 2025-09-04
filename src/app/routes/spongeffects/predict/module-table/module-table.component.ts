@@ -116,7 +116,6 @@ export class ModuleTableComponent {
       blueNodes: this.blueNodes()
     }),
     loader: async ({ request }) => {
-      console.log('Top M-scores request:', request);
       const prediction_scores = request.prediction_scores;
       const blueNodes = request.blueNodes;
       if (!prediction_scores || !blueNodes) {
@@ -133,8 +132,6 @@ export class ModuleTableComponent {
         topScores.push({ gene, score: meanScore });
       }
       topScores.sort((a, b) => b.score - a.score);
-      console.log('Top M-scores:', topScores);
-      console.log(`Returning top ${blueNodes} scores:`, topScores.slice(0, blueNodes));
       return topScores.slice(0, blueNodes);
     }
   });
@@ -152,9 +149,6 @@ export class ModuleTableComponent {
         return Promise.resolve([]); 
       }
       const greyModules = this.getLollipopData(version, cancer, level, [this.highestParamSet()]);
-      console.log('Grey modules:', greyModules);
-      console.log('selected Disease:', cancer);
-      console.log('highest param set:', this.highestParamSet());
       return greyModules;
     },
   });
@@ -173,7 +167,6 @@ export class ModuleTableComponent {
       disease: this.selectedDisease(),
     }),
     loader: async ({ request }) => {
-      console.log('Table data request:', request);
       const { version, level, prediction, includeMembers, disease } = request;
       if (!version || !level || !prediction || prediction.length === 0 || !disease) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
@@ -188,7 +181,6 @@ export class ModuleTableComponent {
       if (modules.length === 0) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }
-      console.log('Modules for table:', modules);
       this.blueModules.set(modules);
       modules.forEach(module => {
         this.userModuleMap.set(this.getModuleKey(module), module);
@@ -203,7 +195,6 @@ export class ModuleTableComponent {
 
     this.topEnrichScores.reload();
     this.tableDataResource.reload();
-    console.log('Top modules', this.topEnrichScores.value());
 
     this.formGroup.get('blueControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
       this.blueNodes.set(value);
@@ -266,15 +257,11 @@ export class ModuleTableComponent {
   }
 
   private async getModulesOfGene(version: number, cancer: string, level: string, ens_list: string[], selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
-    console.log('Fetching modules for genes:', ens_list);
-    console.log('param set in getModulesOfGene', selectedParamSets)
     let data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        console.log('Fetching gene modules for param set:', key, paramSet);
         for (const ens_number of ens_list) {
           let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, this.blueNodes()!, ens_number);
-          console.log('Fetched modules:', tmp);
           tmp.map((entry) => {
             data.push({
               ensemblID: entry.gene.ensg_number,
@@ -303,7 +290,6 @@ export class ModuleTableComponent {
         }
       }
     }
-    console.log('Modules fetched:', data);
     return data;
   }
 
@@ -429,15 +415,10 @@ export class ModuleTableComponent {
         ];
       }
     }
-    console.log('Table entries:', tableEntries);
     return new MatTableDataSource(tableEntries);
   }
 
   private renderLollipopPlot(greyModules: SpongEffectsModule[], redNodes: number): void {
-    console.log('tcaga data modules', greyModules.map(g => g.ensemblID))
-    console.log('enrichmentScores', this.enrichmentScores$());
-    console.log('user modules', this.enrichmentScores$().genes);
-    console.log('prediction', this.predictService.prediction$());
     const data = [{
       x: greyModules.map(g => g.meanGiniDecrease),
       y: greyModules.map(g => g.meanAccuracyDecrease),
@@ -504,9 +485,6 @@ export class ModuleTableComponent {
     const config = {
       responsive: true
     };
-    console.log('custom enrichment scores', this.enrichmentScores$().genes);
-    console.log('x values', data[2].x);
-    console.log('y values', data[2].y);
     Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
   }
 

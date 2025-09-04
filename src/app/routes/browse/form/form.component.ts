@@ -135,7 +135,6 @@ export class FormComponent {
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
       if (!this.formGroup.valid) return;
-      console.log(config);
       this.browseService.runQuery({
         ...config,
         dataset,

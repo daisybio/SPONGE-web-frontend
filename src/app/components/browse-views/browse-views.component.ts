@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { InteractionsComponent } from '../../components/browse-views/interactions/interactions.component';
 import { NetworkComponent } from '../../components/browse-views/network/network.component';
-import { HeatmapComponent } from '../../components/browse-views/heatmap/heatmap.component';
+import { GeneExpressionHeatmapComponent } from '../../components/browse-views/heatmap/heatmap.component';
 import { BrowseService } from '../../services/browse.service';
 import { SurvivalAnalysisComponent } from '../../components/browse-views/survival-analysis/survival-analysis.component';
 import { ActiveEntitiesComponent } from '../../components/browse-views/active-entities/active-entities.component';
@@ -27,7 +27,7 @@ import { capitalize } from 'lodash';
     MatExpansionModule,
     InteractionsComponent,
     NetworkComponent,
-    HeatmapComponent,
+    GeneExpressionHeatmapComponent,
     SurvivalAnalysisComponent,
     ActiveEntitiesComponent,
     MatProgressSpinnerModule,

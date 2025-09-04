@@ -108,7 +108,6 @@ export class PredictFormComponent {
   );
 
   subtype_effect = effect(() => {
-    console.log('subtype effect form');
     if (this.query$()?.predictSubtypes) {
       this.predictService._subtypes$.set(true)
     } else {
@@ -166,7 +165,5 @@ export class PredictFormComponent {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    // Notify user
-    console.log(`Downloaded prediction results as ${fileName}`);
   }
 }

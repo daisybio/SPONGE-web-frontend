@@ -119,8 +119,6 @@ export class HomeComponent implements OnDestroy {
       return undefined;
     }
 
-    console.log('Preparing data for plot', geneCounts, transcriptCounts);
-
     const countField = 'count_interactions_sign';
 
     const x_values_genes = geneCounts.map(cancerCount => cancerCount.count_interactions_sign);

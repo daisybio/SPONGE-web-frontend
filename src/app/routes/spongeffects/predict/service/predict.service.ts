@@ -40,14 +40,12 @@ export class PredictService {
   selectedPredictedType$ = computed(() => {
     const prediction = this._prediction$.value();
     if (!prediction || !prediction.meta) return undefined;
-    console.log('selectedPredictedType', prediction.meta.type_predict);
     return prediction.meta.type_predict || undefined;
   });
 
   examplePrediction = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);
     const prediction = await response.json();
-    console.log('examplePrediction', prediction);
     return prediction;
   })();
 
@@ -90,7 +88,6 @@ export class PredictService {
         query.minExpr,
         query.method,
       );
-      console.log('prediction', prediction);
       return prediction;
     },
   });
