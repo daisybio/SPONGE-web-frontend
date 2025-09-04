@@ -6,7 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { FormComponent } from './form/form.component';
 import { InteractionsComponent } from './interactions/interactions.component';
 import { NetworkComponent } from './network/network.component';
-import { HeatmapComponent } from './heatmap/heatmap.component';
+import { GeneExpressionHeatmapComponent } from './heatmap/heatmap.component';
 import { BrowseService } from '../../services/browse.service';
 import { SurvivalAnalysisComponent } from './survival-analysis/survival-analysis.component';
 import { ActiveEntitiesComponent } from './active-entities/active-entities.component';
@@ -30,7 +30,6 @@ import { capitalize } from 'lodash';
     FormComponent,
     InteractionsComponent,
     NetworkComponent,
-    HeatmapComponent,
     SurvivalAnalysisComponent,
     ActiveEntitiesComponent,
     MatProgressSpinnerModule,
@@ -39,7 +38,8 @@ import { capitalize } from 'lodash';
     NodesComponent,
     GSEAComponent,
     DiseaseSimilarityComponent,
-  ],
+    GeneExpressionHeatmapComponent,
+],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss',
 })
