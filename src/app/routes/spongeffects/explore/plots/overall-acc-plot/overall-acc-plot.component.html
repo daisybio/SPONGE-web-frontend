@@ -1,10 +1,11 @@
 @if (plotOverallAccResource.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-} @else {
-  @if (!plotOverallAccResource.value()) {
-    <p>No data available</p>
-  }
 }
+
+@if (!plotOverallAccResource.value() && !plotOverallAccResource.isLoading() && !plotOverallAccResource.error()) {
+  <p>No data available</p>
+}
+
 <div class="overall-acc-plot-div">
   <div #overallAccuracyPlot class="overall-acc-plot" style="width: 100%; height: auto"></div>
 </div>

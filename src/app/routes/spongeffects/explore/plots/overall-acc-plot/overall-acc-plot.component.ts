@@ -125,6 +125,7 @@ export class OverallAccPlotComponent {
   async plotOverallAccuracyPlot(metricData: Promise<Metric[]>): Promise<PlotlyData> {
     // set main layout options
     const layout = {
+      title: 'Classification Accuracy per Model',
       autosize: true,
       yaxis: {
         showline: false,
@@ -133,7 +134,7 @@ export class OverallAccPlotComponent {
         ticktext: [] as string[]
       },
       margin: {
-        t: 40,
+        t: 60,
         //   b: 40,
         //   l: 0,
         // r: 200,
@@ -147,7 +148,7 @@ export class OverallAccPlotComponent {
           y: -0.1,
           xanchor: "center",
           yanchor: "top",
-          text: "Overall model accuracy",
+          text: "Overall Model Accuracy",
           showarrow: false
         }
       ],
