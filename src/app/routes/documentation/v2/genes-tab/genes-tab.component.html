@@ -1,6 +1,7 @@
-<h1>Genes Tab</h1>
+<h1>Genes+Transcripts Tab</h1>
 <p>
-  You can enter a gene or transcript (symbol or ENSG, ENST number) to search in the SPONGE database for all corresponding interactions. The relevant disease types are shown in a sunburst chart. 
+  You can enter a gene or transcript (symbol or ENSG, ENST number) to search in the SPONGE database for all
+  corresponding interactions. The relevant disease types are shown in a sunburst chart.
   <!-- In the tables of the found cancer sets you can search for other genes or create a network from selected table entries by clicking the "Show as Network" Button. -->
 </p>
 
@@ -18,11 +19,11 @@
         <th *matHeaderCellDef mat-header-cell>Effect</th>
         <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
       </ng-container>
-    
+
       <tr *matHeaderRowDef="columns" mat-header-row></tr>
       <tr *matRowDef="let row; columns: columns;" mat-row></tr>
     </table>
-    
+
   </mat-expansion-panel>
   <mat-expansion-panel>
     <mat-expansion-panel-header>
@@ -37,9 +38,9 @@
         <th *matHeaderCellDef mat-header-cell>Effect</th>
         <td *matCellDef="let feature" mat-cell>{{ feature.description }}</td>
       </ng-container>
-    
+
       <tr *matHeaderRowDef="columns" mat-header-row></tr>
       <tr *matRowDef="let row; columns: columns;" mat-row></tr>
     </table>
-  </mat-expansion-panel>   
+  </mat-expansion-panel>
 </mat-accordion>

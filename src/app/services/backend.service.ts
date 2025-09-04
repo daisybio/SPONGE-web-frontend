@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
 import {
   AlternativeSplicingEvent,
+  ASPsiValue,
   BrowseQuery,
   CeRNAExpression,
   CeRNAInteraction,
@@ -33,6 +34,8 @@ import {
   SpongEffectsTranscriptModules,
   SurvivalPValue,
   SurvivalRate,
+  Transcript,
+  TranscriptCount,
   TranscriptExpression,
   TranscriptInfo,
   TranscriptInteraction,
@@ -90,8 +93,18 @@ export class BackendService {
         ? 'ceRNAInteraction/getGeneNetwork'
         : 'ceRNAInteraction/getTranscriptNetwork';
 
-    const geneSorting: String[] = ['betweenness', 'node_degree', 'eigenvector'].filter((_, i) =>
-      [query.sortingBetweenness, query.sortingDegree, query.sortingEigenvector][i]);
+    const geneSorting: String[] = [
+      'betweenness',
+      'node_degree',
+      'eigenvector',
+    ].filter(
+      (_, i) =>
+        [
+          query.sortingBetweenness,
+          query.sortingDegree,
+          query.sortingEigenvector,
+        ][i]
+    );
 
     const _query: Query = {
       sponge_db_version: version,
@@ -173,6 +186,47 @@ export class BackendService {
 
     do {
       data = await this.http.getRequest<GeneInteraction[]>(
+        this.getRequestURL(route, {
+          ...query,
+          limit,
+          offset,
+        })
+      );
+      results.push(...data);
+      offset += limit;
+    } while (data.length === limit);
+
+    return results;
+  }
+
+  async getTranscriptInteractionsAll(
+    version: number,
+    disease: Dataset | undefined,
+    maxPValue: number,
+    ensts: string[]
+  ): Promise<TranscriptInteraction[]> {
+    const route = 'ceRNAInteraction/findAllTranscripts';
+
+    if (ensts.length === 0 || !disease || version != disease.sponge_db_version) {
+      return Promise.resolve([]);
+    }
+
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: disease.disease_name,
+      dataset_ID: disease.dataset_ID,
+      enst_number: ensts.join(','),
+      pValue: maxPValue,
+    };
+
+    const results: TranscriptInteraction[] = [];
+    const limit = 1000;
+    let offset = 0;
+
+    let data: TranscriptInteraction[];
+
+    do {
+      data = await this.http.getRequest<TranscriptInteraction[]>(
         this.getRequestURL(route, {
           ...query,
           limit,
@@ -271,9 +325,8 @@ export class BackendService {
   ): Promise<SurvivalRate[]> {
     const route = 'survivalAnalysis/getRates';
     const query: Query = {
-      sponge_db_version: version,
       disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
+      sponge_db_version: 'any',
       ensg_number: ensgs.join(','),
     };
 
@@ -297,6 +350,20 @@ export class BackendService {
     } catch (e) {
       return Promise.resolve([]);
     }
+  }
+
+  stringSearchTranscript(query: string): Promise<Transcript[]> {
+    if (query.length < 2) {
+      return Promise.resolve([]);
+    }
+
+    const route = 'stringSearchTranscript';
+    const queryObj: Query = {
+      searchString: query,
+    };
+    return this.http.getRequest<Transcript[]>(
+      this.getRequestURL(route, queryObj)
+    );
   }
 
   getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
@@ -397,6 +464,31 @@ export class BackendService {
       query['minCountSign'] = 1;
     }
     const res = await this.http.getRequest<GeneCount[]>(
+      this.getRequestURL(route, query)
+    );
+    if ('title' in res && res.title == 'No Content') {
+      return [];
+    }
+    return res;
+  }
+
+  async getTranscriptCount(
+    version: number,
+    ensts: string[],
+    onlySignificant: boolean
+  ): Promise<TranscriptCount[]> {
+    if (ensts.length === 0) {
+      return Promise.resolve([]);
+    }
+    const route = 'getTranscriptCount';
+    const query: Query = {
+      sponge_db_version: version,
+      enst_number: ensts.join(','),
+    };
+    if (onlySignificant) {
+      query['minCountSign'] = 1;
+    }
+    const res = await this.http.getRequest<TranscriptCount[]>(
       this.getRequestURL(route, query)
     );
     if ('title' in res && res.title == 'No Content') {
@@ -569,9 +661,8 @@ export class BackendService {
     const route = 'survivalAnalysis/getPValues';
 
     const query: Query = {
-      sponge_db_version: version,
       disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
+      sponge_db_version: 'any',
       ensg_number: ensgs.join(','),
     };
 
@@ -890,15 +981,26 @@ export class BackendService {
     return 'type' in resp ? resp : undefined;
   }
 
-  async getASPsiValues(asEventID: number, enst: string) {
+  async getASPsiValues(
+    version: number,
+    asEventID: number,
+    enst: string,
+    disease: Dataset
+  ): Promise<ASPsiValue[]> {
     const route = 'alternativeSplicing/getPsiValues';
 
     const query: Query = {
       alternative_splicing_event_transcripts_ID: asEventID,
       enst_number: enst,
+      dataset_ID: disease.dataset_ID,
+      sponge_db_version: version,
     };
 
-    return this.http.getRequest<number>(this.getRequestURL(route, query));
+    const resp = await this.http.getRequest<ASPsiValue[]>(
+      this.getRequestURL(route, query)
+    );
+
+    return 'detail' in resp ? [] : resp;
   }
 
   async getGSEAterms(
@@ -954,7 +1056,15 @@ export class BackendService {
     return this.http.getRequest<GseaResult[]>(this.getRequestURL(route, query));
   }
 
-  getGseaPlot(version: number, disease1: Dataset | undefined, condition1: string, disease2: Dataset | undefined, condition2: string, geneSet: string | undefined, term: string) {
+  getGseaPlot(
+    version: number,
+    disease1: Dataset | undefined,
+    condition1: string,
+    disease2: Dataset | undefined,
+    condition2: string,
+    geneSet: string | undefined,
+    term: string
+  ) {
     const route = 'gseaPlot';
 
     if (!disease1 || !disease2 || !geneSet) {
@@ -967,8 +1077,8 @@ export class BackendService {
       condition_1: condition1,
       condition_2: condition2,
       gene_set: geneSet,
-      term: term
-    }
+      term: term,
+    };
 
     return this.http.getRequest<string>(this.getRequestURL(route, query));
   }

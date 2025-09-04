@@ -43,11 +43,10 @@ interface NetworkData {
   disease: Dataset | undefined;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
+  readonly lastClicked = signal<'node' | 'edge'>('node');
   readonly graph$ = computed(() =>
     this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
@@ -338,6 +337,7 @@ export class BrowseService {
   ) {
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
+    this.lastClicked.set(entityType);
     states.update((entityStates) => {
       return {
         ...entityStates,
@@ -448,16 +448,30 @@ export class BrowseService {
   ): Graph {
     const graph = new Graph();
 
+    // Find max node degree for normalization
+    const maxNodeDegree = Math.max(...nodes.map((node) => node.node_degree));
+
+    // Find max mscor for normalization
+    const maxMscor = Math.max(
+      ...interactions.map((interaction) =>
+        'gene1' in interaction ? interaction.mscor : interaction.mscor
+      )
+    );
+
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
       const hasInverse = inverseNodes.some(
         (inverseNode) => BrowseService.getNodeGeneName(inverseNode) === gene
       );
+
+      // Calculate normalized node size based on degree (range: 5-20)
+      const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);
+
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
         x: Math.random(), // Coordinates will be overridden by the layout algorithm
         y: Math.random(),
-        size: Math.log(node.node_degree),
+        size: normalizedSize,
         forceLabel: true,
         type: hasInverse ? 'circle' : 'square',
       });
@@ -468,9 +482,57 @@ export class BrowseService {
       if (graph.hasEdge(ids[0], ids[1])) {
         return;
       }
-      graph.addEdge(ids[0], ids[1]);
+
+      // Calculate normalized edge size based on mscor (range: 1-5)
+      const mscor =
+        'gene1' in interaction ? interaction.mscor : interaction.mscor;
+      const normalizedSize = 1 + 6 * (mscor / maxMscor);
+
+      graph.addEdge(ids[0], ids[1], {
+        size: normalizedSize,
+      });
     });
 
     return graph;
   }
+
+  setAllNodesState(state: boolean) {
+    this._nodeStates$.update((entityStates) => {
+      return Object.fromEntries(
+        Object.keys(entityStates).map((key) => [
+          key,
+          {
+            ...entityStates[key],
+            [State.Active]: state,
+          },
+        ])
+      );
+    });
+  }
+
+  allNodesSelected$ = computed(() => {
+    return Object.values(this._nodeStates$()).every(
+      (state) => state[State.Active]
+    );
+  });
+
+  setAllEdgesState(state: boolean) {
+    this._edgeStates$.update((entityStates) => {
+      return Object.fromEntries(
+        Object.keys(entityStates).map((key) => [
+          key,
+          {
+            ...entityStates[key],
+            [State.Active]: state,
+          },
+        ])
+      );
+    });
+  }
+
+  allEdgesSelected$ = computed(() => {
+    return Object.values(this._edgeStates$()).every(
+      (state) => state[State.Active]
+    );
+  });
 }

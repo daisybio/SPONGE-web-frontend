@@ -213,6 +213,12 @@ export interface GeneCount extends SpongeRun {
   gene: Gene;
 }
 
+export interface TranscriptCount extends SpongeRun {
+  count_all: number;
+  count_sign: number;
+  transcript: Transcript;
+}
+
 export interface GeneInfo {
   chromosome_name: string;
   cytoband: string;
@@ -352,8 +358,8 @@ export interface SpongEffectsGeneModuleMembers {
     ensg_number: string;
     gene_symbol: string;
   };
-  spongEffects_gene_module_ID: number
-  spongEffects_gene_module_members_ID: number; 
+  spongEffects_gene_module_ID: number;
+  spongEffects_gene_module_members_ID: number;
 }
 
 export interface SpongEffectsTranscriptModules {
@@ -378,8 +384,8 @@ export interface SpongEffectsTranscriptModuleMembers {
       gene_symbol: string;
     };
   };
-  spongEffects_transcript_module_ID: number
-  spongEffects_transcript_module_members_ID: number; 
+  spongEffects_transcript_module_ID: number;
+  spongEffects_transcript_module_members_ID: number;
 }
 
 export interface SpongEffectsModule {
@@ -396,7 +402,6 @@ export interface ModuleMember {
   moduleCenter: string;
   spongEffects_run_ID: number;
 }
-
 
 export interface PredictCancerType {
   meta: {
@@ -481,6 +486,13 @@ export interface AlternativeSplicingEvent {
   transcript: {
     enst_number: string;
   };
+}
+
+export interface ASPsiValue {
+  alternative_splicing_event_transcripts: AlternativeSplicingEvent;
+  psi_value: number;
+  psivec_ID: number;
+  sample_ID: string;
 }
 
 export interface MiRNA {

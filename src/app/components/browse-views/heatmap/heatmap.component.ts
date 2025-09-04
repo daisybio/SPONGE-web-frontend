@@ -27,7 +27,7 @@ declare const Plotly: any;
   imports: [CommonModule, ReusableHeatmapComponent]
 })
 export class GeneExpressionHeatmapComponent {
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   backend = inject(BackendService);
   versions = inject(VersionsService);
 
@@ -35,13 +35,13 @@ export class GeneExpressionHeatmapComponent {
   refreshSignal = input.required<any>();
 
   // State
-  level$ = this.browseService.level$;
+  level$ = computed(() => this.browseService().level$());
   
   // Parameters derived from services
   heatmapParams = computed(() => ({
-    nodes: this.browseService.nodes$(),
-    disease: this.browseService.disease$(),
-    level: this.browseService.level$(),
+    nodes: this.browseService().nodes$(),
+    disease: this.browseService().disease$(),
+    level: this.browseService().level$(),
     version: this.versions.versionReadOnly()(),
   }));
 

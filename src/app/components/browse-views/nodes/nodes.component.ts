@@ -1,4 +1,11 @@
-import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
 import {
   Gene,
@@ -12,8 +19,8 @@ import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
-import { InfoComponent } from '../../../components/info/info.component';
-import { ModalsService } from '../../../components/modals-service/modals.service';
+import { InfoComponent } from '../../info/info.component';
+import { ModalsService } from '../../modals-service/modals.service';
 
 @Component({
   selector: 'app-nodes',
@@ -29,17 +36,24 @@ import { ModalsService } from '../../../components/modals-service/modals.service
   templateUrl: './nodes.component.html',
   styleUrl: './nodes.component.scss',
 })
-export class NodesComponent implements AfterViewInit {
+export class NodesComponent implements AfterViewInit, OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   modalsService = inject(ModalsService);
   columns = ['identifier', 'betweenness', 'eigenvector', 'node_degree'];
-  dataSource: MatTableDataSource<GeneNode | TranscriptNode>;
+  dataSource = new MatTableDataSource<any>([]);
   readonly dialog = inject(MatDialog);
 
-  constructor(browseService: BrowseService) {
-    this.dataSource = new MatTableDataSource<any>(
-      browseService.nodes$().map((node) => {
+  browseService = input.required<BrowseService>();
+
+  ngOnInit() {
+    this.updateDataSource();
+  }
+
+  updateDataSource() {
+    this.dataSource.data = this.browseService()
+      .nodes$()
+      .map((node) => {
         return {
           identifier: BrowseService.getNodeFullName(node),
           betweenness: node.betweenness,
@@ -47,8 +61,7 @@ export class NodesComponent implements AfterViewInit {
           node_degree: node.node_degree,
           obj: 'gene' in node ? node.gene : node.transcript,
         };
-      }),
-    );
+      });
   }
 
   ngAfterViewInit() {

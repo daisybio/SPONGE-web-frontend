@@ -27,7 +27,7 @@ export const routes: Routes = [
     component: BrowseComponent,
   },
   {
-    path: 'genes',
+    path: 'genes-transcripts',
     component: GenesComponent,
   },
   {
@@ -61,7 +61,7 @@ export const routes: Routes = [
       {
         path: 'genes-tab',
         component: GenesTabComponent,
-      },      
+      },
       {
         path: 'browse-tab',
         component: BrowseTabComponent,

@@ -15,7 +15,7 @@ export class BrowseTabComponent {
       name: 'Disease Select',
       description:
         'Select one of the disease datasets to visualize the disease-specific ceRNA network.',
-    },    
+    },
     {
       name: 'Disease Subtype Select',
       description:
@@ -25,42 +25,42 @@ export class BrowseTabComponent {
       name: 'Genes /Transcripts Switch',
       description:
         'Show ceRNA network on gene-level vs transcript-level.',
-    },    
+    },
     {
       name: 'Nodes Filter Criteria',
       description:
         'Select node sorting by node degree, betweenness or eigenvector value. Select thresholds for filtering the ceRNA network nodes: maximum amount of nodes, minimum node degree, minimum betweenness, minimum eigenvector. Decide to show orphan nodes (without interactions).',
-    },    
+    },
     {
       name: 'Interactions Filter Criteria',
       description:
         'Select edge sorting by adjusted p-value, correlation or mscor. Select thresholds for filtering the ceRNA network interactions: maximum amount of interactions, maximum adjusted p-value, minimum mscor.',
-    },    
+    },
     {
       name: 'View raw data',
       description:
         'Show original expression data ceRNA network computation is based upon.',
-    },    
+    },
     {
       name: 'Click on a Node',
       description:
         'Show betweenness, eigenvector, node degree and further details for the selected node.',
-    },    
+    },
     {
       name: 'Click on a Edge',
       description:
         'Show correlation, mscor, adjusted p-value and a list of supporting miRNAs with corresponding correlations to neighboring nodes and a link to mirbase with further information.',
-    },    
+    },
     {
       name: 'Functional enrichment analysis',
       description:
         'Open g:Profiler to do a functional enrichment analysis for all visible nodes.',
-    },   
+    },
     // {
     //   name: 'Save as',
     //   description:
     //     'You can save and download the plot as .jpg or .png.',
-    // },  
+    // },
     {
       name: 'Reset camera',
       description:
@@ -72,7 +72,7 @@ export class BrowseTabComponent {
         'Turn off physics for an individualized visualization of bigger networks.',
     }
   ];
-  node_features = [ 
+  node_features = [
     {
       name: 'Hallmarks',
       description:
@@ -119,7 +119,7 @@ export class BrowseTabComponent {
       name: 'Expression Heatmap',
       description:
       'Show an expression heatmap for the chosen disease and nodes to visually distinguish consistently expressed biomarkers.'
-    },   
+    },
     {
       name: 'Genes/Transcripts',
       description:
@@ -138,7 +138,7 @@ export class BrowseTabComponent {
     {
       name: 'Disease similarities',
       description:
-      'Visualize similarities between the chosen disease network and the other disease networks. Shown are Euclidean distances between the hubness scores in a two-dimensional space. The gene-wise hubness score is calculated by dividing the degree of the gene in the network by the number of possible edges. The network hubness score is the mean of the gene-wise hubness scores. '
+      'Visualize similarities between the chosen disease network and the other disease networks. Shown are Euclidean distances between the normalized degree centralities in a two-dimensional space. The normalized degree centrality is calculated by dividing the degree of the gene in the network by the number of possible edges. The network-wise normalized degree centralities are the mean of the gene-wise normalized degree centralities.'
     },
 
   ];

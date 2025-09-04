@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  effect,
   inject,
   model,
   resource,
@@ -20,7 +21,7 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { BackendService } from '../../services/backend.service';
-import { Dataset, Gene } from '../../interfaces';
+import { Dataset, Gene, Transcript } from '../../interfaces';
 import _, { capitalize } from 'lodash';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -29,6 +30,7 @@ import { VersionsService } from '../../services/versions.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { SunburstComponent } from './sunburst/sunburst.component';
 import { DiseaseSelectorComponent } from '../../components/disease-selector/disease-selector.component';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-genes',
@@ -47,6 +49,7 @@ import { DiseaseSelectorComponent } from '../../components/disease-selector/dise
     MatProgressSpinner,
     SunburstComponent,
     DiseaseSelectorComponent,
+    MatButtonToggleModule,
   ],
   templateUrl: './genes.component.html',
   styleUrl: './genes.component.scss',
@@ -58,10 +61,13 @@ export class GenesComponent {
   readonly version = this.versionsService.versionReadOnly();
   readonly tabChange = signal<number>(0);
 
+  readonly level = signal<'gene' | 'transcript'>('gene');
   readonly currentInput = model<string | Gene>('');
+  readonly currentTranscriptInput = model<string | Transcript>('');
   readonly onlySignificant = model(true);
 
   readonly activeGenes = signal<Gene[]>([]);
+  readonly activeTranscripts = signal<Transcript[]>([]);
   readonly activeDisease = signal<Dataset | undefined>(undefined);
 
   readonly possibleGenes = resource({
@@ -87,45 +93,105 @@ export class GenesComponent {
       );
     },
   });
-  readonly results = resource({
+
+  readonly possibleTranscripts = resource({
     request: computed(() => {
-      return {
-        version: this.version(),
-        ensgs: this.activeGenes().map((g) => g.ensg_number),
-        onlySignificant: this.onlySignificant(),
-      };
+      const currentInput = this.currentTranscriptInput();
+
+      let query = '';
+      if (typeof currentInput === 'string') {
+        query = currentInput;
+      } else {
+        query = '';
+      }
+
+      return { query };
     }),
     loader: async (param) => {
-      return this.backend.getGeneCount(
-        param.request.version,
-        param.request.ensgs,
-        param.request.onlySignificant
-      );
+      return this.backend.stringSearchTranscript(param.request.query);
+    },
+  });
+
+  readonly results = resource({
+    request: computed(() => {
+      const currentLevel = this.level();
+
+      if (currentLevel === 'gene') {
+        return {
+          version: this.version(),
+          ensgs: this.activeGenes().map((g) => g.ensg_number),
+          onlySignificant: this.onlySignificant(),
+          level: 'gene' as const,
+        };
+      } else {
+        return {
+          version: this.version(),
+          ensts: this.activeTranscripts().map((t) => t.enst_number),
+          onlySignificant: this.onlySignificant(),
+          level: 'transcript' as const,
+        };
+      }
+    }),
+    loader: async (param) => {
+      if (param.request.level === 'gene') {
+        return this.backend.getGeneCount(
+          param.request.version,
+          param.request.ensgs,
+          param.request.onlySignificant
+        );
+      } else {
+        return this.backend.getTranscriptCount(
+          param.request.version,
+          param.request.ensts,
+          param.request.onlySignificant
+        );
+      }
     },
   });
 
   readonly interactions$ = resource({
     request: computed(() => {
-      return {
-        disease: this.activeDisease(),
-        onlySignificant: this.onlySignificant(),
-        ensgs: this.activeGenes().map((g) => g.ensg_number),
-        version: this.version(),
-      };
+      const currentLevel = this.level();
+
+      if (currentLevel === 'gene') {
+        return {
+          disease: this.activeDisease(),
+          onlySignificant: this.onlySignificant(),
+          ensgs: this.activeGenes().map((g) => g.ensg_number),
+          version: this.version(),
+          level: 'gene' as const,
+        };
+      } else {
+        return {
+          disease: this.activeDisease(),
+          onlySignificant: this.onlySignificant(),
+          ensts: this.activeTranscripts().map((t) => t.enst_number),
+          version: this.version(),
+          level: 'transcript' as const,
+        };
+      }
     }),
     loader: async (param) => {
-      return this.backend.getGeneInteractionsAll(
-        param.request.version,
-        param.request.disease,
-        param.request.onlySignificant ? 0.05 : 1,
-        param.request.ensgs
-      );
+      if (param.request.level === 'gene') {
+        return this.backend.getGeneInteractionsAll(
+          param.request.version,
+          param.request.disease,
+          param.request.onlySignificant ? 0.05 : 1,
+          param.request.ensgs
+        );
+      } else {
+        return this.backend.getTranscriptInteractionsAll(
+          param.request.version,
+          param.request.disease,
+          param.request.onlySignificant ? 0.05 : 1,
+          param.request.ensts
+        );
+      }
     },
   });
 
   diseases$ = computed(() => {
     const results = this.results.value() ?? [];
-    console.log(results);
     const datasetIDs =
       results
         .map((r) => r.sponge_run.dataset.dataset_ID)
@@ -138,13 +204,40 @@ export class GenesComponent {
 
   protected readonly capitalize = capitalize;
 
+  constructor() {
+    // Clear active items when switching between gene and transcript levels
+    effect(() => {
+      const currentLevel = this.level();
+      if (currentLevel === 'gene') {
+        this.activeTranscripts.set([]);
+        this.currentTranscriptInput.set('');
+      } else {
+        this.activeGenes.set([]);
+        this.currentInput.set('');
+      }
+    });
+  }
+
   remove(gene: Gene): void {
     this.activeGenes.update((genes) => {
       return genes.filter((g) => !_.isEqual(g, gene));
     });
   }
 
+  removeTranscript(transcript: Transcript): void {
+    this.activeTranscripts.update((transcripts) => {
+      return transcripts.filter((t) => !_.isEqual(t, transcript));
+    });
+  }
+
   selected(event: MatAutocompleteSelectedEvent): void {
     this.activeGenes.update((genes) => [...genes, event.option.value]);
+  }
+
+  selectedTranscript(event: MatAutocompleteSelectedEvent): void {
+    this.activeTranscripts.update((transcripts) => [
+      ...transcripts,
+      event.option.value,
+    ]);
   }
 }

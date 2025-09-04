@@ -1,16 +1,28 @@
-import {Component, computed, inject} from '@angular/core';
-import {MatAnchor} from "@angular/material/button";
-import {MatToolbar} from "@angular/material/toolbar";
-import {RouterLink, RouterOutlet, Router, ActivatedRoute} from "@angular/router";
-import {MatButtonToggleModule} from "@angular/material/button-toggle";
-import {FormsModule} from "@angular/forms";
-import {VersionsService} from "./services/versions.service";
+import { Component, computed, inject } from '@angular/core';
+import { MatAnchor } from '@angular/material/button';
+import { MatToolbar } from '@angular/material/toolbar';
+import {
+  RouterLink,
+  RouterOutlet,
+  Router,
+  ActivatedRoute,
+} from '@angular/router';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { FormsModule } from '@angular/forms';
+import { VersionsService } from './services/versions.service';
 
 @Component({
   selector: 'app-root',
-  imports: [MatToolbar, RouterLink, RouterOutlet, MatAnchor, MatButtonToggleModule, FormsModule],
+  imports: [
+    MatToolbar,
+    RouterLink,
+    RouterOutlet,
+    MatAnchor,
+    MatButtonToggleModule,
+    FormsModule,
+  ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   versionsService = inject(VersionsService);
@@ -29,11 +41,21 @@ export class AppComponent {
     this.disableVersionToggle = currentRoute.includes('spongeffects');
   }
 
+  getRoutePath(subpage: string): string {
+    return subpage.toLowerCase().replace(/\+/g, '-');
+  }
+
   subpages$ = computed(() => {
     if (this.version() < 2) {
-      return ['Browse', 'Genes', 'Documentation', 'Download']
+      return ['Browse', 'Genes+Transcripts', 'Documentation', 'Download'];
     } else {
-      return ['Browse', 'Genes', 'SpongEffects', 'Documentation', 'Download']
+      return [
+        'Browse',
+        'Genes+Transcripts',
+        'SpongEffects',
+        'Documentation',
+        'Download',
+      ];
     }
-  })
+  });
 }

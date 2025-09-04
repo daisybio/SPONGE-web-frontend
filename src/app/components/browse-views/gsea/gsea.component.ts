@@ -14,7 +14,7 @@ import { BackendService } from '../../../services/backend.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Comparison, Dataset } from '../../../interfaces';
-import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
+import { DiseaseSelectorComponent } from '../../disease-selector/disease-selector.component';
 import { MatCardModule } from '@angular/material/card';
 import {
   MatButtonToggle,
@@ -59,13 +59,15 @@ import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.co
 })
 export class GSEAComponent {
   versionsService = inject(VersionsService);
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   backend = inject(BackendService);
   dialog = inject(MatDialog);
   refresh$ = input.required<any>();
 
-  possibleComparisons$ = this.browseService.possibleComparisons$;
-  globalDisease$ = this.browseService.disease$;
+  possibleComparisons$ = computed(() =>
+    this.browseService().possibleComparisons$()
+  );
+  globalDisease$ = computed(() => this.browseService().disease$());
   localDisease$ = signal<Dataset | undefined>(undefined);
   possibleGlobalConditions$ = computed(() =>
     this.getConditionsForDisease(

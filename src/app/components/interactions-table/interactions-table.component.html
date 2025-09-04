@@ -1,9 +1,35 @@
+<div class="filter-container">
+  <div class="sliders-row">
+    <div class="slider-group">
+      <div class="slider-header">
+        <label>P-value Range: <span class="value-display">{{ minPValue() | number:'1.2-4' }} - {{ maxPValue() |
+            number:'1.2-4' }}</span></label>
+      </div>
+      <mat-slider [min]="pValueLimits().min" [max]="pValueLimits().max" [step]="pValueLimits().step">
+        <input [(ngModel)]="minPValue" matSliderStartThumb>
+        <input [(ngModel)]="maxPValue" matSliderEndThumb>
+      </mat-slider>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-header">
+        <label>Mscor Range: <span class="value-display">{{ minMscor() | number:'1.2-4' }} - {{ maxMscor() |
+            number:'1.2-5' }}</span></label>
+      </div>
+      <mat-slider [min]="mscorLimits().min" [max]="mscorLimits().max" [step]="mscorLimits().step">
+        <input [(ngModel)]="minMscor" matSliderStartThumb>
+        <input [(ngModel)]="maxMscor" matSliderEndThumb>
+      </mat-slider>
+    </div>
+  </div>
+</div>
+
 <table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj1)" mat-button
-              matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
+      <button (click)="openDialog(interaction.obj1)" mat-button matTooltip="Show details about {{interaction.name_1}}"
+        matTooltipPosition="right">
         {{ interaction.name_1 }}
       </button>
     </td>
@@ -12,8 +38,8 @@
   <ng-container matColumnDef="name_2">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$() || 'Node') }} 2</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj2)" mat-button
-              matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
+      <button (click)="openDialog(interaction.obj2)" mat-button matTooltip="Show details about {{interaction.name_2}}"
+        matTooltipPosition="right">
         {{ interaction.name_2 }}
       </button>
     </td>
@@ -22,8 +48,8 @@
   <ng-container matColumnDef="mirna">
     <th *matHeaderCellDef mat-header-cell>miRNAs</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openMiRNADialog(interaction.interaction)" mat-button
-              matTooltip="Show supporting miRNAs" matTooltipPosition="right">
+      <button (click)="openMiRNADialog(interaction.interaction)" mat-button matTooltip="Show supporting miRNAs"
+        matTooltipPosition="right">
         Show miRNAs
       </button>
     </td>
