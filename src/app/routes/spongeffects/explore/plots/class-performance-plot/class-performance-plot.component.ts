@@ -180,7 +180,8 @@ export class ClassPerformancePlotComponent {
             return values.reduce((sum, v) => sum + v, 0) / values.length;
           }),
           type: 'bar',
-          name: modelType,
+          // convert first character of modelType to uppercase
+          name: modelType.charAt(0).toUpperCase() + modelType.slice(1),
           legendgroup: modelType,
           showlegend: splitIndex === 0, // Only show legend for first subplot
           marker: {
@@ -236,11 +237,11 @@ export class ClassPerformancePlotComponent {
         domain: this.selectedDisease() === 'pancancer' ? [0.85, 1] : [0.65, 1],
       },
       xaxis1:  {
-        title: `Prediction class (${type_or_subtype})`
+        title: `Predictive Class (${type_or_subtype})`
       },
       // Add subplot titles
       annotations: [{
-        text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
+        text: `Classification Performance per Cancer ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
         x: 0.5,
         y: 1,
         xref: 'paper',
@@ -268,8 +269,8 @@ export class ClassPerformancePlotComponent {
       // yaxis label
       {
         text: Object.keys(this.selectedModels()()).length > 1
-          ? `${measureLabel}<br>(mean over models selected on the left)<br> <br> ` // newlines added for spacing
-          : `${measureLabel}<br>(of model selected on the left)<br> <br> `,
+          ? `${measureLabel}<br>(Mean over models selected on the left)<br> <br> ` // newlines added for spacing
+          : `${measureLabel}<br>(Of model selected on the left)<br> <br> `,
         x: 0,
         y: 0.5,
         xref: 'paper',
