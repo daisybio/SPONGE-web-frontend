@@ -12,7 +12,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
-import { CommonModule, NgForOf } from '@angular/common';
+import { CommonModule, NgForOf, NgIf } from '@angular/common';
 import { MatButton } from '@angular/material/button';
 import { MatDropzone } from '@ngx-dropzone/material';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
@@ -28,6 +28,7 @@ import { PredictService } from '../service/predict.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { InfoService } from '../../../../services/info.service';
+import {capitalize} from "lodash";
 
 @Component({
   selector: 'app-predict-form',
@@ -42,6 +43,7 @@ import { InfoService } from '../../../../services/info.service';
     MatOption,
     MatSelect,
     NgForOf,
+    NgIf,
     MatButton,
     FormsModule,
     MatDropzone,
@@ -52,13 +54,17 @@ import { InfoService } from '../../../../services/info.service';
     MatChipsModule,
     MatIconModule,
     MatTooltipModule,
-    InfoComponent
+    InfoComponent,
   ],
   templateUrl: './predict-form.component.html',
   styleUrl: './predict-form.component.scss',
 })
 export class PredictFormComponent {
   infoService = inject(InfoService);
+  predictService = inject(PredictService);
+  selectedPredictedType = this.predictService.selectedPredictedType$;
+  allPredictedTypes$ = this.predictService.allPredictedTypes$;
+  protected readonly capitalize = capitalize;
   // methods = ['gsva', 'ssgsea', 'OE'];
   methods = {
     gsva: 'GSVA',
@@ -94,7 +100,6 @@ export class PredictFormComponent {
   fileCtrl = new FormControl<File | null>(null);
   fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
   dialog = inject(MatDialog);
-  predictService = inject(PredictService);
 
   isLoading$ = this.predictService.isLoading$;
   query$ = toSignal(this.formGroup.valueChanges);
@@ -142,5 +147,26 @@ export class PredictFormComponent {
       height: '410px',
       width: '600px',
     });
+  }
+
+  downloadResults() {
+    const prediction = this.predictService.prediction$();
+    if (!prediction) {
+      console.warn('No prediction available to download');
+      return;
+    }
+    // download prediction results as JSON file
+    const fileName = `prediction_results_${new Date().toISOString()}.json`;
+    const blob = new Blob([JSON.stringify(prediction, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    // Notify user
+    console.log(`Downloaded prediction results as ${fileName}`);
   }
 }

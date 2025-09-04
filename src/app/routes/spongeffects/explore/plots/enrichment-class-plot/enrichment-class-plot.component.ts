@@ -33,6 +33,7 @@ export class EnrichmentClassPlotComponent {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
+  selectedDisease = this.exploreService.selectedDisease$;
 
   enrichmentClassPlot = viewChild.required<ElementRef<HTMLDivElement>>('enrichmentClassPlot');
 
@@ -95,6 +96,9 @@ export class EnrichmentClassPlotComponent {
 
   async plotEnrichmentClassPlot(enrichmentData:  Promise<Map<string, PlotData>>): Promise<PlotlyData> {
 
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
+
+
     // fill subtype specific data
     let data: any[] = [];
     const enrichmentDataResponse = await enrichmentData;
@@ -132,7 +136,7 @@ export class EnrichmentClassPlotComponent {
         roworder: 'bottom to top'
       },
       height: plot_height,
-      title: "spongEffects enrichment score density for predictive classes",
+      title: `SpongEffects Enrichment Score Density for per Cancer ${type_or_subtype}`,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
     };
@@ -160,7 +164,7 @@ export class EnrichmentClassPlotComponent {
         x = x + (index + 1).toString();
         y = y + (index + 1).toString();
       } else {
-        x_axis_layout_i["title"] = "spongEffects enrichment score";
+        x_axis_layout_i["title"] = "SpongEffects Enrichment Score";
         x_axis_layout_i.showticklabels = true;
       }
       layout[x_key] = x_axis_layout_i;

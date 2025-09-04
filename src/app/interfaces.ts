@@ -9,6 +9,7 @@ export interface Dataset {
   disease_type: string;
   download_url: string;
   sponge_db_version: number;
+  sample_count: number; 
 }
 
 export interface SpongeRun {
@@ -59,6 +60,7 @@ export interface OverallCounts {
   count_interactions_sign: number;
   count_shared_miRNAs: number;
   disease_name: string;
+  disease_subtype: string | null;
   sponge_run_ID: number;
 }
 
@@ -70,7 +72,7 @@ export interface OverallCounts {
 
 export enum InteractionSorting {
   pValue = 'Adj. p-value',
-  mscor = 'mscor',
+  mscor = 'MScor',
   correlation = 'Correlation',
 }
 
@@ -409,6 +411,11 @@ export interface PredictCancerType {
     typePrediction: string;
     subtypePrediction: string;
   }[];
+  scores: {
+    genes: string[];
+    values: number[][];
+    samples: string[];
+  };
 }
 
 export interface ExploreQuery {

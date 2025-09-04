@@ -10,16 +10,16 @@
 
 <mat-card appearance="outlined">
   <mat-card-content>
-    Select model
+    Model Selection
     <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
       Select the models to display based on the paramers.
       </mat-card-subtitle>
   <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px;">
     <!-- First column with parameter names (not clickable) -->
     <div style="width: 140px;">
-      <div style="margin-top: 11px; height: 25px;">mscor threshold</div>
-      <div style="margin-top: 15px; height: 25px;">pAdjust threshold</div>
-      <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">modules cutoff</div>
+      <div style="margin-top: 11px; height: 25px;">Min. MScor</div>
+      <div style="margin-top: 15px; height: 25px;">Max. Adj. P-Value</div>
+      <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">Modules Cutoff</div>
     </div>
     
     <!-- Parameter set columns as clickable chips -->
@@ -53,7 +53,7 @@
   </div>
   <mat-card-footer>
     <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
-      {{ highestKey().length > 0 ? '*Best model according to accuracy.' : '' }}
+      {{ highestKey().length > 0 ? '*Best model regarding to accuracy.' : '' }}
     </mat-card-subtitle>
   </mat-card-footer>
 </mat-card-content>  

@@ -3,7 +3,7 @@
   justify-content: center !important;
 }
 
-// Remove the checkmark graphic (you already had this)
+// Remove the checkmark graphic
 ::ng-deep .mdc-evolution-chip__action[aria-selected='true'] .mdc-evolution-chip__graphic.mat-mdc-chip-graphic {
   display: none !important;
 }
