@@ -7,6 +7,7 @@ import {
   inject,
   input,
   linkedSignal,
+  OnInit,
   signal,
   viewChild,
 } from '@angular/core';
@@ -56,7 +57,7 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
 })
-export class FormComponent {
+export class FormComponent implements OnInit {
   versionsService = inject(VersionsService);
   browseService = input.required<BrowseService>();
   version = this.versionsService.versionReadOnly();
@@ -83,7 +84,7 @@ export class FormComponent {
       Validators.min(0),
       Validators.max(100),
     ]),
-    minDegree: new FormControl<number>(1, [
+    minDegree: new FormControl<number>(0, [
       Validators.min(0),
       Validators.max(100),
     ]),
@@ -113,6 +114,17 @@ export class FormComponent {
   });
 
   protected readonly capitalize = _.capitalize;
+
+  ngOnInit() {
+    // if specific defaults are set (eg spongeffects) 
+    this.formGroup.patchValue({
+      minDegree: this.defaultMinDegree(),
+      minBetweenness: this.defaultMinBetweenness() ?? 0.05,
+      minEigen: this.defaultMinEigen() ?? 0.1,
+      maxPValue: this.defaultMaxPValue() ?? 0.05,
+      minMscor: this.defaultMinMscor() ?? 0.1,
+    });
+  }
 
   constructor(private cdr: ChangeDetectorRef) {
     const formSignal = signal(this.formGroup.value);
@@ -153,24 +165,6 @@ export class FormComponent {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
     });
   }
-ngOnInit() {
-  // Always set the form control values from the inputs
-  if (this.defaultMinBetweenness() !== undefined) {
-    this.formGroup.get('minBetweenness')?.setValue(this.defaultMinBetweenness() ?? null);
-  }
-  if (this.defaultMinDegree() !== undefined) {
-    this.formGroup.get('minDegree')?.setValue(this.defaultMinDegree() ?? null);
-  }
-  if (this.defaultMinEigen() !== undefined) {
-    this.formGroup.get('minEigen')?.setValue(this.defaultMinEigen() ?? null);
-  }
-  if (this.defaultMaxPValue() !== undefined) {
-    this.formGroup.get('maxPValue')?.setValue(this.defaultMaxPValue() ?? null);
-  }
-  if (this.defaultMinMscor() !== undefined) {
-    this.formGroup.get('minMscor')?.setValue(this.defaultMinMscor() ?? null);
-  }
-}
 
   getKeys(enumType: any): string[] {
     return Object.keys(enumType);

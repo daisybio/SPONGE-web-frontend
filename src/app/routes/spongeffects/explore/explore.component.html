@@ -5,12 +5,12 @@
       <hr style="margin: 266.5px 0 20px 0; width: 100%;" />
       <app-form 
         [browseService]="browseService" 
-        [fixedDataset]="exploreService.selectedDiseaseObject$()">
+        [fixedDataset]="exploreService.selectedDiseaseObject$()"
         [defaultMinBetweenness]="0"
         [defaultMinDegree]="1"
         [defaultMinEigen]="0"
-        [defaultMaxPValue]="1"
-        [defaultMinMscor]="0"
+        [defaultMaxPValue]="0.2"
+        [defaultMinMscor]="0.1"
       >
       </app-form>    
     }
