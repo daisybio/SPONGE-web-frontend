@@ -8,7 +8,8 @@ import {
   resource,
   signal,
   viewChild,
-  ViewChild
+  ViewChild,
+  ɵunwrapWritableSignal
 } from '@angular/core';
 import {
   FormControl,
@@ -49,6 +50,7 @@ import { debounceTime } from 'rxjs';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../../components/heatmap-plot/heatmap-plot.component';
 import { NetworkComponent } from '../../../../../components/browse-views/network/network.component';
 import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
+import { BrowseService } from '../../../../../services/browse.service';
 
 declare var Plotly: any;
 
@@ -74,7 +76,7 @@ declare var Plotly: any;
     ReusableHeatmapComponent,
     MatButtonToggleModule,
     NetworkComponent,
-    ActiveEntitiesComponent
+    ActiveEntitiesComponent,
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
@@ -83,6 +85,7 @@ export class LollipopPlotComponent {
   private backend = inject(BackendService);
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
+  browseService = inject(BrowseService);
   infoService = inject(InfoService);
   selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()()));
 
@@ -98,18 +101,21 @@ export class LollipopPlotComponent {
     topControl: new FormControl<number>(15, [Validators.min(1), Validators.max(20)]),
     includeModuleMembers: new FormControl<boolean>(false)
   });
-  topN = signal(this.formGroup.get('topControl')?.value);
-  redNodes = signal(this.formGroup.get('markControl')?.value);
-  includeModuleMembers = signal(this.formGroup.get('includeModuleMembers')?.value);
+  // topN = signal(this.formGroup.get('topControl')?.value);
+  // redNodes = signal(this.formGroup.get('markControl')?.value);
+  // moved this to explore service because also needed for module network 
+  // includeModuleMembers = signal(this.formGroup.get('includeModuleMembers')?.value);
+  topN = this.exploreService.topN;
+  redNodes = this.exploreService.redNodes;
   get includeModuleMembersControl(): FormControl {
   return this.formGroup.get('includeModuleMembers') as FormControl;
 }
 
   defaultMarkerSize = 12;
-  MAX_ELEMENTS = undefined;
+  MAX_ELEMENTS = this.exploreService.MAX_ELEMENTS;
 
-  selectedVis = 'centers'; // default value for the visualization toggle
-  
+  selectedVis = this.exploreService.selectedVis;
+
   columnNames: { [key: string]: string } = {
     symbol: 'Symbol',
     ensemblID: 'Ensembl ID',
@@ -155,23 +161,9 @@ export class LollipopPlotComponent {
   });
 
   // the red modules
-  selectedModules = resource({
-    request: () => ({
-      redNodes: this.redNodes() ?? 5,
-      version: this.versionService.versionReadOnly()(),
-      cancer: this.exploreService.selectedDisease$(),
-      level: this.exploreService.level$(),
-      selectedParamSets: this.exploreService.selectedParamSets$()()
-    }),
-    loader: async ({ request }) => {
-      const { redNodes } = request;
-      const modules = this.lolipopPlotData.value();
-      if (!modules || modules.length === 0) {
-        return [];
-      }
-      return modules.slice(0, redNodes);
-    }
-  });
+  get selectedModules() {
+    return this.exploreService.selectedModules;
+  }
 
   // Data source for reusable heatmap component
   heatmapDataSource = signal<HeatmapDataSource>({
@@ -184,9 +176,9 @@ export class LollipopPlotComponent {
       let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
       if (includeMembers) {
         for (const module of modules) {
-          const key = this.getModuleKey(module);
+          const key = this.exploreService.getModuleKey(module);
           if (!this.moduleMembersMap.has(key)) {
-            await this.fetchModuleMembers(module);
+            await this.exploreService.fetchModuleMembers(module);
           }
           const members = this.moduleMembersMap.get(key) || [];
           elements.push(...members.map(m => m.ensemblID));
@@ -235,7 +227,7 @@ export class LollipopPlotComponent {
     
     getYAxisTitle: () => {
       const level = this.exploreService.level$();
-      const includeMembers = this.includeModuleMembers();
+      const includeMembers = this.exploreService.includeModuleMembers();
       return `Module center ${level === 'gene' ? 'gene' : 'transcript'}${includeMembers ? ' and module members' : ''}`;
     },
     
@@ -252,7 +244,7 @@ export class LollipopPlotComponent {
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
     modules: this.selectedModules.value(),
-    includeMembers: this.includeModuleMembers()
+    includeMembers: this.exploreService.includeModuleMembers()
   }));
   
   // table data
@@ -262,7 +254,7 @@ export class LollipopPlotComponent {
       disease: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
       modules: this.selectedModules.value(),
-      includeMembers: this.includeModuleMembers()
+      includeMembers: this.exploreService.includeModuleMembers()
     }),
     loader: async ({ request }) => {
       const { version, disease, level, modules, includeMembers } = request;
@@ -278,13 +270,13 @@ export class LollipopPlotComponent {
     this.setupEffects();
 
     this.formGroup.get('topControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.topN.set(value);
+      this.topN.set(value ? value : undefined);
     });
     this.formGroup.get('markControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.redNodes.set(value);
+      this.redNodes.set(value ? value : undefined);
     });
     this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.includeModuleMembers.set(value);
+      this.exploreService.includeModuleMembers.set(value);
     });
   }
 
@@ -333,10 +325,6 @@ export class LollipopPlotComponent {
     }
   }
 
-  private getModuleKey(module: SpongEffectsModule): string {
-    return `${module.ensemblID}_${module.spongEffects_run_ID}`;
-  }
-
   private async getLollipopData(version: number, cancer: string, level: string, topN: number, selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
     const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
@@ -367,48 +355,6 @@ export class LollipopPlotComponent {
     return data;
   }
 
-  private async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {
-    const version = this.versionService.versionReadOnly()();
-    const disease = this.exploreService.selectedDisease$();
-    const level = this.exploreService.level$();
-    
-    if (!version || !disease || !level) return;
-    
-    let members: ModuleMember[] = [];
-    const key = this.getModuleKey(module);
-    
-    if (level === 'gene') {
-      const response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
-      );
-      
-      members = response.map(r => ({
-        ensemblID: r.gene.ensg_number,
-        symbol: r.gene.gene_symbol,
-        meanGiniDecrease: 0,
-        meanAccuracyDecrease: 0,
-        centerOrMember: 'module member',
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: module.spongEffects_run_ID
-      }));
-    } else {
-      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version, disease, module.ensemblID, this.MAX_ELEMENTS
-      );
-      
-      members = response.map(r => ({
-        ensemblID: r.transcript.enst_number,
-        symbol: r.transcript.gene.gene_symbol,
-        meanGiniDecrease: 0,
-        meanAccuracyDecrease: 0,
-        centerOrMember: 'module member',
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: module.spongEffects_run_ID
-      }));
-    }
-    
-    this.moduleMembersMap.set(key, members);
-  }
 
   private async mapSampleToDisease(sample_ID: string, mapping: { [key: string]: string }): Promise<string> {
     // a sample ID has the form TCGA-K1-A6RT-01___pancancer. Extract the TSS code which is in this case K1
@@ -435,16 +381,16 @@ export class LollipopPlotComponent {
     
     if (includeMembers && modules.length > 0) {
       const fetchPromises = modules.map(async module => {
-        const key = this.getModuleKey(module);
+        const key = this.exploreService.getModuleKey(module);
         if (!this.moduleMembersMap.has(key)) {
-          await this.fetchModuleMembers(module);
+          await this.exploreService.fetchModuleMembers(module);
         }
       });
       
       await Promise.all(fetchPromises);
       
       for (const module of modules) {
-        const key = this.getModuleKey(module);
+        const key = this.exploreService.getModuleKey(module);
         const members = this.moduleMembersMap.get(key) || [];
         
         tableEntries = [
@@ -484,7 +430,7 @@ export class LollipopPlotComponent {
         t: 30,
       },
       xaxis: {
-        title: 'Mean Decrease in Gini-Index'
+        title: 'Mean Decrease in Gini Index'
       },
       yaxis: {
         title: 'Mean Decrease in Accuracy'

@@ -5,6 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
   linkedSignal,
   signal,
   viewChild,
@@ -19,7 +20,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { BrowseQuery, InteractionSorting } from '../../../interfaces';
+import { BrowseQuery, InteractionSorting, Dataset } from '../../../interfaces';
 import { BrowseService } from '../../../services/browse.service';
 import { VersionsService } from '../../../services/versions.service';
 import _ from 'lodash';
@@ -57,10 +58,17 @@ import { MatCardModule } from '@angular/material/card';
 })
 export class FormComponent {
   versionsService = inject(VersionsService);
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   version = this.versionsService.versionReadOnly();
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
   activeDataset = linkedSignal(() => this.diseases$()[0]);
+  fixedDataset = input<Dataset | undefined>();
+  // default thresholds should be different in spongeffects form 
+  defaultMinDegree = input<number | undefined>();
+  defaultMinBetweenness = input<number | undefined>();
+  defaultMinEigen = input<number | undefined>();
+  defaultMaxPValue = input<number | undefined>();
+  defaultMinMscor = input<number | undefined>();
   geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
@@ -135,7 +143,7 @@ export class FormComponent {
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
       if (!this.formGroup.valid) return;
-      this.browseService.runQuery({
+      this.browseService().runQuery({
         ...config,
         dataset,
       } as BrowseQuery);
@@ -145,6 +153,24 @@ export class FormComponent {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
     });
   }
+ngOnInit() {
+  // Always set the form control values from the inputs
+  if (this.defaultMinBetweenness() !== undefined) {
+    this.formGroup.get('minBetweenness')?.setValue(this.defaultMinBetweenness() ?? null);
+  }
+  if (this.defaultMinDegree() !== undefined) {
+    this.formGroup.get('minDegree')?.setValue(this.defaultMinDegree() ?? null);
+  }
+  if (this.defaultMinEigen() !== undefined) {
+    this.formGroup.get('minEigen')?.setValue(this.defaultMinEigen() ?? null);
+  }
+  if (this.defaultMaxPValue() !== undefined) {
+    this.formGroup.get('maxPValue')?.setValue(this.defaultMaxPValue() ?? null);
+  }
+  if (this.defaultMinMscor() !== undefined) {
+    this.formGroup.get('minMscor')?.setValue(this.defaultMinMscor() ?? null);
+  }
+}
 
   getKeys(enumType: any): string[] {
     return Object.keys(enumType);

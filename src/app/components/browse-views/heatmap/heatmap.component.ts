@@ -12,7 +12,6 @@ import {
 import { BrowseService } from '../../../services/browse.service';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { capitalize } from 'lodash';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../components/heatmap-plot/heatmap-plot.component';
 import { CommonModule } from '@angular/common';

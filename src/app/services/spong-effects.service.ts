@@ -14,8 +14,7 @@ export class SpongEffectsService {
   spongEffectsRuns$ = resource({
     request: this._version$,
     loader: async (version) => {
-      const runs = await this.backend.getSpongEffectsRuns(version.request);
-      return runs;
+      return await this.backend.getSpongEffectsRuns(version.request);
     }
   });
 

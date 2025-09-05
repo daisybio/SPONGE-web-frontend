@@ -1,6 +1,12 @@
 <form [formGroup]="formGroup" style="margin: 10px">
+@if (!activeDataset()) {
   <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
-
+} @else {
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Disease</mat-label>
+    <input matInput [value]="fixedDataset()?.disease_name" readonly>
+  </mat-form-field>
+}
   @if (version() > 1) {
   <div class="card-container">
     <mat-button-toggle-group formControlName="level">

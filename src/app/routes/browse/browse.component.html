@@ -1,6 +1,6 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
-    <app-form></app-form>
+    <app-form [browseService]="browseService"></app-form>
     <!-- @if (rawDataURL$(); as rawDataURL) {
     <div class="card-container">
       <a target="_blank" [href]="rawDataURL" mat-flat-button>View raw data</a>

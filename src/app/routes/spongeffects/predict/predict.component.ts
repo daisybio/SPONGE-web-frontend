@@ -6,13 +6,26 @@ import { PredictionTableComponent } from "./prediction-results/prediction-table/
 import { ModuleHeatmapComponent } from './module-heatmap/module-heatmap.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ModuleTableComponent } from "./module-table/module-table.component";
+import { PredictFormComponent } from './form/predict-form.component';
+import { MatDrawer, MatDrawerContainer, MatDrawerContent} from '@angular/material/sidenav';
+
 
 declare var Plotly: any;
 
 
 @Component({
   selector: 'app-predict',
-  imports: [PredictionResultsComponent, PredictionTableComponent, ModuleHeatmapComponent, MatTabsModule, ModuleTableComponent],
+  imports: [
+    PredictionResultsComponent, 
+    PredictionTableComponent, 
+    ModuleHeatmapComponent, 
+    MatTabsModule, 
+    ModuleTableComponent,
+    PredictFormComponent,
+    MatDrawer,
+    MatDrawerContainer,
+    MatDrawerContent,
+  ],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss',
 })

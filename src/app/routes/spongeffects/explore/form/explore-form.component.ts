@@ -1,5 +1,5 @@
-import {Component, inject, Signal, linkedSignal, computed} from '@angular/core';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {Component, inject, input} from '@angular/core';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
@@ -7,9 +7,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import {ExploreService} from "../service/explore.service";
 import {MatCardModule} from "@angular/material/card";
 import {capitalize} from "lodash";
-import {Dataset} from "../../../../interfaces";
-import { compute } from '@fullstax/kaplan-meier-estimator';
 import {MatChipsModule} from '@angular/material/chips';
+import {BrowseService} from "../../../../services/browse.service";
 
 @Component({
   selector: 'app-explore-form',
@@ -21,7 +20,7 @@ import {MatChipsModule} from '@angular/material/chips';
     MatButtonToggleModule,
     MatCheckboxModule,
     MatCardModule,
-    MatChipsModule
+    MatChipsModule,
   ],
   templateUrl: './explore-form.component.html',
   styleUrl: './explore-form.component.scss'

@@ -10,7 +10,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
-import { Dataset, RunClassPerformance } from '../../../../interfaces';
+import { Dataset, ModuleMember, RunClassPerformance, SpongEffectsModule } from '../../../../interfaces';
 import { VersionsService } from '../../../../services/versions.service';
 import { BackendService } from '../../../../services/backend.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -44,6 +44,7 @@ export class ExploreService {
     const index = this.highestKey().split('_')[1];
     return this.paramSets$()[parseInt(index, 10) - 1];
   });
+  selectedVis = signal<string>('centers');
 
   // for each disease, there are multiple spongeffects runs. Filter spongEffectsService.SpongeffectsRuns$ to get the runs for the selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
@@ -127,6 +128,7 @@ export class ExploreService {
     // });
   }
 
+  // for the class performance tab
   readonly runClassPerformance$ = resource({
     request: computed(() => {
       return {
@@ -153,4 +155,106 @@ export class ExploreService {
       return modelPerformances;
     },
   });
+
+
+  // for the top ceRNA modules tab
+  topN = signal<number | undefined>(15); 
+  redNodes = signal<number | undefined>(5); 
+  includeModuleMembers = signal<boolean | null>(false);
+
+
+  selectedModules = resource({
+    request: () => ({
+      redNodes: this.redNodes(),
+      version: this.versionsService.versionReadOnly()(),
+      disease: this.selectedDisease$(),
+      level: this.level$(),
+      selectedParamSets: this.selectedParamSets$()(),
+      topN: this.topN(),
+    }),
+    loader: async ({ request }) => {
+      const { redNodes, version, disease, level, selectedParamSets, topN } = request;
+      if (!version || !disease || !level || !selectedParamSets) {
+        return [];
+      }
+      // Use the same logic as in getLollipopData
+      let modules: SpongEffectsModule[] = [];
+      if (level === 'gene') {
+        for (const paramSet of Object.values(selectedParamSets)) {
+          const tmp = await this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN);
+          modules.push(...tmp.map(entry => ({
+            ensemblID: entry.gene.ensg_number,
+            symbol: entry.gene.gene_symbol,
+            meanGiniDecrease: entry.mean_gini_decrease,
+            meanAccuracyDecrease: entry.mean_accuracy_decrease,
+            spongEffects_run_ID: entry.spongEffects_run_ID
+          })));
+        }
+      } else {
+        for (const paramSet of Object.values(selectedParamSets)) {
+          const tmp = await this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN);
+          modules.push(...tmp.map(entry => ({
+            ensemblID: entry.transcript.enst_number,
+            symbol: entry.transcript.gene.gene_symbol,
+            meanGiniDecrease: entry.mean_gini_decrease,
+            meanAccuracyDecrease: entry.mean_accuracy_decrease,
+            spongEffects_run_ID: entry.spongEffects_run_ID
+          })));
+        }
+      }
+      return modules.slice(0, redNodes);
+    }
+  });
+
+
+  moduleMembersMap = new Map<string, ModuleMember[]>();
+  MAX_ELEMENTS = undefined;
+
+  async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {
+    const version = this.versionsService.versionReadOnly()();
+    const disease = this.selectedDisease$();
+    const level = this.level$();
+    
+    if (!version || !disease || !level) return;
+    
+    let members: ModuleMember[] = [];
+    const key = this.getModuleKey(module);
+    
+    if (level === 'gene') {
+      const response = await this.backend.getSpongEffectsGeneModuleMembers(
+        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      );
+      
+      members = response.map(r => ({
+        ensemblID: r.gene.ensg_number,
+        symbol: r.gene.gene_symbol,
+        meanGiniDecrease: 0,
+        meanAccuracyDecrease: 0,
+        centerOrMember: 'module member',
+        moduleCenter: module.symbol,
+        spongEffects_run_ID: module.spongEffects_run_ID
+      }));
+    } else {
+      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
+        version, disease, module.ensemblID, this.MAX_ELEMENTS
+      );
+      
+      members = response.map(r => ({
+        ensemblID: r.transcript.enst_number,
+        symbol: r.transcript.gene.gene_symbol,
+        meanGiniDecrease: 0,
+        meanAccuracyDecrease: 0,
+        centerOrMember: 'module member',
+        moduleCenter: module.symbol,
+        spongEffects_run_ID: module.spongEffects_run_ID
+      }));
+    }
+    
+    this.moduleMembersMap.set(key, members);
+  }
+
+  getModuleKey(module: SpongEffectsModule): string {
+    return `${module.ensemblID}_${module.spongEffects_run_ID}`;
+  }
+
 }
