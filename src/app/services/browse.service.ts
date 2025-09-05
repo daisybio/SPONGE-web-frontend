@@ -17,6 +17,7 @@ import {
   Transcript,
   TranscriptInteraction,
   TranscriptNode,
+  NetworkData,
 } from '../interfaces';
 import { BackendService } from './backend.service';
 import Graph from 'graphology';
@@ -34,13 +35,6 @@ export enum State {
 export interface EntityState {
   [State.Hover]: boolean;
   [State.Active]: boolean;
-}
-
-interface NetworkData {
-  nodes: (GeneNode | TranscriptNode)[];
-  inverseNodes: (GeneNode | TranscriptNode)[];
-  edges: (GeneInteraction | TranscriptInteraction)[];
-  disease: Dataset | undefined;
 }
 
 @Injectable()

@@ -554,3 +554,10 @@ export interface GseaResult {
     gsea_matched_genes_ID: number;
   };
 }
+
+export interface NetworkData {
+  nodes: (GeneNode | TranscriptNode)[];
+  inverseNodes: (GeneNode | TranscriptNode)[];
+  edges: (GeneInteraction | TranscriptInteraction)[];
+  disease: Dataset | undefined;
+}
