@@ -119,11 +119,11 @@ export class LollipopPlotComponent {
   columnNames: { [key: string]: string } = {
     symbol: 'Symbol',
     ensemblID: 'Ensembl ID',
-    meanGiniDecrease: 'Mean Gini decrease',
-    meanAccuracyDecrease: 'Mean accuracy decrease',
-    memberOrCenter: 'Center or member',
-    moduleCenter: 'Module center',
-    moduleParams: 'Module parameters'
+    meanGiniDecrease: 'Mean Gini Decrease',
+    meanAccuracyDecrease: 'Mean Acuracy Decrease',
+    memberOrCenter: 'Center or Member',
+    moduleCenter: 'Module Center',
+    moduleParams: 'Module Parameters'
   };
   displayedColumns = Object.keys(this.columnNames);
 
@@ -172,8 +172,10 @@ export class LollipopPlotComponent {
       if (!version || !disease || !level || !modules || modules.length === 0) {
         return [];
       }
+      console.log('modules for heatmap:', modules);
+      // let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
+      let elements: string[] = modules.map((m: { spongEffects_module_ID: any; }) => m.spongEffects_module_ID);
 
-      let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
       if (includeMembers) {
         for (const module of modules) {
           const key = this.exploreService.getModuleKey(module);
@@ -192,13 +194,14 @@ export class LollipopPlotComponent {
         elements = elements.slice(0, this.MAX_ELEMENTS);
         this.elementLimitWarning.set(true);
       }
-      const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
-      const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
+      // const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
+      // const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
+      const enrichData = await this.backend.fetchSpongEffectsEnrichScores(version, level, elements);
 
       // Add disease subtype information
       if (disease === 'pancancer') {
         const mapping = await this.backend.getDiseaseFromSample();
-        for (const e of expressionData) {
+        for (const e of enrichData) {
           const sample_ID = e.sample_ID;
           const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
           e.disease_subtype = diseaseName;
@@ -211,28 +214,28 @@ export class LollipopPlotComponent {
           mapping[sampleID] = sample.disease.disease_subtype;
         });
         
-        for (const e of expressionData) {
+        for (const e of enrichData) {
           const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
           e.disease_subtype = mapping[patientID] || 'NA';
         }
       }
       
-      return expressionData;
+      return enrichData;
     },
     
     getTitle: (params) => {
       const { includeMembers } = params;
-      return 'Expression of selected modules' + (includeMembers ? ' and members' : '');
+      return 'Enrichment Scores of Selected Modules' + (includeMembers ? ' and Members' : '');
     },
     
     getYAxisTitle: () => {
       const level = this.exploreService.level$();
       const includeMembers = this.exploreService.includeModuleMembers();
-      return `Module center ${level === 'gene' ? 'gene' : 'transcript'}${includeMembers ? ' and module members' : ''}`;
+      return `Module Center ${level === 'gene' ? 'Gene' : 'Transcript'}${includeMembers ? ' and Module Members' : ''}`;
     },
-    
-    getZAxisTitle: () => 'Normalized<br>expression',
-    
+
+    getZAxisTitle: () => 'SpongEffects Module<br>Enrichment Score',
+
     getZMid: () => 0,
     
     getColorScale: () => 'RdBu'
@@ -244,7 +247,8 @@ export class LollipopPlotComponent {
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
     modules: this.selectedModules.value(),
-    includeMembers: this.exploreService.includeModuleMembers()
+    includeMembers: this.exploreService.includeModuleMembers(),
+    value_key: 'score_value'
   }));
   
   // table data
@@ -336,21 +340,25 @@ export class LollipopPlotComponent {
           symbol: entry.gene.gene_symbol,
           meanGiniDecrease: entry.mean_gini_decrease,
           meanAccuracyDecrease: entry.mean_accuracy_decrease,
-          spongEffects_run_ID: entry.spongEffects_run_ID
+          spongEffects_run_ID: entry.spongEffects_run_ID,
+          spongEffects_module_ID: entry.spongEffects_gene_module_ID
         })}
       );
       };
     } else {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN)
-        tmp.slice(0, Math.min(topN, data.length)).map(entry => ({
-          ensemblID: entry.transcript.enst_number,
-          symbol: entry.transcript.gene.gene_symbol,
-          meanGiniDecrease: entry.mean_gini_decrease,
-          meanAccuracyDecrease: entry.mean_accuracy_decrease,
-          spongEffects_run_ID: entry.spongEffects_run_ID
-        }));
-      };
+        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN);
+        tmp.slice(0, topN).forEach(entry => {
+          data.push({
+            ensemblID: entry.transcript.enst_number,
+            symbol: entry.transcript.gene.gene_symbol,
+            meanGiniDecrease: entry.mean_gini_decrease,
+            meanAccuracyDecrease: entry.mean_accuracy_decrease,
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_transcript_module_ID
+          });
+        });
+      }
     }
     return data;
   }

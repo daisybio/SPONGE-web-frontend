@@ -1,5 +1,4 @@
 import { Data } from "@angular/router";
-import { List } from "lodash";
 
 export interface Dataset {
   data_origin: string;
@@ -119,6 +118,7 @@ export interface TranscriptInteraction extends SpongeRun {
 export interface BrowseQuery {
   level: 'gene' | 'transcript';
   dataset: Dataset;
+  ensemblID?: string[];
   showOrphans: boolean;
   sortingDegree: boolean;
   sortingEigenvector: boolean;
@@ -374,6 +374,7 @@ export interface SpongEffectsTranscriptModules {
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
   spongEffects_run_ID: number;
+  enrichment_score?: number;
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
@@ -394,6 +395,8 @@ export interface SpongEffectsModule {
   meanGiniDecrease: number;
   meanAccuracyDecrease: number;
   spongEffects_run_ID: number;
+  spongEffects_module_ID: number;
+  enrichment_score?: number;
 }
 
 export interface ModuleMember {

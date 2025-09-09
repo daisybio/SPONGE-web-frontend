@@ -23,6 +23,7 @@ export class ExploreService {
   backend = inject(BackendService);
   spongEffectsService = inject(SpongEffectsService);
   level$ = signal<'gene' | 'transcript'>('gene');
+  lineTop = signal<number | undefined>(undefined); // this is the height of the separator to the network -> align the form in the side panel 
   diseaseNames$ = this.spongEffectsService.diseaseNames$;
   diseases$ = this.spongEffectsService.datasets$;
   selectedDisease$ = linkedSignal(() => this.diseaseNames$()[0]);
@@ -187,7 +188,8 @@ export class ExploreService {
             symbol: entry.gene.gene_symbol,
             meanGiniDecrease: entry.mean_gini_decrease,
             meanAccuracyDecrease: entry.mean_accuracy_decrease,
-            spongEffects_run_ID: entry.spongEffects_run_ID
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_gene_module_ID,
           })));
         }
       } else {
@@ -198,7 +200,8 @@ export class ExploreService {
             symbol: entry.transcript.gene.gene_symbol,
             meanGiniDecrease: entry.mean_gini_decrease,
             meanAccuracyDecrease: entry.mean_accuracy_decrease,
-            spongEffects_run_ID: entry.spongEffects_run_ID
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_transcript_module_ID,
           })));
         }
       }

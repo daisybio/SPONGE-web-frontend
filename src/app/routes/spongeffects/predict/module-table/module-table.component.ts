@@ -268,7 +268,8 @@ export class ModuleTableComponent {
               symbol: entry.gene.gene_symbol,
               meanGiniDecrease: entry.mean_gini_decrease,
               meanAccuracyDecrease: entry.mean_accuracy_decrease,
-              spongEffects_run_ID: entry.spongEffects_run_ID
+              spongEffects_run_ID: entry.spongEffects_run_ID,
+              spongEffects_module_ID: entry.spongEffects_gene_module_ID
             });
           });
         }
@@ -284,7 +285,8 @@ export class ModuleTableComponent {
               symbol: entry.transcript.gene.gene_symbol,
               meanGiniDecrease: entry.mean_gini_decrease,
               meanAccuracyDecrease: entry.mean_accuracy_decrease,
-              spongEffects_run_ID: entry.spongEffects_run_ID
+              spongEffects_run_ID: entry.spongEffects_run_ID,
+              spongEffects_module_ID: entry.spongEffects_transcript_module_ID
             });
           });
         }
@@ -305,6 +307,7 @@ export class ModuleTableComponent {
           meanGiniDecrease: entry.mean_gini_decrease,
           meanAccuracyDecrease: entry.mean_accuracy_decrease,
           spongEffects_run_ID: entry.spongEffects_run_ID,
+          spongEffects_module_ID: entry.spongEffects_gene_module_ID,
         })}
       );
       };
@@ -317,7 +320,8 @@ export class ModuleTableComponent {
             symbol: entry.transcript.gene.gene_symbol,
             meanGiniDecrease: entry.mean_gini_decrease,
             meanAccuracyDecrease: entry.mean_accuracy_decrease,
-            spongEffects_run_ID: entry.spongEffects_run_ID
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_transcript_module_ID
           });
         });
       };

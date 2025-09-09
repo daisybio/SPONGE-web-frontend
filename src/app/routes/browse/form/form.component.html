@@ -1,19 +1,29 @@
 <form [formGroup]="formGroup" style="margin: 10px">
-@if (!activeDataset()) {
+@if (!fixedDataset()) {
   <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
-} @else {
-  <mat-form-field appearance="outline" class="full-width">
+  } @else {
+  <mat-form-field appearance="outline" style="width: 100%;">
     <mat-label>Disease</mat-label>
-    <input matInput [value]="fixedDataset()?.disease_name" readonly>
+    <input matInput [value]="capitalize(fixedDataset()?.disease_name)" readonly>
   </mat-form-field>
 }
   @if (version() > 1) {
-  <div class="card-container">
-    <mat-button-toggle-group formControlName="level">
-      <mat-button-toggle value="gene">Genes</mat-button-toggle>
-      <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
-    </mat-button-toggle-group>
-  </div>
+    @if (!fixedLevel()) {
+      <div class="card-container">
+        <mat-button-toggle-group formControlName="level">
+          <mat-button-toggle value="gene">Genes</mat-button-toggle>
+          <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    } @else {
+      <div class="card-container">
+        <!-- show a button toggle form group just like when no level is fixed but without functionality just to show which level is fixed -->
+        <mat-button-toggle-group formControlName="level" [disabled]="!!fixedLevel">
+          <mat-button-toggle value="gene" disabled>Genes</mat-button-toggle>
+          <mat-button-toggle value="transcript" disabled>Transcripts</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    }
   }
 
   <mat-accordion>
@@ -38,7 +48,7 @@
               <li><b>Betweenness: </b>
                 <p [innerHTML]="infoService.betweennessText"></p>
               </li>
-              <li><b>Degree:</b>
+              <li><b>Degree:</b>`
                 <p [innerHTML]="infoService.degreeText"></p>
               </li>
               <li><b>Eigenvector: </b>
@@ -165,12 +175,12 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. adj. p-value</mat-label>
-        <input formControlName="maxPValue" matInput max="0.2" min="0.025" step="0.025" type="number" />
+        <input formControlName="maxPValue" matInput max="1" min="0" step="0.025" type="number" />
         @if (formGroup.get('maxPValue')?.hasError('min')) {
-        <mat-error>Value must be at least 0.025</mat-error>
+        <mat-error>Value must be at least 0</mat-error>
         }
         @if (formGroup.get('maxPValue')?.hasError('max')) {
-        <mat-error>Value must be at most 0.2</mat-error>
+        <mat-error>Value must be at most 1</mat-error>
         }
       </mat-form-field>
       <app-info type="icon">
@@ -179,12 +189,12 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. MScor</mat-label>
-        <input formControlName="minMscor" matInput max="1" min="0.1" step="0.05" type="number" />
+        <input formControlName="minMscor" matInput max="2" min="0" step="0.05" type="number" />
         @if (formGroup.get('minMscor')?.hasError('min')) {
-        <mat-error>Value must be at least 0.1</mat-error>
+        <mat-error>Value must be at least 0</mat-error>
         }
         @if (formGroup.get('minMscor')?.hasError('max')) {
-        <mat-error>Value must be at most 1</mat-error>
+        <mat-error>Value must be at most 2</mat-error>
         }
       </mat-form-field>
       <app-info type="icon">

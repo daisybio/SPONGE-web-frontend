@@ -113,7 +113,8 @@ export class ReusableHeatmapComponent implements OnDestroy {
     const samples = this.extractSamples(data);
     
     // Create base heatmap
-    const heatmapTrace = this.createHeatmapTrace(data);
+    const heatmapTrace = this.createHeatmapTrace(data, params.value_key);
+    console.log('Heatmap trace:', heatmapTrace);
     
     // Determine if we need to show subtypes
     let plotData: any = [heatmapTrace];
@@ -140,10 +141,10 @@ export class ReusableHeatmapComponent implements OnDestroy {
     return [...new Set(data.map(e => ({ sample_ID: e.sample_ID, disease_subtype: e.disease_subtype || 'NA' })))];
   }
 
-  private createHeatmapTrace(data: any[]) {
+  private createHeatmapTrace(data: any[], value_key?: string) {
     const dataSource = this.dataSource();
     return {
-      z: data.map(e => e.expr_value),
+      z: value_key ? data.map(e => e[value_key]) : data.map(e => e.expr_value),
       x: data.map(e => e.sample_ID),
       y: data.map(e => 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)),
       type: 'heatmap',

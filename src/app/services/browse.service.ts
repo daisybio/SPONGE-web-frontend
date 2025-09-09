@@ -273,6 +273,10 @@ export class BrowseService {
     this._query$.set(query);
   }
 
+  getQuery(): BrowseQuery | undefined {
+    return this._query$();
+  }
+
   rawDataURL() {
     return computed(() => this._query$()?.dataset?.download_url);
   }

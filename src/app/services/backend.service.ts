@@ -119,6 +119,9 @@ export class BackendService {
       maxNodes: query.maxNodes,
       maxEdges: query.maxInteractions,
     };
+    if (query.ensemblID) {
+      _query["ensemblID"] = query.ensemblID;
+    }
 
     return this.http.getRequest<Network>(this.getRequestURL(route, _query));
   }
@@ -653,6 +656,22 @@ export class BackendService {
     return expressionPromises.flat();
   }
 
+  async fetchSpongEffectsEnrichScores(
+    version: number, 
+    level: "gene" | "transcript",
+    module_IDs: string[]): Promise<any[]> {
+
+    if (level === "gene") {
+      const route = 'spongEffects/getSpongEffectsGeneModuleScores';
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+
+    } else {
+      const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+    }
+  }
+
+
   async getSurvivalPValues(
     version: number,
     ensgs: string[],
@@ -858,7 +877,7 @@ export class BackendService {
     limit?: number,
     enst_number?: string
   ): Promise<SpongEffectsTranscriptModules[]> {
-    const route = '/spongEffects/getSpongEffectsTranscriptModules';
+    const route = 'spongEffects/getSpongEffectsTranscriptModules';
 
     const query: Query = {
       sponge_db_version: version,

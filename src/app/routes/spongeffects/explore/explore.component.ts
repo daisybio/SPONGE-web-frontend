@@ -51,6 +51,7 @@ import { ExploreBrowseService } from '../../../services/explore.browse.service';
 export class ExploreComponent {
   refreshSignal = signal<number>(0);
   exploreService = inject(ExploreService)
+  lineTop = this.exploreService.lineTop;
   selectedTabIndex = signal<number>(0);
   selectedVis = this.exploreService.selectedVis;
 
