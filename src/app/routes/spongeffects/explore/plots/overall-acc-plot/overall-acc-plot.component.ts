@@ -1,5 +1,5 @@
-import {Component, computed, effect, ElementRef, inject, input, resource, viewChild} from '@angular/core';
-import {Metric, PlotlyData, RunPerformance, SpongEffectsRun} from '../../../../../interfaces';
+import {Component, computed, effect, ElementRef, inject, input, model, resource, signal, Signal, viewChild} from '@angular/core';
+import {Metric, PlotlyData, RunClassPerformance, RunPerformance, SpongEffectsRun} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -33,6 +33,7 @@ export class OverallAccPlotComponent {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
+  name_to_runPerformanceID: Map<number, string> = new Map<number, string>();
 
   overallAccPlot = viewChild.required<ElementRef<HTMLDivElement>>('overallAccuracyPlot');
 
@@ -46,15 +47,17 @@ export class OverallAccPlotComponent {
       return {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
-        level: this.exploreService.level$()
+        level: this.exploreService.level$(),
+        params: this.exploreService.selectedParamSets$()()
       }
     }),
     loader: async (param) => {
       const version = param.request.version;
       const cancer = param.request.cancer;
       const level = param.request.level;
-      if (version === undefined || cancer === undefined || level === undefined) return;
-      const data = this.getOverallAccuracyData(version, cancer, level);
+      const params = param.request.params;
+      if (version === undefined || cancer === undefined || level === undefined || params === undefined ) return;
+      const data = this.getOverallAccuracyData(version, cancer, level, params);
       return await this.plotOverallAccuracyPlot(data);
     }
   });
@@ -64,12 +67,48 @@ export class OverallAccPlotComponent {
       this.refreshSignal$();
       this.refreshPlot();
     });
+
+    effect(() => {
+      if (this.plotOverallAccResource.isLoading()) {
+        Plotly.purge(this.overallAccPlot().nativeElement);
+      }
+  });
   }
 
+  
+  async getOverallAccuracyData(version: number, cancer: string, level: string, params: {[key: string]: any}): Promise<Metric[]> {
+    const modelPerformances: RunPerformance[] = [];
+    let highest_accuracy: number = 0;
+    let highest_key: string = "";
+    for (const [key, value] of Object.entries(params)) {
+      const paramSet = value;
+      const tmp = await this.backend.getRunPerformance(version, cancer, level, paramSet);
+      tmp.map((entry: RunPerformance) => {
+        modelPerformances.push(entry);
+        if (entry.model_type == "modules" && entry.split_type == "test") {
+          if (entry.accuracy > highest_accuracy) {
+            highest_accuracy = entry.accuracy_upper;
+            highest_key = key;
+          }
+        }
+      });
+    }
+    this.exploreService.highestKey.set(highest_key);
+    // rename key of the highest accuracy to "*old_key"
+    // params["*" + highest_key] = params[highest_key];
+    // delete params[highest_key];
+    // update this.exploreService.paramSets$
+    // this.exploreService.paramSets$()()[highest_key] = params["*" + highest_key];
 
-  async getOverallAccuracyData(version: number, cancer: string, level: string): Promise<Metric[]> {
-    const modelPerformances: RunPerformance[] = await this.backend.getRunPerformance(version, cancer, level);
-    return modelPerformances.map((entry: RunPerformance, idx: number): Metric => {
+    // this is messy but still thinking about a cleaner way. 
+    // the first time this is executed, all available params are wanted to all models are fetched
+    // we create model Names (Model 1, Model 2, ...) and add them to the y-axis labels only if all models are fetched
+
+    let metric = modelPerformances.map((entry: RunPerformance, idx: number): Metric => {
+      // if id not yet in map, add it
+      if (!this.name_to_runPerformanceID.has(entry.spongEffects_run_performance_ID)) {
+        this.name_to_runPerformanceID.set(entry.spongEffects_run_performance_ID, 'Model ' + (idx + 1));
+      }
       return {
         name: entry.model_type,
         split: entry.split_type,
@@ -77,13 +116,16 @@ export class OverallAccPlotComponent {
         upper: entry.accuracy_upper,
         idx: idx + 1,
         spongEffecsRun: entry.spongEffects_run,
+        spongEffects_run_performance_ID: entry.spongEffects_run_performance_ID
       };
     });
+    return metric;
   };
 
   async plotOverallAccuracyPlot(metricData: Promise<Metric[]>): Promise<PlotlyData> {
     // set main layout options
     const layout = {
+      title: 'Classification Accuracy per Model',
       autosize: true,
       yaxis: {
         showline: false,
@@ -92,7 +134,7 @@ export class OverallAccPlotComponent {
         ticktext: [] as string[]
       },
       margin: {
-        t: 40,
+        t: 60,
         //   b: 40,
         //   l: 0,
         // r: 200,
@@ -106,7 +148,7 @@ export class OverallAccPlotComponent {
           y: -0.1,
           xanchor: "center",
           yanchor: "top",
-          text: "Overall model accuracy",
+          text: "Overall Model Accuracy",
           showarrow: false
         }
       ],
@@ -125,7 +167,10 @@ export class OverallAccPlotComponent {
       const col: string = metric.name == "modules" ? "green" : "orange"
       // Add model name to y-axis labels
       layout.yaxis.tickvals.push(metric.idx + 1);
-      layout.yaxis.ticktext.push(`Model ${metric.idx}`);
+      // this is a sequential numbering of the displayed models
+      // layout.yaxis.ticktext.push(`Model ${metric.idx}`);
+      // this is a fixed naming of the models 
+      layout.yaxis.ticktext.push(this.name_to_runPerformanceID.get(metric.spongEffects_run_performance_ID)!);
       // data points
       return {
         x: [metric.lower, metric.upper],
@@ -134,7 +179,7 @@ export class OverallAccPlotComponent {
         name: metric.name + " (" + metric.split + ")",
         text: ["Lower Bound<br>(Accuracy)", "Upper Bound<br>(Accuracy)"],
         hovertemplate: "<i>%{text}: %{x:.2f}</i>" + 
-          "<extra>Model parameters:" + 
+          "<extra>Model parameters:" +
           "<br>mscor threshold: " + metric.spongEffecsRun.m_scor_threshold + 
           "<br>pAdjust threshold: " + metric.spongEffecsRun.p_adj_threshold + 
           "<br>modules cutoff: " + metric.spongEffecsRun.modules_cutoff + 

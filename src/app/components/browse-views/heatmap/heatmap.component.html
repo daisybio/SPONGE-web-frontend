@@ -1,6 +1,12 @@
-@if (plotData.isLoading()) {
+<!-- @if (plotData.isLoading()) {
   <div class="card-container">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
 }
-<div #heatmap style="height: 800px; width: 100%"></div>
+<div #heatmap style="height: 800px; width: 100%"></div> -->
+
+<app-heatmap-plot
+  [dataSource]="heatmapDataSource"
+  [params]="heatmapParams()"
+  [refreshSignal]="refreshSignal">
+</app-heatmap-plot>

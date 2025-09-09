@@ -1,8 +1,7 @@
-import {computed, inject, Injectable, resource, linkedSignal} from '@angular/core';
+import {computed, inject, Injectable, resource} from '@angular/core';
 import {BackendService} from "./backend.service";
 import {VersionsService} from "./versions.service";
 import {SpongEffectsRun, Dataset} from "../interfaces";
-import { Data } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +9,15 @@ import { Data } from '@angular/router';
 export class SpongEffectsService {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
+  private readonly _version$ = this.versionsService.versionReadOnly();
+  
+  spongEffectsRuns$ = resource({
+    request: this._version$,
+    loader: async (version) => {
+      return await this.backend.getSpongEffectsRuns(version.request);
+    }
+  });
+
   datasets$ = computed(() => {
     const runs = this.spongEffectsRuns$.value() || [];
     const datasets = runs.map((run: SpongEffectsRun) => ({
@@ -25,17 +33,12 @@ export class SpongEffectsService {
       index === self.findIndex((d) => d.dataset_ID === dataset.dataset_ID)
     );
   });
+
   // diseaseNames$ = linkedSignal(() => this.datasets$().map(d => d.disease_name));
   diseaseNames$ = computed(() => {
     const runs = this.spongEffectsRuns$.value() || [];
     return runs.map((run: SpongEffectsRun) => run.disease_name)
       .filter((value: string, index: number, self: Array<string>) => self.indexOf(value) === index);
   });
-  private readonly _version$ = this.versionsService.versionReadOnly();
-  spongEffectsRuns$ = resource({
-    request: this._version$,
-    loader: async (version) => (
-      await this.backend.getSpongEffectsRuns(version.request)
-    )
-  });
+
 }

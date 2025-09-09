@@ -1,0 +1,7 @@
+<app-heatmap-plot 
+    [dataSource]="heatmapDataSource"
+    [params]="heatmapParams()"
+    [refreshSignal]="refreshSignal$()"
+    [height]="'600px'"
+    (plotRendered)="onPlotRendered()">
+</app-heatmap-plot>

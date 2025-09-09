@@ -1,7 +1,8 @@
 <mat-drawer-container style="min-height: 100%">
-  <mat-drawer [opened]="true" mode="side">
+  <div class="card-container">
+
     <app-info title="What is SpongEffects?">
-      <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">spongEffects</a> can be used for downstream analysis of
+      <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">SpongEffects</a> can be used for downstream analysis of
         SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random
         forest
         machine learning approach.</p>
@@ -12,7 +13,7 @@
         feature sufficient cancer subtyping for classification.</p>
       <p>
         The tab below shows the spongEffects prediction results for a selected TCGA project.
-        You can browse the hub-nodes that spongEffects models views as potential biomarkers and compare their
+        You can browse the hub-nodes that SpongEffects models views as potential biomarkers and compare their
         gene/transcript expression.
       </p>
       <p>
@@ -22,23 +23,21 @@
       </p>
       <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
     </app-info>
-    <div class="card-container">
-      <mat-button-toggle-group [(value)]="mode">
-        <mat-button-toggle value="predict">Predict</mat-button-toggle>
-        <mat-button-toggle value="explore">Explore</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
-    @if (mode() == 'explore') {
-      <app-explore-form></app-explore-form>
-    } @else {
-      <app-predict-form></app-predict-form>
-    }
-  </mat-drawer>
-  <mat-drawer-content>
-    @if (mode() == 'explore') {
-      <app-explore></app-explore>
-    } @else {
-      <app-predict></app-predict>
-    }
-  </mat-drawer-content>
+
+    <mat-button-toggle-group [(value)]="mode">
+      <mat-button-toggle value="explore">Explore TCGA</mat-button-toggle>
+      <mat-button-toggle value="predict">Custom SpongEffects</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <hr #sectionLine style="margin: 0px 0 0px 0; width: 100%;" />
+
+  </div>
+
+
+  @if (mode() == 'explore') {
+    <app-explore></app-explore>
+  }@else {
+    <app-predict></app-predict>
+  }
+  
 </mat-drawer-container>

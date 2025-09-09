@@ -3,13 +3,29 @@ import { ExampleExpression } from '../../../interfaces';
 import { fromEvent } from 'rxjs';
 import { PredictionResultsComponent } from './prediction-results/prediction-results.component';
 import { PredictionTableComponent } from "./prediction-results/prediction-table/prediction-table.component";
+import { ModuleHeatmapComponent } from './module-heatmap/module-heatmap.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ModuleTableComponent } from "./module-table/module-table.component";
+import { PredictFormComponent } from './form/predict-form.component';
+import { MatDrawer, MatDrawerContainer, MatDrawerContent} from '@angular/material/sidenav';
+
 
 declare var Plotly: any;
 
 
 @Component({
   selector: 'app-predict',
-  imports: [PredictionResultsComponent, PredictionTableComponent],
+  imports: [
+    PredictionResultsComponent, 
+    PredictionTableComponent, 
+    ModuleHeatmapComponent, 
+    MatTabsModule, 
+    ModuleTableComponent,
+    PredictFormComponent,
+    MatDrawer,
+    MatDrawerContainer,
+    MatDrawerContent,
+  ],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss',
 })

@@ -5,9 +5,12 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
   linkedSignal,
+  OnInit,
   signal,
   viewChild,
+  WritableSignal,
 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -19,10 +22,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { BrowseQuery, InteractionSorting } from '../../../interfaces';
+import { BrowseQuery, InteractionSorting, Dataset } from '../../../interfaces';
 import { BrowseService } from '../../../services/browse.service';
 import { VersionsService } from '../../../services/versions.service';
-import _ from 'lodash';
+import {capitalize} from 'lodash';
 import {
   MatButtonToggle,
   MatButtonToggleGroup,
@@ -55,12 +58,20 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
 })
-export class FormComponent {
+export class FormComponent implements OnInit {
   versionsService = inject(VersionsService);
-  browseService = inject(BrowseService);
+  browseService = input.required<BrowseService>();
   version = this.versionsService.versionReadOnly();
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
-  activeDataset = linkedSignal(() => this.diseases$()[0]);
+  fixedDataset = input<Dataset | undefined>();
+  fixedLevel = input<(() => 'gene' | 'transcript') | undefined>();
+  activeDataset: WritableSignal<Dataset | undefined> = this.fixedDataset ? linkedSignal(() => this.fixedDataset()) : linkedSignal(() => this.diseases$()[0]);
+  // default thresholds should be different in spongeffects form
+  defaultMinDegree = input<number | undefined>();
+  defaultMinBetweenness = input<number | undefined>();
+  defaultMinEigen = input<number | undefined>();
+  defaultMaxPValue = input<number | undefined>();
+  defaultMinMscor = input<number | undefined>();
   geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
@@ -95,16 +106,27 @@ export class FormComponent {
       Validators.max(1000),
     ]),
     maxPValue: new FormControl<number>(0.05, [
-      Validators.min(0.025),
-      Validators.max(0.2),
+      Validators.min(0),
+      Validators.max(1),
     ]),
     minMscor: new FormControl<number>(0.1, [
-      Validators.min(0.1),
-      Validators.max(1),
+      Validators.min(0),
+      Validators.max(2),
     ]),
   });
 
-  protected readonly capitalize = _.capitalize;
+  protected readonly capitalize = capitalize;
+
+  ngOnInit() {
+    // if specific defaults are set (eg spongeffects) 
+    this.formGroup.patchValue({
+      minDegree: this.defaultMinDegree() ?? 1,
+      minBetweenness: this.defaultMinBetweenness() ?? 0.05,
+      minEigen: this.defaultMinEigen() ?? 0.1,
+      maxPValue: this.defaultMaxPValue() ?? 0.05,
+      minMscor: this.defaultMinMscor() ?? 0.1,
+    });
+  }
 
   constructor(private cdr: ChangeDetectorRef) {
     const formSignal = signal(this.formGroup.value);
@@ -135,8 +157,7 @@ export class FormComponent {
       const dataset = this.activeDataset();
       if (dataset === undefined) return;
       if (!this.formGroup.valid) return;
-      console.log(config);
-      this.browseService.runQuery({
+      this.browseService().runQuery({
         ...config,
         dataset,
       } as BrowseQuery);
@@ -144,6 +165,39 @@ export class FormComponent {
 
     effect(() => {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
+    });
+
+    effect(() => {
+      if (this.fixedLevel()) {
+        this.formGroup.get('level')?.setValue(this.fixedLevel()!(), { emitEvent: true });
+        // this.browseService().runQuery({
+        //   ...formSignal(),
+        //   level: this.fixedLevel()!(),
+        //   dataset: this.activeDataset()!,
+        //   ensemblID: this.exploreService().ensemblID(),
+        // } as BrowseQuery);
+      // } else {
+      //   const dataset = this.activeDataset();
+      //   const config = formSignal();
+      //   if (dataset === undefined) return;
+      //   this.browseService().runQuery({
+      //     ...config,
+      //     level: this.fixedLevel()!(),
+      //     dataset: dataset,
+      //     showOrphans: config.showOrphans ?? false,
+      //     sortingBetweenness: config.sortingBetweenness ?? false,
+      //     sortingDegree: config.sortingDegree ?? false,
+      //     sortingEigenvector: config.sortingEigenvector ?? false,
+      //     maxNodes: config.maxNodes ?? 10,
+      //     minDegree: config.minDegree ?? 1,
+      //     minBetweenness: config.minBetweenness ?? 0.05,
+      //     minEigen: config.minEigen ?? 0.1,
+      //     maxInteractions: config.maxInteractions ?? 100,
+      //     maxPValue: config.maxPValue ?? 0.05,
+      //     minMscor: config.minMscor ?? 0.1,
+      //     interactionSorting: (config.interactionSorting ?? this.getKeys(this.interactionSortings)[0]) as InteractionSorting,
+      //   });
+      }
     });
   }
 

@@ -1,5 +1,5 @@
 import {Component, computed, effect, ElementRef, inject, input, resource, viewChild} from '@angular/core';
-import {Metric, PlotData, PlotlyData, RunPerformance} from '../../../../../interfaces';
+import {EnrichmentScoreDistributions, Metric, PlotData, PlotlyData, RunPerformance} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
 import {MatExpansionModule} from '@angular/material/expansion';
@@ -33,6 +33,7 @@ export class EnrichmentClassPlotComponent {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
+  selectedDisease = this.exploreService.selectedDisease$;
 
   enrichmentClassPlot = viewChild.required<ElementRef<HTMLDivElement>>('enrichmentClassPlot');
 
@@ -43,15 +44,17 @@ export class EnrichmentClassPlotComponent {
       return {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
-        level: this.exploreService.level$()
+        level: this.exploreService.level$(),
+        selectedParamSets: this.exploreService.selectedParamSets$()()
       }
     }),
     loader: async (param) => {
       const version = param.request.version;
       const cancer = param.request.cancer;
       const level = param.request.level;
-      if (version === undefined || cancer === undefined || level === undefined) return;
-      const data = this.getEnrichmentClassData(version, cancer, level);
+      const selectedParamSets = param.request.selectedParamSets;
+      if (version === undefined || cancer === undefined || level === undefined || selectedParamSets == undefined) return;
+      const data = this.getEnrichmentClassData(version, cancer, level, selectedParamSets);
       return await this.plotEnrichmentClassPlot(data);
     }
   });
@@ -67,10 +70,16 @@ export class EnrichmentClassPlotComponent {
     this.clearPlot();
   });
 
-  async getEnrichmentClassData(version: number, cancer: string, level: string): Promise<any> {
-    const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level);
+  async getEnrichmentClassData(version: number, cancer: string, level: string, selectedParamSets: {[key: string]: any}): Promise<any> {
+    const datas: EnrichmentScoreDistributions[] = []
+    for (const [key, value] of Object.entries(selectedParamSets)) {
+      const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level, selectedParamSets);
+      data.map((entry: EnrichmentScoreDistributions) => {
+        datas.push(entry);
+      });
+    }
     const classDensities: Map<string, PlotData> = new Map<string, PlotData>();
-    data.forEach(entry => {
+    datas.forEach(entry => {
       if (classDensities.has(entry.prediction_class)) {
         classDensities.get(entry.prediction_class)?.x.push(entry.enrichment_score)
         classDensities.get(entry.prediction_class)?.y.push(entry.density)
@@ -80,11 +89,15 @@ export class EnrichmentClassPlotComponent {
         });
       }
     });
+
     return classDensities;
   }
 
 
   async plotEnrichmentClassPlot(enrichmentData:  Promise<Map<string, PlotData>>): Promise<PlotlyData> {
+
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
+
 
     // fill subtype specific data
     let data: any[] = [];
@@ -123,7 +136,7 @@ export class EnrichmentClassPlotComponent {
         roworder: 'bottom to top'
       },
       height: plot_height,
-      title: "spongEffects enrichment score density for predictive classes",
+      title: `SpongEffects Enrichment Score Density for per Cancer ${type_or_subtype}`,
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
     };
@@ -151,7 +164,7 @@ export class EnrichmentClassPlotComponent {
         x = x + (index + 1).toString();
         y = y + (index + 1).toString();
       } else {
-        x_axis_layout_i["title"] = "spongEffects enrichment score";
+        x_axis_layout_i["title"] = "SpongEffects Enrichment Score";
         x_axis_layout_i.showticklabels = true;
       }
       layout[x_key] = x_axis_layout_i;

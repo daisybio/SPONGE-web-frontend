@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   computed,
   effect,
@@ -7,19 +6,17 @@ import {
   inject,
   input,
   resource,
-  ResourceRef,
-  Signal,
   signal,
   viewChild,
   ViewChild,
-  WritableSignal,
+  ɵunwrapWritableSignal
 } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
-  Validators,
+  Validators
 } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -33,26 +30,29 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+
 import {
   Dataset,
-  GeneExpression,
-  ModuleMember,
   PlotlyData,
   SpongEffectsModule,
   SpongEffectsRun,
-  TranscriptExpression,
+  ModuleMember
 } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
 import { ExploreService } from '../../service/explore.service';
-import { MatInputModule } from '@angular/material/input';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
+import { debounceTime } from 'rxjs';
+import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../../components/heatmap-plot/heatmap-plot.component';
+import { NetworkComponent } from '../../../../../components/browse-views/network/network.component';
+import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
 import { BrowseService } from '../../../../../services/browse.service';
 
 declare var Plotly: any;
-
 
 @Component({
   selector: 'app-lollipop-plot',
@@ -73,556 +73,423 @@ declare var Plotly: any;
     MatSortModule,
     InfoComponent,
     MatButtonModule,
+    ReusableHeatmapComponent,
+    MatButtonToggleModule,
+    NetworkComponent,
+    ActiveEntitiesComponent,
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
 })
-export class LollipopPlotComponent implements AfterViewInit {
-  versionService = inject(VersionsService);
-  exploreService = inject(ExploreService);
-  infoService = inject(InfoService)
-  backend = inject(BackendService);
+export class LollipopPlotComponent {
+  private backend = inject(BackendService);
+  private versionService = inject(VersionsService);
+  private exploreService = inject(ExploreService);
   browseService = inject(BrowseService);
+  infoService = inject(InfoService);
+  selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()()));
+
   refreshSignal$ = input();
-  elementLimitWarning: boolean = false;
-  columnNames: { [key: string]: string } = {
-    ensemblID: 'Ensembl ID',
-    symbol: 'Symbol',
-    meanGiniDecrease: 'Mean Gini decrease',
-    meanAccuracyDecrease: 'Mean accuracy decrease',
-    memberOrCenter: 'Center or member',
-    moduleCenter: 'Module center',
-    // spongEffects_run_ID: 'SpongEffects run ID',
-    moduleParams: 'Module parameters',
-  };
-  displayedColumns: string[] = Object.keys(this.columnNames);
-  elementExpressionLoading: boolean = true;
-  selectedModules = signal<SpongEffectsModule[]>([]);
-  moduleMembersMap = signal(new Map<string, ModuleMember[]>());
-  tableData = signal(new MatTableDataSource<SpongEffectsModule | ModuleMember>([]));
-  spongEffectRuns: Map<number, SpongEffectsRun> = new Map<number, SpongEffectsRun>();
-    gProfilerUrl$ = computed(() =>
-      this.getGProfilerUrlForModules(this.selectedModules())
-    );
+  refresh$ = signal(0);
 
-  getGProfilerUrlForModules(modules: SpongEffectsModule[]): string {
-    const genes = modules
-      .map((module) => {
-        return module.symbol || module.ensemblID;
-      })
-    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(
-      ' '
-    )}`;
-  }
-
-  // plot parameters
-  defaultMarkerSize: number = 12;
-  // moduleExpressionData: PlotlyData = {data: [], layout: {}, config: {}};
-
-  lollipopPlot = viewChild.required<ElementRef<HTMLDivElement>>('lollipopPlot');
-  moduleExpressionHeatmap = viewChild.required<ElementRef<HTMLDivElement>>('moduleExpressionHeatmap');
-  // @ViewChild('lollipopPlot', { static: false }) lollipopPlot!: ElementRef<HTMLDivElement>;
-  // @ViewChild('moduleExpressionHeatmap', { static: false }) moduleExpressionHeatmap!: ElementRef<HTMLDivElement>;
+  lollipopPlot = viewChild.required<ElementRef>('lollipopPlot');
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   formGroup = new FormGroup({
-    markControl: new FormControl<number>(5, [
-      Validators.min(3.0),
-      Validators.max(100),
-    ]),
-    topControl: new FormControl<number>(15, [
-      Validators.min(1.0),
-      Validators.max(20),
-    ]),
-    includeModuleMembers: new FormControl<boolean>(false),
+    markControl: new FormControl<number>(5, [Validators.min(3), Validators.max(100)]),
+    topControl: new FormControl<number>(15, [Validators.min(1), Validators.max(20)]),
+    includeModuleMembers: new FormControl<boolean>(false)
+  });
+  // topN = signal(this.formGroup.get('topControl')?.value);
+  // redNodes = signal(this.formGroup.get('markControl')?.value);
+  // moved this to explore service because also needed for module network 
+  // includeModuleMembers = signal(this.formGroup.get('includeModuleMembers')?.value);
+  topN = this.exploreService.topN;
+  redNodes = this.exploreService.redNodes;
+  get includeModuleMembersControl(): FormControl {
+  return this.formGroup.get('includeModuleMembers') as FormControl;
+}
+
+  defaultMarkerSize = 12;
+  MAX_ELEMENTS = this.exploreService.MAX_ELEMENTS;
+
+  selectedVis = this.exploreService.selectedVis;
+
+  columnNames: { [key: string]: string } = {
+    symbol: 'Symbol',
+    ensemblID: 'Ensembl ID',
+    meanGiniDecrease: 'Mean Gini Decrease',
+    meanAccuracyDecrease: 'Mean Acuracy Decrease',
+    memberOrCenter: 'Center or Member',
+    moduleCenter: 'Module Center',
+    moduleParams: 'Module Parameters'
+  };
+  displayedColumns = Object.keys(this.columnNames);
+
+  elementLimitWarning = signal(false);
+  moduleMembersMap = new Map<string, ModuleMember[]>();
+  spongEffectRuns = new Map<number, SpongEffectsRun>();
+
+  gProfilerUrl$ = computed(() => {
+    const modules = this.selectedModules.value()
+    if (!modules || modules.length === 0) {
+      return '';
+    } else {
+      const genes = modules.map(module => module.symbol || module.ensemblID);
+      return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
+    }
   });
 
-
-  // tableData = resource({
-  //   request: () => ({
-  //     modules: this.selectedModules(),
-  //     members: this.moduleMembersMap(),
-  //   }),
-  //   loader: async (param) => {
-  //     const modules = param.request.modules;
-  //     const members = param.request.members;
-  //     const data: SpongEffectsModule[] | ModuleMember[] = [...modules];
-  //     members.forEach((memberList, moduleId) => {
-  //       memberList.forEach((member) => {
-  //         data.push({ ...member, memberOrCenter: 'module member'} as ModuleMember);
-  //       });
-  //     });
-  //     const table = new MatTableDataSource(data);
-  //     table.paginator = this.paginator;
-  //     table.sort = this.sort;
-  //     return table;
-  //   },
-  // });
-
+  // the grey modules
   lolipopPlotData = resource({
     request: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
+      topN: this.topN() ?? 15,
+      selectedParamSets: this.exploreService.selectedParamSets$()()
     }),
-    loader: async (param) => {
-      const version = param.request.version;
-      const cancer = param.request.cancer;
-      const level = param.request.level;
-      if (!version || !cancer || !level) {
-        return [];
+    loader: ({ request }) => {
+      const { version, cancer, level, topN, selectedParamSets } = request;
+      if (!version || !cancer || !level || !selectedParamSets) {
+        return Promise.resolve([]); 
       }
-      return this.getLollipopData(version, cancer, level);
-    },
+      const greyModules = this.getLollipopData(version, cancer, level, topN, selectedParamSets); 
+      return greyModules;
+    }
   });
 
-  moduleExpressionData = resource({
-    request: () => ({
-      modules: this.selectedModules(),
-    }),
-    loader: async (param) => {
-      const version = this.versionService.versionReadOnly()();
-      const disease = this.exploreService.selectedDiseaseObject$();
-      const level = this.exploreService.level$();
-      const selectedModules = param.request.modules;
+  // the red modules
+  get selectedModules() {
+    return this.exploreService.selectedModules;
+  }
 
-      if (!version || !disease || !level || !selectedModules) {
-        return { data: [], layout: {}, config: {} };
+  // Data source for reusable heatmap component
+  heatmapDataSource = signal<HeatmapDataSource>({
+    getData: async (params) => {
+      const { version, disease, level, modules, includeMembers } = params;
+      if (!version || !disease || !level || !modules || modules.length === 0) {
+        return [];
       }
-      return this.getModulesExpression(version, level, disease, selectedModules);
+      console.log('modules for heatmap:', modules);
+      // let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
+      let elements: string[] = modules.map((m: { spongEffects_module_ID: any; }) => m.spongEffects_module_ID);
+
+      if (includeMembers) {
+        for (const module of modules) {
+          const key = this.exploreService.getModuleKey(module);
+          if (!this.moduleMembersMap.has(key)) {
+            await this.exploreService.fetchModuleMembers(module);
+          }
+          const members = this.moduleMembersMap.get(key) || [];
+          elements.push(...members.map(m => m.ensemblID));
+        }
+        elements = [...new Set(elements)];
+      }
+      
+      // Check for element limit
+      this.elementLimitWarning.set(false);
+      if (this.MAX_ELEMENTS && elements.length > this.MAX_ELEMENTS) {
+        elements = elements.slice(0, this.MAX_ELEMENTS);
+        this.elementLimitWarning.set(true);
+      }
+      // const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
+      // const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
+      const enrichData = await this.backend.fetchSpongEffectsEnrichScores(version, level, elements);
+
+      // Add disease subtype information
+      if (disease === 'pancancer') {
+        const mapping = await this.backend.getDiseaseFromSample();
+        for (const e of enrichData) {
+          const sample_ID = e.sample_ID;
+          const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
+          e.disease_subtype = diseaseName;
+        }
+      } else {
+        const sampleInformation = await this.backend.getSampleInfo(undefined, disease);
+        const mapping: { [key: string]: string } = {};
+        sampleInformation.forEach((sample) => {
+          const sampleID = sample.sample_ID;
+          mapping[sampleID] = sample.disease.disease_subtype;
+        });
+        
+        for (const e of enrichData) {
+          const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
+          e.disease_subtype = mapping[patientID] || 'NA';
+        }
+      }
+      
+      return enrichData;
     },
+    
+    getTitle: (params) => {
+      const { includeMembers } = params;
+      return 'Enrichment Scores of Selected Modules' + (includeMembers ? ' and Members' : '');
+    },
+    
+    getYAxisTitle: () => {
+      const level = this.exploreService.level$();
+      const includeMembers = this.exploreService.includeModuleMembers();
+      return `Module Center ${level === 'gene' ? 'Gene' : 'Transcript'}${includeMembers ? ' and Module Members' : ''}`;
+    },
+
+    getZAxisTitle: () => 'SpongEffects Module<br>Enrichment Score',
+
+    getZMid: () => 0,
+    
+    getColorScale: () => 'RdBu'
+  });
+
+  // Parameters for the heatmap
+  heatmapParams = computed(() => ({
+    version: this.versionService.versionReadOnly()(),
+    disease: this.exploreService.selectedDisease$(),
+    level: this.exploreService.level$(),
+    modules: this.selectedModules.value(),
+    includeMembers: this.exploreService.includeModuleMembers(),
+    value_key: 'score_value'
+  }));
+  
+  // table data
+  tableDataResource = resource({
+    request: () => ({
+      version: this.versionService.versionReadOnly()(),
+      disease: this.exploreService.selectedDisease$(),
+      level: this.exploreService.level$(),
+      modules: this.selectedModules.value(),
+      includeMembers: this.exploreService.includeModuleMembers()
+    }),
+    loader: async ({ request }) => {
+      const { version, disease, level, modules, includeMembers } = request;
+      if (!version || !disease || !level || !modules || modules.length === 0) {
+        return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
+      }
+      return this.getTableData(modules, includeMembers ?? undefined);
+    }
   });
 
   constructor() {
-    // get all spong effects runs once
-    const version = this.versionService.versionReadOnly()();
-    if (version) {
-      this.getSpongEffectRuns(version);
-    }
-    console.log('SpongEffectRuns', this.spongEffectRuns);
+    this.initializeSpongEffectRuns();
+    this.setupEffects();
 
+    this.formGroup.get('topControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      this.topN.set(value ? value : undefined);
+    });
+    this.formGroup.get('markControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      this.redNodes.set(value ? value : undefined);
+    });
+    this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      this.exploreService.includeModuleMembers.set(value);
+    });
+  }
+
+  private setupEffects(): void {
+    effect(() => {
+      this.refreshSignal$();
+      this.refreshPlotSizes();
+    });
+    
     effect(() => {
       this.exploreService.selectedDisease$();
       this.exploreService.level$();
-      this.clearPlot();
+      this.clearAll();
     });
-
+    
     effect(() => {
-      if (this.lolipopPlotData.isLoading()) {
-        Plotly.purge(this.lollipopPlot().nativeElement);
+      const redNodes = this.redNodes();
+      const greyModules = this.lolipopPlotData.value();
+      if (greyModules && greyModules.length > 0 && redNodes) {
+        this.renderLollipopPlot(greyModules, redNodes);
       }
     });
-
+    
     effect(() => {
-      if (this.moduleExpressionData.isLoading()) {
-        Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
-      }
-    });
-
-    effect(() => {
-      const includeMembers = this.formGroup.get('includeModuleMembers')?.value;
-      if (includeMembers !== undefined) {
-        this.updateTableData();
-      }
-    });
-
-    effect(async () => {
-      const lolipopData = this.lolipopPlotData.value();
-      if (lolipopData) {
-        this.plotLollipopPlot(lolipopData);
+      const table = this.tableDataResource.value();
+      if (table && this.paginator && this.sort) {
+        table.paginator = this.paginator;
+        table.sort = this.sort;
       }
     });
 
     effect(() => {
-      const modules = this.moduleExpressionData.value();
-      if (modules) {
-        this.plotModuleExpression(modules);
+      if ((this.selectedModules.value()?.length ?? 0) === 0 && this.lolipopPlotData && (this.lolipopPlotData.value()?.length ?? 0) > 0) {
+        this.selectedModules.reload();
       }
     });
-
-    effect(() => {
-      if (this.tableData() ) {
-        this.tableData().paginator = this.paginator;
-        this.tableData().sort = this.sort;
-      }
-    });
-
-    this.formGroup.valueChanges.subscribe(() => {
-      const lolipopData = this.lolipopPlotData.value();
-      if (lolipopData) {
-        this.plotLollipopPlot(lolipopData);
-      }
-
-      if (this.selectedModules().length > 0) {
-        const modules = this.moduleExpressionData.value();
-        if (modules) {
-          this.plotModuleExpression(modules);
-        }
-      }
-    });
-
-    // setTimeout(() => {
-    //   if (this.lollipopPlot()) {
-    //     this.lollipopPlot().nativeElement.addEventListener('plotly_click', (event: any) => {
-    //       if (event.points && event.points.length > 0) {
-    //         const pointIndex = event.points[0].pointIndex;
-    //         const lolipopData = this.lolipopPlotData.value()!;
-    //         const clickedModule = lolipopData[pointIndex];
-    //         // this.toggleModule(clickedModule);
-    //       }
-    //     });
-    //   }
-    // });
   }
 
-  ngAfterViewInit(): void {
-    this.refreshPlot();
+  private async initializeSpongEffectRuns(): Promise<void> {
+    const version = this.versionService.versionReadOnly()();
+    if (version) {
+      const runs = await this.backend.getSpongEffectsRuns(version);
+      runs.forEach(run => {
+        this.spongEffectRuns.set(run.spongEffects_run_ID, run);
+      });
+    }
   }
 
-  async getLollipopData(version: number, cancer: string, level: string): Promise<SpongEffectsModule[]> {
+  private async getLollipopData(version: number, cancer: string, level: string, topN: number, selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
+    const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
-      const query = await this.backend.getSpongEffectsGeneModules(version, cancer);
-      return query.map((entry) => ({
-        ensemblID: entry.gene.ensg_number,
-        symbol: entry.gene.gene_symbol,
-        meanGiniDecrease: entry.mean_gini_decrease,
-        meanAccuracyDecrease: entry.mean_accuracy_decrease,
-        spongEffects_run_ID: entry.spongEffects_run_ID,
-      }));
+      for (const [key, paramSet] of Object.entries(selectedParamSets)) {
+        let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN)
+        tmp.map((entry) => {
+          data.push({
+          ensemblID: entry.gene.ensg_number,
+          symbol: entry.gene.gene_symbol,
+          meanGiniDecrease: entry.mean_gini_decrease,
+          meanAccuracyDecrease: entry.mean_accuracy_decrease,
+          spongEffects_run_ID: entry.spongEffects_run_ID,
+          spongEffects_module_ID: entry.spongEffects_gene_module_ID
+        })}
+      );
+      };
     } else {
-      const query = await this.backend.getSpongEffectsTranscriptModules(version, cancer);
-      return query.map((entry) => ({
-        ensemblID: entry.transcript.enst_number,
-        symbol: entry.transcript.enst_number,
-        meanGiniDecrease: entry.mean_gini_decrease,
-        meanAccuracyDecrease: entry.mean_accuracy_decrease,
-        spongEffects_run_ID: entry.spongEffects_run_ID,
-      }));
-    }
-  }
-
-  async plotLollipopPlot(plot_data: SpongEffectsModule[] | undefined) {
-    if (this.lolipopPlotData.isLoading()) {
-      Plotly.purge(this.lollipopPlot().nativeElement);
-      return;
-    }
-
-    if (!plot_data) {
-      return;
-    }
-
-    let giniData: SpongEffectsModule[] = [...plot_data];
-
-    const redNodes: number = this.formGroup.value.markControl ?? 0;
-    const n: number = this.formGroup.value.topControl ?? 0;
-    let idx: number = n > giniData.length ? giniData.length : n;
-    giniData = giniData.slice(0, idx);
-    this.addModules(giniData.slice(0, redNodes));
-
-    let data: any[] = [
-      {
-        x: giniData.map((g) => g.meanGiniDecrease),
-        y: giniData.map((g) => g.meanAccuracyDecrease),
-        mode: 'markers',
-        type: 'scatter',
-        name: giniData.map((g) => g.symbol),
-        text: giniData.map((g) => g.symbol),
-        marker: {
-          size: this.defaultMarkerSize,
-          color: giniData.map((g) =>
-            this.selectedModules().some(m => m.ensemblID === g.ensemblID) ? 'red' : 'grey',
-          ),
-        },
-      },
-    ];
-
-    const layout = {
-      title: 'Module importance',
-      showlegend: false,
-      autosize: true,
-      hovermode: 'closest',
-      xaxis: {
-        title: 'Mean decrease in Gini-index',
-      },
-      yaxis: {
-        title: 'Mean decrease in accuracy',
-      },
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(0,0,0,0)',
-    };
-    const config = {
-      responsive: true,
-    };
-
-    Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
-  }
-
-  // async toggleModule(module: SpongEffectsModule) {
-  //   const selectedModules = this.selectedModules();
-  //   const moduleIndex = selectedModules.findIndex(
-  //     (m) => m.ensemblID === module.ensemblID,
-  //   );
-
-  //   if (moduleIndex === -1) {
-  //     this.selectedModules.set([...selectedModules, module]);
-  //   } else {
-  //     this.selectedModules.set(
-  //       selectedModules.filter((m) => m.ensemblID !== module.ensemblID),
-  //     );
-  //   }
-
-  //   await this.updateTableData();
-
-  //   if (this.plot_data.length > 0) {
-  //     this.plotLollipopPlot(this.plot_data);
-  //   }
-  // }
-
-  refreshPlot() {
-    const plotDiv = this.lollipopPlot().nativeElement;
-    const plotDiv2 = this.moduleExpressionHeatmap().nativeElement;
-    if (plotDiv.checkVisibility()) {
-      Plotly.Plots.resize(plotDiv);
-    }
-    if (plotDiv2.checkVisibility()) {
-      Plotly.Plots.resize(plotDiv2);
-    }
-  }
-
-  clearPlot() {
-    Plotly.purge(this.lollipopPlot().nativeElement);
-    Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
-    this.selectedModules.set([]);
-    this.moduleMembersMap.set(new Map<string, ModuleMember[]>());
-    this.elementLimitWarning = false;
-  }
-
-  addModules(modules: SpongEffectsModule[], clickedSymbol?: string) {
-    if (!clickedSymbol) {
-      this.selectedModules.set(modules);
-    } else {
-      const currentModules = this.selectedModules();
-      const hasSymbol = currentModules.some(m => m.symbol === clickedSymbol);
-
-      if (hasSymbol) {
-        this.selectedModules.set(currentModules.filter(m => m.symbol !== clickedSymbol));
-      } else {
-        const modulesToAdd = modules.filter(m => m.symbol === clickedSymbol);
-        this.selectedModules.set([...currentModules, ...modulesToAdd]);
+      for (const [key, paramSet] of Object.entries(selectedParamSets)) {
+        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN);
+        tmp.slice(0, topN).forEach(entry => {
+          data.push({
+            ensemblID: entry.transcript.enst_number,
+            symbol: entry.transcript.gene.gene_symbol,
+            meanGiniDecrease: entry.mean_gini_decrease,
+            meanAccuracyDecrease: entry.mean_accuracy_decrease,
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_transcript_module_ID
+          });
+        });
       }
     }
-
-    this.updateTableData();
+    return data;
   }
 
-  async updateTableData() {
-    const includeMembers = this.formGroup.get('includeModuleMembers')?.value || false;
-    let tableEntries: (SpongEffectsModule | ModuleMember)[] = [...this.selectedModules()].map(module => ({
+
+  private async mapSampleToDisease(sample_ID: string, mapping: { [key: string]: string }): Promise<string> {
+    // a sample ID has the form TCGA-K1-A6RT-01___pancancer. Extract the TSS code which is in this case K1
+    const tssCode = sample_ID.split('-')[1];
+    // use the mapping to get the disease name
+    const diseaseName = mapping[tssCode];
+    if (diseaseName) {
+      return diseaseName;
+    } else {
+      return 'Unknown';
+    }
+  }
+
+  private async getTableData(
+    modules: SpongEffectsModule[],
+    includeMembers: boolean | undefined
+  ): Promise<MatTableDataSource<SpongEffectsModule | ModuleMember>> {
+    let tableEntries: (SpongEffectsModule | ModuleMember)[] = modules.map(module => ({
       ...module,
       memberOrCenter: 'module center',
       moduleCenter: '-',
-      moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID),
+      moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
-
-    if (includeMembers) {
-      for (const module of this.selectedModules()) {
-        if (!this.moduleMembersMap().has(module.ensemblID)) {
-          await this.fetchModuleMembers(module);
+    
+    if (includeMembers && modules.length > 0) {
+      const fetchPromises = modules.map(async module => {
+        const key = this.exploreService.getModuleKey(module);
+        if (!this.moduleMembersMap.has(key)) {
+          await this.exploreService.fetchModuleMembers(module);
         }
-
-        const members = this.moduleMembersMap().get(module.ensemblID) || [];
-        tableEntries = [...tableEntries, ...members.map(m => ({
-          ...m,
-          memberOrCenter: 'module member',
-          moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID),
-        }))];
+      });
+      
+      await Promise.all(fetchPromises);
+      
+      for (const module of modules) {
+        const key = this.exploreService.getModuleKey(module);
+        const members = this.moduleMembersMap.get(key) || [];
+        
+        tableEntries = [
+          ...tableEntries,
+          ...members.map(m => ({
+            ...m,
+            memberOrCenter: 'module member',
+            moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
+          }))
+        ];
       }
     }
-
-    this.tableData.set(new MatTableDataSource(tableEntries));
+    
+    return new MatTableDataSource(tableEntries);
   }
 
-  async fetchModuleMembers(module: SpongEffectsModule) {
-    const version = this.versionService.versionReadOnly()();
-    const disease = this.exploreService.selectedDisease$();
-    const level = this.exploreService.level$();
-
-    if (!version || !disease || !level) return;
-
-    let members: ModuleMember[] = [];
-
-    if (level === 'gene') {
-      const response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version,
-        disease,
-        module.ensemblID
-      );
-
-      members = response.map(r => ({
-        ensemblID: r.gene.ensg_number,
-        symbol: r.gene.gene_symbol,
-        meanGiniDecrease: 0,
-        meanAccuracyDecrease: 0,
-        centerOrMember: 'module member',
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: module.spongEffects_run_ID,
-      }));
-    } else {
-      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version,
-        disease,
-        module.ensemblID
-      );
-
-      members = response.map(r => ({
-        ensemblID: r.transcript.enst_number,
-        symbol: r.transcript.enst_number,
-        meanGiniDecrease: 0,
-        meanAccuracyDecrease: 0,
-        centerOrMember: 'module member',
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: module.spongEffects_run_ID,
-      }));
-    }
-
-    this.moduleMembersMap.set(new Map(this.moduleMembersMap().set(module.ensemblID, members)));
-  }
-
-  async getModulesExpression(
-    version: number,
-    level: 'gene' | 'transcript',
-    disease: Dataset,
-    selectedModules: SpongEffectsModule[],
-  ): Promise<PlotlyData> {
-
-    if (selectedModules.length === 0) {
-      return { data: [], layout: {}, config: {} };
-    }
-
-    let elements: string[] = selectedModules.map((s) => s.ensemblID);
-
-    if (this.formGroup.get('includeModuleMembers')?.value) {
-      elements.push(...Array.from(this.moduleMembersMap().values()).flat().map(m => m.ensemblID));
-      elements = [...new Set(elements)];
-    }
-
-    this.elementLimitWarning = false;
-
-    const MAX_ELEMENTS = 100;
-    if (elements.length > MAX_ELEMENTS) {
-      elements = elements.slice(0, MAX_ELEMENTS);
-      this.elementLimitWarning = true;
-      console.warn(`Limited elements to ${MAX_ELEMENTS} to prevent performance issues`);
-    }
-
-    const apiResponse = await this.backend.getExpression(
-      version,
-      elements,
-      disease,
-      level,
-    );
-
-    const typeSplit: Map<string, GeneExpression[] | TranscriptExpression[]> = new Map<string, any[]>();
-    apiResponse.forEach((entry) => {
-      const dataset: string = entry.dataset.disease_subtype ? entry.dataset.disease_subtype : entry.dataset.disease_name;
-      if (!typeSplit.has(dataset)) {
-        typeSplit.set(dataset, []);
+  private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {
+    const data = [{
+      x: limitedData.map(g => g.meanGiniDecrease),
+      y: limitedData.map(g => g.meanAccuracyDecrease),
+      mode: 'markers',
+      type: 'scatter',
+      name: 'Modules',
+      text: limitedData.map(g => g.symbol),
+      marker: {
+        size: this.defaultMarkerSize,
+        color: limitedData.map((_, i) => i < redNodes ? 'red' : 'grey')
       }
-      typeSplit.get(dataset)?.push(entry as GeneExpression & TranscriptExpression);
-    });
-
-    let data: any[] = [];
-    typeSplit.forEach((entry, dataset) => {
-      const xSamples = entry.map((e) => e.sample_ID);
-      const yElements = entry.map((e) => 'gene' in e ? e.gene.ensg_number : e.transcript.enst_number);
-      const zValues = entry.map((e) => e.expr_value);
-
-      data.push({
-        z: zValues,
-        x: xSamples,
-        y: yElements,
-        type: 'heatmap',
-        hoverongaps: false,
-        name: dataset,
-        showscale: false,
-      });
-    });
-
-    if (data.length > 0) {
-      data[data.length - 1].showscale = true;
-
-      data.slice(1).forEach((d, i) => {
-        let idx: string = (i + 2).toString();
-        d.xaxis = 'x' + idx;
-      });
-    }
-
+    }];
+    
     const layout = {
+      title: 'Module Importance',
+      showlegend: false,
       autosize: true,
+      hovermode: 'closest',
+      margin: {
+        t: 30,
+      },
       xaxis: {
-        ticks: '',
-        showticklabels: false,
-        title: 'Sample ID',
-        automargin: true,
+        title: 'Mean Decrease in Gini Index'
       },
       yaxis: {
-        title: ('Module center' + (level === 'gene' ? ' gene' : ' transcript')) + (this.formGroup.get('includeModuleMembers')?.value ? ' and module members' : ''),
-        automargin: true,
-      },
-      title: {
-        text: 'Expression of selected modules',
+        title: 'Mean Decrease in Accuracy'
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(0,0,0,0)',
-      grid: {
-        rows: 1,
-        columns: data.length,
-      },
-      annotations: [],
+      plot_bgcolor: 'rgba(0,0,0,0)'
     };
-    let config = {
-      responsive: true,
+    
+    const config = {
+      responsive: true
     };
-    return { data: data, layout: layout, config: config };
+    
+    Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
   }
 
-  plotModuleExpression(config: PlotlyData | undefined) {
-    if (this.moduleExpressionData.isLoading()) {
-      Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
-      return;
+  refreshPlotSizes(): void {
+    const lollipopElement = this.lollipopPlot().nativeElement;
+    
+    if (lollipopElement.checkVisibility()) {
+      Plotly.Plots.resize(lollipopElement);
     }
-
-    if (!config || !config.data || config.data.length === 0 || this.selectedModules().length === 0) {
-      Plotly.purge(this.moduleExpressionHeatmap().nativeElement);
-      return;
-    }
-
-    Plotly.newPlot(
-      this.moduleExpressionHeatmap().nativeElement,
-      config.data,
-      config.layout,
-      config.config,
-    );
   }
 
-  async getSpongEffectRuns(version: number) {
-    const SE_run: SpongEffectsRun[] = await this.backend.getSpongEffectsRuns(version);
-    // add each spongeffectsrun to the map with the spongEffectsRunID as key
-    SE_run.forEach((run) => {
-        this.spongEffectRuns.set(run.spongEffects_run_ID, run);
-    });
+  clearAll(): void {
+    Plotly.purge(this.lollipopPlot().nativeElement);
+    this.moduleMembersMap = new Map<string, ModuleMember[]>();
+    this.elementLimitWarning.set(false);
   }
 
   spongEffectsRunParamsString(spongEffectsRunID: number): string {
-    const spongEffectsRun = this.spongEffectRuns.get(spongEffectsRunID);
-    if (!spongEffectsRun) {
+    const run = this.spongEffectRuns.get(spongEffectsRunID);
+    if (!run) {
       return 'No parameters available';
     }
-    const paramString: string = "mscor threshold: " + spongEffectsRun.m_scor_threshold + 
-                                "\npAdjust threshold: " + spongEffectsRun.p_adj_threshold + 
-                                "\nmodules cutoff: " + spongEffectsRun.modules_cutoff
-    return paramString
+    
+    return `mscor threshold: ${run.m_scor_threshold}
+pAdjust threshold: ${run.p_adj_threshold}
+modules cutoff: ${run.modules_cutoff}`;
   }
 
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    if (this.tableDataResource.value()) {
+      this.tableDataResource.value()!.filter = filterValue.trim().toLowerCase();
+      if (this.tableDataResource.value()!.paginator) {
+        this.tableDataResource.value()!.paginator!.firstPage();
+      }
+    }
+  }
+
+  onPlotRendered() {
+    console.log('Heatmap plot rendered successfully');
+  }
 }

@@ -1,3 +1,5 @@
+import { Data } from "@angular/router";
+
 export interface Dataset {
   data_origin: string;
   dataset_ID: number;
@@ -6,7 +8,7 @@ export interface Dataset {
   disease_type: string;
   download_url: string;
   sponge_db_version: number;
-  sample_count: number;
+  sample_count: number; 
 }
 
 export interface SpongeRun {
@@ -15,6 +17,7 @@ export interface SpongeRun {
       data_origin: string;
       dataset_ID: number;
       disease_name: string;
+      disease_subtype: string;
     };
     sponge_run_ID: number;
   };
@@ -56,6 +59,7 @@ export interface OverallCounts {
   count_interactions_sign: number;
   count_shared_miRNAs: number;
   disease_name: string;
+  disease_subtype: string | null;
   sponge_run_ID: number;
 }
 
@@ -67,7 +71,7 @@ export interface OverallCounts {
 
 export enum InteractionSorting {
   pValue = 'Adj. p-value',
-  mscor = 'mscor',
+  mscor = 'MScor',
   correlation = 'Correlation',
 }
 
@@ -114,6 +118,7 @@ export interface TranscriptInteraction extends SpongeRun {
 export interface BrowseQuery {
   level: 'gene' | 'transcript';
   dataset: Dataset;
+  ensemblID?: string[];
   showOrphans: boolean;
   sortingDegree: boolean;
   sortingEigenvector: boolean;
@@ -172,14 +177,14 @@ export interface CeRNAExpression {
 }
 
 export interface GeneExpression {
-  dataset: Dataset;
+  disease_subtype: string;
   expr_value: number;
   gene: Gene;
   sample_ID: string;
 }
 
 export interface TranscriptExpression {
-  dataset: Dataset;
+  disease_subtype: string;
   expr_value: number;
   sample_ID: string;
   transcript: Transcript;
@@ -253,6 +258,24 @@ export interface WikiPathway {
   wp_key: string;
 }
 
+export interface PatientInformation {
+  dataset: {
+    dataset_ID: number;
+    disease_name: string;
+  }
+  disease_status: number;
+  sample_ID: string;
+  survival_time: number;
+  disease: Disease;
+}
+
+export interface Disease {
+  disease_ID: number;
+  disease_name: string;
+  disease_subtype: string;
+}
+
+
 // from spongEffects
 // route responses
 
@@ -291,6 +314,7 @@ export interface RunPerformance {
   accuracy_p_value: number;
   mcnemar_p_value: number;
   spongEffects_run: SpongEffectsRun;
+  spongEffects_run_performance_ID: number;
 }
 
 export interface RunClassPerformance {
@@ -342,18 +366,27 @@ export interface SpongEffectsTranscriptModules {
   spongEffects_transcript_module_ID: number;
   transcript: {
     enst_number: string;
+    gene: {
+      ensg_number: string;
+      gene_symbol: string;
+    };
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
   spongEffects_run_ID: number;
+  enrichment_score?: number;
 }
 
 export interface SpongEffectsTranscriptModuleMembers {
   transcript: {
     enst_number: string;
+    gene: {
+      ensg_number: string;
+      gene_symbol: string;
+    };
   };
-  spongEffects_gene_module_ID: number;
-  spongEffects_gene_module_members_ID: number;
+  spongEffects_transcript_module_ID: number;
+  spongEffects_transcript_module_members_ID: number;
 }
 
 export interface SpongEffectsModule {
@@ -362,6 +395,8 @@ export interface SpongEffectsModule {
   meanGiniDecrease: number;
   meanAccuracyDecrease: number;
   spongEffects_run_ID: number;
+  spongEffects_module_ID: number;
+  enrichment_score?: number;
 }
 
 export interface ModuleMember {
@@ -384,6 +419,11 @@ export interface PredictCancerType {
     typePrediction: string;
     subtypePrediction: string;
   }[];
+  scores: {
+    genes: string[];
+    values: number[][];
+    samples: string[];
+  };
 }
 
 export interface ExploreQuery {
@@ -400,6 +440,7 @@ export interface Metric {
   upper: number;
   idx: number;
   spongEffecsRun: SpongEffectsRun;
+  spongEffects_run_performance_ID: number;
 }
 
 export interface SelectElement {
@@ -515,4 +556,11 @@ export interface GseaResult {
     gene: Gene;
     gsea_matched_genes_ID: number;
   };
+}
+
+export interface NetworkData {
+  nodes: (GeneNode | TranscriptNode)[];
+  inverseNodes: (GeneNode | TranscriptNode)[];
+  edges: (GeneInteraction | TranscriptInteraction)[];
+  disease: Dataset | undefined;
 }

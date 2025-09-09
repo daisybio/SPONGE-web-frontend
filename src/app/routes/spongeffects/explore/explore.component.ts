@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, signal, inject} from '@angular/core';
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatIconModule} from "@angular/material/icon";
 import {MatFormFieldModule} from "@angular/material/form-field";
@@ -10,9 +10,14 @@ import {ClassPerformancePlotComponent} from "./plots/class-performance-plot/clas
 import {OverallAccPlotComponent} from "./plots/overall-acc-plot/overall-acc-plot.component";
 import {MatTabsModule} from "@angular/material/tabs";
 import {fromEvent} from "rxjs";
-import {InfoComponent} from "../../../components/info/info.component";
 import { EnrichmentClassPlotComponent } from './plots/enrichment-class-plot/enrichment-class-plot.component';
 import { LollipopPlotComponent } from './plots/lollipop-plot/lollipop-plot.component';
+import { BrowseService } from '../../../services/browse.service';
+import { ExploreService } from './service/explore.service';
+import { ExploreFormComponent } from './form/explore-form.component';
+import { FormComponent } from '../../browse/form/form.component';
+import { MatDrawerContainer, MatDrawer, MatDrawerContent} from '@angular/material/sidenav';
+import { ExploreBrowseService } from '../../../services/explore.browse.service';
 
 @Component({
   selector: 'app-explore',
@@ -28,17 +33,29 @@ import { LollipopPlotComponent } from './plots/lollipop-plot/lollipop-plot.compo
     ClassPerformancePlotComponent,
     OverallAccPlotComponent,
     MatTabsModule,
-    InfoComponent,
     EnrichmentClassPlotComponent,
     LollipopPlotComponent,
+    ExploreFormComponent, 
+    FormComponent,
+    MatDrawer,
+    MatDrawerContainer,
+    MatDrawerContent,
   ],
   templateUrl: './explore.component.html',
-  styleUrls: ['./explore.component.scss', '../spongeffects.component.scss']
+  styleUrls: ['./explore.component.scss', '../spongeffects.component.scss'],
+  providers: [{
+    provide: BrowseService, 
+    useClass: ExploreBrowseService 
+  }]
 })
 export class ExploreComponent {
   refreshSignal = signal<number>(0);
+  exploreService = inject(ExploreService)
+  lineTop = this.exploreService.lineTop;
+  selectedTabIndex = signal<number>(0);
+  selectedVis = this.exploreService.selectedVis;
 
-  constructor() {
+  constructor(public browseService: BrowseService) {
     fromEvent(window, 'resize').subscribe(() => {
       this.refresh();
     });
@@ -46,5 +63,11 @@ export class ExploreComponent {
 
   refresh() {
     this.refreshSignal.update(v => v + 1);
+  }
+
+  // track the selected tab to show the network form only for top ceRNA tab
+  onTabChange(event: any) {
+    this.selectedTabIndex.set(event.index);
+    this.refresh();
   }
 }

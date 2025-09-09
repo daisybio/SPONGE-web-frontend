@@ -22,6 +22,7 @@ import {
   Network,
   NetworkResult,
   OverallCounts,
+  PatientInformation,
   PredictCancerType,
   RunClassPerformance,
   RunInfo,
@@ -62,7 +63,7 @@ export class BackendService {
     };
 
     if (diseaseName) {
-      query['disease'] = diseaseName;
+      query['disease_name'] = diseaseName;
     }
 
     return this.http.getRequest<Dataset[]>(this.getRequestURL(route, query));
@@ -77,9 +78,9 @@ export class BackendService {
     return this.http.getRequest<RunInfo[]>(this.getRequestURL(route, query));
   }
 
-  getOverallCounts(version: number): Promise<OverallCounts[]> {
+  getOverallCounts(version: number, level: string): Promise<OverallCounts[]> {
     const route = 'getOverallCounts';
-    const query: Query = { sponge_db_version: version };
+    const query: Query = { sponge_db_version: version, level: level };
     return this.http.getRequest<OverallCounts[]>(
       this.getRequestURL(route, query)
     );
@@ -118,6 +119,9 @@ export class BackendService {
       maxNodes: query.maxNodes,
       maxEdges: query.maxInteractions,
     };
+    if (query.ensemblID) {
+      _query["ensemblID"] = query.ensemblID;
+    }
 
     return this.http.getRequest<Network>(this.getRequestURL(route, _query));
   }
@@ -276,8 +280,12 @@ export class BackendService {
   async getExpression(
     version: number,
     identifiers: string[],
-    disease: Dataset,
-    level: 'gene' | 'transcript'
+    disease_name: string | undefined,
+    dataset_ID: number | undefined,
+    level: 'gene' | 'transcript',
+    limit: number | undefined = undefined,
+    offset: number | undefined = undefined,
+    cluster: boolean = false
   ): Promise<(GeneExpression | TranscriptExpression)[]> {
     const route =
       level == 'gene' ? 'exprValue/getceRNA' : 'exprValue/getTranscriptExpr';
@@ -287,8 +295,20 @@ export class BackendService {
     }
 
     const query: Query = {
-      disease_name: disease.disease_name,
+      sponge_db_version: version,
+      dataset_ID: dataset_ID,
+      disease_name: disease_name,
+      limit: limit,
+      offset: offset,
+      cluster: cluster,
     };
+
+    // drop query params that are undefined
+    Object.keys(query).forEach((key) => {
+      if (query[key] === undefined) {
+        delete query[key];
+      }
+    });
 
     if (level == 'gene') {
       query['ensg_number'] = identifiers.join(',');
@@ -603,6 +623,55 @@ export class BackendService {
     return this.http.getRequest<TranscriptExpression[]>(request);
   }
 
+  async fetchExpressionData(version: number, identifiers: string[], datasetId: number | undefined, disease_name: string | undefined, level: "gene" | "transcript"): Promise<any[]> {
+    const CHUNK_SIZE = 1000;
+    const N_PARALLEL_REQUESTS = 5;
+    const expressionPromises = [];
+    let hasMoreData = true;
+    let offset = 0;
+    
+    while (hasMoreData) {
+      // Fetch multiple pages in parallel
+      const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
+        const currentOffset = offset + i * CHUNK_SIZE;
+        return this.getExpression(version, identifiers, disease_name, datasetId, level, CHUNK_SIZE, currentOffset, true);
+      });
+  
+      const pageResults = await Promise.all(pagePromises);
+  
+      // Flatten and add results
+      for (const page of pageResults) {
+        if (page.length > 0) {
+          expressionPromises.push(...page);
+        }
+        // If a page has fewer rows than CHUNK_SIZE, we've reached the end
+        if (page.length < CHUNK_SIZE) {
+          hasMoreData = false;
+        }
+      }
+  
+      offset += CHUNK_SIZE * N_PARALLEL_REQUESTS; // Move to the next batch of pages
+    }
+    
+    return expressionPromises.flat();
+  }
+
+  async fetchSpongEffectsEnrichScores(
+    version: number, 
+    level: "gene" | "transcript",
+    module_IDs: string[]): Promise<any[]> {
+
+    if (level === "gene") {
+      const route = 'spongEffects/getSpongEffectsGeneModuleScores';
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+
+    } else {
+      const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+    }
+  }
+
+
   async getSurvivalPValues(
     version: number,
     ensgs: string[],
@@ -623,6 +692,37 @@ export class BackendService {
     );
   }
 
+  async getSampleInfo(
+    dataset_ID?: number,
+    disease_name?: string,
+    disease_subtype?: string,
+    sample_ID?: string,
+  ): Promise<PatientInformation[]> {
+    const route = 'survivalAnalysis/sampleInformation';
+    const query: Query = {
+    };
+    if (dataset_ID) {
+      query['dataset_ID'] = dataset_ID;
+    }
+    if (disease_name) {
+      query['disease_name'] = disease_name;
+    }
+    if (disease_subtype) {
+      query['disease_subtype'] = disease_subtype;
+    }
+    if (sample_ID) {
+      query['sample_ID'] = sample_ID;
+    }
+    return (
+      (await this.http.getRequest<PatientInformation[] | undefined>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
+  }
+
+    // spongEffects services:
+
+
   getSpongEffectsRuns(
     version: number,
     dataset_ID?: number,
@@ -636,60 +736,131 @@ export class BackendService {
     return this.http.getRequest<SpongEffectsRun[]>(request);
   }
 
-  getRunPerformance(
+  async getRunPerformance(
     version: number,
     diseaseName: string,
-    level: string
+    level: string,
+    params: {[key: string]: any}
   ): Promise<RunPerformance[]> {
-    const request =
-      API_BASE +
-      '/spongEffects/getRunPerformance' +
-      `?disease_name=${diseaseName}` +
-      `&level=${level}` +
-      `&sponge_db_version=${version}`;
-    return this.http.getRequest<RunPerformance[]>(request);
+
+    const route = 'spongEffects/getRunPerformance';
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: diseaseName,
+      level: level,
+    };
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+    return (
+      (await this.http.getRequest<RunPerformance[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
   }
 
-  // spongEffects services:
 
-  getRunClassPerformance(
+  async getRunClassPerformance(
     version: number,
     diseaseName: string,
-    level: string
+    level: string,
+    params: {[key: string]: any}
   ): Promise<RunClassPerformance[]> {
-    const request =
-      API_BASE +
-      '/spongEffects/getRunClassPerformance' +
-      `?disease_name=${diseaseName}` +
-      `&level=${level}` +
-      `&sponge_db_version=${version}`;
-    return this.http.getRequest<RunClassPerformance[]>(request);
+    const route = 'spongEffects/getRunClassPerformance';
+
+    const query: Query = {
+        sponge_db_version: version,
+        disease_name: diseaseName,
+        level: level
+      };
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+
+    return (
+      (await this.http.getRequest<RunClassPerformance[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );
   }
 
-  getEnrichmentScoreDistributions(
+  async getEnrichmentScoreDistributions(
     version: number,
     diseaseName: string,
-    level: string
+    level: string,
+    params: {[key: string]: any}
   ): Promise<EnrichmentScoreDistributions[]> {
-    const request = `${API_BASE}/spongEffects/enrichmentScoreDistributions?disease_name=${diseaseName}&level=${level}&sponge_db_version=${version}`;
-    return this.http.getRequest<EnrichmentScoreDistributions[]>(request);
+    const route = 'spongEffects/enrichmentScoreDistributions';
+  
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: diseaseName,
+      level: level
+    };
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+
+    return (
+      (await this.http.getRequest<EnrichmentScoreDistributions[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );    
   }
 
-  getSpongEffectsGeneModules(
+  async getSpongEffectsGeneModules(
     version: number,
-    diseaseName: string
+    diseaseName?: string,
+    params?: {[key: string]: any},
+    limit?: number,
+    ensg_number?: string
   ): Promise<SpongEffectsGeneModules[]> {
-    const request = `${API_BASE}/spongEffects/getSpongEffectsGeneModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
-    return this.http.getRequest<SpongEffectsGeneModules[]>(request);
+    const route = 'spongEffects/getSpongEffectsGeneModules';
+
+    const query: Query = {
+      sponge_db_version: version,
+    };
+    if (diseaseName) {
+      query['disease_name'] = diseaseName;
+    }
+    if (limit) {
+      query['limit'] = limit;
+    }
+    if (ensg_number) {
+      query['ensg_number'] = ensg_number;
+    }
+    if (params) {
+      for (const [key, param] of Object.entries(params)) {
+        if (param) {
+          query[key] = param;
+        }
+      }
+    }
+
+    return (
+      (await this.http.getRequest<SpongEffectsGeneModules[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );    
   }
 
   getSpongEffectsGeneModuleMembers(
     version: number,
     diseaseName: string,
     ensgNumber?: string,
-    geneSymbol?: string
+    geneSymbol?: string,
+    limit?: number
   ): Promise<SpongEffectsGeneModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     if (ensgNumber) {
       request += `&ensg_number=${ensgNumber}`;
     }
@@ -699,20 +870,46 @@ export class BackendService {
     return this.http.getRequest<SpongEffectsGeneModuleMembers[]>(request);
   }
 
-  getSpongEffectsTranscriptModules(
+  async getSpongEffectsTranscriptModules(
     version: number,
-    diseaseName: string
+    diseaseName: string, 
+    params: {[key: string]: any},
+    limit?: number,
+    enst_number?: string
   ): Promise<SpongEffectsTranscriptModules[]> {
-    const request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModules?disease_name=${diseaseName}&sponge_db_version=${version}`;
-    return this.http.getRequest<SpongEffectsTranscriptModules[]>(request);
+    const route = 'spongEffects/getSpongEffectsTranscriptModules';
+
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: diseaseName,
+    };
+    if (limit) {
+      query['limit'] = limit;
+    }
+    if (enst_number) {
+      query['enst_number'] = enst_number;
+    }
+
+    for (const [key, param] of Object.entries(params)) {
+      if (param) {
+        query[key] = param;
+      }
+    }
+
+    return (
+      (await this.http.getRequest<SpongEffectsTranscriptModules[]>(
+        this.getRequestURL(route, query)
+      )) ?? []
+    );  
   }
 
   getSpongEffectsTranscriptModuleMembers(
     version: number,
     diseaseName: string,
-    enstNumber?: string
+    enstNumber?: string,
+    limit?: number
   ): Promise<SpongEffectsTranscriptModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}`;
+    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
     if (enstNumber) {
       request += `&enst_number=${enstNumber}`;
     }
@@ -905,6 +1102,16 @@ export class BackendService {
     return this.http.getRequest<string>(this.getRequestURL(route, query));
   }
 
+  getDiseaseFromSample(sample_ID?: string): any{
+    const route = 'get_disease_from_sample';
+    const query: Query = {
+    };
+    if (sample_ID) {
+      query['sample_ID'] = sample_ID;
+    }
+    return this.http.getRequest<string>(this.getRequestURL(route, query));
+  }
+
   private stringify(query: Query): string {
     return Object.keys(query)
       .map((key) => key + '=' + query[key])
@@ -914,4 +1121,5 @@ export class BackendService {
   private getRequestURL(route: string, query: Query): string {
     return `${API_BASE}/${route}?${this.stringify(query)}`;
   }
+  
 }

@@ -2,7 +2,20 @@
   <mat-accordion>
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
-        <mat-panel-title>Select expression file</mat-panel-title>
+        <mat-panel-title>Select expression file
+                <app-info type="icon">
+        <!-- <p [innerHTML]="infoService.pValText"></p> -->
+        <p>
+          Upload a CSV file containing the expression data for the prediction. The file should contain a header row with
+          feature names and a column for each sample. Feature identifiers should be Ensembl IDs for genes (ENSG) or transcripts (ENST)
+          and the subsequent columns should contain the expression values for each sample.
+          Depending on the feature type (gene or transcript), the respective spongEffects model is used to compute spongEffect scores for each sample in your data.
+
+          <!-- show the example expression file -->
+          
+        </p>
+      </app-info>
+        </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="full-width" style="display: flex">
         <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
@@ -15,7 +28,7 @@
       </div>
 
       @if (!useExampleExpression$()) {
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field appearance="outline" class="full-width" style="width: 100%">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
             <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"/>
@@ -36,7 +49,7 @@
         <mat-panel-title>Filtering thresholds</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline" class="full-width" >
-        <mat-label>Min. mscor</mat-label>
+        <mat-label>Min. MScor</mat-label>
         <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10">
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('min')">Please provide a number > {{ formGroup.get('mscor')?.errors?.['min']?.min }}</mat-error>
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('max')">Please provide a number < {{ formGroup.get('mscor')?.errors?.['max']?.max }}</mat-error>
@@ -138,4 +151,11 @@
       Predict!
     </button>
   </div>
+
+  <!-- Button for downloading the prediction results -->
+  <div class="card-container">
+    <button (click)="downloadResults()" [disabled]="isLoading$()" mat-flat-button>
+      Download Results
+    </button>
+    </div>
 </form>

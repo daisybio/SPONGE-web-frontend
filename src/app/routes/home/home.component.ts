@@ -16,6 +16,8 @@ import { Dataset, OverallCounts } from '../../interfaces';
 import { VersionsService } from '../../services/versions.service';
 import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { over, zip } from 'lodash';
+import { tick } from '@angular/core/testing';
 
 declare const Plotly: any;
 
@@ -27,28 +29,54 @@ declare const Plotly: any;
 })
 export class HomeComponent implements OnDestroy {
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
-
-  overallCounts: ResourceRef<OverallCounts[] | undefined>;
+  
+  overallCountsGenes: ResourceRef<OverallCounts[] | undefined>;
+  overallCountsTranscripts: ResourceRef<OverallCounts[] | undefined>;
   diseases: Resource<Dataset[] | undefined>;
+  
+  plotData$ = computed(() => 
+    this.prepareData(
+      this.overallCountsGenes.value(), 
+      this.overallCountsTranscripts.value()
+    )
+  );
 
-  plotData$ = computed(() => this.prepareData(this.overallCounts.value()));
   updatePlotEffect = effect(() => {
     const div = this.plotDiv$().nativeElement;
-    const data = this.plotData$();
-
-    if (!data) {
+    const plotData = this.plotData$();
+    if (!plotData) {
       return;
     }
 
-    Plotly.newPlot(div, data, {
-      title: 'Count of significant interactions',
-
-      yaxis: {
+    Plotly.newPlot(div, plotData,
+     {
+      title: 'Number of significant interactions by cancer type and subtype',
+      xaxis1: {
         type: 'log',
+        title: 'Number of interactions (log)',
+        domain: [0, 1],
+      },
+      yaxis1: {
         automargin: true,
+        tickfont: {
+          size: 14,
+          color: 'white',
+          fontWeight: 'bold',
+        },
+        ticklabelposition: 'inside',
       },
       margin: {
-        b: 300,
+        l: 0,
+        r: 0,
+      },
+      barmode: 'overlay',
+      showlegend: true,
+      legend: {
+        x: 0.5,
+        y: 1,
+        xanchor: 'center',
+        yanchor: 'bottom',
+        orientation: 'h',
       },
     });
   });
@@ -59,10 +87,15 @@ export class HomeComponent implements OnDestroy {
   ) {
     const version = versionsService.versionReadOnly();
     this.diseases = versionsService.diseases$();
-
-    this.overallCounts = resource({
+    
+    this.overallCountsGenes = resource({
       request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request),
+      loader: (param) => this.backend.getOverallCounts(param.request, 'gene'),
+    });
+    
+    this.overallCountsTranscripts = resource({
+      request: version,
+      loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
     });
 
     fromEvent(window, 'resize').subscribe(() => {
@@ -78,35 +111,77 @@ export class HomeComponent implements OnDestroy {
     this.updatePlotEffect.destroy();
   }
 
-  prepareData(counts: OverallCounts[] | undefined) {
-    if (!counts) {
+  prepareData(
+    geneCounts: OverallCounts[] | undefined,
+    transcriptCounts: OverallCounts[] | undefined
+  ) {
+    if (!geneCounts || !transcriptCounts) {
       return undefined;
     }
 
     const countField = 'count_interactions_sign';
-    const aggregated = counts.reduce((acc, count) => {
-      const disease = count.disease_name;
-      if (!acc.has(disease)) {
-        acc.set(disease, 0);
-      }
-      acc.set(disease, acc.get(disease)! + count[countField]);
-      return acc;
-    }, new Map<string, number>());
 
-    const aggCounts = Array.from(aggregated.entries()).map(
-      ([disease, count]) => ({
-        disease,
-        count,
-      }),
-    );
-    const sortedCounts = aggCounts.sort((a, b) => b.count - a.count);
+    const x_values_genes = geneCounts.map(cancerCount => cancerCount.count_interactions_sign);
+    const x_values_transcripts = transcriptCounts.map(cancerCount => cancerCount.count_interactions_sign);
 
-    return [
-      {
-        x: sortedCounts.map((c) => c.disease),
-        y: sortedCounts.map((c) => c.count),
-        type: 'bar',
+    // sort geneCounts and transcriptCounts by cancer name, from top to bottom
+    geneCounts.sort((b, a) => a.disease_name.localeCompare(b.disease_name));
+    transcriptCounts.sort((b, a) => a.disease_name.localeCompare(b.disease_name));
+    
+    const cancerNames: string[] = geneCounts.map(cancerCount => cancerCount.disease_name);
+    // assert that the transcript counts have the same disease names
+    const transcriptNames: string[] = transcriptCounts.map(cancerCount => cancerCount.disease_name);
+    console.assert(JSON.stringify(cancerNames) === JSON.stringify(transcriptNames), 'Disease names do not match');
+
+    const cancerSubtypes: string[] = geneCounts.map(cancerCount => cancerCount.disease_name + " - "  + (cancerCount.disease_subtype || "Unspecific"));
+    const transcriptSubtypes: string[] = transcriptCounts.map(cancerCount => cancerCount.disease_name + " - "  + (cancerCount.disease_subtype || "Unspecific"));
+    console.assert(JSON.stringify(cancerSubtypes) === JSON.stringify(transcriptSubtypes), 'Subtypes do not match');
+
+    // Create traces
+    var data = [
+    {
+      type: 'bar',
+      y: cancerSubtypes,
+      x: x_values_transcripts,
+      hovertemplate: '%{x:.2s} Transcript-transcript interactions<extra></extra>',
+      marker: {
+        color: '#137FFBA6',  // '#0D50B0', '#D03844aa', // '
       },
+      name: 'Transcript interactions',
+      orientation: 'h',
+      xaxis: 'x1',
+      yaxis: 'y1',
+      },
+    {
+      type: 'bar',
+      y: cancerSubtypes,
+      x: x_values_genes, 
+      // base: x_values_genes.map(x => shift - x), // butterfly plot
+      hovertemplate: '%{x:.2s} Gene-gene interactions<extra></extra>',
+      marker: {
+        color: '#FF557680', // '#fb8f1380'  // '#EBFF49aa', //  '#0D50B0aa'  // '#08203B'
+      },
+      name: 'Gene interactions',
+      orientation: 'h',
+      xaxis: 'x1',
+      yaxis: 'y1',
+      }
     ];
+
+    return data
+  }
+  
+  private getSubtypeColor(subtype: string, type: 'gene' | 'transcript'): string {
+    // Generate color based on subtype name hash
+    let hash = 0;
+    for (let i = 0; i < subtype.length; i++) {
+      hash = subtype.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const hue = Math.abs(hash) % 360;
+    const saturation = type === 'gene' ? 70 : 50;
+    const lightness = type === 'gene' ? 50 : 65;
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 }
