@@ -128,7 +128,6 @@ export class LollipopPlotComponent {
   displayedColumns = Object.keys(this.columnNames);
 
   elementLimitWarning = signal(false);
-  moduleMembersMap = new Map<string, ModuleMember[]>();
   spongEffectRuns = new Map<number, SpongEffectsRun>();
 
   gProfilerUrl$ = computed(() => {
@@ -166,7 +165,7 @@ export class LollipopPlotComponent {
   }
 
   // Data source for reusable heatmap component
-  heatmapDataSource = signal<HeatmapDataSource>({
+  heatmapDataSourceEnrich = signal<HeatmapDataSource>({
     getData: async (params) => {
       const { version, disease, level, modules, includeMembers } = params;
       if (!version || !disease || !level || !modules || modules.length === 0) {
@@ -176,17 +175,18 @@ export class LollipopPlotComponent {
       // let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
       let elements: string[] = modules.map((m: { spongEffects_module_ID: any; }) => m.spongEffects_module_ID);
 
-      if (includeMembers) {
-        for (const module of modules) {
-          const key = this.exploreService.getModuleKey(module);
-          if (!this.moduleMembersMap.has(key)) {
-            await this.exploreService.fetchModuleMembers(module);
-          }
-          const members = this.moduleMembersMap.get(key) || [];
-          elements.push(...members.map(m => m.ensemblID));
-        }
-        elements = [...new Set(elements)];
-      }
+      // this works just for expression heatmaps (enrichment scores only for module centers)
+      // if (includeMembers) {
+      //   for (const module of modules) {
+      //     const key = this.exploreService.getModuleKey(module);
+      //     if (!this.exploreService.moduleMembersMap.has(key)) {
+      //       await this.exploreService.fetchModuleMembers(module);
+      //     }
+      //     const members = this.exploreService.moduleMembersMap.get(key) || [];
+      //     elements.push(...members.map(m => m.ensemblID));
+      //   }
+      //   elements = [...new Set(elements)];
+      // }
       
       // Check for element limit
       this.elementLimitWarning.set(false);
@@ -213,13 +213,11 @@ export class LollipopPlotComponent {
           const sampleID = sample.sample_ID;
           mapping[sampleID] = sample.disease.disease_subtype;
         });
-        
         for (const e of enrichData) {
           const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
           e.disease_subtype = mapping[patientID] || 'NA';
         }
       }
-      
       return enrichData;
     },
     
@@ -241,14 +239,97 @@ export class LollipopPlotComponent {
     getColorScale: () => 'RdBu'
   });
 
-  // Parameters for the heatmap
-  heatmapParams = computed(() => ({
+    // Data source for reusable heatmap component
+  heatmapDataSourceExpr = signal<HeatmapDataSource>({
+    getData: async (params) => {
+      const { version, disease, level, modules, includeMembers } = params;
+      if (!version || !disease || !level || !modules || modules.length === 0) {
+        return [];
+      }
+      console.log('modules for heatmap:', modules);
+      let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
+      // let elements: string[] = modules.map((m: { spongEffects_module_ID: any; }) => m.spongEffects_module_ID);
+
+      // this works just for expression heatmaps (enrichment scores only for module centers)
+      if (includeMembers) {
+        for (const module of modules) {
+          const key = this.exploreService.getModuleKey(module);
+          if (!this.exploreService.moduleMembersMap.has(key)) {
+            await this.exploreService.fetchModuleMembers(module);
+          }
+          const members = this.exploreService.moduleMembersMap.get(key) || [];
+          elements.push(...members.map(m => m.ensemblID));
+        }
+        elements = [...new Set(elements)];
+      }
+      
+      // Check for element limit
+      this.elementLimitWarning.set(false);
+      if (this.MAX_ELEMENTS && elements.length > this.MAX_ELEMENTS) {
+        elements = elements.slice(0, this.MAX_ELEMENTS);
+        this.elementLimitWarning.set(true);
+      }
+      const dataset_ID: number = this.exploreService.selectedDiseaseObject$().dataset_ID;
+      const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
+      // const enrichData = await this.backend.fetchSpongEffectsEnrichScores(version, level, elements);
+
+      // Add disease subtype information
+      if (disease === 'pancancer') {
+        const mapping = await this.backend.getDiseaseFromSample();
+        for (const e of expressionData) {
+          const sample_ID = e.sample_ID;
+          const diseaseName = await this.mapSampleToDisease(sample_ID, mapping);
+          e.disease_subtype = diseaseName;
+        }
+      } else {
+        const sampleInformation = await this.backend.getSampleInfo(undefined, disease);
+        const mapping: { [key: string]: string } = {};
+        sampleInformation.forEach((sample) => {
+          const sampleID = sample.sample_ID;
+          mapping[sampleID] = sample.disease.disease_subtype;
+        });
+        for (const e of expressionData) {
+          const patientID = e.sample_ID.split('-').slice(0, -1).join('-');
+          e.disease_subtype = mapping[patientID] || 'NA';
+        }
+      }
+      return expressionData;
+    },
+    
+    getTitle: (params) => {
+      const { includeMembers } = params;
+      return 'Expression of Selected Modules' + (includeMembers ? ' and Members' : '');
+    },
+    
+    getYAxisTitle: () => {
+      const level = this.exploreService.level$();
+      const includeMembers = this.exploreService.includeModuleMembers();
+      return `Module Center ${level === 'gene' ? 'Gene' : 'Transcript'}${includeMembers ? ' and Module Members' : ''}`;
+    },
+
+    getZAxisTitle: () => `${this.exploreService.level$() === 'gene' ? 'Gene' : 'Transcript'}<br>Expression`,
+
+    getZMid: () => 0,
+    
+    getColorScale: () => 'RdBu'
+  });
+
+  // Parameters for the heatmaps
+  heatmapParamsEnrich = computed(() => ({
+    version: this.versionService.versionReadOnly()(),
+    disease: this.exploreService.selectedDisease$(),
+    level: this.exploreService.level$(),
+    modules: this.selectedModules.value(),
+    includeMembers: false,
+    value_key: 'score_value'
+  }));
+  heatmapParamsExpr = computed(() => ({
     version: this.versionService.versionReadOnly()(),
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
     modules: this.selectedModules.value(),
     includeMembers: this.exploreService.includeModuleMembers(),
-    value_key: 'score_value'
+    // value_key: keep it undefined -> default
   }));
   
   // table data
@@ -261,11 +342,14 @@ export class LollipopPlotComponent {
       includeMembers: this.exploreService.includeModuleMembers()
     }),
     loader: async ({ request }) => {
+      console.log('Loading table data with request:', request);
       const { version, disease, level, modules, includeMembers } = request;
       if (!version || !disease || !level || !modules || modules.length === 0) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }
-      return this.getTableData(modules, includeMembers ?? undefined);
+      const data =  this.getTableData(modules, includeMembers ?? undefined);
+      console.log('Table data loaded:', data);
+      return data;
     }
   });
 
@@ -285,6 +369,22 @@ export class LollipopPlotComponent {
   }
 
   private setupEffects(): void {
+    // Keep the form control in sync if the signal changes elsewhere
+    effect(() => {
+      const value = this.exploreService.includeModuleMembers();
+      if (this.formGroup.get('includeModuleMembers')?.value !== value) {
+        this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
+      }
+      const topN = this.exploreService.topN();
+      if (this.formGroup.get('topControl')?.value !== topN) {
+        this.formGroup.get('topControl')?.setValue(topN ?? null, { emitEvent: false });
+      }
+      const redNodes = this.exploreService.redNodes();
+      if (this.formGroup.get('markControl')?.value !== redNodes) {
+        this.formGroup.get('markControl')?.setValue(redNodes ?? null, { emitEvent: false });
+      }
+    });
+
     effect(() => {
       this.refreshSignal$();
       this.refreshPlotSizes();
@@ -363,7 +463,6 @@ export class LollipopPlotComponent {
     return data;
   }
 
-
   private async mapSampleToDisease(sample_ID: string, mapping: { [key: string]: string }): Promise<string> {
     // a sample ID has the form TCGA-K1-A6RT-01___pancancer. Extract the TSS code which is in this case K1
     const tssCode = sample_ID.split('-')[1];
@@ -386,11 +485,11 @@ export class LollipopPlotComponent {
       moduleCenter: '-',
       moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
-    
+    console.log('Running getTableData with modules:', modules, 'includeMembers:', includeMembers);
     if (includeMembers && modules.length > 0) {
       const fetchPromises = modules.map(async module => {
         const key = this.exploreService.getModuleKey(module);
-        if (!this.moduleMembersMap.has(key)) {
+        if (!this.exploreService.moduleMembersMap.has(key)) {
           await this.exploreService.fetchModuleMembers(module);
         }
       });
@@ -399,7 +498,7 @@ export class LollipopPlotComponent {
       
       for (const module of modules) {
         const key = this.exploreService.getModuleKey(module);
-        const members = this.moduleMembersMap.get(key) || [];
+        const members = this.exploreService.moduleMembersMap.get(key) || [];
         
         tableEntries = [
           ...tableEntries,
@@ -411,7 +510,7 @@ export class LollipopPlotComponent {
         ];
       }
     }
-    
+    console.log('Final table entries:', tableEntries);
     return new MatTableDataSource(tableEntries);
   }
 
@@ -464,7 +563,7 @@ export class LollipopPlotComponent {
 
   clearAll(): void {
     Plotly.purge(this.lollipopPlot().nativeElement);
-    this.moduleMembersMap = new Map<string, ModuleMember[]>();
+    this.exploreService.moduleMembersMap = new Map<string, ModuleMember[]>();
     this.elementLimitWarning.set(false);
   }
 

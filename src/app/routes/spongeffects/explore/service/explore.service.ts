@@ -211,7 +211,7 @@ export class ExploreService {
 
 
   moduleMembersMap = new Map<string, ModuleMember[]>();
-  MAX_ELEMENTS = undefined;
+  MAX_ELEMENTS = 100;
 
   async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {
     const version = this.versionsService.versionReadOnly()();
