@@ -1,4 +1,4 @@
-import {Component, computed, effect, ElementRef, inject, input, resource, viewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, resource, viewChild, AfterViewInit, OnDestroy} from '@angular/core';
 import {EnrichmentScoreDistributions, Metric, PlotData, PlotlyData, RunPerformance} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
@@ -28,7 +28,7 @@ declare var Plotly: any;
   templateUrl: './enrichment-class-plot.component.html',
   styleUrl: './enrichment-class-plot.component.scss'
 })
-export class EnrichmentClassPlotComponent {
+export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
@@ -36,6 +36,8 @@ export class EnrichmentClassPlotComponent {
   selectedDisease = this.exploreService.selectedDisease$;
 
   enrichmentClassPlot = viewChild.required<ElementRef<HTMLDivElement>>('enrichmentClassPlot');
+  
+  private resizeObserver: ResizeObserver | null = null;
 
   // plot parameters
 
@@ -63,6 +65,20 @@ export class EnrichmentClassPlotComponent {
     this.refreshSignal$();
     this.refreshPlot();
   });
+
+  ngAfterViewInit() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.refreshPlot();
+    });
+    const el = this.enrichmentClassPlot()?.nativeElement;
+    if (el) {
+      this.resizeObserver.observe(el);
+    }
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
+  }
 
   clearEffect = effect(() => {
     this.exploreService.selectedDisease$();

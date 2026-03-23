@@ -28,7 +28,7 @@
       </div>
 
       @if (!useExampleExpression$()) {
-        <mat-form-field appearance="outline" class="full-width" style="width: 100%">
+        <mat-form-field appearance="outline" class="full-width" style="width: 100%; margin-top: 10px;">
           <mat-label>Select or drop a file</mat-label>
           <ngx-mat-dropzone>
             <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"/>
@@ -148,7 +148,7 @@
   </mat-accordion>
   <div class="card-container">
     <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async)" mat-flat-button>
-      Predict!
+      Run SpongEffects
     </button>
   </div>
 

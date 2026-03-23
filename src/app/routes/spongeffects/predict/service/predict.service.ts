@@ -30,17 +30,18 @@ export class PredictService {
   level: 'gene' | 'transcript' = 'gene';
 
   allPredictedTypes$: Signal<string[]> = computed(() => {
-    if (!this.prediction$()) return [];
-    const data = this.prediction$().data;
+    if (!this._prediction$) return [];
+    const data = this._prediction$.value().data;
     if (!data) return [];
     return Array.from(
       new Set(data.map((entry: { typePrediction: string }) => entry.typePrediction)),
     );
   });
+
   selectedPredictedType$ = computed(() => {
     const prediction = this._prediction$.value();
     if (!prediction || !prediction.meta) return undefined;
-    return prediction.meta.type_predict || undefined;
+    return prediction.meta[0].type_predict || prediction.meta[0].type_predict || undefined;
   });
 
   examplePrediction = (async () => {
@@ -101,7 +102,6 @@ export class PredictService {
   }
 
   request(query: Query) {
-    console.log('request');
     this._query$.set(query);
   }
 }

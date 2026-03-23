@@ -10,12 +10,12 @@ export class HttpService {
   constructor(private http: HttpClient) {
   }
 
-  async getRequest<T>(request: string): Promise<T> {
+  async getRequest<T>(request: string): Promise<T | undefined> {
     try {
-      return lastValueFrom(this.http.get<T>(request));
+      return await lastValueFrom(this.http.get<T>(request));
     } catch (error) {
-      console.log(error);
-      return {} as T;
+      console.error(`GET request failed for ${request}:`, error);
+      return undefined;
     }
   }
 
@@ -26,10 +26,10 @@ export class HttpService {
   async postRequest(request: string, payload: {}): Promise<any> {
     const headers = payload instanceof FormData ? {} : new HttpHeaders({ 'Content-Type': 'application/json' });
     try {
-      return lastValueFrom(this.http.post<any>(request, payload, {headers: headers}));
+      return await lastValueFrom(this.http.post<any>(request, payload, {headers: headers}));
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(`POST request failed for ${request}:`, error);
+      return undefined;
     }
   }
 
@@ -43,10 +43,10 @@ export class HttpService {
     const headers = new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded'});
 
     try {
-      return lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), {headers: headers}));
+      return await lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), {headers: headers}));
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(`POST (encoded) request failed for ${request}:`, error);
+      return undefined;
     }
   }
 
@@ -66,10 +66,10 @@ export class HttpService {
     }
 
     try {
-      return lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), options));
+      return await lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), options));
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(`POST (text/encoded) request failed for ${request}:`, error);
+      return undefined;
     }
   }
 

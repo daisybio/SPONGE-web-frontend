@@ -44,7 +44,7 @@ export class PredictionResultsComponent {
     viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
 
-  predictionMeta$ = computed(() => this.prediction$()?.meta);
+  predictionMeta$ = computed(() => this.prediction$()?.meta[0]);
   predictionData$ = computed(() => this.prediction$()?.data);
   predictedType$ = computed(() => this.predictionMeta$()?.type_predict);
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);

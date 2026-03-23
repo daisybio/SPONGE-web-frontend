@@ -34,9 +34,7 @@ export class ExploreService {
       (d) => d.disease_name === selectedDisease,
     );
     if (!selectedDataset) {
-      throw new Error(
-        'Selected disease not found in datasets: ' + selectedDisease,
-      );
+      return {} as Dataset;
     }
     return selectedDataset;
   });

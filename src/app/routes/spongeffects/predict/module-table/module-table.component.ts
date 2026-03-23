@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { PredictService } from '../service/predict.service';
-import {capitalize} from "lodash";
+import { capitalize } from "lodash";
 
 declare var Plotly: any;
 
@@ -83,7 +83,7 @@ export class ModuleTableComponent {
 
   defaultMarkerSize = 8;
   MAX_ELEMENTS = undefined;
-  
+
   columnNames: { [key: string]: string } = {
     symbol: 'Symbol',
     ensemblID: 'Ensembl ID',
@@ -146,7 +146,7 @@ export class ModuleTableComponent {
     loader: ({ request }) => {
       const { version, cancer, level } = request;
       if (!version || !cancer || !level) {
-        return Promise.resolve([]); 
+        return Promise.resolve([]);
       }
       const greyModules = this.getLollipopData(version, cancer, level, [this.highestParamSet()]);
       return greyModules;
@@ -212,13 +212,13 @@ export class ModuleTableComponent {
     //   this.refreshSignal$();
     //   this.refreshPlotSizes();
     // });
-    
+
     // effect(() => {
     //   this.exploreService.selectedDisease$();
     //   this.exploreService.level$();
     //   this.clearAll();
     // });
-    
+
     effect(() => {
       const redNodes = this.redNodes();
       const greyModules = this.lolipopPlotData.value();
@@ -226,7 +226,7 @@ export class ModuleTableComponent {
         this.renderLollipopPlot(greyModules, redNodes);
       }
     });
-    
+
     effect(() => {
       const table = this.tableDataResource.value();
       if (table && this.paginator && this.sort) {
@@ -256,7 +256,7 @@ export class ModuleTableComponent {
     return `${module.ensemblID}_${module.spongEffects_run_ID}`;
   }
 
-  private async getModulesOfGene(version: number, cancer: string, level: string, ens_list: string[], selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
+  private async getModulesOfGene(version: number, cancer: string, level: string, ens_list: string[], selectedParamSets: { [key: string]: any }): Promise<SpongEffectsModule[]> {
     let data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
@@ -295,21 +295,22 @@ export class ModuleTableComponent {
     return data;
   }
 
-  private async getLollipopData(version: number, cancer: string, level: string, selectedParamSets: {[key: string]: any}): Promise<SpongEffectsModule[]> {
+  private async getLollipopData(version: number, cancer: string, level: string, selectedParamSets: { [key: string]: any }): Promise<SpongEffectsModule[]> {
     const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
         let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, undefined)
         tmp.map((entry) => {
           data.push({
-          ensemblID: entry.gene.ensg_number,
-          symbol: entry.gene.gene_symbol,
-          meanGiniDecrease: entry.mean_gini_decrease,
-          meanAccuracyDecrease: entry.mean_accuracy_decrease,
-          spongEffects_run_ID: entry.spongEffects_run_ID,
-          spongEffects_module_ID: entry.spongEffects_gene_module_ID,
-        })}
-      );
+            ensemblID: entry.gene.ensg_number,
+            symbol: entry.gene.gene_symbol,
+            meanGiniDecrease: entry.mean_gini_decrease,
+            meanAccuracyDecrease: entry.mean_accuracy_decrease,
+            spongEffects_run_ID: entry.spongEffects_run_ID,
+            spongEffects_module_ID: entry.spongEffects_gene_module_ID,
+          })
+        }
+        );
       };
     } else {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
@@ -333,17 +334,17 @@ export class ModuleTableComponent {
     const version = this.versionService.versionReadOnly()();
     const disease = this.exploreService.selectedDisease$();
     const level = this.exploreService.level$();
-    
+
     if (!version || !disease || !level) return;
-    
+
     let members: ModuleMember[] = [];
     const key = this.getModuleKey(module);
-    
+
     if (level === 'gene') {
       const response = await this.backend.getSpongEffectsGeneModuleMembers(
         version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
       );
-      
+
       members = response.map(r => ({
         ensemblID: r.gene.ensg_number,
         symbol: r.gene.gene_symbol,
@@ -357,7 +358,7 @@ export class ModuleTableComponent {
       const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
         version, disease, module.ensemblID, this.MAX_ELEMENTS
       );
-      
+
       members = response.map(r => ({
         ensemblID: r.transcript.enst_number,
         symbol: r.transcript.gene.gene_symbol,
@@ -368,7 +369,7 @@ export class ModuleTableComponent {
         spongEffects_run_ID: module.spongEffects_run_ID
       }));
     }
-    
+
     this.moduleMembersMap.set(key, members);
   }
 
@@ -394,7 +395,7 @@ export class ModuleTableComponent {
       moduleCenter: '-',
       moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
-    
+
     if (includeMembers && modules.length > 0) {
       const fetchPromises = modules.map(async module => {
         const key = this.getModuleKey(module);
@@ -402,22 +403,21 @@ export class ModuleTableComponent {
           await this.fetchModuleMembers(module);
         }
       });
-      
+
       await Promise.all(fetchPromises);
-      
+
+      const allMembers: (SpongEffectsModule | ModuleMember)[] = [];
       for (const module of modules) {
         const key = this.getModuleKey(module);
         const members = this.moduleMembersMap.get(key) || [];
-        
-        tableEntries = [
-          ...tableEntries,
-          ...members.map(m => ({
-            ...m,
-            memberOrCenter: 'module member',
-            moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
-          }))
-        ];
+
+        allMembers.push(...members.map(m => ({
+          ...m,
+          memberOrCenter: 'module member' as const,
+          moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
+        })));
       }
+      tableEntries = [...tableEntries, ...allMembers];
     }
     return new MatTableDataSource(tableEntries);
   }
@@ -441,7 +441,7 @@ export class ModuleTableComponent {
         opacity: 0.5
 
       }
-    }, 
+    },
     // plot the red and blue nodes seperately
     {
       x: greyModules.slice(0, redNodes).map(g => g.meanGiniDecrease),
@@ -466,11 +466,11 @@ export class ModuleTableComponent {
       marker: {
         size: this.defaultMarkerSize,
         color: 'blue',
-        symbol: 'circle-open', 
+        symbol: 'circle-open',
       },
     }
-  ];
-    
+    ];
+
     const layout = {
       title: 'Module importance',
       showlegend: false,
@@ -485,7 +485,7 @@ export class ModuleTableComponent {
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)'
     };
-    
+
     const config = {
       responsive: true
     };
@@ -494,7 +494,7 @@ export class ModuleTableComponent {
 
   refreshPlotSizes(): void {
     const lollipopElement = this.lollipopPlot().nativeElement;
-    
+
     if (lollipopElement.checkVisibility()) {
       Plotly.Plots.resize(lollipopElement);
     }
@@ -511,7 +511,7 @@ export class ModuleTableComponent {
     if (!run) {
       return 'No parameters available';
     }
-    
+
     return `mscor threshold: ${run.m_scor_threshold}
 pAdjust threshold: ${run.p_adj_threshold}
 modules cutoff: ${run.modules_cutoff}`;

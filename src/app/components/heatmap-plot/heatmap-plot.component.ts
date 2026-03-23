@@ -10,7 +10,8 @@ import {
   EventEmitter,
   viewChild,
   signal,
-  resource
+  resource,
+  AfterViewInit
 } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { CommonModule } from '@angular/common';
@@ -39,7 +40,7 @@ export type HeatmapDataSource = {
   styleUrl: './heatmap-plot.component.scss',
   standalone: true,
 })
-export class ReusableHeatmapComponent implements OnDestroy {
+export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   backend = inject(BackendService);
 
   // Inputs
@@ -55,6 +56,8 @@ export class ReusableHeatmapComponent implements OnDestroy {
   plotRendered = output<void>();
   
   heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
+  
+  private resizeObserver: ResizeObserver | null = null;
   
   // Resource-based data fetching
   heatmapResource = resource({
@@ -93,6 +96,16 @@ export class ReusableHeatmapComponent implements OnDestroy {
     this.refresh();
   });
 
+  ngAfterViewInit() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.refresh();
+    });
+    const el = this.heatmap()?.nativeElement;
+    if (el) {
+      this.resizeObserver.observe(el);
+    }
+  }
+
   constructor() {}
 
   private subtype_text(sample: string, subtype: string): string {
@@ -114,7 +127,6 @@ export class ReusableHeatmapComponent implements OnDestroy {
     
     // Create base heatmap
     const heatmapTrace = this.createHeatmapTrace(data, params.value_key);
-    console.log('Heatmap trace:', heatmapTrace);
     
     // Determine if we need to show subtypes
     let plotData: any = [heatmapTrace];
@@ -296,6 +308,7 @@ export class ReusableHeatmapComponent implements OnDestroy {
     if (this.heatmap()) {
       Plotly.purge(this.heatmap().nativeElement);
     }
+    this.resizeObserver?.disconnect();
     this.plotEffect.destroy();
     this.refreshEffect.destroy();
   }
