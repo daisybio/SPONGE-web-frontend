@@ -37,7 +37,7 @@ export interface EntityState {
   [State.Active]: boolean;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
   readonly lastClicked = signal<'node' | 'edge'>('node');
@@ -234,9 +234,8 @@ export class BrowseService {
     if ('ensg_number' in node) {
       return node.gene_symbol || node.ensg_number;
     } else {
-      return `${node.gene.gene_symbol || node.gene.ensg_number} (${
-        node.enst_number
-      })`;
+      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number
+        })`;
     }
   }
 
