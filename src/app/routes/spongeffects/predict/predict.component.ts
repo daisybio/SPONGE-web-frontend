@@ -11,6 +11,16 @@ import { ScatterplotComponent, ScatterplotDataScource } from "../../../component
 import { PredictService } from './service/predict.service';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
+import { NetworkComponent } from '../../../components/browse-views/network/network.component';
+import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
+import { BrowseService } from '../../../services/browse.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 declare var Plotly: any;
 
@@ -26,8 +36,18 @@ declare var Plotly: any;
     MatDrawer,
     MatDrawerContainer,
     MatDrawerContent,
-    ScatterplotComponent
+    ScatterplotComponent,
+    NetworkComponent,
+    ActiveEntitiesComponent,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatExpansionModule,
+    DiseaseSelectorComponent,
+    ReactiveFormsModule,
+    CommonModule
   ],
+  providers: [BrowseService],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss',
 })
@@ -36,6 +56,7 @@ export class PredictComponent {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   refreshSignal = signal<number>(0);
+  browseService = inject(BrowseService);
 
   // Move data loading state to the data source
   private transformedData = signal<any[]>([]);
@@ -66,6 +87,12 @@ export class PredictComponent {
   constructor() {
     fromEvent(window, 'resize').subscribe(() => {
       this.refresh();
+    });
+
+    // Sync predict network data to local browse service
+    effect(() => {
+      const networkData = this.predictService.moduleNetworkData$.value();
+      this.browseService.setManualData(networkData);
     });
 
     // Single effect to handle prediction changes
@@ -118,7 +145,7 @@ export class PredictComponent {
       }
 
       // Transform scores to scatterplot data format
-      const scatterData = scores.genes.map((gene, index) => {
+      const scatterData = scores.genes.map((gene: string, index: number) => {
         const tcgaScore = tcga_scores[index]?.score_value || 0;
         const gene_symbol = tcga_scores[index]?.gene?.gene_symbol || gene;
         const customScore = scores.values[index]?.[0] || 0;
@@ -128,7 +155,7 @@ export class PredictComponent {
           x: tcgaScore,
           y: customScore,
         };
-      }).filter(item => item.x !== undefined && item.y !== undefined);
+      }).filter((item: any) => item.x !== undefined && item.y !== undefined);
 
       this.transformedData.set(scatterData);
 

@@ -237,7 +237,7 @@ export class ExploreService {
       }));
     } else {
       const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version, disease, module.ensemblID, this.MAX_ELEMENTS
+        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
       );
       
       members = response.map(r => ({
