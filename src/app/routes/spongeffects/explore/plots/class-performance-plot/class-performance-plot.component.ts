@@ -125,25 +125,31 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
         return;
       }
 
-      if (this.classPerformPlot()?.nativeElement) {
-        Plotly.newPlot(
-          this.classPerformPlot()?.nativeElement,
-          traces,
-          layout,
-          this.plotConfig,
-        );
+      const el = this.classPerformPlot()?.nativeElement;
+      if (el) {
+        Plotly.newPlot(el, traces, layout, this.plotConfig);
+      }
+    });
+
+    // Reactive ResizeObserver management
+    effect(() => {
+      const el = this.classPerformPlot()?.nativeElement;
+      if (el) {
+        if (!this.resizeObserver) {
+          this.resizeObserver = new ResizeObserver(() => {
+            this.refreshPlot();
+          });
+        }
+        this.resizeObserver.observe(el);
+      } else {
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
       }
     });
   }
 
   ngAfterViewInit() {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.refreshPlot();
-    });
-    const el = this.classPerformPlot()?.nativeElement;
-    if (el) {
-      this.resizeObserver.observe(el);
-    }
+    // Handling is now done in effects to support conditional rendering
   }
 
   ngOnDestroy() {
@@ -309,9 +315,11 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   }
 
   refreshPlot(): void {
-    const plotDivRef = this.classPerformPlot();
-    if (plotDivRef?.nativeElement?.checkVisibility()) {
-      Plotly.Plots.resize(plotDivRef.nativeElement);
+    const el = this.classPerformPlot()?.nativeElement;
+    if (el?.checkVisibility()) {
+      requestAnimationFrame(() => {
+        Plotly.Plots.resize(el);
+      });
     }
   }
 
