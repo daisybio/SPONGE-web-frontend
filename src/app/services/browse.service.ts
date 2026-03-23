@@ -37,17 +37,18 @@ export interface EntityState {
   [State.Active]: boolean;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
   readonly lastClicked = signal<'node' | 'edge'>('node');
   readonly graph$ = computed(() =>
     this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
+
   layout = computed(
     () =>
       new ForceSupervisor(this.graph$(), {
-        isNodeFixed: (_, attr) => attr['highlighted'],
+        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
         settings: {
           repulsion: 0.001,
           attraction: 0.01,
@@ -66,7 +67,9 @@ export class BrowseService {
     },
   });
   private readonly _currentData$: ResourceRef<NetworkData | undefined>;
-  readonly disease$ = computed(() => this._currentData$.value()?.disease);
+  private readonly _manualData$ = signal<NetworkData | undefined>(undefined);
+  private readonly _effectiveData$ = computed(() => this._manualData$() ?? this._currentData$.value());
+  readonly disease$ = computed(() => this._effectiveData$()?.disease);
   readonly possibleComparisons$ = computed(() => {
     const disease = this.disease$();
     const comparisons = this._comparisons$.value();
@@ -79,12 +82,12 @@ export class BrowseService {
           c.dataset_2.dataset_ID === disease.dataset_ID
       );
   });
-  readonly nodes$ = computed(() => this._currentData$.value()?.nodes || []);
+  readonly nodes$ = computed(() => this._effectiveData$()?.nodes || []);
   readonly inverseNodes$ = computed(
-    () => this._currentData$.value()?.inverseNodes || []
+    () => this._effectiveData$()?.inverseNodes || []
   );
   readonly interactions$ = computed(
-    () => this._currentData$.value()?.edges || []
+    () => this._effectiveData$()?.edges || []
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
   activeNodes$ = computed(() => {
@@ -146,10 +149,10 @@ export class BrowseService {
         [State.Active]: false,
       };
       this._nodeStates$.set(
-        Object.fromEntries(graph.nodes().map((node) => [node, initialState]))
+        Object.fromEntries(graph.nodes().map((node: string) => [node, initialState]))
       );
       this._edgeStates$.set(
-        Object.fromEntries(graph.edges().map((edge) => [edge, initialState]))
+        Object.fromEntries(graph.edges().map((edge: string) => [edge, initialState]))
       );
     });
 
@@ -234,9 +237,8 @@ export class BrowseService {
     if ('ensg_number' in node) {
       return node.gene_symbol || node.ensg_number;
     } else {
-      return `${node.gene.gene_symbol || node.gene.ensg_number} (${
-        node.enst_number
-      })`;
+      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number
+        })`;
     }
   }
 
@@ -269,7 +271,12 @@ export class BrowseService {
   }
 
   runQuery(query: BrowseQuery) {
+    this._manualData$.set(undefined); // clear manual override when running a new query
     this._query$.set(query);
+  }
+
+  setManualData(data: NetworkData | undefined) {
+    this._manualData$.set(data);
   }
 
   getQuery(): BrowseQuery | undefined {

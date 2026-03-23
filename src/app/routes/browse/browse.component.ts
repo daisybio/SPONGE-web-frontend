@@ -21,8 +21,8 @@ import { BrowseService } from '../../services/browse.service';
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss',
-  providers: [BrowseService],
+  // providers: [BrowseService],
 })
 export class BrowseComponent {
-  constructor(public browseService: BrowseService) {}
+  constructor(public browseService: BrowseService) { }
 }

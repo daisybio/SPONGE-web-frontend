@@ -1,30 +1,87 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
     <app-predict-form></app-predict-form>
+    <div style="padding: 16px; border-top: 1px solid #eee;">
+      <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Reference Network</h3>
+      <app-disease-selector [diseases$]="predictService.referenceDatasets$()"
+        (selected)="predictService.selectedReferenceDataset$.set($event)">
+      </app-disease-selector>
+      <p style="font-size: 0.85em; color: #666; margin-top: 8px;">
+        Choose the cancer type whose pre-calculated SPONGE network will serve as the background for the module
+        interactions.
+      </p>
+    </div>
   </mat-drawer>
   <mat-drawer-content>
 
-<div class="predict-results">
-<mat-tab-group>
-  <mat-tab label="Prediction Results">
-    <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
-    <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
-  </mat-tab>
-  <mat-tab label="Classification">
-    TODO: Like Explore-Classification Density plot with additionally user-enrichment-scores.
-  </mat-tab>
-  <mat-tab label="Top ceRNA Centralities">
-    <app-scatterplot
-      [dataSource]="scatterplotDataSource()"
-      [params]="scatterplotParams()"
-      [refreshSignal$]="refreshSignal()"
-    ></app-scatterplot>
-    <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
-    <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
-    TODO: Like Top ceRNA Centralities Tab in Explore (improved version with subnetwork & compressed table) but for user data.
-  </mat-tab>
-</mat-tab-group>
-</div>
+    @if (predictService.example_used()) {
+    <div style="text-align: center; padding: 20px;">
+      <p>Here you can see SpongEffects results for an
+        <a href="https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv"
+          download='GSE123845_exp_tpm_matrix_processed.csv'>example dataset</a>
+        (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123845">GSE123845</a>).
+        You can upload your own expression data on the left.
+      </p>
+    </div>
+    }
 
-</mat-drawer-content>
+    <div class="predict-results">
+      <div class="network-controls"
+        style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+
+        <mat-form-field appearance="outline" style="min-width: 300px;">
+          <mat-label>Select Patients to Consider</mat-label>
+          <mat-select [value]="predictService.selectedSamples$()"
+            (selectionChange)="predictService.selectedSamples$.set($event.value)" multiple>
+            @for (sample of predictService.allSamples$(); track sample) {
+            <mat-option [value]="sample">{{sample}}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-checkbox [checked]="predictService.includeModuleMembers$()"
+          (change)="predictService.includeModuleMembers$.set($event.checked)">
+          Include module members
+        </mat-checkbox>
+
+        <div style="flex-grow: 1;"></div>
+
+        <div *ngIf="predictService.topModules$().length > 0" style="font-size: 0.9em; color: #666;">
+          Showing top {{predictService.topModules$().length}} modules for
+          {{predictService.selectedSamples$().length}} selected patient(s).
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: row">
+        <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
+          style="min-width: 500px; flex-grow: 3; height: 600px;"></app-network>
+        <app-active-entities [browseService]="browseService"
+          style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
+      </div>
+      <!-- }@else {
+  <div class="spinner-container">
+    <mat-spinner mode="indeterminate"></mat-spinner>
+  </div>
+  } -->
+      <!-- } -->
+      <mat-tab-group>
+        <mat-tab label="Prediction Results">
+          <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
+          <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+        </mat-tab>
+        <mat-tab label="Classification">
+          TODO: Like Explore-Classification Density plot with additionally user-enrichment-scores.
+        </mat-tab>
+        <mat-tab label="Top ceRNA Centralities">
+          <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
+            [refreshSignal$]="refreshSignal()"></app-scatterplot>
+          <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+          <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+          TODO: Like Top ceRNA Centralities Tab in Explore (improved version with subnetwork & compressed table) but
+          for user data.
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+  </mat-drawer-content>
 </mat-drawer-container>

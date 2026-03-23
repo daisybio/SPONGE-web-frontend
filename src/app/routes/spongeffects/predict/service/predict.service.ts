@@ -1,8 +1,9 @@
-import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, Signal, signal, WritableSignal } from '@angular/core';
+import { computed, effect, inject, Injectable, Resource, resource, ResourceRef, Signal, signal, WritableSignal, linkedSignal } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
-import { PredictCancerType } from '../../../../interfaces';
+import { NetworkData, PredictCancerType, GeneNode, GeneInteraction, Dataset, BrowseQuery, InteractionSorting } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
-import { compute } from '@fullstax/kaplan-meier-estimator';
+import { VersionsService } from '../../../../services/versions.service';
+import { SpongEffectsService } from '../../../../services/spong-effects.service';
 
 export interface Query {
   useExampleExpression: boolean;
@@ -24,14 +25,48 @@ export interface Query {
 })
 export class PredictService {
   backend = inject(BackendService);
+  versionsService = inject(VersionsService);
+  spongEffectsService = inject(SpongEffectsService);
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
   example_used = signal<boolean>(false);
   level: 'gene' | 'transcript' = 'gene';
 
-  allPredictedTypes$: Signal<string[]> = computed(() => {
-    if (!this._prediction$) return [];
-    const data = this._prediction$.value().data;
+  readonly selectedSamples$ = signal<string[]>([]);
+  readonly includeModuleMembers$ = signal<boolean>(false);
+
+  readonly allSamples$ = computed(() => {
+    const prediction = this._prediction$.value();
+    return prediction?.scores?.samples || [];
+  });
+
+  // All SPONGE network datasets (with subtypes), used for the reference network selector
+  readonly referenceDatasets$ = computed(() => this.versionsService.diseases$().value() || []);
+  // Unique disease names from the full SPONGE dataset list
+  readonly referenceDiseases$ = computed(() =>
+    Array.from(new Set(this.referenceDatasets$().map((d: Dataset) => d.disease_name))).sort()
+  );
+
+  // Writable full Dataset selection — updated by DiseaseSelectorComponent
+  readonly selectedReferenceDataset$ = linkedSignal<Dataset | undefined>(() => {
+    const predicted = this.selectedPredictedType$();
+    const datasets = this.referenceDatasets$();
+    if (!datasets || datasets.length === 0) return undefined;
+    if (predicted) {
+      const match = datasets.find((d: Dataset) => d.disease_name === predicted && !d.disease_subtype);
+      if (match) return match;
+    }
+    return datasets[0];
+  });
+
+  // Keep string accessors for DiseaseSelectorComponent compatibility
+  readonly selectedReferenceDisease$ = computed(() => this.selectedReferenceDataset$()?.disease_name);
+  readonly selectedDataset$ = this.selectedReferenceDataset$;
+
+  readonly allPredictedTypes$: Signal<string[]> = computed(() => {
+    const prediction = this._prediction$.value();
+    if (!prediction) return [];
+    const data = prediction.data;
     if (!data) return [];
     return Array.from(
       new Set(data.map((entry: { typePrediction: string }) => entry.typePrediction)),
@@ -41,7 +76,32 @@ export class PredictService {
   selectedPredictedType$ = computed(() => {
     const prediction = this._prediction$.value();
     if (!prediction || !prediction.meta) return undefined;
-    return prediction.meta[0].type_predict || prediction.meta[0].type_predict || undefined;
+    return prediction.meta[0].type_predict || undefined;
+  });
+
+  readonly topModules$ = computed(() => {
+    const prediction = this._prediction$.value();
+    if (!prediction?.scores) return [];
+
+    const scores = prediction.scores;
+    const selectedSamples = this.selectedSamples$();
+
+    // Use selected samples or ALL samples if none are selected
+    const sampleIndices = selectedSamples.length > 0
+      ? selectedSamples.map(s => scores.samples.indexOf(s)).filter(i => i !== -1)
+      : scores.samples.map((_, i) => i);  // all indices
+
+    if (sampleIndices.length === 0) return [];
+
+    const moduleScores = scores.genes.map((gene, moduleIndex) => {
+      const sum = sampleIndices.reduce((acc, sampleIndex) => acc + (scores.values[moduleIndex]?.[sampleIndex] ?? 0), 0);
+      const mean = sum / sampleIndices.length;
+      return { gene, mean, moduleIndex };
+    });
+
+    return moduleScores
+      .sort((a, b) => b.mean - a.mean)
+      .slice(0, 100);
   });
 
   examplePrediction = (async () => {
@@ -55,12 +115,13 @@ export class PredictService {
       return {
         query: this._query$(),
         example: this.examplePrediction,
-    }},
-  ),
+      }
+    },
+    ),
     loader: async (param) => {
       const query = param.request.query;
       if (!query) {
-        const example =  await this.examplePrediction
+        const example = await this.examplePrediction
         this.example_used.set(true);
         return example
         // || {
@@ -93,6 +154,111 @@ export class PredictService {
     },
   });
 
+  readonly moduleNetworkData$ = resource<NetworkData | undefined, any>({
+    request: computed(() => ({
+      topModules: this.topModules$(),
+      includeMembers: this.includeModuleMembers$(),
+      dataset: this.selectedDataset$(),
+      version: this.versionsService.versionReadOnly()(),
+      level: this.level,
+    })),
+    loader: async (param) => {
+      const { topModules, includeMembers, dataset, version, level } = param.request;
+      if (topModules.length === 0 || !dataset || !version) return undefined;
+
+      // Core gene list: always includes module centers
+      const geneIDs = new Set<string>(topModules.map((m: { gene: string }) => m.gene));
+
+      if (includeMembers) {
+        try {
+          const fetchModule = async (gene: string) => {
+            if (level === 'gene') {
+              const modules = await this.backend.getSpongEffectsGeneModules(version, dataset.disease_name, undefined, undefined, gene);
+              return modules[0]?.spongEffects_gene_module_ID;
+            } else {
+              const modules = await this.backend.getSpongEffectsTranscriptModules(version, dataset.disease_name, undefined, undefined, gene);
+              return modules[0]?.spongEffects_transcript_module_ID;
+            }
+          };
+          const moduleIDs = (await Promise.all(topModules.map((m: { gene: string }) => fetchModule(m.gene)))).filter(Boolean);
+          const allMembers = await Promise.all(moduleIDs.map(id =>
+            level === 'gene'
+              ? this.backend.getSpongEffectsGeneModuleMembers(version, dataset.disease_name, undefined, undefined, undefined, id as number)
+              : this.backend.getSpongEffectsTranscriptModuleMembers(version, dataset.disease_name, undefined, undefined, undefined, id as number)
+          ));
+          allMembers.flat().forEach((m: { gene?: { ensg_number: string }; transcript?: { enst_number: string } }) => {
+            geneIDs.add('gene' in m ? m.gene!.ensg_number : m.transcript!.enst_number);
+          });
+        } catch (e) {
+          console.error('Error fetching module members:', e);
+        }
+      }
+
+      const identifiers = Array.from(geneIDs);
+
+      try {
+        // Fetch all interactions where ANY of the target genes is involved
+        const interactions = await this.backend.getInteractionsSpecific(
+          version, dataset, 0.05, identifiers, level
+        );
+
+        // Collect all node IDs from interactions
+        const nodeIDsInEdges = new Set<string>();
+        interactions.forEach((int: any) => {
+          if ('gene1' in int) {
+            nodeIDsInEdges.add(int.gene1.ensg_number);
+            nodeIDsInEdges.add(int.gene2.ensg_number);
+          } else {
+            nodeIDsInEdges.add(int.transcript_1.enst_number);
+            nodeIDsInEdges.add(int.transcript_2.enst_number);
+          }
+        });
+
+        // Also include orphan module centers (no interactions found)
+        identifiers.forEach(id => nodeIDsInEdges.add(id));
+
+        // Build synthetic GeneNode objects from interaction data
+        const nodeMap = new Map<string, GeneNode>();
+        interactions.forEach((int: any) => {
+          if ('gene1' in int) {
+            const add = (g: { ensg_number: string; gene_symbol?: string }) => {
+              if (!nodeMap.has(g.ensg_number)) {
+                nodeMap.set(g.ensg_number, {
+                  gene: { ensg_number: g.ensg_number, gene_symbol: g.gene_symbol },
+                  betweenness: 0, eigenvector: 0, node_degree: 0,
+                  sponge_run: { dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' }, sponge_run_ID: 0 }
+                } as GeneNode);
+              }
+            };
+            add(int.gene1);
+            add(int.gene2);
+          }
+        });
+
+        // Add orphan nodes (module centers with no edges)
+        identifiers.forEach(id => {
+          if (!nodeMap.has(id)) {
+            nodeMap.set(id, {
+              gene: { ensg_number: id, gene_symbol: id },
+              betweenness: 0, eigenvector: 0, node_degree: 0,
+              sponge_run: { dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' }, sponge_run_ID: 0 }
+            } as GeneNode);
+          }
+        });
+
+        return {
+          nodes: Array.from(nodeMap.values()),
+          inverseNodes: [],
+          edges: interactions,
+          disease: dataset,
+        } as NetworkData;
+      } catch (e) {
+        console.error('Error fetching module network:', e);
+        return undefined;
+      }
+    }
+  });
+
   public get isLoading$() {
     return this._prediction$.isLoading;
   }
@@ -100,6 +266,8 @@ export class PredictService {
   public get prediction$() {
     return this._prediction$.value.asReadonly();
   }
+
+  constructor() { }
 
   request(query: Query) {
     this._query$.set(query);

@@ -1,13 +1,15 @@
+<h3 style="margin-left: 16px;">
+  SpongEffects: ceRNA modules offer patient-specific insights into the miRNA regulatory landscape
+</h3>
 <mat-drawer-container style="min-height: 100%">
-  <div class="card-container">
+  <div class="card-container" style="align-items: left;">
 
     <app-info title="What is SpongEffects?">
       <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">SpongEffects</a> can be used for downstream analysis of
         SPONGE ceRNA networks and is capable of tumor sub-type classification and biomarker discovery via a random
         forest
         machine learning approach.</p>
-      <p>For more detailed information refer to the <a
-        href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.
+      <p>For more detailed information refer to the <a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">publication</a>.
       </p>
       <p>We trained spongEffects prediction models on the TCGA pan-cancer dataset and nine other TCGA projects that
         feature sufficient cancer subtyping for classification.</p>
@@ -35,9 +37,9 @@
 
 
   @if (mode() == 'explore') {
-    <app-explore></app-explore>
+  <app-explore></app-explore>
   }@else {
-    <app-predict></app-predict>
+  <app-predict></app-predict>
   }
-  
+
 </mat-drawer-container>

@@ -882,13 +882,17 @@ export class BackendService {
     diseaseName: string,
     ensgNumber?: string,
     geneSymbol?: string,
-    limit?: number
+    limit?: number,
+    spongEffects_gene_module_ID?: number
   ): Promise<SpongEffectsGeneModuleMembers[]> {
     const route = 'spongEffects/getSpongEffectsGeneModuleMembers';
     const query: Query = {
       sponge_db_version: version,
       disease_name: diseaseName,
     };
+    if (spongEffects_gene_module_ID) {
+      query['spongEffects_gene_module_ID'] = spongEffects_gene_module_ID;
+    }
     if (limit) {
       query['limit'] = limit;
     }
@@ -941,18 +945,26 @@ export class BackendService {
     version: number,
     diseaseName: string,
     enstNumber?: string,
-    limit?: number
+    geneSymbol?: string,
+    limit?: number,
+    spongEffects_transcript_module_ID?: number
   ): Promise<SpongEffectsTranscriptModuleMembers[]> {
     const route = 'spongEffects/getSpongEffectsTranscriptModuleMembers';
     const query: Query = {
       sponge_db_version: version,
       disease_name: diseaseName,
     };
+    if (spongEffects_transcript_module_ID) {
+      query['spongEffects_transcript_module_ID'] = spongEffects_transcript_module_ID;
+    }
     if (limit) {
       query['limit'] = limit;
     }
     if (enstNumber) {
       query['enst_number'] = enstNumber;
+    }
+    if (geneSymbol) {
+      query['gene_symbol'] = geneSymbol;
     }
     return (await this.http.getRequest<SpongEffectsTranscriptModuleMembers[]>(this.getRequestURL(route, query))) ?? [];
   }
@@ -1156,7 +1168,15 @@ export class BackendService {
   private stringify(query: Query): string {
     return Object.keys(query)
       .filter(key => query[key] !== undefined && query[key] !== null)
-      .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
+      .map((key) => {
+        const value = query[key];
+        if (Array.isArray(value)) {
+          return value
+            .map(v => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
+            .join('&');
+        }
+        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+      })
       .join('&');
   }
 
