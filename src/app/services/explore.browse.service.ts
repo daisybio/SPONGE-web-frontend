@@ -4,6 +4,7 @@ import { ExploreService } from '../routes/spongeffects/explore/service/explore.s
 import { GeneNode, TranscriptNode, GeneInteraction, TranscriptInteraction, NetworkData } from '../interfaces';
 import { BackendService } from './backend.service';
 import { VersionsService } from './versions.service';
+import { isEqual } from 'lodash';
 
 @Injectable()
 export class ExploreBrowseService extends BrowseService {
@@ -31,7 +32,7 @@ export class ExploreBrowseService extends BrowseService {
       if (
         oldQuery.dataset !== dataset ||
         oldQuery.level !== level ||
-        JSON.stringify(oldQuery.ensemblID) !== JSON.stringify(ensemblID)
+        !isEqual(oldQuery.ensemblID, ensemblID)
       ) {
         const newQuery = {
           ...oldQuery,
@@ -52,16 +53,13 @@ export class ExploreBrowseService extends BrowseService {
     config.ensemblID = this.exploreService.selectedModules.value()?.map((m: any) => m.ensemblID) ?? [];
     config.level = this.exploreService.level$();
     config.dataset = this.exploreService.selectedDiseaseObject$();
-    console.log('Fetching data with config:', config);
 
     // 1. Get the full network using the default logic
     const fullNetwork = await super.fetchData(version, config);
-    console.log('Full network fetched:', fullNetwork);
 
     // 2. Get selected modules and members from ExploreService
     const selectedModules = this.exploreService.selectedModules.value() ?? [];
     const includeMembers = this.exploreService.includeModuleMembers();
-    console.log('Selected modules:', selectedModules);
 
     // 3. Collect allowed node IDs (modules and, if enabled, members)
     const allowedIDs = new Set<string>();
@@ -79,7 +77,6 @@ export class ExploreBrowseService extends BrowseService {
         }
       }
     }
-    console.log('Allowed IDs:', allowedIDs);
 
     // 4. Filter nodes and edges
     const nodes = fullNetwork.nodes.filter(
@@ -99,8 +96,6 @@ export class ExploreBrowseService extends BrowseService {
         'gene' in node ? node.gene.ensg_number : node.transcript.enst_number
       )
     ) ?? [];
-    console.log('Filtered nodes:', nodes);
-    console.log('Filtered edges:', edges);
 
     return {
       ...fullNetwork,

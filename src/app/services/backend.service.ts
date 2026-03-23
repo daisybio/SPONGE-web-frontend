@@ -66,27 +66,27 @@ export class BackendService {
       query['disease_name'] = diseaseName;
     }
 
-    return this.http.getRequest<Dataset[]>(this.getRequestURL(route, query));
+    return (await this.http.getRequest<Dataset[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  getDatasetInfo(version: number, diseaseName: string): Promise<RunInfo[]> {
+  async getDatasetInfo(version: number, diseaseName: string): Promise<RunInfo[]> {
     const route = 'dataset/spongeRunInformation';
     const query: Query = {
       sponge_db_version: version,
       disease_name: diseaseName,
     };
-    return this.http.getRequest<RunInfo[]>(this.getRequestURL(route, query));
+    return (await this.http.getRequest<RunInfo[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  getOverallCounts(version: number, level: string): Promise<OverallCounts[]> {
+  async getOverallCounts(version: number, level: string): Promise<OverallCounts[]> {
     const route = 'getOverallCounts';
     const query: Query = { sponge_db_version: version, level: level };
-    return this.http.getRequest<OverallCounts[]>(
+    return (await this.http.getRequest<OverallCounts[]>(
       this.getRequestURL(route, query)
-    );
+    )) ?? [];
   }
 
-  getNetwork(version: number, query: BrowseQuery): Promise<Network> {
+  async getNetwork(version: number, query: BrowseQuery): Promise<Network> {
     const level = query.level;
     const route =
       level == 'gene'
@@ -123,7 +123,7 @@ export class BackendService {
       _query["ensemblID"] = query.ensemblID;
     }
 
-    return this.http.getRequest<Network>(this.getRequestURL(route, _query));
+    return (await this.http.getRequest<Network>(this.getRequestURL(route, _query))) ?? { nodes: [], edges: [] } as Network;
   }
 
   // getNodes(
@@ -188,13 +188,13 @@ export class BackendService {
     let data: GeneInteraction[];
 
     do {
-      data = await this.http.getRequest<GeneInteraction[]>(
+      data = (await this.http.getRequest<GeneInteraction[]>(
         this.getRequestURL(route, {
           ...query,
           limit,
           offset,
         })
-      );
+      )) ?? [];
       results.push(...data);
       offset += limit;
     } while (data.length === limit);
@@ -229,13 +229,13 @@ export class BackendService {
     let data: TranscriptInteraction[];
 
     do {
-      data = await this.http.getRequest<TranscriptInteraction[]>(
+      data = (await this.http.getRequest<TranscriptInteraction[]>(
         this.getRequestURL(route, {
           ...query,
           limit,
           offset,
         })
-      );
+      )) ?? [];
       results.push(...data);
       offset += limit;
     } while (data.length === limit);
@@ -243,7 +243,7 @@ export class BackendService {
     return results;
   }
 
-  getInteractionsSpecific(
+  async getInteractionsSpecific(
     version: number,
     disease: Dataset,
     maxPValue: number,
@@ -272,9 +272,9 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(
+    return (await this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(
       this.getRequestURL(route, query)
-    );
+    )) ?? [];
   }
 
   async getExpression(
@@ -316,12 +316,12 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return await this.http.getRequest<
+    return (await this.http.getRequest<
       (GeneExpression | TranscriptExpression)[]
-    >(this.getRequestURL(route, query));
+    >(this.getRequestURL(route, query))) ?? [];
   }
 
-  getSurvivalRates(
+  async getSurvivalRates(
     version: number,
     ensgs: string[],
     disease: Dataset
@@ -333,12 +333,12 @@ export class BackendService {
       ensg_number: ensgs.join(','),
     };
 
-    return this.http.getRequest<SurvivalRate[]>(
+    return (await this.http.getRequest<SurvivalRate[]>(
       this.getRequestURL(route, query)
-    );
+    )) ?? [];
   }
 
-  getAutocomplete(version: number, query: string): Promise<Gene[]> {
+  async getAutocomplete(version: number, query: string): Promise<Gene[]> {
     if (query.length < 2) {
       return Promise.resolve([]);
     }
@@ -349,47 +349,47 @@ export class BackendService {
       searchString: query,
     };
     try {
-      return this.http.getRequest<Gene[]>(this.getRequestURL(route, queryObj));
+      return (await this.http.getRequest<Gene[]>(this.getRequestURL(route, queryObj))) ?? [];
     } catch (e) {
-      return Promise.resolve([]);
+      return [];
     }
   }
 
-  stringSearchTranscript(query: string): Promise<Transcript[]> {
+  async stringSearchTranscript(query: string): Promise<Transcript[]> {
     if (query.length < 2) {
-      return Promise.resolve([]);
+      return [];
     }
 
     const route = 'stringSearchTranscript';
     const queryObj: Query = {
       searchString: query,
     };
-    return this.http.getRequest<Transcript[]>(
+    return (await this.http.getRequest<Transcript[]>(
       this.getRequestURL(route, queryObj)
-    );
+    )) ?? [];
   }
 
-  getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
+  async getTranscriptInfo(version: number, enst: string): Promise<TranscriptInfo[]> {
     const route = 'getTranscriptInformation';
     const query: Query = {
       sponge_db_version: version,
       enst_number: enst,
     };
-    return this.http.getRequest<TranscriptInfo[]>(
+    return (await this.http.getRequest<TranscriptInfo[]>(
       this.getRequestURL(route, query)
-    );
+    )) ?? [];
   }
 
-  getGeneInfo(version: number, ensg: string): Promise<GeneInfo[]> {
+  async getGeneInfo(version: number, ensg: string): Promise<GeneInfo[]> {
     const route = 'getGeneInformation';
     const query: Query = {
       sponge_db_version: version,
       ensg_number: ensg,
     };
-    return this.http.getRequest<GeneInfo[]>(this.getRequestURL(route, query));
+    return (await this.http.getRequest<GeneInfo[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  getGOterms(version: number, symbol: string | undefined): Promise<GOTerm[]> {
+  async getGOterms(version: number, symbol: string | undefined): Promise<GOTerm[]> {
     const route = 'getGeneOntology';
 
     if (!symbol) {
@@ -400,7 +400,7 @@ export class BackendService {
       sponge_db_version: version,
       gene_symbol: symbol,
     };
-    return this.http.getRequest<GOTerm[]>(this.getRequestURL(route, query));
+    return (await this.http.getRequest<GOTerm[]>(this.getRequestURL(route, query))) ?? [];
   }
 
   async getHallmark(
@@ -469,7 +469,7 @@ export class BackendService {
     const res = await this.http.getRequest<GeneCount[]>(
       this.getRequestURL(route, query)
     );
-    if ('title' in res && res.title == 'No Content') {
+    if (!res || ('title' in res && (res as any).title == 'No Content')) {
       return [];
     }
     return res;
@@ -494,7 +494,7 @@ export class BackendService {
     const res = await this.http.getRequest<TranscriptCount[]>(
       this.getRequestURL(route, query)
     );
-    if ('title' in res && res.title == 'No Content') {
+    if (!res || ('title' in res && (res as any).title == 'No Content')) {
       return [];
     }
     return res;
@@ -506,9 +506,8 @@ export class BackendService {
       sponge_db_version: version,
       ensg_number: ensg,
     };
-    return (
-      await this.http.getRequest<string[][]>(this.getRequestURL(route, query))
-    )[0];
+    const res = await this.http.getRequest<string[][]>(this.getRequestURL(route, query));
+    return res?.[0] ?? [];
   }
 
   async getMiRNAs(
@@ -533,9 +532,9 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return this.http.getRequest<GeneMiRNA[] | TranscriptMiRNA[]>(
+    return (await this.http.getRequest<GeneMiRNA[] | TranscriptMiRNA[]>(
       this.getRequestURL(route, query)
-    );
+    )) ?? [];
   }
 
   async getAlternativeSplicingEvents(
@@ -550,42 +549,46 @@ export class BackendService {
     const resp = await this.http.getRequest<AlternativeSplicingEvent[]>(
       this.getRequestURL(route, query)
     );
-    return 'detail' in resp ? [] : resp;
+    return !resp || 'detail' in resp ? [] : resp;
   }
 
-  getCeRNAInteractionsAll(
+  async getCeRNAInteractionsAll(
     disease: string,
     maxPValue: number,
     ensgs: string[],
     limit?: number,
     offset?: number
   ): Promise<CeRNAInteraction[]> {
-    let request =
-      API_BASE + '/ceRNAInteraction/findAll?disease_name=' + disease;
-    request += `&ensg_number=${ensgs.join(',')}`;
-    request += `&pValue=${maxPValue}`;
+    const route = 'ceRNAInteraction/findAll';
+    const query: Query = {
+      disease_name: disease,
+      ensg_number: ensgs.join(','),
+      pValue: maxPValue,
+    };
 
     if (limit) {
-      request += `&limit=${limit}`;
+      query['limit'] = limit;
     }
     if (offset) {
-      request += `&offset=${offset}`;
+      query['offset'] = offset;
     }
 
-    return this.http.getRequest<CeRNAInteraction[]>(request);
+    return (await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  getCeRNAInteractionsSpecific(
+  async getCeRNAInteractionsSpecific(
     disease: string,
     maxPValue: number,
     ensgs: string[]
   ): Promise<CeRNAInteraction[]> {
-    let request =
-      API_BASE + '/ceRNAInteraction/findSpecific?disease_name=' + disease;
-    request += `&ensg_number=${ensgs.join(',')}`;
-    request += `&pValue=${maxPValue}`;
+    const route = 'ceRNAInteraction/findSpecific';
+    const query: Query = {
+      disease_name: disease,
+      ensg_number: ensgs.join(','),
+      pValue: maxPValue,
+    };
 
-    return this.http.getRequest<CeRNAInteraction[]>(request);
+    return (await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query))) ?? [];
   }
 
   // getCeRNA(query: CeRNAQuery): Promise<CeRNA[]> {
@@ -602,31 +605,42 @@ export class BackendService {
   //   return this.http.getRequest<CeRNA[]>(request);
   // }
 
-  getCeRNAExpression(
+  async getCeRNAExpression(
     ensgs: string[],
     diseaseName: string
   ): Promise<CeRNAExpression[]> {
-    let request = API_BASE + '/exprValue/getceRNA?disease_name=' + diseaseName;
-    request += `&ensg_number=${ensgs.join(',')}`;
+    const route = 'exprValue/getceRNA';
+    const query: Query = {
+      disease_name: diseaseName,
+      ensg_number: ensgs.join(','),
+    };
 
-    return this.http.getRequest<CeRNAExpression[]>(request);
+    return (await this.http.getRequest<CeRNAExpression[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  getTranscriptExpression(
+  async getTranscriptExpression(
     ensts: string[],
     disease_name?: string
   ): Promise<TranscriptExpression[]> {
-    let request =
-      API_BASE + `/exprValue/getTranscript?disease_name=${disease_name}`;
-    request += `&enst_number=${ensts.join(',')}`;
+    const route = 'exprValue/getTranscript';
+    const query: Query = {
+      disease_name: disease_name,
+      enst_number: ensts.join(','),
+    };
 
-    return this.http.getRequest<TranscriptExpression[]>(request);
+    return (await this.http.getRequest<TranscriptExpression[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  async fetchExpressionData(version: number, identifiers: string[], datasetId: number | undefined, disease_name: string | undefined, level: "gene" | "transcript"): Promise<any[]> {
+  async fetchExpressionData(
+    version: number, 
+    identifiers: string[], 
+    datasetId: number | undefined, 
+    disease_name: string | undefined, 
+    level: "gene" | "transcript"
+  ): Promise<any[]> {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
-    const expressionPromises = [];
+    const expressionData: any[] = [];
     let hasMoreData = true;
     let offset = 0;
     
@@ -642,32 +656,37 @@ export class BackendService {
       // Flatten and add results
       for (const page of pageResults) {
         if (page.length > 0) {
-          expressionPromises.push(...page);
+          expressionData.push(...page);
         }
         // If a page has fewer rows than CHUNK_SIZE, we've reached the end
         if (page.length < CHUNK_SIZE) {
           hasMoreData = false;
+          break; // Stop processing further pages in this batch
         }
       }
   
-      offset += CHUNK_SIZE * N_PARALLEL_REQUESTS; // Move to the next batch of pages
+      if (hasMoreData) {
+        offset += CHUNK_SIZE * N_PARALLEL_REQUESTS;
+      }
     }
     
-    return expressionPromises.flat();
+    return expressionData;
   }
 
   async fetchSpongEffectsEnrichScores(
     version: number, 
     level: "gene" | "transcript",
-    module_IDs: string[]): Promise<any[]> {
+    module_IDs: any[],
+    cluster: boolean = true
+  ): Promise<any[]> {
 
     if (level === "gene") {
       const route = 'spongEffects/getSpongEffectsGeneModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster }))) ?? [];
 
     } else {
       const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster: true }))) ?? [];
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster }))) ?? [];
     }
   }
 
@@ -723,17 +742,22 @@ export class BackendService {
     // spongEffects services:
 
 
-  getSpongEffectsRuns(
+  async getSpongEffectsRuns(
     version: number,
     dataset_ID?: number,
     diseaseName?: string
   ): Promise<SpongEffectsRun[]> {
-    const request =
-      `${API_BASE}/spongEffects/getSpongEffectsRuns?` +
-      (dataset_ID ? `?dataset_ID=${dataset_ID}` : '') +
-      (diseaseName ? `&disease_name=${diseaseName}` : '') +
-      `&sponge_db_version=${version}`;
-    return this.http.getRequest<SpongEffectsRun[]>(request);
+    const route = 'spongEffects/getSpongEffectsRuns';
+    const query: Query = {
+      sponge_db_version: version,
+    };
+    if (dataset_ID) {
+      query['dataset_ID'] = dataset_ID;
+    }
+    if (diseaseName) {
+      query['disease_name'] = diseaseName;
+    }
+    return (await this.http.getRequest<SpongEffectsRun[]>(this.getRequestURL(route, query))) ?? [];
   }
 
   async getRunPerformance(
@@ -853,32 +877,14 @@ export class BackendService {
     );    
   }
 
-  getSpongEffectsGeneModuleMembers(
+  async getSpongEffectsGeneModuleMembers(
     version: number,
     diseaseName: string,
     ensgNumber?: string,
     geneSymbol?: string,
     limit?: number
   ): Promise<SpongEffectsGeneModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsGeneModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
-    if (ensgNumber) {
-      request += `&ensg_number=${ensgNumber}`;
-    }
-    if (geneSymbol) {
-      request += `&gene_symbol=${geneSymbol}`;
-    }
-    return this.http.getRequest<SpongEffectsGeneModuleMembers[]>(request);
-  }
-
-  async getSpongEffectsTranscriptModules(
-    version: number,
-    diseaseName: string, 
-    params: {[key: string]: any},
-    limit?: number,
-    enst_number?: string
-  ): Promise<SpongEffectsTranscriptModules[]> {
-    const route = 'spongEffects/getSpongEffectsTranscriptModules';
-
+    const route = 'spongEffects/getSpongEffectsGeneModuleMembers';
     const query: Query = {
       sponge_db_version: version,
       disease_name: diseaseName,
@@ -886,13 +892,41 @@ export class BackendService {
     if (limit) {
       query['limit'] = limit;
     }
+    if (ensgNumber) {
+      query['ensg_number'] = ensgNumber;
+    }
+    if (geneSymbol) {
+      query['gene_symbol'] = geneSymbol;
+    }
+    return (await this.http.getRequest<SpongEffectsGeneModuleMembers[]>(this.getRequestURL(route, query))) ?? [];
+  }
+
+  async getSpongEffectsTranscriptModules(
+    version: number,
+    diseaseName?: string, 
+    params?: {[key: string]: any},
+    limit?: number,
+    enst_number?: string
+  ): Promise<SpongEffectsTranscriptModules[]> {
+    const route = 'spongEffects/getSpongEffectsTranscriptModules';
+
+    const query: Query = {
+      sponge_db_version: version,
+    };
+    if (diseaseName) {
+      query['disease_name'] = diseaseName;
+    }
+    if (limit) {
+      query['limit'] = limit;
+    }
     if (enst_number) {
       query['enst_number'] = enst_number;
     }
-
-    for (const [key, param] of Object.entries(params)) {
-      if (param) {
-        query[key] = param;
+    if (params) {
+      for (const [key, param] of Object.entries(params)) {
+        if (param) {
+          query[key] = param;
+        }
       }
     }
 
@@ -903,17 +937,24 @@ export class BackendService {
     );  
   }
 
-  getSpongEffectsTranscriptModuleMembers(
+  async getSpongEffectsTranscriptModuleMembers(
     version: number,
     diseaseName: string,
     enstNumber?: string,
     limit?: number
   ): Promise<SpongEffectsTranscriptModuleMembers[]> {
-    let request = `${API_BASE}/spongEffects/getSpongEffectsTranscriptModuleMembers?disease_name=${diseaseName}&sponge_db_version=${version}${limit ? '&limit=' + limit: ""}`;
-    if (enstNumber) {
-      request += `&enst_number=${enstNumber}`;
+    const route = 'spongEffects/getSpongEffectsTranscriptModuleMembers';
+    const query: Query = {
+      sponge_db_version: version,
+      disease_name: diseaseName,
+    };
+    if (limit) {
+      query['limit'] = limit;
     }
-    return this.http.getRequest<SpongEffectsTranscriptModuleMembers[]>(request);
+    if (enstNumber) {
+      query['enst_number'] = enstNumber;
+    }
+    return (await this.http.getRequest<SpongEffectsTranscriptModuleMembers[]>(this.getRequestURL(route, query))) ?? [];
   }
 
   predictCancerType(
@@ -976,7 +1017,7 @@ export class BackendService {
     const res = await this.http.getRequest<{ gene_set: string }[]>(
       this.getRequestURL(route, query)
     );
-    return res.map((e) => e.gene_set).sort();
+    return (res ?? []).map((e) => e.gene_set).sort();
   }
 
   async getNetworkResults(
@@ -997,7 +1038,7 @@ export class BackendService {
     const resp = await this.http.getRequest<NetworkResult>(
       this.getRequestURL(route, query)
     );
-    return 'type' in resp ? resp : undefined;
+    return resp && 'type' in resp ? resp : undefined;
   }
 
   async getASPsiValues(
@@ -1019,7 +1060,7 @@ export class BackendService {
       this.getRequestURL(route, query)
     );
 
-    return 'detail' in resp ? [] : resp;
+    return !resp || 'detail' in resp ? [] : resp;
   }
 
   async getGSEAterms(
@@ -1047,7 +1088,7 @@ export class BackendService {
     const res = await this.http.getRequest<{ term: string }[]>(
       this.getRequestURL(route, query)
     );
-    return res.map((e) => e.term).sort();
+    return (res ?? []).map((e) => e.term).sort();
   }
 
   getGSEAresults(
@@ -1114,7 +1155,8 @@ export class BackendService {
 
   private stringify(query: Query): string {
     return Object.keys(query)
-      .map((key) => key + '=' + query[key])
+      .filter(key => query[key] !== undefined && query[key] !== null)
+      .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(query[key])}`)
       .join('&');
   }
 

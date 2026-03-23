@@ -164,6 +164,9 @@ export class BrowseService {
     });
   }
 
+  readonly level$ = computed(() => this._query$()?.level);
+  readonly rawDataURL$ = computed(() => this._query$()?.dataset?.download_url);
+
   get nodeStates$(): Signal<Record<string, EntityState>> {
     return this._nodeStates$.asReadonly();
   }
@@ -174,10 +177,6 @@ export class BrowseService {
 
   get isLoading$(): Signal<boolean> {
     return this._currentData$.isLoading;
-  }
-
-  get level$(): Signal<'gene' | 'transcript' | undefined> {
-    return computed(() => this._query$()?.level);
   }
 
   get networkResults$(): Signal<NetworkResult | undefined> {
@@ -278,7 +277,7 @@ export class BrowseService {
   }
 
   rawDataURL() {
-    return computed(() => this._query$()?.dataset?.download_url);
+    return this.rawDataURL$;
   }
 
   async fetchData(
@@ -456,11 +455,11 @@ export class BrowseService {
       )
     );
 
+    const inverseNodeGeneNames = new Set(inverseNodes.map(BrowseService.getNodeGeneName));
+
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
-      const hasInverse = inverseNodes.some(
-        (inverseNode) => BrowseService.getNodeGeneName(inverseNode) === gene
-      );
+      const hasInverse = inverseNodeGeneNames.has(gene);
 
       // Calculate normalized node size based on degree (range: 5-20)
       const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);

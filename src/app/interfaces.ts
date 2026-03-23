@@ -407,13 +407,13 @@ export interface ModuleMember {
 }
 
 export interface PredictCancerType {
-  meta: {
+  meta: [{
     runtime: number;
     level: string;
     n_samples: number;
     type_predict: string;
     subtype_predict: string;
-  };
+  }];
   data: {
     sampleID: string;
     typePrediction: string;

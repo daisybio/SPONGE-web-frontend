@@ -140,7 +140,6 @@ export class ModuleHeatmapComponent {
 
 
   onPlotRendered() {
-    console.log('Heatmap plot rendered successfully');
   }
 
 

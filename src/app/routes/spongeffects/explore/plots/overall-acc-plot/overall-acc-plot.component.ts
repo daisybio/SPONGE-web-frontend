@@ -1,4 +1,4 @@
-import {Component, computed, effect, ElementRef, inject, input, model, resource, signal, Signal, viewChild} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, input, model, resource, signal, Signal, viewChild, AfterViewInit, OnDestroy} from '@angular/core';
 import {Metric, PlotlyData, RunClassPerformance, RunPerformance, SpongEffectsRun} from '../../../../../interfaces';
 import {BackendService} from '../../../../../services/backend.service';
 import {VersionsService} from '../../../../../services/versions.service';
@@ -28,7 +28,7 @@ declare var Plotly: any;
   templateUrl: './overall-acc-plot.component.html',
   styleUrl: './overall-acc-plot.component.scss'
 })
-export class OverallAccPlotComponent {
+export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
@@ -36,6 +36,8 @@ export class OverallAccPlotComponent {
   name_to_runPerformanceID: Map<number, string> = new Map<number, string>();
 
   overallAccPlot = viewChild.required<ElementRef<HTMLDivElement>>('overallAccuracyPlot');
+
+  private resizeObserver: ResizeObserver | null = null;
 
   // plot parameters
   defaultPlotMode: string = "lines+markers";
@@ -72,7 +74,26 @@ export class OverallAccPlotComponent {
       if (this.plotOverallAccResource.isLoading()) {
         Plotly.purge(this.overallAccPlot().nativeElement);
       }
-  });
+    });
+
+    this.setupResizeObserver();
+  }
+
+  private setupResizeObserver() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.refreshPlot();
+    });
+  }
+
+  ngAfterViewInit() {
+    const el = this.overallAccPlot()?.nativeElement;
+    if (el && this.resizeObserver) {
+      this.resizeObserver.observe(el);
+    }
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
   }
 
   

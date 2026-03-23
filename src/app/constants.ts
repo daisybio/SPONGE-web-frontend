@@ -17,7 +17,7 @@ export const SPONGE_EXAMPLE_URL =
   'https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv';
 
 export const EXAMPLE_PREDICTION_URL =
-  'https://exbio.wzw.tum.de/sponge-files/example_prediction.json';
+  'https://exbio.wzw.tum.de/sponge-files/example_prediction_subtype.json';
 export const IGV_REFGENOME = {
   id: 'hg38',
   name: 'Human (GRCh38/hg38)',

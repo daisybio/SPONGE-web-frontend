@@ -7,6 +7,8 @@ import {
   input,
   signal,
   viewChild,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -48,7 +50,7 @@ interface PerformanceEntry {
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss',
 })
-export class ClassPerformancePlotComponent {
+export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   exploreService = inject(ExploreService);
   backend = inject(BackendService);
   refreshSignal$ = input();
@@ -58,6 +60,8 @@ export class ClassPerformancePlotComponent {
   classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
   );
+  
+  private resizeObserver: ResizeObserver | null = null;
 
   runClassPerformance$ = this.exploreService.runClassPerformance$;
 
@@ -109,9 +113,6 @@ export class ClassPerformancePlotComponent {
   });
 
   constructor() {
-    this.refreshSignal$();
-    this.refreshPlot();
-
     effect(() => {
       this.refreshSignal$();
       this.refreshPlot();
@@ -133,6 +134,20 @@ export class ClassPerformancePlotComponent {
         );
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.refreshPlot();
+    });
+    const el = this.classPerformPlot()?.nativeElement;
+    if (el) {
+      this.resizeObserver.observe(el);
+    }
+  }
+
+  ngOnDestroy() {
+    this.resizeObserver?.disconnect();
   }
 
   // split the data into two subplots for test and train 
