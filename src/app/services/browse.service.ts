@@ -37,7 +37,7 @@ export interface EntityState {
   [State.Active]: boolean;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class BrowseService {
   readonly physicsEnabled$ = signal(true);
   readonly lastClicked = signal<'node' | 'edge'>('node');
