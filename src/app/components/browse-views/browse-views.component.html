@@ -1,6 +1,6 @@
 @if (!isLoading$()) {
 @if (hasData$()) {
-<mat-tab-group [preserveContent]="false" (selectedTabChange)="refresh()">
+<mat-tab-group [preserveContent]="false" (selectedTabChange)="onTabChange($event)">
   <mat-tab label="Network">
     <div style="display: flex; flex-direction: row">
       <app-network [browseService]="browseService()" [refreshSignal]="refresh$()"

@@ -61,6 +61,8 @@ import { MatCardModule } from '@angular/material/card';
 export class FormComponent implements OnInit {
   versionsService = inject(VersionsService);
   browseService = input.required<BrowseService>();
+  selectedTab = input.required<string>();
+  selectedTabName = computed(() => this.selectedTab() ?? 'Network');
   version = this.versionsService.versionReadOnly();
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
   fixedDataset = input<Dataset | undefined>();

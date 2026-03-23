@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -23,5 +23,11 @@ import { BrowseService } from '../../services/browse.service';
   styleUrl: './browse.component.scss',
 })
 export class BrowseComponent {
+  selectedTab = signal('Network');
+
   constructor(public browseService: BrowseService) {}
+
+  onSelectedTabChange(tabLabel: string) {
+    this.selectedTab.set(tabLabel);
+  }
 }
