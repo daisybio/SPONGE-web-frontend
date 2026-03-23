@@ -1,0 +1,11 @@
+@if (scatterplotResource.isLoading()) {
+  <div style="width: 100%; display: flex; flex-direction: row; justify-content: center; align-items: center;">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+} @else {
+  @if (!scatterplotResource.value()) {
+    <p>No data available</p>
+  }
+}
+<div #scatterplot style="width:100%;height:280px;"></div>
+
