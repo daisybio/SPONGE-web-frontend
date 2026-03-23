@@ -46,7 +46,7 @@ export class PredictComponent {
 
   // Updated data source to properly handle async data
   scatterplotDataSource = signal<ScatterplotDataScource>({
-    getData: async (params) => {
+    getData: async (params: any) => {
       // Return existing data if available
       const existingData = this.transformedData();
       if (existingData && existingData.length > 0) {
