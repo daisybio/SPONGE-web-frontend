@@ -23,8 +23,10 @@ export class DiseaseSelectorComponent implements OnDestroy {
   readonly diseases$ = input.required<Dataset[]>();
   selected = output<Dataset>();
   readonly activeDisease$ = linkedSignal(
-    () =>
-      this.diseaseNames$().filter((d) => d === 'breast invasive carcinoma')[0]
+    () => {
+      const names = this.diseaseNames$();
+      return names.find((d) => d === 'breast invasive carcinoma') ?? names[0];
+    }
   );
   readonly activeSubtype = linkedSignal(
     () =>

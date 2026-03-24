@@ -19,6 +19,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { over, zip, capitalize } from 'lodash';
 import { tick } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card';
+import { Router, RouterLink } from '@angular/router';
 
 declare const Plotly: any;
 
@@ -85,6 +86,7 @@ export class HomeComponent implements OnDestroy {
   constructor(
     private backend: BackendService,
     versionsService: VersionsService,
+    private router: Router,
   ) {
     const version = versionsService.versionReadOnly();
     this.diseases = versionsService.diseases$();
@@ -184,5 +186,9 @@ export class HomeComponent implements OnDestroy {
     const lightness = type === 'gene' ? 50 : 65;
 
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+
+  navigateTo(route: string) {
+    this.router.navigate([route]);
   }
 }
