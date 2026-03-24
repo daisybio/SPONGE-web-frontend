@@ -27,6 +27,7 @@ export class SunburstComponent {
   sunburst = viewChild.required<ElementRef<HTMLDivElement>>('sunburst');
   results = input.required<GeneCount[] | TranscriptCount[] | undefined>();
   refresh = input<any>();
+  selectedLevel = input.required<'gene' | 'transcript'>();
   datasets = this.versionsService.diseases$().value;
   onlySignificant = input.required<boolean>();
 

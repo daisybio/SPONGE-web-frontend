@@ -3,10 +3,9 @@
 <div class="card-container">
   <p style="margin-top: 50px">
     @if (onlySignificant()) {
-    No significant results found. Please try a different gene or allow all
-    results to be shown.
+    No significant ceRNA interactions found. Please try a different {{ selectedLevel() === 'transcript' ? 'transcript' : 'gene' }} or remove the significance filter.
     } @else {
-    No results found. Please try a different gene.
+    No ceRNA interactions found. Please try a different {{ selectedLevel() === 'transcript' ? 'transcript' : 'gene' }}.
     }
   </p>
 </div>

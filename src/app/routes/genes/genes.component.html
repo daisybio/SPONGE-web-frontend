@@ -71,7 +71,7 @@
       <mat-tab-group [(selectedIndex)]="tabChange">
         <mat-tab label="Sunburst chart">
           <app-sunburst [refresh]="tabChange()" [onlySignificant]="onlySignificant()"
-            [results]="results.value()"></app-sunburst>
+            [results]="results.value()" [selectedLevel]="level()"></app-sunburst>
         </mat-tab>
         <mat-tab label="Table">
           <app-disease-selector [diseases$]="diseases$()" (selected)="activeDisease.set($event)"></app-disease-selector>
