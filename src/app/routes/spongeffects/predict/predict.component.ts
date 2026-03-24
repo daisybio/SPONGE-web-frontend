@@ -21,6 +21,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatInputModule } from '@angular/material/input';
 
 declare var Plotly: any;
 
@@ -45,7 +47,9 @@ declare var Plotly: any;
     MatExpansionModule,
     DiseaseSelectorComponent,
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    MatButtonToggleModule,
+    MatInputModule
   ],
   providers: [BrowseService],
   templateUrl: './predict.component.html',
@@ -169,7 +173,7 @@ export class PredictComponent {
   }
 
   async getTcgaSpongEffectsScores(genes: string[]): Promise<any[]> {
-    const level = this.predictService.level;
+    const level = this.predictService.level();
     const version = this.versionsService.versionReadOnly()();
     const disease = this.predictService.selectedPredictedType$();
 
@@ -205,7 +209,7 @@ export class PredictComponent {
       // Batch the final enrichment scores fetch if needed, but the backend fetchSpongEffectsEnrichScores seems to handle an array of IDs.
       const enrichScores = await this.backend.fetchSpongEffectsEnrichScores(
         version,
-        this.predictService.level,
+        this.predictService.level(),
         moduleIDs,
         false
       );

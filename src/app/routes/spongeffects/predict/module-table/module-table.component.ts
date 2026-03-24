@@ -160,7 +160,7 @@ export class ModuleTableComponent {
   tableDataResource = resource({
     request: () => ({
       version: this.versionService.versionReadOnly()(),
-      level: this.predictService.level,
+      level: this.predictService.level(),
       prediction: this.topEnrichScores.value(),
       includeMembers: this.includeModuleMembers(),
       blueNodes: this.blueNodes(),

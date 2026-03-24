@@ -13,7 +13,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
 import { CommonModule, NgForOf, NgIf } from '@angular/common';
-import { MatButton } from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDropzone } from '@ngx-dropzone/material';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -28,7 +28,7 @@ import { PredictService } from '../service/predict.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { InfoService } from '../../../../services/info.service';
-import {capitalize} from "lodash";
+import { capitalize } from "lodash";
 
 @Component({
   selector: 'app-predict-form',
@@ -44,7 +44,7 @@ import {capitalize} from "lodash";
     MatSelect,
     NgForOf,
     NgIf,
-    MatButton,
+    MatButtonModule,
     FormsModule,
     MatDropzone,
     FileInputDirective,
@@ -72,7 +72,7 @@ export class PredictFormComponent {
     OE: 'OE',
   }
   formGroup = new FormGroup({
-    useExampleExpression: new FormControl<boolean>(false, {nonNullable: true}),
+    useExampleExpression: new FormControl<boolean>(false, { nonNullable: true }),
     mscor: new FormControl<number>(0.1, {
       nonNullable: true,
       validators: [Validators.min(0), Validators.max(1)],

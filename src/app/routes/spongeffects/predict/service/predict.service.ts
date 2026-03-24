@@ -30,10 +30,20 @@ export class PredictService {
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
   example_used = signal<boolean>(false);
-  level: 'gene' | 'transcript' = 'gene';
+  level = signal<'gene' | 'transcript'>('gene');
 
   readonly selectedSamples$ = signal<string[]>([]);
   readonly includeModuleMembers$ = signal<boolean>(false);
+
+  // Visualization filter signals
+  readonly topNModules$ = signal<number>(10);
+  readonly showOrphans$ = signal<boolean>(true);
+  readonly maxNodes$ = signal<number>(100);
+  readonly minDegree$ = signal<number>(0);
+  readonly minBetweenness$ = signal<number>(0);
+  readonly minEigen$ = signal<number>(0);
+  readonly maxPValue$ = signal<number>(1.0);
+  readonly minMscor$ = signal<number>(0.0);
 
   readonly allSamples$ = computed(() => {
     const prediction = this._prediction$.value();
@@ -101,7 +111,7 @@ export class PredictService {
 
     return moduleScores
       .sort((a, b) => b.mean - a.mean)
-      .slice(0, 100);
+      .slice(0, this.topNModules$());
   });
 
   examplePrediction = (async () => {
@@ -160,10 +170,21 @@ export class PredictService {
       includeMembers: this.includeModuleMembers$(),
       dataset: this.selectedDataset$(),
       version: this.versionsService.versionReadOnly()(),
-      level: this.level,
+      level: this.level(),
+      // Filters
+      showOrphans: this.showOrphans$(),
+      maxNodes: this.maxNodes$(),
+      minDegree: this.minDegree$(),
+      minBetweenness: this.minBetweenness$(),
+      minEigen: this.minEigen$(),
+      maxPValue: this.maxPValue$(),
+      minMscor: this.minMscor$(),
     })),
     loader: async (param) => {
-      const { topModules, includeMembers, dataset, version, level } = param.request;
+      const {
+        topModules, includeMembers, dataset, version, level,
+        showOrphans, maxNodes, minDegree, minBetweenness, minEigen, maxPValue, minMscor
+      } = param.request;
       if (topModules.length === 0 || !dataset || !version) return undefined;
 
       // Core gene list: always includes module centers
@@ -198,13 +219,17 @@ export class PredictService {
 
       try {
         // Fetch all interactions where ANY of the target genes is involved
+        // Use the filter's maxPValue
         const interactions = await this.backend.getInteractionsSpecific(
-          version, dataset, 0.05, identifiers, level
+          version, dataset, maxPValue, identifiers, level
         );
+
+        // Apply client-side mscor filter
+        let filteredInteractions = interactions.filter((int: any) => int.mscor >= minMscor);
 
         // Collect all node IDs from interactions
         const nodeIDsInEdges = new Set<string>();
-        interactions.forEach((int: any) => {
+        filteredInteractions.forEach((int: any) => {
           if ('gene1' in int) {
             nodeIDsInEdges.add(int.gene1.ensg_number);
             nodeIDsInEdges.add(int.gene2.ensg_number);
@@ -219,7 +244,7 @@ export class PredictService {
 
         // Build synthetic GeneNode objects from interaction data
         const nodeMap = new Map<string, GeneNode>();
-        interactions.forEach((int: any) => {
+        filteredInteractions.forEach((int: any) => {
           if ('gene1' in int) {
             const add = (g: { ensg_number: string; gene_symbol?: string }) => {
               if (!nodeMap.has(g.ensg_number)) {
@@ -246,10 +271,46 @@ export class PredictService {
           }
         });
 
+        // Apply client-side node filters
+        let nodes = Array.from(nodeMap.values());
+
+        // Update node degrees based on filtered interactions
+        nodes.forEach(node => {
+          const id = 'gene' in node ? node.gene.ensg_number : (node as any).transcript.enst_number;
+          node.node_degree = filteredInteractions.filter((int: any) => {
+            if ('gene1' in int) {
+              return int.gene1.ensg_number === id || int.gene2.ensg_number === id;
+            } else {
+              return int.transcript_1.enst_number === id || int.transcript_2.enst_number === id;
+            }
+          }).length;
+        });
+
+        // Filter by minDegree
+        nodes = nodes.filter(n => n.node_degree >= minDegree);
+
+        // Filter orphans if requested
+        if (!showOrphans) {
+          nodes = nodes.filter(n => n.node_degree > 0);
+        }
+
+        // Limit to maxNodes (sort by degree for now as centrality is 0)
+        nodes = nodes.sort((a, b) => b.node_degree - a.node_degree).slice(0, maxNodes);
+
+        // Final edge filtering based on remaining nodes
+        const finalNodeIDs = new Set(nodes.map(n => 'gene' in n ? n.gene.ensg_number : (n as any).transcript.enst_number));
+        const finalEdges = filteredInteractions.filter((int: any) => {
+          if ('gene1' in int) {
+            return finalNodeIDs.has(int.gene1.ensg_number) && finalNodeIDs.has(int.gene2.ensg_number);
+          } else {
+            return finalNodeIDs.has(int.transcript_1.enst_number) && finalNodeIDs.has(int.transcript_2.enst_number);
+          }
+        });
+
         return {
-          nodes: Array.from(nodeMap.values()),
+          nodes: nodes,
           inverseNodes: [],
-          edges: interactions,
+          edges: finalEdges,
           disease: dataset,
         } as NetworkData;
       } catch (e) {
