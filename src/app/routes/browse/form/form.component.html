@@ -27,6 +27,7 @@
   }
 
   <mat-accordion>
+    @if (selectedTabName() !== 'Gene set enrichment' && selectedTabName() !== 'Disease similarities') {
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Nodes</mat-panel-title>
@@ -201,6 +202,5 @@
         <p [innerHTML]="infoService.mscorText"></p>
         <span>Change the minimum mscor threshold for the visualization here. </span>
       </app-info>
-    </mat-expansion-panel>
-  </mat-accordion>
+    </mat-expansion-panel>    }  </mat-accordion>
 </form>

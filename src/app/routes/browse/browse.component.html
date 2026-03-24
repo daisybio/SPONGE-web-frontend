@@ -1,6 +1,6 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
-    <app-form [browseService]="browseService"></app-form>
+    <app-form [browseService]="browseService" [selectedTab]="selectedTab()"></app-form>
     <!-- @if (rawDataURL$(); as rawDataURL) {
     <div class="card-container">
       <a target="_blank" [href]="rawDataURL" mat-flat-button>View raw data</a>
@@ -8,6 +8,6 @@
     }-->
   </mat-drawer>
   <mat-drawer-content>
-    <app-browse-views [browseService]="browseService"></app-browse-views>
+    <app-browse-views [browseService]="browseService" (selectedTabChange)="onSelectedTabChange($event)"></app-browse-views>
   </mat-drawer-content>
 </mat-drawer-container>

@@ -1,6 +1,6 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, input, Output, signal } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { InteractionsComponent } from '../../components/browse-views/interactions/interactions.component';
@@ -48,6 +48,8 @@ export class BrowseViewsComponent {
   hasData$ = computed(() => this.browseService().nodes$().length > 0);
   isLoading$ = computed(() => this.browseService().isLoading$());
   rawDataURL$ = computed(() => this.browseService().rawDataURL()());
+  @Output() selectedTabChange = new EventEmitter<string>();
+
   hasNetworkResults$ = computed(
     () => this.browseService().networkResults$() !== undefined
   );
@@ -61,4 +63,9 @@ export class BrowseViewsComponent {
   }
 
   refresh = () => this.refresh$.update((v) => v + 1);
+
+  onTabChange = (event: MatTabChangeEvent) => {
+    this.refresh();
+    this.selectedTabChange.emit(event.tab.textLabel?.toString() ?? '');
+  };
 }
