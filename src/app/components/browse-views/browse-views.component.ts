@@ -48,6 +48,19 @@ export class BrowseViewsComponent {
   hasData$ = computed(() => this.browseService().nodes$().length > 0);
   isLoading$ = computed(() => this.browseService().isLoading$());
   rawDataURL$ = computed(() => this.browseService().rawDataURL()());
+  showInsufficientDataMessage$ = computed(() => {
+    const query = this.browseService().getQuery();
+    if (!query) return false;
+    return (
+      query.minDegree <= 1 ||
+      query.minBetweenness <= 0.05 ||
+      query.minEigen <= 0.1 ||
+      query.maxNodes >= 1 ||
+      query.minMscor <= 0.15 ||
+      query.maxPValue >= 0.05 ||
+      query.maxInteractions >= 1
+    );
+  });
   @Output() selectedTabChange = new EventEmitter<string>();
 
   hasNetworkResults$ = computed(

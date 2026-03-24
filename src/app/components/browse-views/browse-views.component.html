@@ -33,6 +33,15 @@
     <app-disease-similarity [browseService]="browseService()" [refreshSignal]="refresh$()"></app-disease-similarity>
   </mat-tab>
 </mat-tab-group>
+} @else if (showInsufficientDataMessage$()) {
+<div class="card-container" style="margin-top: 50px">
+  <mat-icon>
+    warning
+  </mat-icon>
+  <p>
+    For the selected disease not enough data was available to infer a reliable ceRNA network.
+  </p>
+</div>
 } @else {
 <div class="card-container" style="margin-top: 50px">
   <mat-icon>
