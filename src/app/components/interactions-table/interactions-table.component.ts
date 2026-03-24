@@ -87,39 +87,16 @@ export class InteractionsTableComponent implements AfterViewInit {
     };
   });
 
-  dataSource$ = computed(() => {
-    const interactions = this.interactions$() || [];
-    const filteredInteractions = interactions.filter(interaction => {
-      const pValue = interaction.p_value;
-      const mscor = interaction.mscor;
-      return pValue >= this.minPValue() &&
-             pValue <= this.maxPValue() &&
-             mscor >= this.minMscor() &&
-             mscor <= this.maxMscor();
-    });
-
-    return new MatTableDataSource(
-      filteredInteractions.map((interaction) => {
-        const names = BrowseService.getInteractionFullNames(interaction);
-        return {
-          name_1: names[0],
-          name_2: names[1],
-          correlation: interaction.correlation,
-          mscor: interaction.mscor,
-          padj: interaction.p_value,
-          obj1:
-            'gene1' in interaction
-              ? interaction.gene1
-              : interaction.transcript_1,
-          obj2:
-            'gene2' in interaction
-              ? interaction.gene2
-              : interaction.transcript_2,
-          interaction,
-        };
-      })
-    );
-  });
+  readonly dataSource = new MatTableDataSource<{
+    name_1: string;
+    name_2: string;
+    correlation: number;
+    mscor: number;
+    padj: number;
+    obj1: Gene | Transcript;
+    obj2: Gene | Transcript;
+    interaction: GeneInteraction | TranscriptInteraction;
+  }>();
   protected readonly capitalize = capitalize;
 
   constructor() {
@@ -137,12 +114,44 @@ export class InteractionsTableComponent implements AfterViewInit {
       this.minMscor.set(mLimits.min);
       this.maxMscor.set(mLimits.max);
     });
+
+    // Update dataSource.data when interactions or slider values change
+    effect(() => {
+      const interactions = this.interactions$() || [];
+      const filteredInteractions = interactions.filter(interaction => {
+        const pValue = interaction.p_value;
+        const mscor = interaction.mscor;
+        return pValue >= this.minPValue() &&
+               pValue <= this.maxPValue() &&
+               mscor >= this.minMscor() &&
+               mscor <= this.maxMscor();
+      });
+
+      this.dataSource.data = filteredInteractions.map((interaction) => {
+        const names = BrowseService.getInteractionFullNames(interaction);
+        return {
+          name_1: names[0],
+          name_2: names[1],
+          correlation: interaction.correlation,
+          mscor: interaction.mscor,
+          padj: interaction.p_value,
+          obj1:
+            'gene1' in interaction
+              ? interaction.gene1
+              : interaction.transcript_1,
+          obj2:
+            'gene2' in interaction
+              ? interaction.gene2
+              : interaction.transcript_2,
+          interaction,
+        };
+      });
+    });
   }
 
   ngAfterViewInit(): void {
-    const dataSource = this.dataSource$();
-    dataSource.paginator = this.paginator;
-    dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   openMiRNADialog(interaction: GeneInteraction | TranscriptInteraction) {

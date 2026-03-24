@@ -24,7 +24,7 @@
   </div>
 </div>
 
-<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
