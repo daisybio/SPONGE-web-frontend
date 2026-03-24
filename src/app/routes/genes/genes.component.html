@@ -48,8 +48,12 @@
           [matChipInputFor]="transcriptChipGrid" name="currentTranscript" placeholder="Add transcript..." />
         <mat-autocomplete #transcriptAuto="matAutocomplete"
           (optionSelected)="selectedTranscript($event); transcriptInput.value = ''" autoActiveFirstOption>
-          @for (transcript of possibleTranscripts.value(); track transcript) {
-          <mat-option [value]="transcript">{{ transcript.enst_number }} ({{ transcript.gene.gene_symbol }})</mat-option>
+          @for (option of transcriptAutocompleteOptions(); track $index) {
+            @if (option.kind === 'all') {
+              <mat-option [value]="option">All transcripts for {{ option.geneSymbol }}</mat-option>
+            } @else {
+              <mat-option [value]="option">{{ option.transcript.enst_number }} ({{ option.transcript.gene.gene_symbol }})</mat-option>
+            }
           }
         </mat-autocomplete>
       </mat-form-field>

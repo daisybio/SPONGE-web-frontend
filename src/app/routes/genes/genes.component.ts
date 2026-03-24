@@ -32,6 +32,10 @@ import { SunburstComponent } from './sunburst/sunburst.component';
 import { DiseaseSelectorComponent } from '../../components/disease-selector/disease-selector.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
+type TranscriptAutocompleteOption =
+  | { kind: 'all'; geneSymbol: string; transcripts: Transcript[] }
+  | { kind: 'single'; transcript: Transcript };
+
 @Component({
   selector: 'app-genes',
   imports: [
@@ -110,6 +114,27 @@ export class GenesComponent {
     loader: async (param) => {
       return this.backend.stringSearchTranscript(param.request.query);
     },
+  });
+
+  readonly transcriptAutocompleteOptions = computed((): TranscriptAutocompleteOption[] => {
+    const transcripts = this.possibleTranscripts.value() ?? [];
+    if (transcripts.length === 0) return [];
+
+    const byGene = new Map<string, Transcript[]>();
+    for (const t of transcripts) {
+      const sym = t.gene.gene_symbol ?? t.gene.ensg_number;
+      if (!byGene.has(sym)) byGene.set(sym, []);
+      byGene.get(sym)!.push(t);
+    }
+
+    const allOptions: TranscriptAutocompleteOption[] = [];
+    for (const [geneSymbol, geneTranscripts] of byGene) {
+      allOptions.push({ kind: 'all', geneSymbol, transcripts: geneTranscripts });
+    }
+    for (const t of transcripts) {
+      allOptions.push({ kind: 'single', transcript: t });
+    }
+    return allOptions;
   });
 
   readonly results = resource({
@@ -235,9 +260,18 @@ export class GenesComponent {
   }
 
   selectedTranscript(event: MatAutocompleteSelectedEvent): void {
-    this.activeTranscripts.update((transcripts) => [
-      ...transcripts,
-      event.option.value,
-    ]);
+    const option: TranscriptAutocompleteOption = event.option.value;
+    if (option.kind === 'all') {
+      this.activeTranscripts.update((transcripts) => {
+        const existing = new Set(transcripts.map((t) => t.enst_number));
+        const toAdd = option.transcripts.filter((t) => !existing.has(t.enst_number));
+        return [...transcripts, ...toAdd];
+      });
+    } else {
+      this.activeTranscripts.update((transcripts) => [
+        ...transcripts,
+        option.transcript,
+      ]);
+    }
   }
 }
