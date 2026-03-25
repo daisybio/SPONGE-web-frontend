@@ -22,6 +22,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { debounceTime } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
 import { BrowseQuery, InteractionSorting, Dataset } from '../../../interfaces';
 import { BrowseService } from '../../../services/browse.service';
@@ -163,6 +164,11 @@ export class FormComponent implements OnInit {
     ]),
   });
 
+  topNControl = new FormControl<number>(this.exploreService.topN() ?? 15, [
+    Validators.min(3),
+    Validators.max(100),
+  ]);
+
   protected readonly capitalize = capitalize;
 
   ngOnInit() {
@@ -218,6 +224,19 @@ export class FormComponent implements OnInit {
     effect(() => {
       const key = this.highestKeyResource.value();
       if (key !== undefined) this.exploreService.highestKey.set(key);
+    });
+
+    this.topNControl.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      if (value !== null && this.topNControl.valid) {
+        this.exploreService.topN.set(value);
+      }
+    });
+
+    effect(() => {
+      const topN = this.exploreService.topN();
+      if (this.topNControl.value !== (topN ?? null)) {
+        this.topNControl.setValue(topN ?? null, { emitEvent: false });
+      }
     });
 
     // Sync disease and level to ExploreService when on 'Top ceRNA Modules' tab

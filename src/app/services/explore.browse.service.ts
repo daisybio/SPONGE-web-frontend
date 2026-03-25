@@ -23,7 +23,7 @@ export class ExploreBrowseService extends BrowseService {
     effect(() => {
       const dataset = this.exploreService.selectedDiseaseObject$();
       const level = this.exploreService.level$();
-      const ensemblID = this.exploreService.selectedModules.value()?.map((m: any) => m.ensemblID) ?? [];
+      const ensemblID = this.exploreService.selectedModules().map((m: any) => m.ensemblID);
 
       const oldQuery = this.getQuery();
       if (!oldQuery) return;
@@ -50,7 +50,7 @@ export class ExploreBrowseService extends BrowseService {
     config: any // Use the correct type for your BrowseQuery
   ): Promise<NetworkData> {
     // append allowed module list to config
-    config.ensemblID = this.exploreService.selectedModules.value()?.map((m: any) => m.ensemblID) ?? [];
+    config.ensemblID = this.exploreService.selectedModules().map((m: any) => m.ensemblID);
     config.level = this.exploreService.level$();
     config.dataset = this.exploreService.selectedDiseaseObject$();
 
@@ -58,7 +58,7 @@ export class ExploreBrowseService extends BrowseService {
     const fullNetwork = await super.fetchData(version, config);
 
     // 2. Get selected modules and members from ExploreService
-    const selectedModules = this.exploreService.selectedModules.value() ?? [];
+    const selectedModules = this.exploreService.selectedModules();
     const includeMembers = this.exploreService.includeModuleMembers();
 
     // 3. Collect allowed node IDs (modules and, if enabled, members)

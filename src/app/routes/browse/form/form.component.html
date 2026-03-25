@@ -246,5 +246,12 @@
         </mat-card-footer>
       </mat-card-content>
     </mat-card>
+    <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+      <mat-label>Number of top rated centralities to display</mat-label>
+      <input [formControl]="topNControl" type="number" matInput max="100" min="3" step="1">
+      @if (topNControl.hasError('min') || topNControl.hasError('max')) {
+        <mat-error>Please provide a number between 3 and 100</mat-error>
+      }
+    </mat-form-field>
   }
 </form>

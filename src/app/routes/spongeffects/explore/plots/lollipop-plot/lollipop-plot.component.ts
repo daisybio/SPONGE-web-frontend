@@ -18,7 +18,6 @@ import {
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
-  Validators
 } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -114,16 +113,9 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
 
   formGroup = new FormGroup({
-    markControl: new FormControl<number>(5, [Validators.min(3), Validators.max(100)]),
-    topControl: new FormControl<number>(15, [Validators.min(1), Validators.max(20)]),
     includeModuleMembers: new FormControl<boolean>(false)
   });
-  // topN = signal(this.formGroup.get('topControl')?.value);
-  // redNodes = signal(this.formGroup.get('markControl')?.value);
-  // moved this to explore service because also needed for module network 
-  // includeModuleMembers = signal(this.formGroup.get('includeModuleMembers')?.value);
   topN = this.exploreService.topN;
-  redNodes = this.exploreService.redNodes;
   get includeModuleMembersControl(): FormControl {
     return this.formGroup.get('includeModuleMembers') as FormControl;
   }
@@ -153,11 +145,11 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   spongEffectRuns = new Map<number, SpongEffectsRun>();
 
   gProfilerUrl$ = computed(() => {
-    const modules = this.selectedModules.value()
+    const modules = this.effectiveModules();
     if (!modules || modules.length === 0) {
       return '';
     } else {
-      const genes = modules.map(module => module.symbol || module.ensemblID);
+      const genes = modules.map((m: SpongEffectsModule) => m.symbol || m.ensemblID);
       return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
     }
   });
@@ -182,10 +174,17 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     }
   });
 
-  // the red modules
+  // manually clicked (red) modules
   get selectedModules() {
     return this.exploreService.selectedModules;
   }
+
+  // modules used for tables/heatmap/GSEA: clicked selection if any, else all displayed modules
+  effectiveModules = computed(() => {
+    const selected = this.exploreService.selectedModules();
+    if (selected.length > 0) return selected;
+    return this.lolipopPlotData.value() ?? [];
+  });
 
   // Data source for reusable heatmap component
   heatmapDataSourceEnrich = signal<HeatmapDataSource>({
@@ -346,7 +345,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     version: this.versionService.versionReadOnly()(),
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
-    modules: this.selectedModules.value(),
+    modules: this.effectiveModules(),
     includeMembers: false,
     value_key: 'score_value'
   }));
@@ -354,7 +353,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     version: this.versionService.versionReadOnly()(),
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
-    modules: this.selectedModules.value(),
+    modules: this.effectiveModules(),
     includeMembers: this.exploreService.includeModuleMembers(),
     // value_key: keep it undefined -> default
   }));
@@ -365,7 +364,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       version: this.versionService.versionReadOnly()(),
       disease: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
-      modules: this.selectedModules.value(),
+      modules: this.effectiveModules(),
     }),
     loader: async ({ request }) => {
       console.log('Loading table data with request:', request);
@@ -383,7 +382,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       version: this.versionService.versionReadOnly()(),
       disease: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
-      modules: this.selectedModules.value(),
+      modules: this.effectiveModules(),
     }),
     loader: async ({ request }) => {
       console.log('Loading table data with request:', request);
@@ -401,12 +400,6 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     this.initializeSpongEffectRuns();
     this.setupEffects();
 
-    this.formGroup.get('topControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.topN.set(value ? value : undefined);
-    });
-    this.formGroup.get('markControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.redNodes.set(value ? value : undefined);
-    });
     this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
       this.exploreService.includeModuleMembers.set(value);
     });
@@ -434,14 +427,6 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       if (this.formGroup.get('includeModuleMembers')?.value !== value) {
         this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
       }
-      const topN = this.exploreService.topN();
-      if (this.formGroup.get('topControl')?.value !== topN) {
-        this.formGroup.get('topControl')?.setValue(topN ?? null, { emitEvent: false });
-      }
-      const redNodes = this.exploreService.redNodes();
-      if (this.formGroup.get('markControl')?.value !== redNodes) {
-        this.formGroup.get('markControl')?.setValue(redNodes ?? null, { emitEvent: false });
-      }
     });
 
     effect(() => {
@@ -455,11 +440,19 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       this.clearAll();
     });
 
+    // Auto-select top module whenever plot data loads or changes
     effect(() => {
-      const redNodes = this.redNodes();
       const greyModules = this.lolipopPlotData.value();
-      if (greyModules && greyModules.length > 0 && redNodes) {
-        this.renderLollipopPlot(greyModules, redNodes);
+      if (greyModules && greyModules.length > 0) {
+        this.exploreService.selectedModules.set([greyModules[0]]);
+      }
+    });
+
+    effect(() => {
+      const greyModules = this.lolipopPlotData.value();
+      const selectedModules = this.exploreService.selectedModules();
+      if (greyModules && greyModules.length > 0) {
+        this.renderLollipopPlot(greyModules, selectedModules);
       } else if (greyModules && greyModules.length === 0) {
         this.clearAll();
       }
@@ -478,12 +471,6 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       if (table && this.paginator && this.sort) {
         table.paginator = this.paginator;
         table.sort = this.sort;
-      }
-    });
-
-    effect(() => {
-      if ((this.selectedModules.value()?.length ?? 0) === 0 && this.lolipopPlotData && (this.lolipopPlotData.value()?.length ?? 0) > 0) {
-        this.selectedModules.reload();
       }
     });
   }
@@ -578,7 +565,9 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     return new MatTableDataSource(allMembers);
   }
 
-  private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {
+  private renderLollipopPlot(limitedData: SpongEffectsModule[], selectedModules: SpongEffectsModule[]): void {
+    const selectedIds = new Set(selectedModules.map(m => `${m.ensemblID}_${m.spongEffects_run_ID}`));
+
     const data = [{
       x: limitedData.map(g => g.meanGiniDecrease),
       y: limitedData.map(g => g.meanAccuracyDecrease),
@@ -588,7 +577,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       text: limitedData.map(g => g.symbol),
       marker: {
         size: this.defaultMarkerSize,
-        color: limitedData.map((_, i) => i < redNodes ? 'red' : 'grey')
+        color: limitedData.map(m => selectedIds.has(`${m.ensemblID}_${m.spongEffects_run_ID}`) ? 'red' : 'grey')
       }
     }];
 
@@ -597,24 +586,26 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       showlegend: false,
       autosize: true,
       hovermode: 'closest',
-      margin: {
-        t: 30,
-      },
-      xaxis: {
-        title: 'Mean Decrease in Gini Index'
-      },
-      yaxis: {
-        title: 'Mean Decrease in Accuracy'
-      },
+      margin: { t: 30 },
+      xaxis: { title: 'Mean Decrease in Gini Index' },
+      yaxis: { title: 'Mean Decrease in Accuracy' },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)'
     };
 
-    const config = {
-      responsive: true
-    };
+    const el = this.lollipopPlot().nativeElement;
+    Plotly.newPlot(el, data, layout, { responsive: true });
 
-    Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
+    el.removeAllListeners('plotly_click');
+    el.on('plotly_click', (eventData: any) => {
+      const clicked = limitedData[eventData.points[0].pointIndex];
+      if (!clicked) return;
+      const key = `${clicked.ensemblID}_${clicked.spongEffects_run_ID}`;
+      const current = this.exploreService.selectedModules();
+      const alreadySelected = current.length === 1 &&
+        `${current[0].ensemblID}_${current[0].spongEffects_run_ID}` === key;
+      this.exploreService.selectedModules.set(alreadySelected ? [] : [clicked]);
+    });
   }
 
   refreshPlotSizes(): void {

@@ -12,20 +12,6 @@
   }
   @if (!noRunsForSelection()) {
 
-  <form [formGroup]="formGroup" style="margin: 0px;">
-    <div>
-      <mat-form-field appearance="outline" [style.width.px]="400">
-        <mat-label>Number of top rated centralities to display</mat-label>
-        <input formControlName="topControl" type="number" matInput max="100" min="3" step="1">
-        <mat-error>Please provide a number between 3 and 100</mat-error>
-      </mat-form-field>
-      <mat-form-field appearance="outline" [style.width.px]="400">
-        <mat-label>Number of top rated centralities to include</mat-label>
-        <input formControlName="markControl" matInput type="number" matInput max="20" min="1" step="1" />
-        <mat-error>Please provide a number between 1 and 20</mat-error>
-      </mat-form-field>
-    </div>
-  </form>
 
   @if (lolipopPlotData.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
@@ -48,8 +34,8 @@
     <p>
       Module centralities located in the top-right corner of the plot play a crucial role in distinguishing
       between the various cancer (sub-)types.
-      You can adjust the number of displayed modules
-      and specify how many top-ranked modules you would like to include in the expression analysis.
+      You can adjust the number of displayed modules in the left panel.
+      Click on nodes in the plot to select or deselect them (highlighted in red) for the expression analysis below.
     </p>
   </app-info>
 
