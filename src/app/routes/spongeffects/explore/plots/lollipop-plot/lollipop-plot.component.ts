@@ -113,12 +113,12 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
 
   formGroup = new FormGroup({
-    includeModuleMembers: new FormControl<boolean>(false)
+    // includeModuleMembers: new FormControl<boolean>(false)
   });
   topN = this.exploreService.topN;
-  get includeModuleMembersControl(): FormControl {
-    return this.formGroup.get('includeModuleMembers') as FormControl;
-  }
+  // get includeModuleMembersControl(): FormControl {
+  //   return this.formGroup.get('includeModuleMembers') as FormControl;
+  // }
 
   defaultMarkerSize = 12;
   MAX_ELEMENTS = this.exploreService.MAX_ELEMENTS;
@@ -275,20 +275,16 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       let elements = modules.map((m: { ensemblID: any; }) => m.ensemblID);
       // let elements: string[] = modules.map((m: { spongEffects_module_ID: any; }) => m.spongEffects_module_ID);
 
-      // forced to centers-only by user request
-      /*
-      if (includeMembers) {
-        for (const module of modules) {
-          const key = this.exploreService.getModuleKey(module);
-          if (!this.exploreService.moduleMembersMap.has(key)) {
-            await this.exploreService.fetchModuleMembers(module);
-          }
-          const members = this.exploreService.moduleMembersMap.get(key) || [];
-          elements.push(...members.map(m => m.ensemblID));
+      // Always include module members
+      for (const module of modules) {
+        const key = this.exploreService.getModuleKey(module);
+        if (!this.exploreService.moduleMembersMap.has(key)) {
+          await this.exploreService.fetchModuleMembers(module);
         }
-        elements = [...new Set(elements)];
+        const members = this.exploreService.moduleMembersMap.get(key) || [];
+        elements.push(...members.map(m => m.ensemblID));
       }
-      */
+      elements = [...new Set(elements)];
 
       // Check for element limit
       this.elementLimitWarning.set(false);
@@ -354,7 +350,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     disease: this.exploreService.selectedDisease$(),
     level: this.exploreService.level$(),
     modules: this.effectiveModules(),
-    includeMembers: this.exploreService.includeModuleMembers(),
+    includeMembers: true,
     // value_key: keep it undefined -> default
   }));
 
@@ -400,9 +396,9 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     this.initializeSpongEffectRuns();
     this.setupEffects();
 
-    this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.exploreService.includeModuleMembers.set(value);
-    });
+    // this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+    //   this.exploreService.includeModuleMembers.set(value);
+    // });
   }
 
   ngAfterViewInit() {
@@ -422,12 +418,12 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
 
   private setupEffects(): void {
     // Keep the form control in sync if the signal changes elsewhere
-    effect(() => {
-      const value = this.exploreService.includeModuleMembers();
-      if (this.formGroup.get('includeModuleMembers')?.value !== value) {
-        this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
-      }
-    });
+    // effect(() => {
+    //   const value = this.exploreService.includeModuleMembers();
+    //   if (this.formGroup.get('includeModuleMembers')?.value !== value) {
+    //     this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
+    //   }
+    // });
 
     effect(() => {
       this.refreshSignal$();

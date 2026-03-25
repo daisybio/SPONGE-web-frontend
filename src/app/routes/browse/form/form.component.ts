@@ -239,6 +239,14 @@ export class FormComponent implements OnInit {
       }
     });
 
+    // Set selectedDisease$ when disease is selected
+    effect(() => {
+      const dataset = this.activeDataset();
+      if (dataset?.disease_name) {
+        this.exploreService.selectedDisease$.set(dataset.disease_name);
+      }
+    });
+
     // Sync disease and level to ExploreService when on 'Top ceRNA Modules' tab
     effect(() => {
       if (this.selectedTabName() === 'Top ceRNA Modules') {
