@@ -1,15 +1,6 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
     <app-explore-form></app-explore-form>
-    @if (selectedTabIndex() == 3 && selectedVis() === 'network') {
-    <!-- set a vertical line with linePos as vertical offset relative to the viewport  -->
-    <!-- <hr style="position: absolute; width: 100%;" [style.top.px]="lineTop()" /> -->
-    <hr style="margin: 257px 0 30px 0; width: 99%;" #sectionLine />
-    <app-form [browseService]="browseService" [fixedDataset]="exploreService.selectedDiseaseObject$()"
-      [fixedLevel]="exploreService.level$" [defaultMinBetweenness]="0" [defaultMinDegree]="1" [defaultMinEigen]="0"
-      [defaultMaxPValue]="1" [defaultMinMscor]="0" [selectedTab]="'Network'">
-    </app-form>
-    }
   </mat-drawer>
   <mat-drawer-content>
     <mat-tab-group (selectedTabChange)="onTabChange($event)">
@@ -22,20 +13,6 @@
       <mat-tab label="SpongEffects Score Distribution">
         <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
       </mat-tab>
-      <mat-tab label="Top ceRNA Modules">
-        <app-lollipop-plot [refreshSignal$]="refreshSignal()"></app-lollipop-plot>
-      </mat-tab>
-      <!-- This was moved to Top ceRNA modules tab -->
-      <!-- <mat-tab label="Gene set enrichment analysis">
-      <app-gsea-plot [refreshSignal$]="refreshSignal()"></app-gsea-plot>
-      <app-info type="panel">
-        <p>Gene Set Enrichment Analysis (GSEA) identifies whether specific sets of genes related to biological
-          functions are enriched in gene expression data.</p>
-        <p>The information from GSEA can help find biological differences between disease (sub-)types</p>
-      </app-info>
-      <div style="text-align: center;">
-      </div>
-    </mat-tab> -->
     </mat-tab-group>
 
   </mat-drawer-content>
