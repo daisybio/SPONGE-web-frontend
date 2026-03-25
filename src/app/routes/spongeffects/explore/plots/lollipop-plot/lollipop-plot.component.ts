@@ -147,16 +147,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   gProfilerUrl$ = computed(() => {
     const modules = this.effectiveModules();
     const members = this.effectiveMembers();
-    if (!modules || modules.length === 0) {
-      return '';
-    } else {
-      const genes: string[] = modules.map((m: SpongEffectsModule) => m.symbol || m.ensemblID);
-      // Add member genes to the query
-      members.forEach(member => {
-        genes.push(member.symbol || member.ensemblID);
-      });
-      return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
-    }
+    return BrowseService.getGProfilerUrlForModules(modules, members);
   });
 
   // the grey modules

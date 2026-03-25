@@ -18,6 +18,8 @@ import {
   TranscriptInteraction,
   TranscriptNode,
   NetworkData,
+  SpongEffectsModule,
+  ModuleMember,
 } from '../interfaces';
 import { BackendService } from './backend.service';
 import Graph from 'graphology';
@@ -258,6 +260,18 @@ export class BrowseService {
     return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(
       ' '
     )}`;
+  }
+
+  public static getGProfilerUrlForModules(
+    modules: SpongEffectsModule[],
+    members: ModuleMember[]
+  ): string {
+    const genes: string[] = modules.map((m) => m.symbol || m.ensemblID);
+    // Add member genes to the query
+    members.forEach(member => {
+      genes.push(member.symbol || member.ensemblID);
+    });
+    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
   }
 
   private static getID(node: Gene | Transcript): string {
