@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   computed,
   effect,
@@ -25,8 +26,9 @@ declare const Plotly: any;
   templateUrl: './disease-similarity.component.html',
   styleUrl: './disease-similarity.component.scss',
 })
-export class DiseaseSimilarityComponent implements OnDestroy {
+export class DiseaseSimilarityComponent implements AfterViewInit, OnDestroy {
   browseService = input.required<BrowseService>();
+  private resizeObserver?: ResizeObserver;
   mode$ = model<'scatter' | 'heatmap'>('scatter');
   refreshSignal = input.required<any>();
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
@@ -88,6 +90,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     const div = this.plotDiv$().nativeElement;
 
     Plotly.newPlot(div, plotData, {
+      autosize: true,
       height: 700,
       yaxis: { automargin: true },
       xaxis: { automargin: true },
@@ -95,7 +98,18 @@ export class DiseaseSimilarityComponent implements OnDestroy {
         this.mode$() == 'scatter'
           ? 'Euclidean Distances'
           : 'Similarity Heatmap',
-    });
+    }, { responsive: true });
+
+    // Retry after render + tab switch time; guarantees final width.
+    setTimeout(() => {
+      try {
+        if (!div.checkVisibility || div.checkVisibility()) {
+          Plotly.Plots.resize(div);
+        }
+      } catch (err) {
+        console.warn('Error resizing disease similarity plot:', err);
+      }
+    }, 100);
   });
 
   refreshEffect = effect(() => {
@@ -103,15 +117,37 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     this.refresh();
   });
 
+  ngAfterViewInit(): void {
+    const div = this.plotDiv$().nativeElement;
+    if (!div) return;
+
+    this.resizeObserver = new ResizeObserver(() => {
+      try {
+        if (!div.checkVisibility || div.checkVisibility()) {
+          Plotly.Plots.resize(div);
+        }
+      } catch (err) {
+        console.warn('Error resizing disease similarity plot (ResizeObserver):', err);
+      }
+    });
+    this.resizeObserver.observe(div);
+  }
+
   refresh() {
     const div = this.plotDiv$().nativeElement;
-
-    if (div.checkVisibility()) {
-      Plotly.Plots.resize(div);
+    try {
+      if (!div.checkVisibility || div.checkVisibility()) {
+        Plotly.Plots.resize(div);
+      }
+    } catch (err) {
+      console.warn('Error resizing disease similarity plot (refresh):', err);
     }
   }
 
   ngOnDestroy() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
     Plotly.purge(this.plotDiv$().nativeElement);
     //Plotly.purge(this.heatmapDiv$().nativeElement);
 
