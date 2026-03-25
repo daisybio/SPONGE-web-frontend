@@ -146,10 +146,15 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
 
   gProfilerUrl$ = computed(() => {
     const modules = this.effectiveModules();
+    const members = this.effectiveMembers();
     if (!modules || modules.length === 0) {
       return '';
     } else {
-      const genes = modules.map((m: SpongEffectsModule) => m.symbol || m.ensemblID);
+      const genes: string[] = modules.map((m: SpongEffectsModule) => m.symbol || m.ensemblID);
+      // Add member genes to the query
+      members.forEach(member => {
+        genes.push(member.symbol || member.ensemblID);
+      });
       return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(' ')}`;
     }
   });
@@ -185,6 +190,9 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     if (selected.length > 0) return selected;
     return this.lolipopPlotData.value() ?? [];
   });
+
+  // Cached members of effectiveModules to avoid repeated GETs
+  effectiveMembers = signal<ModuleMember[]>([]);
 
   // Data source for reusable heatmap component
   heatmapDataSourceEnrich = signal<HeatmapDataSource>({
@@ -375,20 +383,20 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
 
   tableMembersResource = resource({
     request: () => ({
-      version: this.versionService.versionReadOnly()(),
-      disease: this.exploreService.selectedDisease$(),
-      level: this.exploreService.level$(),
-      modules: this.effectiveModules(),
+      effectiveMembers: this.effectiveMembers(),
+      spongEffectsRuns: this.spongEffectRuns,
     }),
     loader: async ({ request }) => {
-      console.log('Loading table data with request:', request);
-      const { version, disease, level, modules } = request;
-      if (!version || !disease || !level || !modules || modules.length === 0) {
+      const { effectiveMembers, spongEffectsRuns } = request;
+      if (!effectiveMembers || effectiveMembers.length === 0) {
         return new MatTableDataSource<ModuleMember>([]);
       }
-      const data = this.getMembersForTable(modules);
-      console.log('Table data loaded:', data);
-      return data;
+      // Use cached members directly - no GET request needed
+      const allMembers = effectiveMembers.map(m => ({
+        ...m,
+        moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
+      }));
+      return new MatTableDataSource(allMembers);
     }
   });
 
@@ -424,6 +432,35 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     //     this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
     //   }
     // });
+
+    // Fetch and cache members when effectiveModules changes
+    effect(async () => {
+      const modules = this.effectiveModules();
+      if (!modules || modules.length === 0) {
+        this.effectiveMembers.set([]);
+        return;
+      }
+
+      // Fetch members for all modules
+      const fetchPromises = modules.map(async module => {
+        const key = this.exploreService.getModuleKey(module);
+        if (!this.exploreService.moduleMembersMap.has(key)) {
+          await this.exploreService.fetchModuleMembers(module);
+        }
+      });
+
+      await Promise.all(fetchPromises);
+
+      // Collect all members from cache
+      const allMembers: ModuleMember[] = [];
+      for (const module of modules) {
+        const key = this.exploreService.getModuleKey(module);
+        const members = this.exploreService.moduleMembersMap.get(key) || [];
+        allMembers.push(...members);
+      }
+
+      this.effectiveMembers.set(allMembers);
+    });
 
     effect(() => {
       this.refreshSignal$();
@@ -534,31 +571,6 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
     return new MatTableDataSource(tableEntries);
-  }
-
-  private async getMembersForTable(
-    modules: SpongEffectsModule[],
-  ): Promise<MatTableDataSource<ModuleMember>> {
-    const fetchPromises = modules.map(async module => {
-      const key = this.exploreService.getModuleKey(module);
-      if (!this.exploreService.moduleMembersMap.has(key)) {
-        await this.exploreService.fetchModuleMembers(module);
-      }
-    });
-
-    await Promise.all(fetchPromises);
-
-    const allMembers: ModuleMember[] = [];
-    for (const module of modules) {
-      const key = this.exploreService.getModuleKey(module);
-      const members = this.exploreService.moduleMembersMap.get(key) || [];
-
-      allMembers.push(...members.map(m => ({
-        ...m,
-        moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
-      })));
-    }
-    return new MatTableDataSource(allMembers);
   }
 
   private renderLollipopPlot(limitedData: SpongEffectsModule[], selectedModules: SpongEffectsModule[]): void {
