@@ -46,6 +46,7 @@ import {
 import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
 import { ExploreService } from '../../service/explore.service';
+import { SpongEffectsService } from '../../../../../services/spong-effects.service';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
@@ -89,9 +90,17 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   private backend = inject(BackendService);
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
+  private spongEffectsService = inject(SpongEffectsService);
   browseService = inject(BrowseService);
   infoService = inject(InfoService);
   selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()()));
+  noRunsForSelection = computed(() => {
+    if (this.spongEffectsService.spongEffectsRuns$.isLoading()) return false;
+    const runs = this.spongEffectsService.spongEffectsRuns$.value() ?? [];
+    const disease = this.exploreService.selectedDisease$();
+    const level = this.exploreService.level$();
+    return runs.filter(r => r.disease_name === disease && r.level === level).length === 0;
+  });
 
   refreshSignal$ = input();
   refresh$ = signal(0);
@@ -158,16 +167,17 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     request: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.exploreService.selectedDisease$(),
+      subtype: this.exploreService.selectedDiseaseObject$().disease_subtype,
       level: this.exploreService.level$(),
       topN: this.topN() ?? 15,
       selectedParamSets: this.exploreService.selectedParamSets$()()
     }),
     loader: ({ request }) => {
-      const { version, cancer, level, topN, selectedParamSets } = request;
-      if (!version || !cancer || !level || !selectedParamSets) {
+      const { version, cancer, subtype, level, topN, selectedParamSets } = request;
+      if (!version || !cancer || !level || !selectedParamSets || Object.keys(selectedParamSets).length === 0) {
         return Promise.resolve([]);
       }
-      const greyModules = this.getLollipopData(version, cancer, level, topN, selectedParamSets);
+      const greyModules = this.getLollipopData(version, cancer, subtype, level, topN, selectedParamSets);
       return greyModules;
     }
   });
@@ -450,6 +460,8 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       const greyModules = this.lolipopPlotData.value();
       if (greyModules && greyModules.length > 0 && redNodes) {
         this.renderLollipopPlot(greyModules, redNodes);
+      } else if (greyModules && greyModules.length === 0) {
+        this.clearAll();
       }
     });
 
@@ -486,11 +498,11 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private async getLollipopData(version: number, cancer: string, level: string, topN: number, selectedParamSets: { [key: string]: any }): Promise<SpongEffectsModule[]> {
+  private async getLollipopData(version: number, cancer: string, subtype: string | null | undefined, level: string, topN: number, selectedParamSets: { [key: string]: any }): Promise<SpongEffectsModule[]> {
     const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN)
+        let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN, undefined, subtype)
         tmp.map((entry) => {
           data.push({
             ensemblID: entry.gene.ensg_number,
@@ -505,7 +517,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       };
     } else {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN);
+        let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, topN, undefined, subtype);
         tmp.slice(0, topN).forEach(entry => {
           data.push({
             ensemblID: entry.transcript.enst_number,

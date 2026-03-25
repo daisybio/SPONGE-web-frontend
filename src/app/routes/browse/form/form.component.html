@@ -27,7 +27,7 @@
   }
 
   <mat-accordion>
-    @if (selectedTabName() !== 'Gene set enrichment' && selectedTabName() !== 'Disease similarities') {
+    @if (selectedTabName() !== 'Gene set enrichment' && selectedTabName() !== 'Disease similarities' && selectedTabName() !== 'Top ceRNA Modules') {
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Nodes</mat-panel-title>
@@ -203,4 +203,48 @@
         <span>Change the minimum mscor threshold for the visualization here. </span>
       </app-info>
     </mat-expansion-panel>    }  </mat-accordion>
+
+  @if (selectedTabName() === 'Top ceRNA Modules' && !noRunsForSelection()) {
+    <mat-card appearance="outlined" style="margin-top: 10px;">
+      <mat-card-content>
+        Model Selection
+        <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
+          Select the models to display based on the parameters.
+        </mat-card-subtitle>
+        <div style="display: flex; width: 100%; margin-top: 10px;">
+          <div style="width: 140px;">
+            <div style="margin-top: 11px; height: 25px;">Min. MScor</div>
+            <div style="margin-top: 15px; height: 25px;">Max. Adj. P-Value</div>
+            <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">Modules Cutoff</div>
+          </div>
+          <div style="display: flex; flex: 1; width: 80px;">
+            <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true"
+              style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
+              @for (paramSet of exploreService.paramSets$(); track paramSet; let i = $index) {
+                <mat-chip-option
+                  disableRipple="true"
+                  [selected]="exploreService.formGroup$().get('paramSet_' + (i + 1))?.value"
+                  (selectionChange)="exploreService.formGroup$().get('paramSet_' + (i + 1))?.setValue($event.selected)"
+                  style="flex: 1; height: auto;">
+                  <div style="width: 80%; align-items: center; display: flex; flex-direction: column;">
+                    <div style="margin-top: 10px; height: 25px;">{{ paramSet.m_scor_threshold }}</div>
+                    <div style="margin-top: 15px; height: 25px;">{{ paramSet.p_adj_threshold }}</div>
+                    <div style="margin-top: 15px; margin-bottom: 0px; height: 25px;">{{ paramSet.modules_cutoff }}</div>
+                    <div style="margin-top: 0px; margin-bottom: 15px; height: 5px;">
+                      {{ exploreService.highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}
+                    </div>
+                  </div>
+                </mat-chip-option>
+              }
+            </mat-chip-listbox>
+          </div>
+        </div>
+        <mat-card-footer>
+          <mat-card-subtitle style="font-size: 12px; margin-top: 5px;">
+            {{ exploreService.highestKey().length > 0 ? '*Best model regarding to accuracy.' : '' }}
+          </mat-card-subtitle>
+        </mat-card-footer>
+      </mat-card-content>
+    </mat-card>
+  }
 </form>

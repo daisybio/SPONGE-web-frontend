@@ -32,6 +32,9 @@
   <mat-tab label="Disease similarities" [disabled]="!hasNetworkResults$()">
     <app-disease-similarity [browseService]="browseService()" [refreshSignal]="refresh$()"></app-disease-similarity>
   </mat-tab>
+  <mat-tab label="Top ceRNA Modules">
+    <app-lollipop-plot [refreshSignal$]="refresh$()"></app-lollipop-plot>
+  </mat-tab>
 </mat-tab-group>
 } @else if (showInsufficientDataMessage$()) {
 <div class="card-container" style="margin-top: 50px">

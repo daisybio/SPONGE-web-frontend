@@ -8,6 +8,7 @@ import {
   input,
   linkedSignal,
   OnInit,
+  resource,
   signal,
   viewChild,
   WritableSignal,
@@ -37,6 +38,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { InfoService } from '../../../services/info.service';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { ExploreService } from '../../spongeffects/explore/service/explore.service';
+import { BackendService } from '../../../services/backend.service';
+import { SpongEffectsService } from '../../../services/spong-effects.service';
 
 @Component({
   selector: 'app-form',
@@ -54,12 +59,22 @@ import { MatCardModule } from '@angular/material/card';
     InfoComponent,
     MatButtonModule,
     CommonModule,
+    MatChipsModule,
   ],
   templateUrl: './form.component.html',
   styleUrl: './form.component.scss',
 })
 export class FormComponent implements OnInit {
   versionsService = inject(VersionsService);
+  exploreService = inject(ExploreService);
+  spongEffectsService = inject(SpongEffectsService);
+  noRunsForSelection = computed(() => {
+    if (this.spongEffectsService.spongEffectsRuns$.isLoading()) return false;
+    const runs = this.spongEffectsService.spongEffectsRuns$.value() ?? [];
+    const disease = this.exploreService.selectedDisease$();
+    const level = this.exploreService.level$();
+    return runs.filter(r => r.disease_name === disease && r.level === level).length === 0;
+  });
   browseService = input.required<BrowseService>();
   selectedTab = input.required<string>();
   selectedTabName = computed(() => this.selectedTab() ?? 'Network');
@@ -78,6 +93,37 @@ export class FormComponent implements OnInit {
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
+  backend = inject(BackendService);
+
+  private highestKeyResource = resource({
+    request: computed(() => ({
+      active: this.selectedTabName() === 'Top ceRNA Modules',
+      version: this.versionsService.versionReadOnly()(),
+      disease: this.exploreService.selectedDisease$(),
+      level: this.exploreService.level$(),
+      paramSets: this.exploreService.paramSets$(),
+    })),
+    loader: async ({ request }) => {
+      const { active, version, disease, level, paramSets } = request;
+      if (!active || !version || !disease || !level || !paramSets || paramSets.length === 0) return '';
+      let highest_accuracy = 0;
+      let highest_key = '';
+      for (let i = 0; i < paramSets.length; i++) {
+        const key = `paramSet_${i + 1}`;
+        const tmp = await this.backend.getRunPerformance(version, disease, level, paramSets[i] as { [key: string]: any });
+        tmp.forEach((entry: any) => {
+          if (entry.model_type === 'modules' && entry.split_type === 'test') {
+            if (entry.accuracy > highest_accuracy) {
+              highest_accuracy = entry.accuracy_upper;
+              highest_key = key;
+            }
+          }
+        });
+      }
+      return highest_key;
+    },
+  });
+
   formGroup = new FormGroup({
     level: new FormControl<'gene' | 'transcript'>('gene'),
     showOrphans: new FormControl<boolean>(false),
@@ -167,6 +213,31 @@ export class FormComponent implements OnInit {
 
     effect(() => {
       this.infoService.renderMscorEquation(this.mscorEquation$()!);
+    });
+
+    effect(() => {
+      const key = this.highestKeyResource.value();
+      if (key !== undefined) this.exploreService.highestKey.set(key);
+    });
+
+    // Sync disease and level to ExploreService when on 'Top ceRNA Modules' tab
+    effect(() => {
+      if (this.selectedTabName() === 'Top ceRNA Modules') {
+        const dataset = this.activeDataset();
+        if (dataset?.disease_name) {
+          this.exploreService.selectedDisease$.set(dataset.disease_name);
+        }
+        const level = this.formGroup.get('level')?.value;
+        if (level) {
+          this.exploreService.level$.set(level);
+        }
+      }
+    });
+
+    this.formGroup.get('level')?.valueChanges.subscribe((level) => {
+      if (this.selectedTabName() === 'Top ceRNA Modules' && level) {
+        this.exploreService.level$.set(level);
+      }
     });
 
     effect(() => {

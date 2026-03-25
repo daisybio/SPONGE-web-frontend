@@ -15,6 +15,7 @@ import { VersionsService } from '../../services/versions.service';
 import { NodesComponent } from '../../components/browse-views/nodes/nodes.component';
 import { GSEAComponent } from '../../components/browse-views/gsea/gsea.component';
 import { DiseaseSimilarityComponent } from '../../components/browse-views/disease-distances/disease-similarity.component';
+import { LollipopPlotComponent } from '../../routes/spongeffects/explore/plots/lollipop-plot/lollipop-plot.component';
 import { fromEvent } from 'rxjs';
 import { capitalize } from 'lodash';
 
@@ -35,6 +36,7 @@ import { capitalize } from 'lodash';
     NodesComponent,
     GSEAComponent,
     DiseaseSimilarityComponent,
+    LollipopPlotComponent,
   ],
   templateUrl: './browse-views.component.html',
   styleUrl: './browse-views.component.scss',

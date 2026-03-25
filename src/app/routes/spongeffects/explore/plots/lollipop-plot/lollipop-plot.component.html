@@ -4,6 +4,14 @@
     The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
   </p> -->
 
+  @if (noRunsForSelection()) {
+  <p style="color: gray; margin-top: 16px; display: flex; align-items: center; gap: 6px;">
+    <mat-icon>error_outline</mat-icon>
+    For the selected disease spongeEffects was not run and no modules are available yet.
+  </p>
+  }
+  @if (!noRunsForSelection()) {
+
   <form [formGroup]="formGroup" style="margin: 0px;">
     <div>
       <mat-form-field appearance="outline" [style.width.px]="400">
@@ -21,6 +29,9 @@
 
   @if (lolipopPlotData.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+  @if (selectedParamSets().length === 0 && !lolipopPlotData.isLoading()) {
+  <p style="color: gray; margin-top: 16px;">Please select a model.</p>
   }
   <div class="lollipop-plot-div">
     <div #lollipopPlot class="lollipop-plot"></div>
@@ -191,5 +202,6 @@
   </div>
   }
   }
+  } <!-- end @if (!noRunsForSelection()) -->
 
 </div>

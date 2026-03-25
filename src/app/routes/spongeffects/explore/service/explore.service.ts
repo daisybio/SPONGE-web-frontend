@@ -167,20 +167,21 @@ export class ExploreService {
       redNodes: this.redNodes(),
       version: this.versionsService.versionReadOnly()(),
       disease: this.selectedDisease$(),
+      subtype: this.selectedDiseaseObject$().disease_subtype,
       level: this.level$(),
       selectedParamSets: this.selectedParamSets$()(),
       topN: this.topN(),
     }),
     loader: async ({ request }) => {
-      const { redNodes, version, disease, level, selectedParamSets, topN } = request;
-      if (!version || !disease || !level || !selectedParamSets) {
+      const { redNodes, version, disease, subtype, level, selectedParamSets, topN } = request;
+      if (!version || !disease || !level || !selectedParamSets || Object.keys(selectedParamSets).length === 0) {
         return [];
       }
       // Use the same logic as in getLollipopData
       let modules: SpongEffectsModule[] = [];
       if (level === 'gene') {
         for (const paramSet of Object.values(selectedParamSets)) {
-          const tmp = await this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN);
+          const tmp = await this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN, undefined, subtype);
           modules.push(...tmp.map(entry => ({
             ensemblID: entry.gene.ensg_number,
             symbol: entry.gene.gene_symbol,
@@ -192,7 +193,7 @@ export class ExploreService {
         }
       } else {
         for (const paramSet of Object.values(selectedParamSets)) {
-          const tmp = await this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN);
+          const tmp = await this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN, undefined, subtype);
           modules.push(...tmp.map(entry => ({
             ensemblID: entry.transcript.enst_number,
             symbol: entry.transcript.gene.gene_symbol,

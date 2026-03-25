@@ -846,7 +846,8 @@ export class BackendService {
     diseaseName?: string,
     params?: {[key: string]: any},
     limit?: number,
-    ensg_number?: string
+    ensg_number?: string,
+    disease_subtype?: string | null
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
@@ -855,6 +856,9 @@ export class BackendService {
     };
     if (diseaseName) {
       query['disease_name'] = diseaseName;
+    }
+    if (disease_subtype) {
+      query['disease_subtype'] = disease_subtype;
     }
     if (limit) {
       query['limit'] = limit;
@@ -907,10 +911,11 @@ export class BackendService {
 
   async getSpongEffectsTranscriptModules(
     version: number,
-    diseaseName?: string, 
+    diseaseName?: string,
     params?: {[key: string]: any},
     limit?: number,
-    enst_number?: string
+    enst_number?: string,
+    disease_subtype?: string | null
   ): Promise<SpongEffectsTranscriptModules[]> {
     const route = 'spongEffects/getSpongEffectsTranscriptModules';
 
@@ -919,6 +924,9 @@ export class BackendService {
     };
     if (diseaseName) {
       query['disease_name'] = diseaseName;
+    }
+    if (disease_subtype) {
+      query['disease_subtype'] = disease_subtype;
     }
     if (limit) {
       query['limit'] = limit;
