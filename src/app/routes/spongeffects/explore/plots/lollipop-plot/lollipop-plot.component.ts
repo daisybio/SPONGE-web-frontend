@@ -106,7 +106,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
 
   isLoading$ = this.browseService.isLoading$;
 
-  lollipopPlot = viewChild.required<ElementRef>('lollipopPlot');
+  lollipopPlot = viewChild<ElementRef>('lollipopPlot');
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -592,7 +592,8 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       plot_bgcolor: 'rgba(0,0,0,0)'
     };
 
-    const el = this.lollipopPlot().nativeElement;
+    const el = this.lollipopPlot()?.nativeElement;
+    if (!el) return;
     Plotly.newPlot(el, data, layout, { responsive: true });
 
     el.removeAllListeners('plotly_click');
@@ -608,15 +609,18 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   }
 
   refreshPlotSizes(): void {
-    const lollipopElement = this.lollipopPlot().nativeElement;
+    const lollipopElement = this.lollipopPlot()?.nativeElement;
 
-    if (lollipopElement.checkVisibility()) {
+    if (lollipopElement && lollipopElement.checkVisibility()) {
       Plotly.Plots.resize(lollipopElement);
     }
   }
 
   clearAll(): void {
-    Plotly.purge(this.lollipopPlot().nativeElement);
+    const el = this.lollipopPlot()?.nativeElement;
+    if (el) {
+      Plotly.purge(el);
+    }
     this.exploreService.moduleMembersMap = new Map<string, ModuleMember[]>();
     this.elementLimitWarning.set(false);
   }
