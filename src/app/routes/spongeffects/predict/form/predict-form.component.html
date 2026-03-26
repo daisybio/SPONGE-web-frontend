@@ -1,7 +1,7 @@
 <form [formGroup]="formGroup" style="padding: 16px">
   <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Run SpongEffects on Custom Data</h3>
   <mat-accordion>
-    <mat-expansion-panel [expanded]="false">
+    <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>Select expression file
           <app-info type="icon">
@@ -31,7 +31,8 @@
       <mat-form-field appearance="outline" class="full-width" style="width: 100%; margin-top: 10px;">
         <mat-label>Select or drop a file</mat-label>
         <ngx-mat-dropzone>
-          <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv" />
+          <input type="file" fileInput mode="replace" [formControl]="fileCtrl" accept="text/csv"
+            aria-label="Select or drop a file" />
           @if (fileCtrl.value; as value) {
           <mat-chip-row (removed)="fileCtrl.setValue(null)">
             <span class="file-name" matTooltip="{{ value.name }}">{{ value.name }}</span>
@@ -46,11 +47,44 @@
     </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
+        <mat-panel-title>Select reference network
+          <app-info type="icon">
+            Choose the reference network that will be used to compute the spongEffect scores for each sample in your
+            data.
+            <ul>
+              <li> If you provide a subtype, predictions are not necessary.
+                You will get enrichment scores based on the pancancer model, the type model, and the subtype model.
+              </li>
+              <li> If you provide a cancer type, a subtype will be predicted for each sample.
+                You will get enrichment scores based on the pancancer model, the type model, and each predicted subtype
+                model.
+              </li>
+              <li> If you provide a pancancer model, a type and subtype will be predicted for each sample.
+                You will get enrichment scores based on the pancancer model, each predicted type model, and each
+                predicted subtype model.
+              </li>
+            </ul>
+          </app-info>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Disease</mat-label>
+        <mat-select formControlName="model">
+          @for (model of models$(); track model.dataset_ID) {
+          <mat-option [value]="model.dataset_ID">{{ capitalize(model.disease_name) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
         <mat-panel-title>Filtering thresholds</mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Min. MScor</mat-label>
-        <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10">
+        <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10"
+          aria-label="Set mscor threshold">
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('min')">Please provide a number > {{
           formGroup.get('mscor')?.errors?.['min']?.min }}</mat-error>
         <mat-error *ngIf="formGroup.get('mscor')?.hasError('max')">Please provide a number < {{
@@ -63,10 +97,10 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Min. false discovery rate (FDR)</mat-label>
-        <input formControlName="fdr" matInput type="number" min="0" max="1" step="0.10">
-        <mat-error> *ngIf="formGroup.get('fdr')?.hasError('min')">Please provide a number > {{
+        <input formControlName="fdr" matInput type="number" min="0" max="1" step="0.10" aria-label="Set FDR threshold">
+        <mat-error *ngIf="formGroup.get('fdr')?.hasError('min')">Please provide a number > {{
           formGroup.get('fdr')?.errors?.['min']?.min }}</mat-error>
-        <mat-error> *ngIf="formGroup.get('fdr')?.hasError('max')">Please provide a number < {{
+        <mat-error *ngIf="formGroup.get('fdr')?.hasError('max')">Please provide a number < {{
             formGroup.get('fdr')?.errors?.['max']?.max }}</mat-error>
       </mat-form-field>
       <app-info type="icon">
@@ -77,7 +111,7 @@
 
       <mat-form-field appearance="outline" class="full-width" min="0" step="1">
         <mat-label>Min. expression value</mat-label>
-        <input formControlName="minExpr" matInput type="number">
+        <input formControlName="minExpr" matInput type="number" aria-label="Set expression threshold">
         <mat-error *ngIf="formGroup.get('minExpr')?.hasError('min')">Please provide a number > {{
           formGroup.get('minExpr')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
@@ -126,7 +160,7 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Minimum module size</mat-label>
-        <input formControlName="minSize" matInput type="number" min="0" step="1">
+        <input formControlName="minSize" matInput type="number" min="0" step="1" aria-label="Set minimum module size">
         <mat-error *ngIf="formGroup.get('minSize')?.hasError('min')">Please provide a number > {{
           formGroup.get('minSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
@@ -138,7 +172,7 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Maximum module size</mat-label>
-        <input formControlName="maxSize" matInput type="number" min="0" step="1">
+        <input formControlName="maxSize" matInput type="number" min="0" step="1" aria-label="Set maximum module size">
         <mat-error *ngIf="formGroup.get('maxSize')?.hasError('min')">Please provide a number > {{
           formGroup.get('maxSize')?.errors?.['min']?.min }}</mat-error>
       </mat-form-field>
@@ -160,7 +194,7 @@
 
   <div style="display: flex; gap: 0px;">
     <div class="card-container">
-      <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async)" mat-flat-button>
+      <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async) || !formGroup.get('model')?.value" mat-flat-button>
         Run
       </button>
     </div>

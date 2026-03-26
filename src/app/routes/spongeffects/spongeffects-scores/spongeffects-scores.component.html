@@ -30,7 +30,7 @@
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Top N Modules (Enrichment)</mat-label>
-            <input matInput type="number" [value]="predictService.topNModules$()"
+            <input matInput type="number" [value]="predictService.topNModules$()" aria-label="Set top N modules"
               (input)="predictService.topNModules$.set($any($event.target).valueAsNumber)" min="1" max="100">
           </mat-form-field>
 
@@ -41,26 +41,26 @@
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Max. nodes</mat-label>
-            <input matInput type="number" [value]="predictService.maxNodes$()"
+            <input matInput type="number" [value]="predictService.maxNodes$()" aria-label="Set max nodes"
               (input)="predictService.maxNodes$.set($any($event.target).valueAsNumber)" min="0" max="500">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Min. degree</mat-label>
-            <input matInput type="number" [value]="predictService.minDegree$()"
+            <input matInput type="number" [value]="predictService.minDegree$()" aria-label="Set min degree"
               (input)="predictService.minDegree$.set($any($event.target).valueAsNumber)" min="0">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Min. betweenness</mat-label>
-            <input matInput type="number" [value]="predictService.minBetweenness$()"
+            <input matInput type="number" [value]="predictService.minBetweenness$()" aria-label="Set min betweenness"
               (input)="predictService.minBetweenness$.set($any($event.target).valueAsNumber)" min="0" max="1"
               step="0.01">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Min. eigenvector</mat-label>
-            <input matInput type="number" [value]="predictService.minEigen$()"
+            <input matInput type="number" [value]="predictService.minEigen$()" aria-label="Set min eigenvector"
               (input)="predictService.minEigen$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.01">
           </mat-form-field>
         </mat-expansion-panel>
@@ -72,13 +72,13 @@
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Max. adj. p-value</mat-label>
-            <input matInput type="number" [value]="predictService.maxPValue$()"
+            <input matInput type="number" [value]="predictService.maxPValue$()" aria-label="Set max p-value"
               (input)="predictService.maxPValue$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.01">
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%;">
             <mat-label>Min. MScor</mat-label>
-            <input matInput type="number" [value]="predictService.minMscor$()"
+            <input matInput type="number" [value]="predictService.minMscor$()" aria-label="Set min mscor"
               (input)="predictService.minMscor$.set($any($event.target).valueAsNumber)" min="0" max="2" step="0.01">
           </mat-form-field>
         </mat-expansion-panel>
@@ -87,7 +87,8 @@
   </mat-drawer>
 
   <mat-drawer-content>
-    <div style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+    <div
+      style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
       <mat-form-field appearance="outline" style="min-width: 300px;">
         <mat-label>Select Patients to Consider</mat-label>
         <mat-select [value]="predictService.selectedSamples$()"

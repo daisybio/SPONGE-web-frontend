@@ -29,7 +29,7 @@ export class SpongEffectsComponent implements AfterViewInit {
   backend = inject(BackendService);
   exploreService = inject(ExploreService);
   version$ = this.versionsService.versionReadOnly();
-  mode = model<'explore' | 'predict' | 'enrichment'>('explore');
+  mode = model<'explore' | 'predict' | 'enrichment'>('enrichment');
 
   @ViewChild('sectionLine') sectionLine!: ElementRef<HTMLHRElement>;
 

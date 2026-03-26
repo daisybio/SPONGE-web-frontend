@@ -17,6 +17,7 @@ export interface Query {
   logScaling: boolean;
   predictSubtypes: boolean;
   version: number;
+  model: number;
 }
 
 

@@ -29,6 +29,9 @@ import { VersionsService } from '../../../../services/versions.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { InfoService } from '../../../../services/info.service';
 import { capitalize } from "lodash";
+import { ExploreFormComponent } from '../../explore/form/explore-form.component';
+import { SpongEffectsService } from '../../../../services/spong-effects.service';
+import { Dataset } from '../../../../interfaces';
 
 @Component({
   selector: 'app-predict-form',
@@ -42,14 +45,12 @@ import { capitalize } from "lodash";
     MatCheckbox,
     MatOption,
     MatSelect,
-    NgForOf,
-    NgIf,
+    CommonModule,
     MatButtonModule,
     FormsModule,
     MatDropzone,
     FileInputDirective,
     CommonModule,
-    MatOption,
     MatTableModule,
     MatChipsModule,
     MatIconModule,
@@ -62,8 +63,11 @@ import { capitalize } from "lodash";
 export class PredictFormComponent {
   infoService = inject(InfoService);
   predictService = inject(PredictService);
+  versionService = inject(VersionsService);
+  spongEffectsService = inject(SpongEffectsService);
   selectedPredictedType = this.predictService.selectedPredictedType$;
   allPredictedTypes$ = this.predictService.allPredictedTypes$;
+  models$ = this.spongEffectsService.datasets$
   protected readonly capitalize = capitalize;
   // methods = ['gsva', 'ssgsea', 'OE'];
   methods = {
@@ -96,6 +100,7 @@ export class PredictFormComponent {
     method: new FormControl(Object.keys(this.methods)[0], { nonNullable: true }),
     logScaling: new FormControl<boolean>(true, { nonNullable: true }),
     predictSubtypes: new FormControl<boolean>(false, { nonNullable: true }),
+    model: new FormControl<number | null>(null),
   });
   fileCtrl = new FormControl<File | null>(null);
   fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
@@ -115,7 +120,12 @@ export class PredictFormComponent {
     }
   });
 
-  versionService = inject(VersionsService);
+  model_effect = effect(() => {
+    const models = this.models$();
+    if (models.length > 0 && !this.formGroup.get('model')?.value) {
+      this.formGroup.patchValue({ model: models[0].dataset_ID });
+    }
+  });
 
   exampleDataFile = (async () => {
     const response = await fetch(SPONGE_EXAMPLE_URL);
@@ -137,6 +147,7 @@ export class PredictFormComponent {
       file: (await this.selectedExpressionFile$()) as File,
       version: this.versionService.versionReadOnly()(),
       ...query,
+      model: query.model!,
     });
   }
 
