@@ -1,0 +1,121 @@
+<mat-drawer-container style="min-height: 100%">
+  <mat-drawer [opened]="true" mode="side">
+    <app-predict-form></app-predict-form>
+
+    <div style="border-top: 1px solid #eee; padding: 16px;">
+      <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Reference Network</h3>
+      <app-disease-selector [diseases$]="predictService.referenceDatasets$()"
+        (selected)="predictService.selectedReferenceDataset$.set($event)">
+      </app-disease-selector>
+      <p style="font-size: 0.85em; color: #666; margin-top: 8px;">
+        Choose the cancer type whose pre-calculated SPONGE network will serve as the background for the module
+        interactions.
+      </p>
+    </div>
+
+    <div style="padding: 16px; border-top: 1px solid #eee;">
+      <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Visualization</h3>
+      <div class="card-container" style="margin-bottom: 16px;">
+        <mat-button-toggle-group [value]="predictService.level()" (change)="predictService.level.set($event.value)">
+          <mat-button-toggle value="gene">Genes</mat-button-toggle>
+          <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Nodes</mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Top N Modules (Enrichment)</mat-label>
+            <input matInput type="number" [value]="predictService.topNModules$()"
+              (input)="predictService.topNModules$.set($any($event.target).valueAsNumber)" min="1" max="100">
+          </mat-form-field>
+
+          <mat-checkbox [checked]="predictService.showOrphans$()"
+            (change)="predictService.showOrphans$.set($event.checked)" style="margin-bottom: 16px; display: block;">
+            Show orphans
+          </mat-checkbox>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Max. nodes</mat-label>
+            <input matInput type="number" [value]="predictService.maxNodes$()"
+              (input)="predictService.maxNodes$.set($any($event.target).valueAsNumber)" min="0" max="500">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Min. degree</mat-label>
+            <input matInput type="number" [value]="predictService.minDegree$()"
+              (input)="predictService.minDegree$.set($any($event.target).valueAsNumber)" min="0">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Min. betweenness</mat-label>
+            <input matInput type="number" [value]="predictService.minBetweenness$()"
+              (input)="predictService.minBetweenness$.set($any($event.target).valueAsNumber)" min="0" max="1"
+              step="0.01">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Min. eigenvector</mat-label>
+            <input matInput type="number" [value]="predictService.minEigen$()"
+              (input)="predictService.minEigen$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.01">
+          </mat-form-field>
+        </mat-expansion-panel>
+
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Interactions</mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Max. adj. p-value</mat-label>
+            <input matInput type="number" [value]="predictService.maxPValue$()"
+              (input)="predictService.maxPValue$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.01">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%;">
+            <mat-label>Min. MScor</mat-label>
+            <input matInput type="number" [value]="predictService.minMscor$()"
+              (input)="predictService.minMscor$.set($any($event.target).valueAsNumber)" min="0" max="2" step="0.01">
+          </mat-form-field>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <div style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+      <mat-form-field appearance="outline" style="min-width: 300px;">
+        <mat-label>Select Patients to Consider</mat-label>
+        <mat-select [value]="predictService.selectedSamples$()"
+          (selectionChange)="predictService.selectedSamples$.set($event.value)" multiple>
+          @for (sample of predictService.allSamples$(); track sample) {
+          <mat-option [value]="sample">{{sample}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-checkbox [checked]="predictService.includeModuleMembers$()"
+        (change)="predictService.includeModuleMembers$.set($event.checked)">
+        Include module members
+      </mat-checkbox>
+
+      <div style="flex-grow: 1;"></div>
+
+      <div *ngIf="predictService.topModules$().length > 0" style="font-size: 0.9em; color: #666;">
+        Showing top {{predictService.topModules$().length}} modules for
+        {{predictService.selectedSamples$().length}} selected patient(s).
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: row">
+      <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
+        style="min-width: 500px; flex-grow: 3; height: 600px;"></app-network>
+      <app-active-entities [browseService]="browseService"
+        style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>

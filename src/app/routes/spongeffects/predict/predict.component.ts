@@ -8,21 +8,10 @@ import { ModuleTableComponent } from "./module-table/module-table.component";
 import { PredictFormComponent } from './form/predict-form.component';
 import { MatDrawer, MatDrawerContainer, MatDrawerContent } from '@angular/material/sidenav';
 import { ScatterplotComponent, ScatterplotDataScource } from "../../../components/scatterplot/scatterplot.component";
+import { ClassificationPlotComponent } from './classification-plot/classification-plot.component';
 import { PredictService } from './service/predict.service';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
-import { NetworkComponent } from '../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
-import { BrowseService } from '../../../services/browse.service';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatInputModule } from '@angular/material/input';
 
 declare var Plotly: any;
 
@@ -39,19 +28,8 @@ declare var Plotly: any;
     MatDrawerContainer,
     MatDrawerContent,
     ScatterplotComponent,
-    NetworkComponent,
-    ActiveEntitiesComponent,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatExpansionModule,
-    DiseaseSelectorComponent,
-    ReactiveFormsModule,
-    CommonModule,
-    MatButtonToggleModule,
-    MatInputModule
+    ClassificationPlotComponent,
   ],
-  providers: [BrowseService],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss',
 })
@@ -60,7 +38,6 @@ export class PredictComponent {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   refreshSignal = signal<number>(0);
-  browseService = inject(BrowseService);
 
   // Move data loading state to the data source
   private transformedData = signal<any[]>([]);
@@ -93,13 +70,6 @@ export class PredictComponent {
       this.refresh();
     });
 
-    // Sync predict network data to local browse service
-    effect(() => {
-      const networkData = this.predictService.moduleNetworkData$.value();
-      this.browseService.setManualData(networkData);
-    });
-
-    // Single effect to handle prediction changes
     effect(() => {
       const prediction = this.predictService.prediction$();
       const selectedType = this.predictService.selectedPredictedType$();

@@ -28,7 +28,8 @@
 
     <mat-button-toggle-group [(value)]="mode">
       <mat-button-toggle value="explore">Explore TCGA</mat-button-toggle>
-      <mat-button-toggle value="predict">Custom SpongEffects</mat-button-toggle>
+      <mat-button-toggle value="predict">Predict Cancer Types</mat-button-toggle>
+      <mat-button-toggle value="enrichment">Compute SpongEffect Scores</mat-button-toggle>
     </mat-button-toggle-group>
 
     <hr #sectionLine style="margin: 0px 0 0px 0; width: 100%;" />
@@ -38,8 +39,10 @@
 
   @if (mode() == 'explore') {
   <app-explore></app-explore>
-  }@else {
+  }@else if (mode() == 'predict') {
   <app-predict></app-predict>
+  }@else {
+  <app-spongeffects-scores></app-spongeffects-scores>
   }
 
 </mat-drawer-container>

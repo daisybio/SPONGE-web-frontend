@@ -1,0 +1,28 @@
+<div class="plot-options" style="padding: 16px 16px 0 16px; display: flex; align-items: center; gap: 12px;">
+  <span style="font-weight: 500; font-size: 0.9em;">Plot Mode:</span>
+  <mat-button-toggle-group [value]="isCombinedMode()" (change)="isCombinedMode.set($event.value)"
+    aria-label="Plot Mode">
+    <mat-button-toggle [value]="true">Combined</mat-button-toggle>
+    <mat-button-toggle [value]="false">Stacked</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
+@if (plotResource.isLoading()) {
+<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+} @else if (!hasData) {
+<p style="padding: 16px; color: #666;">No prediction data available yet.</p>
+}
+
+<div style="width: 100%; overflow-y: auto;">
+  <div #classificationPlot style="width: 100%; height: auto; min-height: 400px;"></div>
+</div>
+
+<app-info type="panel">
+  <p>
+    The TCGA enrichment score distributions (shaded areas) show the expected score range per cancer class.
+    <strong [style.color]="highlightColor">Red shaded curves</strong> = KDE over your uploaded samples' per-module
+    SpongEffects
+    enrichment scores.
+    Hover over any curve to see the module center gene.
+  </p>
+</app-info>

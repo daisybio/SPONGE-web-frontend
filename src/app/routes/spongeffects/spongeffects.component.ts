@@ -1,10 +1,11 @@
-import {Component, ElementRef, inject, model, resource, ViewChild, AfterViewInit} from '@angular/core';
-import {ExploreComponent} from "./explore/explore.component";
-import {PredictComponent} from "./predict/predict.component";
-import {VersionsService} from "../../services/versions.service";
-import {BackendService} from "../../services/backend.service";
-import {ExploreService } from './explore/service/explore.service';
-import {MatButtonToggleModule } from '@angular/material/button-toggle';
+import { Component, ElementRef, inject, model, resource, ViewChild, AfterViewInit } from '@angular/core';
+import { ExploreComponent } from "./explore/explore.component";
+import { PredictComponent } from "./predict/predict.component";
+import { SpongeffectsScoresComponent } from "./spongeffects-scores/spongeffects-scores.component";
+import { VersionsService } from "../../services/versions.service";
+import { BackendService } from "../../services/backend.service";
+import { ExploreService } from './explore/service/explore.service';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { InfoComponent } from '../../components/info/info.component';
 import { MatDrawerContainer } from '@angular/material/sidenav';
 import { MatDivider } from '@angular/material/divider';
@@ -16,10 +17,11 @@ import { debounceTime, fromEvent } from 'rxjs';
   imports: [
     ExploreComponent,
     PredictComponent,
+    SpongeffectsScoresComponent,
     MatButtonToggleModule,
     InfoComponent,
     MatDrawerContainer,
-],
+  ],
   styleUrls: ['./spongeffects.component.scss']
 })
 export class SpongEffectsComponent implements AfterViewInit {
@@ -27,13 +29,13 @@ export class SpongEffectsComponent implements AfterViewInit {
   backend = inject(BackendService);
   exploreService = inject(ExploreService);
   version$ = this.versionsService.versionReadOnly();
-  mode = model<'explore' | 'predict'>('explore');
+  mode = model<'explore' | 'predict' | 'enrichment'>('explore');
 
   @ViewChild('sectionLine') sectionLine!: ElementRef<HTMLHRElement>;
 
-ngAfterViewInit() {
+  ngAfterViewInit() {
     this.exploreService.lineTop.set((this.sectionLine.nativeElement.getBoundingClientRect().top + window.scrollY));
-}
+  }
 
   spongeEffectsRuns = resource({
     request: this.version$,

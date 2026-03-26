@@ -8,7 +8,7 @@ export interface Dataset {
   disease_type: string;
   download_url: string;
   sponge_db_version: number;
-  sample_count: number; 
+  sample_count: number;
 }
 
 export interface SpongeRun {
@@ -424,6 +424,13 @@ export interface PredictCancerType {
     values: number[][];
     samples: string[];
   };
+  /** Keyed by cancer type name (e.g. "breast_invasive_carcinoma"). Each entry
+   *  contains the per-type model's module scores for samples predicted as that type. */
+  type_scores: Record<string, {
+    genes: string[];
+    values: number[][];
+    samples: string[];
+  }>;
 }
 
 export interface ExploreQuery {
