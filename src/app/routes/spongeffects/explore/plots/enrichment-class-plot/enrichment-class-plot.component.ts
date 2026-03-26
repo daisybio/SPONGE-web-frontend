@@ -1,15 +1,16 @@
-import {Component, computed, effect, ElementRef, inject, input, resource, viewChild, AfterViewInit, OnDestroy} from '@angular/core';
-import {EnrichmentScoreDistributions, Metric, PlotData, PlotlyData, RunPerformance} from '../../../../../interfaces';
-import {BackendService} from '../../../../../services/backend.service';
-import {VersionsService} from '../../../../../services/versions.service';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatIconModule} from '@angular/material/icon';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {ExploreService} from "../../service/explore.service";
-import {InfoComponent} from "../../../../../components/info/info.component";
+import { Component, computed, effect, ElementRef, inject, input, resource, viewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { EnrichmentScoreDistributions, Metric, PlotData, PlotlyData, RunPerformance } from '../../../../../interfaces';
+import { BackendService } from '../../../../../services/backend.service';
+import { VersionsService } from '../../../../../services/versions.service';
+import { buildColorMap, hexToRgba, getDiseaseDisplayName } from '../../../../../cancer-colors';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ExploreService } from "../../service/explore.service";
+import { InfoComponent } from "../../../../../components/info/info.component";
 
 declare var Plotly: any;
 
@@ -36,7 +37,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
   selectedDisease = this.exploreService.selectedDisease$;
 
   enrichmentClassPlot = viewChild.required<ElementRef<HTMLDivElement>>('enrichmentClassPlot');
-  
+
   private resizeObserver: ResizeObserver | null = null;
 
   // plot parameters
@@ -86,7 +87,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
     this.clearPlot();
   });
 
-  async getEnrichmentClassData(version: number, cancer: string, level: string, selectedParamSets: {[key: string]: any}): Promise<any> {
+  async getEnrichmentClassData(version: number, cancer: string, level: string, selectedParamSets: { [key: string]: any }): Promise<any> {
     const datas: EnrichmentScoreDistributions[] = []
     for (const [key, value] of Object.entries(selectedParamSets)) {
       const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level, selectedParamSets);
@@ -110,41 +111,48 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
   }
 
 
-  async plotEnrichmentClassPlot(enrichmentData:  Promise<Map<string, PlotData>>): Promise<PlotlyData> {
+  async plotEnrichmentClassPlot(enrichmentData: Promise<Map<string, PlotData>>): Promise<PlotlyData> {
 
-    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
-
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype';
+    const parentType = this.selectedDisease() !== 'pancancer' ? this.selectedDisease() : undefined;
 
     // fill subtype specific data
     let data: any[] = [];
     const enrichmentDataResponse = await enrichmentData;
+    const classes = [...enrichmentDataResponse.keys()].sort();
+    const colorMap = buildColorMap(classes, parentType);
+
     enrichmentDataResponse.forEach((plotData, subtype) => {
+      const color = colorMap[subtype] ?? '#888888';
+      const prettyName = getDiseaseDisplayName(subtype);
       // push trace for each subtype
       data.push({
         x: plotData.x,
         y: plotData.y,
         fill: "tozeroy",
+        fillcolor: hexToRgba(color, 0.4),
         type: "scatter",
         mode: "lines",
-        opacity: 0.8,
-        name: subtype
+        line: { color, width: 1.5 },
+        opacity: 1,
+        name: prettyName
       });
     });
     // add subplot for each trace
     data.slice(1).forEach((d, i) => {
-      let idx: string = (i+2).toString();
+      let idx: string = (i + 2).toString();
       d.xaxis = 'x' + idx
       d.yaxis = 'y' + idx
     });
     // determine range of display
     let minScore: number = Math.round(Math.min(...data.map(d => Math.min(...d.x))));
     let maxScore: number = Math.round(Math.max(...data.map(d => Math.max(...d.x))));
-    const plot_height: number =  data.length * 200;
+    const plot_height: number = data.length * 200;
     // set general layout options
     let layout: any = {
       showlegend: false,
       autosize: true,
-      legend: {"orientation": "h"},
+      legend: { "orientation": "h" },
       grid: {
         rows: data.length,
         columns: 1,
@@ -158,7 +166,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
     };
     // set constant y axis layout
     const y_axis_layout = {
-      showgrid: false,
+      showgrid: true,
       automargin: true,
       showticklabels: false,
     };
@@ -167,7 +175,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
     data.forEach((d, index) => {
       let x_axis_layout_i: any = {
         range: [minScore, maxScore],
-        showgrid: false,
+        showgrid: true,
         showticklabels: false
       };
       let x_key: string = "xaxis";
@@ -205,7 +213,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
 
   refreshPlot() {
     const plotDiv = this.enrichmentClassPlot().nativeElement;
-    if(plotDiv.checkVisibility()) {
+    if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
   }
