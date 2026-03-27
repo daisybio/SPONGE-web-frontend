@@ -32,6 +32,7 @@ import { capitalize } from "lodash";
 import { ExploreFormComponent } from '../../explore/form/explore-form.component';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { Dataset } from '../../../../interfaces';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-predict-form',
@@ -56,6 +57,7 @@ import { Dataset } from '../../../../interfaces';
     MatIconModule,
     MatTooltipModule,
     InfoComponent,
+    MatCardModule,
   ],
   templateUrl: './predict-form.component.html',
   styleUrl: './predict-form.component.scss',
@@ -100,7 +102,7 @@ export class PredictFormComponent {
     method: new FormControl(Object.keys(this.methods)[0], { nonNullable: true }),
     logScaling: new FormControl<boolean>(true, { nonNullable: true }),
     predictSubtypes: new FormControl<boolean>(false, { nonNullable: true }),
-    model: new FormControl<number | null>(null),
+    model: new FormControl<string>("pancancer"),
   });
   fileCtrl = new FormControl<File | null>(null);
   fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
@@ -120,12 +122,12 @@ export class PredictFormComponent {
     }
   });
 
-  model_effect = effect(() => {
-    const models = this.models$();
-    if (models.length > 0 && !this.formGroup.get('model')?.value) {
-      this.formGroup.patchValue({ model: models[0].dataset_ID });
-    }
-  });
+  // model_effect = effect(() => {
+  //   const models = this.models$();
+  //   if (models.length > 0 && !this.formGroup.get('model')?.value) {
+  //     this.formGroup.patchValue({ model: models[0].disease_name });
+  //   }
+  // });
 
   exampleDataFile = (async () => {
     const response = await fetch(SPONGE_EXAMPLE_URL);

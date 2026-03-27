@@ -87,36 +87,70 @@
   </mat-drawer>
 
   <mat-drawer-content>
-    <div
-      style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
-      <mat-form-field appearance="outline" style="min-width: 300px;">
-        <mat-label>Select Patients to Consider</mat-label>
-        <mat-select [value]="predictService.selectedSamples$()"
-          (selectionChange)="predictService.selectedSamples$.set($event.value)" multiple>
-          @for (sample of predictService.allSamples$(); track sample) {
-          <mat-option [value]="sample">{{sample}}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+    <mat-tab-group>
+      <mat-tab label="Patient-specific Network">
 
-      <mat-checkbox [checked]="predictService.includeModuleMembers$()"
-        (change)="predictService.includeModuleMembers$.set($event.checked)">
-        Include module members
-      </mat-checkbox>
 
-      <div style="flex-grow: 1;"></div>
 
-      <div *ngIf="predictService.topModules$().length > 0" style="font-size: 0.9em; color: #666;">
-        Showing top {{predictService.topModules$().length}} modules for
-        {{predictService.selectedSamples$().length}} selected patient(s).
-      </div>
-    </div>
+        <div *ngIf="error$()" style="padding: 20px 20px 0 20px;">
+          <mat-card
+            style="background-color: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <mat-card-header
+              style="border-bottom: 1px solid #ffa39e; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center;">
+              <mat-icon
+                style="color: #cf1322; margin-right: 12px; font-size: 24px; width: 24px; height: 24px;">error</mat-icon>
+              <mat-card-title style="color: #cf1322; font-size: 1.15em; font-weight: 600; margin: 0;">
+                Prediction Failed
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p style="color: #5c5c5c; margin: 0 0 10px 0; font-weight: 500; font-size: 0.95em;">Error Details:</p>
+              <pre
+                style="white-space: pre-wrap; word-break: break-word; font-family: 'Roboto Mono', menlo, monaco, consolas, monospace; font-size: 0.85em; color: #434343; background: #fafafa; padding: 16px; border-radius: 6px; border: 1px solid #f0f0f0; margin: 0; line-height: 1.6; max-height: 400px; overflow-y: auto;">{{ error$() }}</pre>
+            </mat-card-content>
+          </mat-card>
+        </div>
 
-    <div style="display: flex; flex-direction: row">
-      <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
-        style="min-width: 500px; flex-grow: 3; height: 600px;"></app-network>
-      <app-active-entities [browseService]="browseService"
-        style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
-    </div>
+        <div class="patient-selector"
+          style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+          <mat-form-field appearance="outline" style="min-width: 300px;">
+            <mat-label>Select Patients to Consider</mat-label>
+            <mat-select [value]="predictService.selectedSamples$()"
+              (selectionChange)="predictService.selectedSamples$.set($event.value)" multiple>
+              @for (sample of predictService.allSamples$(); track sample) {
+              <mat-option [value]="sample">{{sample}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-checkbox [checked]="predictService.includeModuleMembers$()"
+            (change)="predictService.includeModuleMembers$.set($event.checked)">
+            Include module members
+          </mat-checkbox>
+
+          <div style="flex-grow: 1;"></div>
+
+          <div *ngIf="predictService.topModules$().length > 0" style="font-size: 0.9em; color: #666;">
+            Showing top {{predictService.topModules$().length}} modules for
+            {{predictService.selectedSamples$().length}} selected patient(s).
+          </div>
+        </div>
+
+        <div class="network-container" style="display: flex; flex-direction: row">
+          <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
+            style="min-width: 500px; flex-grow: 3; height: 600px;"></app-network>
+          <app-active-entities [browseService]="browseService"
+            style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
+        </div>
+
+      </mat-tab>
+      <mat-tab label="Explore Reference Data">
+
+      </mat-tab>
+
+      <mat-tab label="Prediction Results">
+
+      </mat-tab>
+    </mat-tab-group>
   </mat-drawer-content>
 </mat-drawer-container>

@@ -6,26 +6,27 @@
         <mat-panel-title>Select expression file
           <app-info type="icon">
             <p>
-              Upload a CSV file containing the expression data for the prediction. The file should contain a header row
+              Upload a CSV file containing the expression data for the prediction. The file should contain a header
+              row
               with
-              feature names and a column for each sample. Feature identifiers should be Ensembl IDs for genes (ENSG) or
+              feature names and a column for each sample. Feature identifiers should be Ensembl IDs for genes (ENSG)
+              or
               transcripts (ENST)
               and the subsequent columns should contain the expression values for each sample.
-              Depending on the feature type (gene or transcript), the respective spongEffects model is used to compute
+              Depending on the feature type (gene or transcript), the respective spongEffects model is used to
+              compute
               spongEffect scores for each sample in your data.
             </p>
           </app-info>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div class="full-width" style="display: flex">
-        <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
-        @if (selectedExpressionFile$() | async; as selectedExpressionFile) {
-        <span class="spacer"></span>
-        <button (click)="showExpressionFile(selectedExpressionFile)" class="example-expression-button" mat-button>
-          Show example
-        </button>
-        }
-      </div>
+      <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
+      @if (selectedExpressionFile$() | async; as selectedExpressionFile) {
+      <span class="spacer"></span>
+      <button (click)="showExpressionFile(selectedExpressionFile)" class="example-expression-button" mat-button>
+        Show example
+      </button>
+      }
 
       @if (!useExampleExpression$()) {
       <mat-form-field appearance="outline" class="full-width" style="width: 100%; margin-top: 10px;">
@@ -43,8 +44,12 @@
           }
         </ngx-mat-dropzone>
       </mat-form-field>
+      <p style="font-size: 0.7em; margin-top: -10px; margin-bottom: 0px; line-height: 1.2em;">
+        The level (gene/transcript) is automatically determined from
+        the feature IDs (ENSG/ENST)!</p>
       }
     </mat-expansion-panel>
+
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Select reference network
@@ -52,31 +57,37 @@
             Choose the reference network that will be used to compute the spongEffect scores for each sample in your
             data.
             <ul>
-              <li> If you provide a subtype, predictions are not necessary.
-                You will get enrichment scores based on the pancancer model, the type model, and the subtype model.
-              </li>
-              <li> If you provide a cancer type, a subtype will be predicted for each sample.
-                You will get enrichment scores based on the pancancer model, the type model, and each predicted subtype
-                model.
-              </li>
-              <li> If you provide a pancancer model, a type and subtype will be predicted for each sample.
+              <li> If you don't know the model, select the pancancer model. A type and subtype will be predicted for
+                each sample.
                 You will get enrichment scores based on the pancancer model, each predicted type model, and each
                 predicted subtype model.
+              </li>
+              <li> If you provide a cancer type, a subtype will be predicted for each sample.
+                You will get enrichment scores based on the pancancer model, the provided type model, and each
+                predicted
+                subtype
+                model.
+              </li>
+              <li> If you provide a subtype, predictions are not necessary.
+                You will get enrichment scores based on the pancancer model, the provided type model, and the
+                provided
+                subtype model.
               </li>
             </ul>
           </app-info>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
         <mat-label>Disease</mat-label>
         <mat-select formControlName="model">
           @for (model of models$(); track model.dataset_ID) {
-          <mat-option [value]="model.dataset_ID">{{ capitalize(model.disease_name) }}</mat-option>
+          <mat-option [value]="model.disease_name">{{ capitalize(model.disease_name) }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
     </mat-expansion-panel>
+
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>Filtering thresholds</mat-panel-title>
@@ -143,15 +154,18 @@
         <ul>
           <li><b>OE:</b>
             <p>Overall Enrichment (OE) computes an enrichment score for each module in each sample by comparing the
-              average expression of module genes to a background distribution of randomly selected genes with similar
+              average expression of module genes to a background distribution of randomly selected genes with
+              similar
               expression profiles.</p>
           </li>
           <li><b>GSVA:</b>
-            <p>Gene Set Variation Analysis (GSVA) is a non-parametric, unsupervised method for estimating variation of
+            <p>Gene Set Variation Analysis (GSVA) is a non-parametric, unsupervised method for estimating variation
+              of
               gene set enrichment through the samples of a expression data set.</p>
           </li>
           <li><b>ssGSEA:</b>
-            <p>Single-sample Gene Set Enrichment Analysis (ssGSEA) calculates an enrichment score for each individual
+            <p>Single-sample Gene Set Enrichment Analysis (ssGSEA) calculates an enrichment score for each
+              individual
               sample and gene set pair, indicating the degree to which genes in that set are coordinately up- or
               down-regulated within that specific sample.</p>
           </li>
@@ -190,21 +204,22 @@
         Predict on subtype level (can lead to longer run times)
       </mat-checkbox>
     </mat-expansion-panel>
+
+    <div style="display: flex; gap: 0px;">
+      <div class="card-container">
+        <button (click)="predict()"
+          [disabled]="isLoading$() || !(selectedExpressionFile$() | async) || !formGroup.get('model')?.value"
+          mat-flat-button>
+          Run
+        </button>
+      </div>
+
+      <!-- Button for downloading the prediction results -->
+      <div class="card-container">
+        <button (click)="downloadResults()" [disabled]="isLoading$()" mat-stroked-button>
+          Download Results
+        </button>
+      </div>
+    </div>
   </mat-accordion>
-
-  <div style="display: flex; gap: 0px;">
-    <div class="card-container">
-      <button (click)="predict()" [disabled]="isLoading$() || !(selectedExpressionFile$() | async) || !formGroup.get('model')?.value" mat-flat-button>
-        Run
-      </button>
-    </div>
-
-    <!-- Button for downloading the prediction results -->
-    <div class="card-container">
-      <button (click)="downloadResults()" [disabled]="isLoading$()" mat-stroked-button>
-        Download Results
-      </button>
-    </div>
-  </div>
-
 </form>
