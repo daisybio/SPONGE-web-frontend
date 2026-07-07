@@ -1,4 +1,4 @@
-import {computed, inject, Injectable, resource} from '@angular/core';
+import {computed, inject, Injectable, resource, signal} from '@angular/core';
 import {BackendService} from "./backend.service";
 import {VersionsService} from "./versions.service";
 import {SpongEffectsRun, Dataset} from "../interfaces";
@@ -10,6 +10,8 @@ export class SpongEffectsService {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   private readonly _version$ = this.versionsService.versionReadOnly();
+
+  readonly selectedMode$ = signal<'explore' | 'predict' | 'enrichment'>('enrichment');
   
   spongEffectsRuns$ = resource({
     request: this._version$,
