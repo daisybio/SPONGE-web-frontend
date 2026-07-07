@@ -272,9 +272,13 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return (await this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(
+    const res = await this.http.getRequest<any>(
       this.getRequestURL(route, query)
-    )) ?? [];
+    );
+    if (res && !Array.isArray(res) && res.data) {
+      return res.data;
+    }
+    return (Array.isArray(res) ? res : []) as (GeneInteraction | TranscriptInteraction)[];
   }
 
   async getExpression(
@@ -588,7 +592,13 @@ export class BackendService {
       pValue: maxPValue,
     };
 
-    return (await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query))) ?? [];
+    const res = await this.http.getRequest<any>(
+      this.getRequestURL(route, query)
+    );
+    if (res && !Array.isArray(res) && res.data) {
+      return res.data;
+    }
+    return (Array.isArray(res) ? res : []) as CeRNAInteraction[];
   }
 
   // getCeRNA(query: CeRNAQuery): Promise<CeRNA[]> {
