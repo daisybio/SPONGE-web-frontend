@@ -5,6 +5,7 @@ import { SpongeffectsScoresComponent } from "./spongeffects-scores/spongeffects-
 import { VersionsService } from "../../services/versions.service";
 import { BackendService } from "../../services/backend.service";
 import { ExploreService } from './explore/service/explore.service';
+import { SpongEffectsService } from '../../services/spong-effects.service';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { InfoComponent } from '../../components/info/info.component';
 import { MatDrawerContainer } from '@angular/material/sidenav';
@@ -28,8 +29,9 @@ export class SpongEffectsComponent implements AfterViewInit {
   versionsService = inject(VersionsService);
   backend = inject(BackendService);
   exploreService = inject(ExploreService);
+  spongEffectsService = inject(SpongEffectsService);
   version$ = this.versionsService.versionReadOnly();
-  mode = model<'explore' | 'predict' | 'enrichment'>('enrichment');
+  mode = this.spongEffectsService.selectedMode$;
 
   @ViewChild('sectionLine') sectionLine!: ElementRef<HTMLHRElement>;
 

@@ -77,39 +77,13 @@ export class PredictFormComponent {
     ssgsea: 'ssGSEA',
     OE: 'OE',
   }
-  formGroup = new FormGroup({
-    useExampleExpression: new FormControl<boolean>(false, { nonNullable: true }),
-    mscor: new FormControl<number>(0.1, {
-      nonNullable: true,
-      validators: [Validators.min(0), Validators.max(1)],
-    }),
-    fdr: new FormControl(0.05, {
-      nonNullable: true,
-      validators: [Validators.min(0), Validators.max(1)],
-    }),
-    minSize: new FormControl(100, {
-      nonNullable: true,
-      validators: [Validators.min(0)],
-    }),
-    maxSize: new FormControl(2000, {
-      nonNullable: true,
-      validators: [Validators.min(0)],
-    }),
-    minExpr: new FormControl(10, {
-      nonNullable: true,
-      validators: [Validators.min(0)],
-    }),
-    method: new FormControl(Object.keys(this.methods)[0], { nonNullable: true }),
-    logScaling: new FormControl<boolean>(true, { nonNullable: true }),
-    predictSubtypes: new FormControl<boolean>(false, { nonNullable: true }),
-    model: new FormControl<string>("pancancer"),
-  });
-  fileCtrl = new FormControl<File | null>(null);
-  fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges);
+  formGroup = this.predictService.formGroup;
+  fileCtrl = this.predictService.fileCtrl;
+  fileCtrlValue$ = toSignal(this.fileCtrl.valueChanges, { initialValue: this.fileCtrl.value });
   dialog = inject(MatDialog);
 
   isLoading$ = this.predictService.isLoading$;
-  query$ = toSignal(this.formGroup.valueChanges);
+  query$ = toSignal(this.formGroup.valueChanges, { initialValue: this.formGroup.getRawValue() });
   useExampleExpression$ = computed(
     () => this.query$()?.useExampleExpression || false,
   );

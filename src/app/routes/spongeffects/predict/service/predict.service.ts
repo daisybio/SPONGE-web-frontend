@@ -10,7 +10,9 @@ import {
   signal,
   WritableSignal,
   linkedSignal,
+  untracked,
 } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { BackendService } from '../../../../services/backend.service';
 import {
   NetworkData,
@@ -47,6 +49,36 @@ export class PredictService {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   spongEffectsService = inject(SpongEffectsService);
+
+  readonly formGroup = new FormGroup({
+    useExampleExpression: new FormControl<boolean>(false, { nonNullable: true }),
+    mscor: new FormControl<number>(0.1, {
+      nonNullable: true,
+      validators: [Validators.min(0), Validators.max(1)],
+    }),
+    fdr: new FormControl(0.05, {
+      nonNullable: true,
+      validators: [Validators.min(0), Validators.max(1)],
+    }),
+    minSize: new FormControl(100, {
+      nonNullable: true,
+      validators: [Validators.min(0)],
+    }),
+    maxSize: new FormControl(2000, {
+      nonNullable: true,
+      validators: [Validators.min(0)],
+    }),
+    minExpr: new FormControl(10, {
+      nonNullable: true,
+      validators: [Validators.min(0)],
+    }),
+    method: new FormControl('gsva', { nonNullable: true }),
+    logScaling: new FormControl<boolean>(true, { nonNullable: true }),
+    predictSubtypes: new FormControl<boolean>(false, { nonNullable: true }),
+    model: new FormControl<string>("pancancer"),
+  });
+  readonly fileCtrl = new FormControl<File | null>(null);
+
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
   example_used = signal<boolean>(false);
@@ -91,6 +123,11 @@ export class PredictService {
       const match = datasets.find(
         (d: Dataset) => d.disease_name === predicted && !d.disease_subtype,
       );
+      if (match) return match;
+    }
+    const globalName = this.versionsService.selectedDiseaseName$();
+    if (globalName) {
+      const match = datasets.find((d: Dataset) => d.disease_name === globalName);
       if (match) return match;
     }
     return datasets[0];
@@ -479,7 +516,18 @@ export class PredictService {
     return this._prediction$.value.asReadonly();
   }
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const currentDataset = this.selectedReferenceDataset$();
+      if (currentDataset?.disease_name) {
+        untracked(() => {
+          if (this.versionsService.selectedDiseaseName$() !== currentDataset.disease_name) {
+            this.versionsService.selectedDiseaseName$.set(currentDataset.disease_name);
+          }
+        });
+      }
+    });
+  }
 
   request(query: Query) {
     console.log('query', query);

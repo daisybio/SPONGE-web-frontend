@@ -26,7 +26,7 @@
       <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
     </app-info>
 
-    <mat-button-toggle-group [(value)]="mode">
+    <mat-button-toggle-group [value]="mode()" (change)="mode.set($event.value)">
       <mat-button-toggle value="enrichment">Compute SpongEffect Scores</mat-button-toggle>
       <mat-button-toggle value="predict">Predict Cancer Types</mat-button-toggle>
       <mat-button-toggle value="explore">Explore TCGA</mat-button-toggle>
@@ -36,13 +36,8 @@
 
   </div>
 
-
-  @if (mode() == 'explore') {
-  <app-explore></app-explore>
-  }@else if (mode() == 'predict') {
-  <app-predict></app-predict>
-  }@else {
-  <app-spongeffects-scores></app-spongeffects-scores>
-  }
+  <app-explore [hidden]="mode() !== 'explore'"></app-explore>
+  <app-predict [hidden]="mode() !== 'predict'"></app-predict>
+  <app-spongeffects-scores [hidden]="mode() !== 'enrichment'"></app-spongeffects-scores>
 
 </mat-drawer-container>
