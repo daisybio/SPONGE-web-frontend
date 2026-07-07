@@ -446,6 +446,15 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
     });
 
     effect(() => {
+      const vis = this.selectedVis();
+      if (vis === 'network') {
+        setTimeout(() => {
+          this.refresh$.update(v => v + 1);
+        }, 100);
+      }
+    });
+
+    effect(() => {
       const redNodes = this.redNodes();
       const greyModules = this.lolipopPlotData.value();
       if (greyModules && greyModules.length > 0 && redNodes) {

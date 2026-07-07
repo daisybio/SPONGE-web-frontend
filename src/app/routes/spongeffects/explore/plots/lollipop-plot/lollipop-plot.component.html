@@ -46,7 +46,7 @@
   <hr>
 
   <div style="justify-content: center; display: flex; margin: 50px 0;">
-    <mat-button-toggle-group name="vis" [(ngModel)]="selectedVis">
+    <mat-button-toggle-group name="vis" [value]="selectedVis()" (change)="selectedVis.set($event.value)">
       <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
       <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
       <mat-button-toggle value="heatmap">Module Heatmap</mat-button-toggle>
