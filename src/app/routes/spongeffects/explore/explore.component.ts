@@ -52,7 +52,7 @@ export class ExploreComponent {
   refreshSignal = signal<number>(0);
   exploreService = inject(ExploreService)
   lineTop = this.exploreService.lineTop;
-  selectedTabIndex = signal<number>(0);
+  selectedTabIndex = this.exploreService.selectedTabIndex$;
   selectedVis = this.exploreService.selectedVis;
 
   constructor(public browseService: BrowseService) {
@@ -67,7 +67,10 @@ export class ExploreComponent {
 
   // track the selected tab to show the network form only for top ceRNA tab
   onTabChange(event: any) {
-    this.selectedTabIndex.set(event.index);
+    // If called via selectedTabChange event, event is { index: number, tab: MatTab }
+    // If called via selectedIndexChange, event is a number. Handle both.
+    const index = typeof event === 'number' ? event : event.index;
+    this.selectedTabIndex.set(index);
     this.refresh();
   }
 }

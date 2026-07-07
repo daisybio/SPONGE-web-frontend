@@ -1,4 +1,4 @@
-import { Injectable, resource, ResourceRef, signal } from '@angular/core';
+import { Injectable, resource, ResourceRef, signal, effect } from '@angular/core';
 import { BackendService } from './backend.service';
 import { Dataset } from '../interfaces';
 
@@ -7,6 +7,7 @@ import { Dataset } from '../interfaces';
 })
 export class VersionsService {
   version$ = signal(2);
+  readonly selectedDiseaseName$ = signal<string | undefined>(undefined);
   private readonly _diseases$: ResourceRef<Dataset[] | undefined>;
 
   constructor(backendService: BackendService) {
@@ -16,6 +17,19 @@ export class VersionsService {
         (await backendService.getDatasets(version.request)).filter(
           (dataset) => dataset.sponge_db_version === version.request,
         ),
+    });
+
+    // Automatically sync chosen disease name when dataset list changes
+    effect(() => {
+      const diseases = this._diseases$.value();
+      const current = this.selectedDiseaseName$();
+      if (diseases && diseases.length > 0) {
+        if (!current || !diseases.some((d) => d.disease_name === current)) {
+          this.selectedDiseaseName$.set(diseases[0].disease_name);
+        }
+      } else {
+        this.selectedDiseaseName$.set(undefined);
+      }
     });
   }
 

@@ -11,6 +11,7 @@ import {
   signal,
   viewChild,
   WritableSignal,
+  untracked,
 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -67,7 +68,20 @@ export class FormComponent implements OnInit {
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
   fixedDataset = input<Dataset | undefined>();
   fixedLevel = input<(() => 'gene' | 'transcript') | undefined>();
-  activeDataset: WritableSignal<Dataset | undefined> = this.fixedDataset ? linkedSignal(() => this.fixedDataset()) : linkedSignal(() => this.diseases$()[0]);
+  activeDataset: WritableSignal<Dataset | undefined> = linkedSignal({
+    source: () => {
+      const fixed = this.fixedDataset();
+      if (fixed) return fixed;
+      const globalName = this.versionsService.selectedDiseaseName$();
+      const diseases = this.diseases$();
+      if (globalName && diseases.length > 0) {
+        const match = diseases.find((d) => d.disease_name === globalName);
+        if (match) return match;
+      }
+      return diseases[0];
+    },
+    computation: (source) => source,
+  });
   // default thresholds should be different in spongeffects form
   defaultMinDegree = input<number | undefined>();
   defaultMinBetweenness = input<number | undefined>();
@@ -131,6 +145,18 @@ export class FormComponent implements OnInit {
   }
 
   constructor(private cdr: ChangeDetectorRef) {
+    effect(() => {
+      const active = this.activeDataset();
+      // Only sync if not fixed dataset (e.g. not embedded in SpongEffects Explore form)
+      if (active?.disease_name && !this.fixedDataset()) {
+        untracked(() => {
+          if (this.versionsService.selectedDiseaseName$() !== active.disease_name) {
+            this.versionsService.selectedDiseaseName$.set(active.disease_name);
+          }
+        });
+      }
+    });
+
     const formSignal = signal(this.formGroup.value);
     this.formGroup.valueChanges.subscribe((val) => {
       formSignal.set(val);

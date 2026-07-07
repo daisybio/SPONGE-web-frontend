@@ -12,7 +12,7 @@
     }
   </mat-drawer>
   <mat-drawer-content>
-    <mat-tab-group (selectedTabChange)="onTabChange($event)">
+    <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Model Performance">
         <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
       </mat-tab>
