@@ -85,7 +85,7 @@ export class PredictService {
   level = signal<'gene' | 'transcript'>('gene');
 
   readonly selectedSamples$ = signal<string[]>([]);
-  readonly includeModuleMembers$ = signal<boolean>(false);
+  readonly includeModuleMembers$ = signal<boolean>(true);
 
   // Visualization filter signals
   readonly topNModules$ = signal<number>(10);

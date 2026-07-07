@@ -179,7 +179,7 @@ export class ExploreService {
   // For the top ceRNA modules tab
   topN = signal<number | undefined>(15);
   redNodes = signal<number | undefined>(5);
-  includeModuleMembers = signal<boolean | null>(false);
+  includeModuleMembers = signal<boolean | null>(true);
 
   selectedModules = resource({
     request: () => ({
