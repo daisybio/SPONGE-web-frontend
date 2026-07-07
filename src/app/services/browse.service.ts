@@ -121,7 +121,7 @@ export class BrowseService {
   });
 
   constructor(
-    private backend: BackendService,
+    protected backend: BackendService,
     versionsService: VersionsService
   ) {
     this._version$ = versionsService.versionReadOnly();
