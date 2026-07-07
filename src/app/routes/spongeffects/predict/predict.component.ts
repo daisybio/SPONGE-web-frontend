@@ -1,4 +1,5 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { PredictionResultsComponent } from './prediction-results/prediction-results.component';
 import { PredictionTableComponent } from "./prediction-results/prediction-table/prediction-table.component";
@@ -66,9 +67,11 @@ export class PredictComponent {
   });
 
   constructor() {
-    fromEvent(window, 'resize').subscribe(() => {
-      this.refresh();
-    });
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.refresh();
+      });
 
     effect(() => {
       const prediction = this.predictService.prediction$();

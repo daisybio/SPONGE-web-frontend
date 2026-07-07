@@ -9,6 +9,7 @@ import {
   ResourceRef,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CarouselComponent, SlideComponent } from 'ngx-bootstrap/carousel';
 import { BackendService } from '../../services/backend.service';
@@ -16,10 +17,9 @@ import { Dataset, OverallCounts } from '../../interfaces';
 import { VersionsService } from '../../services/versions.service';
 import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { over, zip, capitalize } from 'lodash';
-import { tick } from '@angular/core/testing';
+import { capitalize } from 'lodash';
 import { MatCardModule } from '@angular/material/card';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 declare const Plotly: any;
 
@@ -101,12 +101,14 @@ export class HomeComponent implements OnDestroy {
       loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
     });
 
-    fromEvent(window, 'resize').subscribe(() => {
-      const div = this.plotDiv$().nativeElement;
-      if (div.checkVisibility()) {
-        Plotly.Plots.resize(div);
-      }
-    });
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        const div = this.plotDiv$().nativeElement;
+        if (div.checkVisibility()) {
+          Plotly.Plots.resize(div);
+        }
+      });
   }
 
   ngOnDestroy() {
