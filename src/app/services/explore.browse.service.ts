@@ -1,7 +1,7 @@
 import { Injectable, effect, inject } from '@angular/core';
 import { BrowseService } from './browse.service';
 import { ExploreService } from '../routes/spongeffects/explore/service/explore.service';
-import { GeneNode, TranscriptNode, GeneInteraction, TranscriptInteraction, NetworkData } from '../interfaces';
+import { GeneNode, TranscriptNode, GeneInteraction, TranscriptInteraction, NetworkData, SpongEffectsRun } from '../interfaces';
 import { BackendService } from './backend.service';
 import { VersionsService } from './versions.service';
 import { isEqual } from 'lodash';
@@ -49,25 +49,25 @@ export class ExploreBrowseService extends BrowseService {
     version: number,
     config: any // Use the correct type for your BrowseQuery
   ): Promise<NetworkData> {
-    // append allowed module list to config
-    config.ensemblID = this.exploreService.selectedModules.value()?.map((m: any) => m.ensemblID) ?? [];
-    config.level = this.exploreService.level$();
-    config.dataset = this.exploreService.selectedDiseaseObject$();
-
-    // 1. Get the full network using the default logic
-    const fullNetwork = await super.fetchData(version, config);
-
-    // 2. Get selected modules and members from ExploreService
     const selectedModules = this.exploreService.selectedModules.value() ?? [];
+    if (selectedModules.length === 0) {
+      return {
+        nodes: [],
+        inverseNodes: [],
+        edges: [],
+        disease: config?.dataset,
+      };
+    }
+
     const includeMembers = this.exploreService.includeModuleMembers();
 
-    // 3. Collect allowed node IDs (modules and, if enabled, members)
+    // Collect allowed node IDs (modules and, if enabled, members)
     const allowedIDs = new Set<string>();
     for (const module of selectedModules) {
       allowedIDs.add(module.ensemblID);
       if (includeMembers) {
         // Use centralized, cached member fetching
-        const key = `${module.ensemblID}_${module.spongEffects_run_ID}`;
+        const key = this.exploreService.getModuleKey(module);
         if (!this.exploreService.moduleMembersMap.has(key)) {
           await this.exploreService.fetchModuleMembers(module);
         }
@@ -78,30 +78,84 @@ export class ExploreBrowseService extends BrowseService {
       }
     }
 
-    // 4. Filter nodes and edges
-    const nodes = fullNetwork.nodes.filter(
+    // Append allowed module list to config before fetching network
+    config.ensemblID = Array.from(allowedIDs);
+    config.level = this.exploreService.level$();
+    config.dataset = this.exploreService.selectedDiseaseObject$();
+
+    // 1. Fetch direct level network only (bypass inverse network request entirely)
+    const { nodes: rawNodes, edges: rawEdges } = await this.backend.getNetwork(version, config);
+
+    // 2. Filter nodes and edges strictly to allowed IDs
+    let nodes = rawNodes.filter(
       node => allowedIDs.has(
         'gene' in node ? node.gene.ensg_number : node.transcript.enst_number
       )
     );
-    const edges = fullNetwork.edges.filter(
+    const edges = rawEdges.filter(
       edge => {
         const [id1, id2] = BrowseService.getInteractionIDs(edge);
         return allowedIDs.has(id1) && allowedIDs.has(id2);
       }
     );
 
-    const inverseNodes = fullNetwork.inverseNodes?.filter(
-      node => allowedIDs.has(
-        'gene' in node ? node.gene.ensg_number : node.transcript.enst_number
-      )
-    ) ?? [];
+    // 3. Filter orphans if showOrphans is false
+    if (!config.showOrphans) {
+      const interactionNodes = edges
+        .map((interaction) => BrowseService.getInteractionIDs(interaction))
+        .flat();
+      nodes = nodes.filter((node) => {
+        const nodeObject = BrowseService.getNodeID(node);
+        return interactionNodes.some((interactionObject) =>
+          isEqual(interactionObject, nodeObject)
+        );
+      });
+    }
+
+    // 4. Annotate center and member nodes in the network
+    const selectedCenterIDs = new Set(selectedModules.map(m => m.ensemblID));
+    nodes = nodes.map(node => {
+      const isGene = 'gene' in node;
+      const clonedNode: any = isGene
+        ? { ...node, gene: { ...node.gene } }
+        : { ...node, transcript: { ...node.transcript, gene: { ...node.transcript.gene } } };
+
+      const ensemblID = isGene ? clonedNode.gene.ensg_number : clonedNode.transcript.enst_number;
+      const isCenter = selectedCenterIDs.has(ensemblID);
+
+      if (isCenter) {
+        // Collect parameter thresholds for center models
+        const matchingModules = selectedModules.filter(m => m.ensemblID === ensemblID);
+        const modelInfos = matchingModules.map(m => {
+          const run = (this.exploreService.spongEffectsRuns$() || []).find((r: SpongEffectsRun) => r.spongEffects_run_ID === m.spongEffects_run_ID);
+          return run ? `mscor=${run.m_scor_threshold}` : '';
+        }).filter(Boolean);
+        const modelStr = modelInfos.length > 0 ? ` [Center: ${Array.from(new Set(modelInfos)).join(', ')}]` : ' [Center]';
+
+        if (isGene) {
+          const symbol = clonedNode.gene.gene_symbol || clonedNode.gene.ensg_number;
+          clonedNode.gene.gene_symbol = `${symbol}${modelStr}`;
+        } else {
+          const symbol = clonedNode.transcript.gene.gene_symbol || clonedNode.transcript.gene.ensg_number;
+          clonedNode.transcript.gene.gene_symbol = `${symbol}${modelStr}`;
+        }
+      } else {
+        if (isGene) {
+          const symbol = clonedNode.gene.gene_symbol || clonedNode.gene.ensg_number;
+          clonedNode.gene.gene_symbol = `${symbol} (Member)`;
+        } else {
+          const symbol = clonedNode.transcript.gene.gene_symbol || clonedNode.transcript.gene.ensg_number;
+          clonedNode.transcript.gene.gene_symbol = `${symbol} (Member)`;
+        }
+      }
+      return clonedNode;
+    });
 
     return {
-      ...fullNetwork,
       nodes,
+      inverseNodes: [],
       edges,
-      inverseNodes,
+      disease: config.dataset,
     };
   }
 }
