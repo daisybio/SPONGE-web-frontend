@@ -1,6 +1,8 @@
 import {
   computed,
+  DestroyRef,
   effect,
+  inject,
   Injectable,
   resource,
   ResourceRef,
@@ -45,17 +47,10 @@ export class BrowseService {
     this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
 
-  layout = computed(
-    () =>
-      new ForceSupervisor(this.graph$(), {
-        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
-        settings: {
-          repulsion: 0.001,
-          attraction: 0.01,
-          gravity: 0.001,
-        },
-      })
-  );
+  // Use a plain class field (not a signal) to avoid a circular reactive dependency:
+  // reading + writing the same signal inside an effect() causes an infinite loop.
+  private _supervisor: ForceSupervisor | null = null;
+
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _comparisons$ = resource({
@@ -130,6 +125,7 @@ export class BrowseService {
     versionsService: VersionsService
   ) {
     this._version$ = versionsService.versionReadOnly();
+    const destroyRef = inject(DestroyRef);
 
     this._currentData$ = resource({
       request: computed(() => {
@@ -156,13 +152,38 @@ export class BrowseService {
       );
     });
 
+    // Manage ForceSupervisor lifecycle: stop old supervisor, create new one, start if physics enabled
     effect(() => {
-      const layout = this.layout();
+      const graph = this.graph$();
       const physicsEnabled = this.physicsEnabled$();
+
+      // Stop and clean up old supervisor (plain field — no reactive dependency)
+      if (this._supervisor) {
+        this._supervisor.stop();
+        this._supervisor.kill();
+      }
+
+      const newSupervisor = new ForceSupervisor(graph, {
+        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
+        settings: {
+          repulsion: 0.001,
+          attraction: 0.01,
+          gravity: 0.001,
+        },
+      });
+
+      this._supervisor = newSupervisor;
+
       if (physicsEnabled) {
-        layout.start();
-      } else {
-        layout.stop();
+        newSupervisor.start();
+      }
+    });
+
+    // Kill supervisor when service is destroyed
+    destroyRef.onDestroy(() => {
+      if (this._supervisor) {
+        this._supervisor.stop();
+        this._supervisor.kill();
       }
     });
   }
