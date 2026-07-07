@@ -6,7 +6,7 @@
     <!-- <hr style="position: absolute; width: 100%;" [style.top.px]="lineTop()" /> -->
     <hr style="margin: 257px 0 30px 0; width: 99%;" #sectionLine />
     <app-form [browseService]="browseService" [fixedDataset]="exploreService.selectedDiseaseObject$()"
-      [fixedLevel]="exploreService.level$" [defaultMinBetweenness]="0" [defaultMinDegree]="1" [defaultMinEigen]="0"
+      [fixedLevel]="exploreService.level$" [defaultMinBetweenness]="0" [defaultMinDegree]="0" [defaultMinEigen]="0"
       [defaultMaxPValue]="1" [defaultMinMscor]="0" [defaultMaxNodes]="100" [selectedTab]="'Network'">
     </app-form>
     }
