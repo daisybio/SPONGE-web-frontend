@@ -127,7 +127,7 @@ export class ExploreBrowseService extends BrowseService {
         // Collect parameter thresholds for center models
         const matchingModules = selectedModules.filter(m => m.ensemblID === ensemblID);
         const modelInfos = matchingModules.map(m => {
-          const run = (this.exploreService.spongEffectsRuns$() || []).find((r: SpongEffectsRun) => r.spongEffects_run_ID === m.spongEffects_run_ID);
+          const run = (this.exploreService.spongeEffectsRuns$() || []).find((r: SpongEffectsRun) => r.spongEffects_run_ID === m.spongEffects_run_ID);
           return run ? `mscor=${run.m_scor_threshold}` : '';
         }).filter(Boolean);
         const modelStr = modelInfos.length > 0 ? ` [Center: ${Array.from(new Set(modelInfos)).join(', ')}]` : ' [Center]';
