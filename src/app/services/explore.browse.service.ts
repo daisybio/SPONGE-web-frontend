@@ -10,6 +10,7 @@ import { isEqual } from 'lodash';
 export class ExploreBrowseService extends BrowseService {
   exploreService = inject(ExploreService);
   disease = this.exploreService.selectedDisease$();
+  backend = inject(BackendService);
 
 
   constructor() {
