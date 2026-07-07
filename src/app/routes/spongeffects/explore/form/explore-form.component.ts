@@ -9,6 +9,7 @@ import {MatCardModule} from "@angular/material/card";
 import {capitalize} from "lodash";
 import {MatChipsModule} from '@angular/material/chips';
 import {BrowseService} from "../../../../services/browse.service";
+import {MatInputModule} from "@angular/material/input";
 
 @Component({
   selector: 'app-explore-form',
@@ -21,6 +22,7 @@ import {BrowseService} from "../../../../services/browse.service";
     MatCheckboxModule,
     MatCardModule,
     MatChipsModule,
+    MatInputModule,
   ],
   templateUrl: './explore-form.component.html',
   styleUrl: './explore-form.component.scss'
