@@ -88,6 +88,7 @@ export class FormComponent implements OnInit {
   defaultMinEigen = input<number | undefined>();
   defaultMaxPValue = input<number | undefined>();
   defaultMinMscor = input<number | undefined>();
+  defaultMaxNodes = input<number | undefined>();
   geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
@@ -141,6 +142,7 @@ export class FormComponent implements OnInit {
       minEigen: this.defaultMinEigen() ?? 0.1,
       maxPValue: this.defaultMaxPValue() ?? 0.05,
       minMscor: this.defaultMinMscor() ?? 0.1,
+      maxNodes: this.defaultMaxNodes() ?? 10,
     });
   }
 
