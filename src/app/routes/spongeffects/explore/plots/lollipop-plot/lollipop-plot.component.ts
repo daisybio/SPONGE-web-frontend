@@ -91,7 +91,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
   private exploreService = inject(ExploreService);
   browseService = inject(BrowseService);
   infoService = inject(InfoService);
-  selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()()));
+  selectedParamSets = computed(() => Object.values(this.exploreService.selectedParamSets$()));
 
   refreshSignal$ = input();
   refresh$ = signal(0);
@@ -160,7 +160,7 @@ export class LollipopPlotComponent implements AfterViewInit, OnDestroy {
       cancer: this.exploreService.selectedDisease$(),
       level: this.exploreService.level$(),
       topN: this.topN() ?? 15,
-      selectedParamSets: this.exploreService.selectedParamSets$()()
+      selectedParamSets: this.exploreService.selectedParamSets$()
     }),
     loader: ({ request }) => {
       const { version, cancer, level, topN, selectedParamSets } = request;

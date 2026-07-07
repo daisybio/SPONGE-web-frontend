@@ -1,5 +1,6 @@
 import {
   computed,
+  DestroyRef,
   effect,
   inject,
   Injectable,
@@ -7,8 +8,10 @@ import {
   resource,
   Signal,
   signal,
+  untracked,
   WritableSignal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { Dataset, ModuleMember, RunClassPerformance, SpongEffectsModule } from '../../../../interfaces';
 import { VersionsService } from '../../../../services/versions.service';
@@ -22,11 +25,26 @@ export class ExploreService {
   versionsService = inject(VersionsService);
   backend = inject(BackendService);
   spongEffectsService = inject(SpongEffectsService);
+  private readonly destroyRef = inject(DestroyRef);
+
   level$ = signal<'gene' | 'transcript'>('gene');
-  lineTop = signal<number | undefined>(undefined); // this is the height of the separator to the network -> align the form in the side panel 
+  selectedTabIndex$ = signal<number>(0);
+  lineTop = signal<number | undefined>(undefined); // height of the separator to the network -> align the form in the side panel
   diseaseNames$ = this.spongEffectsService.diseaseNames$;
   diseases$ = this.spongEffectsService.datasets$;
-  selectedDisease$ = linkedSignal(() => this.diseaseNames$()[0]);
+
+  selectedDisease$: WritableSignal<string | undefined> = linkedSignal({
+    source: () => {
+      const global = this.versionsService.selectedDiseaseName$();
+      const names = this.diseaseNames$();
+      if (global && names.includes(global)) {
+        return global;
+      }
+      return names[0];
+    },
+    computation: (source) => source
+  });
+
   selectedDiseaseObject$: WritableSignal<Dataset> = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
     const datasets = this.diseases$();
@@ -38,23 +56,22 @@ export class ExploreService {
     }
     return selectedDataset;
   });
-  highestKey: WritableSignal<string> = signal<string>(''); // this is the best model for the selected disease and level, e.g. 'paramSet_1'
+  highestKey: WritableSignal<string> = signal<string>(''); // best model for the selected disease and level, e.g. 'paramSet_1'
   highestParamSet = computed(() => {
     const index = this.highestKey().split('_')[1];
     return this.paramSets$()[parseInt(index, 10) - 1];
   });
   selectedVis = signal<string>('centers');
 
-  // for each disease, there are multiple spongeffects runs. Filter spongEffectsService.SpongeffectsRuns$ to get the runs for the selected disease
+  // For each disease, there are multiple spongeffects runs — filter to get runs for selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
     let runs = this.spongEffectsService.spongEffectsRuns$.value() || [];
-    // then filter
     runs = runs.filter((run) => run.disease_name === selectedDisease);
     return runs;
   });
 
-  // get the unique param sets (m_scor_threshold, p_adj_threshold, modules_cutoff)
+  // Unique param sets (m_scor_threshold, p_adj_threshold, modules_cutoff)
   paramSets$ = computed(() => {
     const runs = this.spongeEffectsRuns$();
     const paramSets = runs.map((run) => ({
@@ -64,24 +81,61 @@ export class ExploreService {
     }));
     // remove duplicates
     return paramSets.filter((paramSet, index, self) =>
-      index === self.findIndex((d) => d.m_scor_threshold === paramSet.m_scor_threshold && d.p_adj_threshold === paramSet.p_adj_threshold && d.modules_cutoff === paramSet.modules_cutoff)
+      index === self.findIndex((d) =>
+        d.m_scor_threshold === paramSet.m_scor_threshold &&
+        d.p_adj_threshold === paramSet.p_adj_threshold &&
+        d.modules_cutoff === paramSet.modules_cutoff
+      )
     );
   });
 
   formGroup$ = computed(() => {
     const paramSets = this.paramSets$();
     const controls: { [key: string]: any } = {};
-  
-    // Create a FormControl for each paramSet
-    paramSets.forEach((paramSet, index) => {
-      const key = `paramSet_${index + 1}`; 
-      controls[key] = new FormControl<boolean>(true); 
+    paramSets.forEach((_paramSet, index) => {
+      const key = `paramSet_${index + 1}`;
+      controls[key] = new FormControl<boolean>(true);
     });
     return new FormGroup(controls);
   });
 
-  selectedParamSets$ = signal(() => {
-    const formGroup = this.formGroup$();
+  /**
+   * Writable signal containing the currently selected param sets (as an object map).
+   * Updated reactively from formGroup$ changes.
+   */
+  readonly selectedParamSets$: WritableSignal<{ [key: string]: any }> = signal({});
+
+  constructor() {
+    // Sync local selected disease back to global VersionsService state
+    effect(() => {
+      const localSelected = this.selectedDisease$();
+      if (localSelected) {
+        untracked(() => {
+          if (this.versionsService.selectedDiseaseName$() !== localSelected) {
+            this.versionsService.selectedDiseaseName$.set(localSelected);
+          }
+        });
+      }
+    });
+
+    // Whenever formGroup$ changes (i.e., disease changes), re-initialize selectedParamSets$
+    // and subscribe to form value changes — using takeUntilDestroyed to avoid leaks.
+    effect(() => {
+      const formGroup = this.formGroup$();
+
+      // Initialize with current form values (all checked by default)
+      this._syncSelectedParamSets(formGroup);
+
+      // Subscribe to future changes; takeUntilDestroyed handles unsubscribe
+      formGroup.valueChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this._syncSelectedParamSets(formGroup);
+        });
+    });
+  }
+
+  private _syncSelectedParamSets(formGroup: FormGroup): void {
     const selectedParamSets: { [key: string]: any } = {};
     const controls = formGroup.controls;
     Object.keys(controls).forEach((key) => {
@@ -91,50 +145,17 @@ export class ExploreService {
         selectedParamSets[key] = paramSet;
       }
     });
-    return selectedParamSets;
-  }
-  );
-
-  constructor() {
-    effect(() => {
-      const formGroup = this.formGroup$();
-      formGroup.valueChanges.subscribe(() => {
-        const selectedParamSets: { [key: string]: any } = {};
-        const controls = formGroup.controls;
-        Object.keys(controls).forEach((key) => {
-          if (controls[key].value) {
-            const paramSetIndex = parseInt(key.split('_')[1], 10) - 1;
-            const paramSet = this.paramSets$()[paramSetIndex];
-            selectedParamSets[key] = paramSet;
-          }
-        }
-        );
-        this.selectedParamSets$.set(() => {return selectedParamSets});
-        return selectedParamSets;
-      });
-    }
-  );
-
-    // effect(() => {
-    //   const highestKey = this.highestKey;
-    //   if (highestKey) {
-    //     const highest_index: number = highestKey().split('_')[1] as unknown as number;
-    //     this.paramSets$()[highest_index] 
-    //     // if (selectedParamSet) {
-    //     //   this.selectedParamSets$.set(() => {return selectedParamSet});
-    //     // }
-    //   }
-    // });
+    this.selectedParamSets$.set(selectedParamSets);
   }
 
-  // for the class performance tab
+  // For the class performance tab
   readonly runClassPerformance$ = resource({
     request: computed(() => {
       return {
         version: this.versionsService.versionReadOnly()(),
         cancer: this.selectedDisease$(),
         level: this.level$(),
-        params: this.selectedParamSets$()(),
+        params: this.selectedParamSets$(),
       };
     }),
     loader: async (param) => {
@@ -145,7 +166,7 @@ export class ExploreService {
       if (version === undefined || cancer === undefined || level === undefined || params === undefined)
         return [];
       const modelPerformances: RunClassPerformance[] = [];
-      for (const [key, paramSet] of Object.entries(params)) {
+      for (const [_key, paramSet] of Object.entries(params)) {
         const tmp = await this.backend.getRunClassPerformance(version, cancer, level, paramSet);
         tmp.map((entry: RunClassPerformance) => {
           modelPerformances.push(entry);
@@ -155,12 +176,10 @@ export class ExploreService {
     },
   });
 
-
-  // for the top ceRNA modules tab
-  topN = signal<number | undefined>(15); 
-  redNodes = signal<number | undefined>(5); 
+  // For the top ceRNA modules tab
+  topN = signal<number | undefined>(15);
+  redNodes = signal<number | undefined>(5);
   includeModuleMembers = signal<boolean | null>(false);
-
 
   selectedModules = resource({
     request: () => ({
@@ -168,7 +187,7 @@ export class ExploreService {
       version: this.versionsService.versionReadOnly()(),
       disease: this.selectedDisease$(),
       level: this.level$(),
-      selectedParamSets: this.selectedParamSets$()(),
+      selectedParamSets: this.selectedParamSets$(),
       topN: this.topN(),
     }),
     loader: async ({ request }) => {
@@ -176,7 +195,6 @@ export class ExploreService {
       if (!version || !disease || !level || !selectedParamSets) {
         return [];
       }
-      // Use the same logic as in getLollipopData
       let modules: SpongEffectsModule[] = [];
       if (level === 'gene') {
         for (const paramSet of Object.values(selectedParamSets)) {
@@ -207,7 +225,6 @@ export class ExploreService {
     }
   });
 
-
   moduleMembersMap = new Map<string, ModuleMember[]>();
   MAX_ELEMENTS = 100;
 
@@ -215,17 +232,17 @@ export class ExploreService {
     const version = this.versionsService.versionReadOnly()();
     const disease = this.selectedDisease$();
     const level = this.level$();
-    
+
     if (!version || !disease || !level) return;
-    
+
     let members: ModuleMember[] = [];
     const key = this.getModuleKey(module);
-    
+
     if (level === 'gene') {
       const response = await this.backend.getSpongEffectsGeneModuleMembers(
         version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
       );
-      
+
       members = response.map(r => ({
         ensemblID: r.gene.ensg_number,
         symbol: r.gene.gene_symbol,
@@ -239,7 +256,7 @@ export class ExploreService {
       const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
         version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
       );
-      
+
       members = response.map(r => ({
         ensemblID: r.transcript.enst_number,
         symbol: r.transcript.gene.gene_symbol,
@@ -250,12 +267,11 @@ export class ExploreService {
         spongEffects_run_ID: module.spongEffects_run_ID
       }));
     }
-    
+
     this.moduleMembersMap.set(key, members);
   }
 
   getModuleKey(module: SpongEffectsModule): string {
     return `${module.ensemblID}_${module.spongEffects_run_ID}`;
   }
-
 }

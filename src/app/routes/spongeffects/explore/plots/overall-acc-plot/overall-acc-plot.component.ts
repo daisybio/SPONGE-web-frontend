@@ -50,7 +50,7 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
         level: this.exploreService.level$(),
-        params: this.exploreService.selectedParamSets$()()
+        params: this.exploreService.selectedParamSets$()
       }
     }),
     loader: async (param) => {

@@ -48,7 +48,7 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
         level: this.exploreService.level$(),
-        selectedParamSets: this.exploreService.selectedParamSets$()()
+        selectedParamSets: this.exploreService.selectedParamSets$()
       }
     }),
     loader: async (param) => {

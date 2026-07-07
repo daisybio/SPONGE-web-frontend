@@ -45,7 +45,7 @@ interface PerformanceEntry {
     ReactiveFormsModule,
     MatProgressBarModule,
     InfoComponent,
-],
+  ],
   standalone: true,
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss',
@@ -60,7 +60,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
   );
-  
+
   private resizeObserver: ResizeObserver | null = null;
 
   runClassPerformance$ = this.exploreService.runClassPerformance$;
@@ -120,7 +120,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       const { traces, layout } = this.plotlyData$();
-      
+
       if (!traces.length) {
         return;
       }
@@ -181,14 +181,14 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   ): any[] {
     const traces: any[] = [];
     const subplotTitles = Object.keys(splitGroups);
-    
+
     subplotTitles.forEach((splitKey, splitIndex) => {
       const splitData = splitGroups[splitKey];
       const modelGroups = groupBy(splitData, entry => entry.spongEffects_run.model_type);
 
       modelTypes.forEach((modelType, modelIndex) => {
         const modelData = modelGroups[modelType] || [];
-        
+
         if (modelData.length === 0) return;
 
         const trace = {
@@ -226,7 +226,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
     const cols = 1;
     const rows = 2;
 
-    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype'
     const layout: any = {
       height: 500,
       showlegend: true,
@@ -257,7 +257,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
       yaxis2: {
         domain: this.selectedDisease() === 'pancancer' ? [0.85, 1] : [0.65, 1],
       },
-      xaxis1:  {
+      xaxis1: {
         title: `Predictive Class (${type_or_subtype})`
       },
       // Add subplot titles
@@ -289,7 +289,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
       },
       // yaxis label
       {
-        text: Object.keys(this.selectedModels()()).length > 1
+        text: Object.keys(this.selectedModels()).length > 1
           ? `${measureLabel}<br>(Mean over models selected on the left)<br> <br> ` // newlines added for spacing
           : `${measureLabel}<br>(Of model selected on the left)<br> <br> `,
         x: 0,
@@ -304,7 +304,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
         },
         textangle: -90,
       }
-    ]
+      ]
     };
 
     return layout;
