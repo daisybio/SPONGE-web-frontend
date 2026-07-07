@@ -196,9 +196,12 @@ export class ExploreService {
         return [];
       }
       let modules: SpongEffectsModule[] = [];
+      const paramSetValues = Object.values(selectedParamSets);
       if (level === 'gene') {
-        for (const paramSet of Object.values(selectedParamSets)) {
-          const tmp = await this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN);
+        const results = await Promise.all(paramSetValues.map(paramSet =>
+          this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN)
+        ));
+        results.forEach(tmp => {
           modules.push(...tmp.map(entry => ({
             ensemblID: entry.gene.ensg_number,
             symbol: entry.gene.gene_symbol,
@@ -207,10 +210,12 @@ export class ExploreService {
             spongEffects_run_ID: entry.spongEffects_run_ID,
             spongEffects_module_ID: entry.spongEffects_gene_module_ID,
           })));
-        }
+        });
       } else {
-        for (const paramSet of Object.values(selectedParamSets)) {
-          const tmp = await this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN);
+        const results = await Promise.all(paramSetValues.map(paramSet =>
+          this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN)
+        ));
+        results.forEach(tmp => {
           modules.push(...tmp.map(entry => ({
             ensemblID: entry.transcript.enst_number,
             symbol: entry.transcript.gene.gene_symbol,
@@ -219,7 +224,7 @@ export class ExploreService {
             spongEffects_run_ID: entry.spongEffects_run_ID,
             spongEffects_module_ID: entry.spongEffects_transcript_module_ID,
           })));
-        }
+        });
       }
       return modules.slice(0, redNodes);
     }

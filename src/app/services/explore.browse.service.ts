@@ -65,12 +65,20 @@ export class ExploreBrowseService extends BrowseService {
     const allowedIDs = new Set<string>();
     for (const module of selectedModules) {
       allowedIDs.add(module.ensemblID);
-      if (includeMembers) {
-        // Use centralized, cached member fetching
+    }
+
+    if (includeMembers) {
+      // 1. Identify which modules are not in the cache yet
+      const modulesToFetch = selectedModules.filter(
+        module => !this.exploreService.moduleMembersMap.has(this.exploreService.getModuleKey(module))
+      );
+
+      // 2. Fetch all missing module members concurrently (in parallel!)
+      await Promise.all(modulesToFetch.map(module => this.exploreService.fetchModuleMembers(module)));
+
+      // 3. Populate all member IDs from the cache
+      for (const module of selectedModules) {
         const key = this.exploreService.getModuleKey(module);
-        if (!this.exploreService.moduleMembersMap.has(key)) {
-          await this.exploreService.fetchModuleMembers(module);
-        }
         const members = this.exploreService.moduleMembersMap.get(key) || [];
         for (const member of members) {
           allowedIDs.add(member.ensemblID);

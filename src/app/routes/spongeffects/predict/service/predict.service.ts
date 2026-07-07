@@ -50,6 +50,36 @@ export class PredictService {
   versionsService = inject(VersionsService);
   spongEffectsService = inject(SpongEffectsService);
 
+  private moduleIDCache = new Map<string, number>();
+  private moduleMembersCache = new Map<string, any[]>();
+
+  private async runWithLimit<T, R>(
+    items: T[],
+    limit: number,
+    fn: (item: T) => Promise<R>
+  ): Promise<R[]> {
+    const results = new Array<R>(items.length);
+    const executing = new Set<Promise<any>>();
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const p = (async () => {
+        const res = await fn(item);
+        results[i] = res;
+      })();
+      
+      executing.add(p);
+      p.then(() => executing.delete(p));
+      
+      if (executing.size >= limit) {
+        await Promise.race(executing);
+      }
+    }
+    
+    await Promise.all(executing);
+    return results;
+  }
+
   readonly formGroup = new FormGroup({
     useExampleExpression: new FormControl<boolean>(false, { nonNullable: true }),
     mscor: new FormControl<number>(0.1, {
@@ -287,7 +317,14 @@ export class PredictService {
 
       if (includeMembers) {
         try {
-          const fetchModule = async (gene: string) => {
+          // Resolve module IDs with caching and concurrency limit
+          const fetchModuleIdWithCache = async (gene: string): Promise<number | undefined> => {
+            const cacheKey = `${gene}_${version}_${dataset.disease_name}_${level}`;
+            if (this.moduleIDCache.has(cacheKey)) {
+              return this.moduleIDCache.get(cacheKey);
+            }
+            
+            let moduleId: number | undefined;
             if (level === 'gene') {
               const modules = await this.backend.getSpongEffectsGeneModules(
                 version,
@@ -296,45 +333,69 @@ export class PredictService {
                 undefined,
                 gene,
               );
-              return modules[0]?.spongEffects_gene_module_ID;
+              moduleId = modules[0]?.spongEffects_gene_module_ID;
             } else {
-              const modules =
-                await this.backend.getSpongEffectsTranscriptModules(
+              const modules = await this.backend.getSpongEffectsTranscriptModules(
+                version,
+                dataset.disease_name,
+                undefined,
+                undefined,
+                gene,
+              );
+              moduleId = modules[0]?.spongEffects_transcript_module_ID;
+            }
+            
+            if (moduleId !== undefined) {
+              this.moduleIDCache.set(cacheKey, moduleId);
+            }
+            return moduleId;
+          };
+
+          // Limit concurrency of module ID queries to 4
+          const moduleIDs = (
+            await this.runWithLimit(
+              topModules.map((m: { gene: string }) => m.gene),
+              4,
+              fetchModuleIdWithCache
+            )
+          ).filter((id): id is number => id !== undefined);
+
+          // Resolve module members with caching and concurrency limit
+          const fetchMembersWithCache = async (id: number): Promise<any[]> => {
+            const cacheKey = `${id}_${version}_${dataset.disease_name}_${level}`;
+            if (this.moduleMembersCache.has(cacheKey)) {
+              return this.moduleMembersCache.get(cacheKey)!;
+            }
+
+            const members = await (level === 'gene'
+              ? this.backend.getSpongEffectsGeneModuleMembers(
                   version,
                   dataset.disease_name,
                   undefined,
                   undefined,
-                  gene,
-                );
-              return modules[0]?.spongEffects_transcript_module_ID;
-            }
+                  undefined,
+                  id,
+                )
+              : this.backend.getSpongEffectsTranscriptModuleMembers(
+                  version,
+                  dataset.disease_name,
+                  undefined,
+                  undefined,
+                  undefined,
+                  id,
+                ));
+            
+            this.moduleMembersCache.set(cacheKey, members);
+            return members;
           };
-          const moduleIDs = (
-            await Promise.all(
-              topModules.map((m: { gene: string }) => fetchModule(m.gene)),
-            )
-          ).filter(Boolean);
-          const allMembers = await Promise.all(
-            moduleIDs.map((id) =>
-              level === 'gene'
-                ? this.backend.getSpongEffectsGeneModuleMembers(
-                    version,
-                    dataset.disease_name,
-                    undefined,
-                    undefined,
-                    undefined,
-                    id as number,
-                  )
-                : this.backend.getSpongEffectsTranscriptModuleMembers(
-                    version,
-                    dataset.disease_name,
-                    undefined,
-                    undefined,
-                    undefined,
-                    id as number,
-                  ),
-            ),
+
+          // Limit concurrency of member queries to 4
+          const allMembers = await this.runWithLimit(
+            moduleIDs,
+            4,
+            fetchMembersWithCache
           );
+
           allMembers
             .flat()
             .forEach(
