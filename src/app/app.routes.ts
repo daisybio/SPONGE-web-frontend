@@ -1,74 +1,90 @@
 import { Routes } from '@angular/router';
-import { BrowseComponent } from './routes/browse/browse.component';
-import { DownloadComponent } from './routes/download/download.component';
-import { HomeComponent } from './routes/home/home.component';
-import { DocumentationComponent } from './routes/documentation/documentation.component';
-import { IntroductionComponent } from './routes/documentation/introduction/introduction.component';
-import { HomeSearchBarComponent } from './routes/documentation/home-search-bar/home-search-bar.component';
-import { BrowseFunctionalitiesComponent } from './routes/documentation/browse-functionalities/browse-functionalities.component';
-import { BrowseSidebarComponent } from './routes/documentation/browse-sidebar/browse-sidebar.component';
-import { MoreComponent } from './routes/documentation/more/more.component';
-import { SpongEffectsComponent } from './routes/spongeffects/spongeffects.component';
-import { GenesComponent } from './routes/genes/genes.component';
-import { ExploreComponent } from './routes/spongeffects/explore/explore.component';
-import { PredictComponent } from './routes/spongeffects/predict/predict.component';
-import { ExampleScriptComponent } from './routes/documentation/example-script/example-script.component';
-import { GenesTabComponent } from './routes/documentation/v2/genes-tab/genes-tab.component';
-import { BrowseTabComponent } from './routes/documentation/v2/browse-tab/browse-tab.component';
-import { SpongeffectsTabComponent } from './routes/documentation/v2/spongeffects-tab/spongeffects-tab.component';
 
 export const routes: Routes = [
   {
     path: '',
-    component: HomeComponent,
+    loadComponent: () =>
+      import('./routes/home/home.component').then((m) => m.HomeComponent),
   },
   {
     path: 'browse',
-    component: BrowseComponent,
+    loadComponent: () =>
+      import('./routes/browse/browse.component').then((m) => m.BrowseComponent),
   },
   {
     path: 'genes-transcripts',
-    component: GenesComponent,
+    loadComponent: () =>
+      import('./routes/genes/genes.component').then((m) => m.GenesComponent),
   },
   {
     path: 'documentation',
-    component: DocumentationComponent,
+    loadComponent: () =>
+      import('./routes/documentation/documentation.component').then(
+        (m) => m.DocumentationComponent
+      ),
     children: [
       {
         path: '',
-        component: IntroductionComponent,
+        loadComponent: () =>
+          import('./routes/documentation/introduction/introduction.component').then(
+            (m) => m.IntroductionComponent
+          ),
       },
       {
         path: 'example-script',
-        component: ExampleScriptComponent,
+        loadComponent: () =>
+          import('./routes/documentation/example-script/example-script.component').then(
+            (m) => m.ExampleScriptComponent
+          ),
       },
       {
         path: 'home-search',
-        component: HomeSearchBarComponent,
+        loadComponent: () =>
+          import('./routes/documentation/home-search-bar/home-search-bar.component').then(
+            (m) => m.HomeSearchBarComponent
+          ),
       },
       {
         path: 'browse-functionalities',
-        component: BrowseFunctionalitiesComponent,
+        loadComponent: () =>
+          import('./routes/documentation/browse-functionalities/browse-functionalities.component').then(
+            (m) => m.BrowseFunctionalitiesComponent
+          ),
       },
       {
         path: 'browse-sidebar',
-        component: BrowseSidebarComponent,
+        loadComponent: () =>
+          import('./routes/documentation/browse-sidebar/browse-sidebar.component').then(
+            (m) => m.BrowseSidebarComponent
+          ),
       },
       {
         path: 'more-about-sponge',
-        component: MoreComponent,
+        loadComponent: () =>
+          import('./routes/documentation/more/more.component').then(
+            (m) => m.MoreComponent
+          ),
       },
       {
         path: 'genes-tab',
-        component: GenesTabComponent,
+        loadComponent: () =>
+          import('./routes/documentation/v2/genes-tab/genes-tab.component').then(
+            (m) => m.GenesTabComponent
+          ),
       },
       {
         path: 'browse-tab',
-        component: BrowseTabComponent,
+        loadComponent: () =>
+          import('./routes/documentation/v2/browse-tab/browse-tab.component').then(
+            (m) => m.BrowseTabComponent
+          ),
       },
       {
         path: 'spongeffects-tab',
-        component: SpongeffectsTabComponent,
+        loadComponent: () =>
+          import('./routes/documentation/v2/spongeffects-tab/spongeffects-tab.component').then(
+            (m) => m.SpongeffectsTabComponent
+          ),
       },
       {
         path: '**',
@@ -78,19 +94,31 @@ export const routes: Routes = [
   },
   {
     path: 'download',
-    component: DownloadComponent,
+    loadComponent: () =>
+      import('./routes/download/download.component').then(
+        (m) => m.DownloadComponent
+      ),
   },
   {
     path: 'spongeffects',
-    component: SpongEffectsComponent,
+    loadComponent: () =>
+      import('./routes/spongeffects/spongeffects.component').then(
+        (m) => m.SpongEffectsComponent
+      ),
     children: [
       {
         path: '',
-        component: ExploreComponent,
+        loadComponent: () =>
+          import('./routes/spongeffects/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
       },
       {
         path: 'predict',
-        component: PredictComponent,
+        loadComponent: () =>
+          import('./routes/spongeffects/predict/predict.component').then(
+            (m) => m.PredictComponent
+          ),
       },
     ],
   },
