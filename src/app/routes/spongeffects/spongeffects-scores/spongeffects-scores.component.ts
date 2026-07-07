@@ -16,6 +16,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
+import { EnrichmentClassPlotComponent } from '../explore/plots/enrichment-class-plot/enrichment-class-plot.component';
+import { LollipopPlotComponent } from '../explore/plots/lollipop-plot/lollipop-plot.component';
 
 @Component({
   selector: 'app-spongeffects-scores',
@@ -37,6 +39,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatIconModule,
     CommonModule,
     MatTabsModule,
+    EnrichmentClassPlotComponent,
+    LollipopPlotComponent,
   ],
   providers: [BrowseService],
   templateUrl: './spongeffects-scores.component.html',

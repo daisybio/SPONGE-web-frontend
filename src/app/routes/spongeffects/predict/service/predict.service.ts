@@ -232,6 +232,23 @@ export class PredictService {
       .slice(0, this.topNModules$());
   });
 
+  readonly allScores$ = computed(() => {
+    const pred = this._prediction$.value();
+    if (!pred || !pred.scores || !pred.scores.values) return [];
+    return pred.scores.values.flat();
+  });
+
+  readonly selectedParamSets$ = computed(() => {
+    const vals = this.formGroup.value;
+    return {
+      run_1: {
+        m_scor_threshold: vals.mscor ?? 0.1,
+        p_adj_threshold: vals.fdr ?? 0.05,
+        modules_cutoff: vals.minSize ?? 100
+      }
+    };
+  });
+
   examplePrediction = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);
     const prediction = await response.json();

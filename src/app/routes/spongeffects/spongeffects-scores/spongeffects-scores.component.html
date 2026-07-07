@@ -112,7 +112,7 @@
         </div>
 
         <div class="patient-selector"
-          style="display: flex; gap: 20px; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+          style="display: flex; gap: 20px; align-items: center; padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
           <mat-form-field appearance="outline" style="min-width: 300px;">
             <mat-label>Select Patients to Consider</mat-label>
             <mat-select [value]="predictService.selectedSamples$()"
@@ -138,19 +138,34 @@
 
         <div class="network-container" style="display: flex; flex-direction: row">
           <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
-            style="min-width: 500px; flex-grow: 3; height: 600px;"></app-network>
+            style="min-width: 500px; flex-grow: 3;"></app-network>
           <app-active-entities [browseService]="browseService"
             style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
         </div>
 
       </mat-tab>
-      <!-- <mat-tab label="Explore Reference Data">
-
+      <mat-tab label="SpongEffects Score Distribution">
+        @if (predictService.allScores$().length > 0) {
+          <app-enrichment-class-plot
+            [refreshSignal$]="refreshSignal()"
+            [disease]="predictService.selectedDataset$()?.disease_name"
+            [level]="predictService.level()"
+            [selectedParamSets]="predictService.selectedParamSets$()"
+            [customScores]="predictService.allScores$()"
+            [customLabel]="'Uploaded Samples'">
+          </app-enrichment-class-plot>
+        }
       </mat-tab>
 
-      <mat-tab label="Prediction Results">
-
-      </mat-tab> -->
+      <mat-tab label="Top ceRNA Modules">
+        @if (predictService._prediction$.value()) {
+          <app-lollipop-plot
+            [refreshSignal$]="refreshSignal()"
+            [source]="'predict'"
+            [prediction]="predictService._prediction$.value()">
+          </app-lollipop-plot>
+        }
+      </mat-tab>
     </mat-tab-group>
   </mat-drawer-content>
 </mat-drawer-container>

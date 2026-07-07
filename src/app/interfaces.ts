@@ -397,6 +397,9 @@ export interface SpongEffectsModule {
   spongEffects_run_ID: number;
   spongEffects_module_ID: number;
   enrichment_score?: number;
+  meanEnrichmentScore?: number;
+  absMeanEnrichmentScore?: number;
+  varianceEnrichmentScore?: number;
 }
 
 export interface ModuleMember {

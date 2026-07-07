@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, inject, input, resource, viewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, resource, viewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { EnrichmentScoreDistributions, Metric, PlotData, PlotlyData, RunPerformance } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ExploreService } from "../../service/explore.service";
+import { PredictService } from "../../../predict/service/predict.service";
 import { InfoComponent } from "../../../../../components/info/info.component";
 
 declare var Plotly: any;
@@ -29,35 +30,71 @@ declare var Plotly: any;
   templateUrl: './enrichment-class-plot.component.html',
   styleUrl: './enrichment-class-plot.component.scss'
 })
-export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
+function calculateKDE(values: number[]): { x: number[], y: number[] } {
+  if (values.length === 0) return { x: [], y: [] };
+  
+  const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+  const stdDev = Math.sqrt(variance) || 0.1;
+  const bandwidth = 1.06 * stdDev * Math.pow(values.length, -0.2) || 0.1;
+  
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min;
+  
+  const x: number[] = [];
+  const steps = 100;
+  for (let i = 0; i <= steps; i++) {
+    x.push(min - 0.2 * range + (1.4 * range * i / steps));
+  }
+  
+  const y = x.map(point => {
+    return values.reduce((sum, v) => {
+      const u = (point - v) / bandwidth;
+      return sum + Math.exp(-0.5 * u * u) / (bandwidth * Math.sqrt(2 * Math.PI));
+    }, 0) / values.length;
+  });
+  
+  return { x, y };
+}
+
+export class EnrichmentClassPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   versionService = inject(VersionsService);
-  exploreService = inject(ExploreService);
+  exploreService = inject(ExploreService, { optional: true });
+  predictService = inject(PredictService, { optional: true });
   backend = inject(BackendService);
   refreshSignal$ = input();
-  selectedDisease = this.exploreService.selectedDisease$;
+  
+  // Inputs
+  diseaseInput = input<string | undefined>(undefined, { alias: 'disease' });
+  levelInput = input<'gene' | 'transcript' | undefined>(undefined, { alias: 'level' });
+  paramSetsInput = input<{ [key: string]: any } | undefined>(undefined, { alias: 'selectedParamSets' });
+  customScores = input<number[] | undefined>(undefined);
+  customLabel = input<string>('Uploaded Samples');
+
+  selectedDisease = computed(() => this.diseaseInput() ?? this.exploreService?.selectedDisease$() ?? 'pancancer');
+  level$ = computed(() => this.levelInput() ?? this.exploreService?.level$() ?? 'gene');
+  selectedParamSets$ = computed(() => this.paramSetsInput() ?? this.exploreService?.selectedParamSets$() ?? {});
 
   enrichmentClassPlot = viewChild.required<ElementRef<HTMLDivElement>>('enrichmentClassPlot');
 
   private resizeObserver: ResizeObserver | null = null;
 
-  // plot parameters
-
   plotEnrichmentClassResouce = resource({
     request: computed(() => {
       return {
         version: this.versionService.versionReadOnly()(),
-        cancer: this.exploreService.selectedDisease$(),
-        level: this.exploreService.level$(),
-        selectedParamSets: this.exploreService.selectedParamSets$()
+        cancer: this.selectedDisease(),
+        level: this.level$(),
+        selectedParamSets: this.selectedParamSets$(),
+        customScores: this.customScores(),
+        customLabel: this.customLabel()
       }
     }),
     loader: async (param) => {
-      const version = param.request.version;
-      const cancer = param.request.cancer;
-      const level = param.request.level;
-      const selectedParamSets = param.request.selectedParamSets;
+      const { version, cancer, level, selectedParamSets, customScores, customLabel } = param.request;
       if (version === undefined || cancer === undefined || level === undefined || selectedParamSets == undefined) return;
-      const data = this.getEnrichmentClassData(version, cancer, level, selectedParamSets);
+      const data = await this.getEnrichmentClassData(version, cancer, level, selectedParamSets, customScores, customLabel);
       return await this.plotEnrichmentClassPlot(data);
     }
   });
@@ -66,6 +103,9 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
     this.refreshSignal$();
     this.refreshPlot();
   });
+
+  ngOnInit() {
+  }
 
   ngAfterViewInit() {
     this.resizeObserver = new ResizeObserver(() => {
@@ -82,13 +122,22 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
   }
 
   clearEffect = effect(() => {
-    this.exploreService.selectedDisease$();
-    this.exploreService.level$();
+    if (this.exploreService) {
+      this.exploreService.selectedDisease$();
+      this.exploreService.level$();
+    }
     this.clearPlot();
   });
 
-  async getEnrichmentClassData(version: number, cancer: string, level: string, selectedParamSets: { [key: string]: any }): Promise<any> {
-    const datas: EnrichmentScoreDistributions[] = []
+  async getEnrichmentClassData(
+    version: number,
+    cancer: string,
+    level: string,
+    selectedParamSets: { [key: string]: any },
+    customScores?: number[],
+    customLabel?: string
+  ): Promise<any> {
+    const datas: EnrichmentScoreDistributions[] = [];
     for (const [key, value] of Object.entries(selectedParamSets)) {
       const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level, selectedParamSets);
       data.map((entry: EnrichmentScoreDistributions) => {
@@ -107,6 +156,11 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
       }
     });
 
+    if (customScores && customScores.length > 0 && customLabel) {
+      const { x, y } = calculateKDE(customScores);
+      classDensities.set(customLabel, { x, y });
+    }
+
     return classDensities;
   }
 
@@ -119,8 +173,15 @@ export class EnrichmentClassPlotComponent implements AfterViewInit, OnDestroy {
     // fill subtype specific data
     let data: any[] = [];
     const enrichmentDataResponse = await enrichmentData;
-    const classes = [...enrichmentDataResponse.keys()].sort();
-    const colorMap = buildColorMap(classes, parentType);
+    const customLbl = this.customLabel();
+    let classes = [...enrichmentDataResponse.keys()].filter(k => k !== customLbl).sort();
+    if (enrichmentDataResponse.has(customLbl)) {
+      classes.push(customLbl);
+    }
+    const colorMap = buildColorMap(classes.filter(k => k !== customLbl), parentType);
+    if (enrichmentDataResponse.has(customLbl)) {
+      colorMap[customLbl] = '#8e44ad';
+    }
 
     enrichmentDataResponse.forEach((plotData, subtype) => {
       const color = colorMap[subtype] ?? '#888888';
