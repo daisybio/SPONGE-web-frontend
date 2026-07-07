@@ -18,6 +18,10 @@ import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EnrichmentClassPlotComponent } from '../explore/plots/enrichment-class-plot/enrichment-class-plot.component';
 import { LollipopPlotComponent } from '../explore/plots/lollipop-plot/lollipop-plot.component';
+import { PredictionResultsComponent } from '../predict/prediction-results/prediction-results.component';
+import { PredictionTableComponent } from '../predict/prediction-results/prediction-table/prediction-table.component';
+import { ModuleFormComponent } from '../explore/form/module-form/module-form.component';
+import { ClassificationPlotComponent } from "../predict/classification-plot/classification-plot.component";
 
 @Component({
   selector: 'app-spongeffects-scores',
@@ -41,6 +45,10 @@ import { LollipopPlotComponent } from '../explore/plots/lollipop-plot/lollipop-p
     MatTabsModule,
     EnrichmentClassPlotComponent,
     LollipopPlotComponent,
+    PredictionResultsComponent,
+    PredictionTableComponent,
+    ModuleFormComponent,
+    ClassificationPlotComponent
   ],
   providers: [BrowseService],
   templateUrl: './spongeffects-scores.component.html',

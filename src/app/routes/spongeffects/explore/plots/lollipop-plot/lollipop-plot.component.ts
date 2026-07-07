@@ -42,7 +42,8 @@ import {
   PlotlyData,
   SpongEffectsModule,
   SpongEffectsRun,
-  ModuleMember
+  ModuleMember,
+  PredictCancerType
 } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
@@ -109,7 +110,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isLoading$ = this.browseService.isLoading$;
 
-  lollipopPlot = viewChild.required<ElementRef>('lollipopPlot');
+  lollipopPlot = viewChild<ElementRef>('lollipopPlot');
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -126,42 +127,43 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   topN = signal<number | undefined>(15);
   redNodes = signal<number | undefined>(5);
-  includeModuleMembers = signal<boolean>(false);
+  includeModuleMembers = signal<boolean | null>(false);
 
   get includeModuleMembersControl(): FormControl {
     return this.formGroup.get('includeModuleMembers') as FormControl;
   }
 
+  sortBy$ = signal<string>('');
+  minScore1$ = signal<number | null>(null);
+  minScore2$ = signal<number | null>(null);
+
   defaultMarkerSize = 12;
   MAX_ELEMENTS = 100;
 
-  selectedVis = signal<string>('centers');
+  selectedVis = signal<string>('plot');
 
   columnNamesCenters$ = computed<{ [key: string]: string }>(() => {
-    if (this.source() === 'predict') {
-      return {
-        symbol: 'Symbol',
-        ensemblID: 'Ensembl ID',
-        meanEnrichmentScore: 'Mean Enrichment Score',
-        varianceEnrichmentScore: 'Enrichment Score Variance',
-        moduleParams: 'Module Parameters'
-      };
-    } else {
-      return {
-        symbol: 'Symbol',
-        ensemblID: 'Ensembl ID',
-        meanAccuracyDecrease: 'Mean Accuracy Decrease',
-        meanGiniDecrease: 'Mean Gini Decrease',
-        moduleParams: 'Module Parameters'
-      };
-    }
+    const result: { [key: string]: string } = this.source() === 'predict' ? {
+      symbol: 'Symbol',
+      ensemblID: 'Ensembl ID',
+      meanEnrichmentScore: 'Mean Enrichment Score',
+      varianceEnrichmentScore: 'Enrichment Score Variance',
+      moduleParams: 'Module Parameters'
+    } : {
+      symbol: 'Symbol',
+      ensemblID: 'Ensembl ID',
+      meanAccuracyDecrease: 'Mean Accuracy Decrease',
+      meanGiniDecrease: 'Mean Gini Decrease',
+      moduleParams: 'Module Parameters'
+    };
+    return result;
   });
 
   displayedColumnsCenters$ = computed(() => {
     return Object.keys(this.columnNamesCenters$());
   });
 
-  columnNamesMembers = {
+  columnNamesMembers: { [key: string]: string } = {
     symbol: 'Symbol',
     ensemblID: 'Ensembl ID',
     moduleCenter: 'Module Center',
@@ -224,7 +226,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       
       // Resolve all gene symbols in parallel
       const symbolMap = new Map<string, string>();
-      await Promise.all(genes.map(async (geneId) => {
+      await Promise.all(genes.map(async (geneId: string) => {
         try {
           const response = await this.backend.getGeneInfo(version, geneId);
           if (response.length === 1) {
@@ -240,10 +242,10 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
         const scoresForGene = values[i] || [];
         
         const count = scoresForGene.length;
-        const sum = scoresForGene.reduce((s, v) => s + v, 0);
+        const sum = scoresForGene.reduce((s: number, v: number) => s + v, 0);
         const mean = count > 0 ? sum / count : 0;
         const variance = count > 0 
-          ? scoresForGene.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / count 
+          ? scoresForGene.reduce((s: number, v: number) => s + Math.pow(v - mean, 2), 0) / count 
           : 0;
           
         modules.push({
@@ -270,9 +272,6 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   });
 
-  sortBy$ = signal<string>('');
-  minScore1$ = signal<number | null>(null);
-  minScore2$ = signal<number | null>(null);
 
   filteredAndSortedModules$ = computed(() => {
     let list = [...this.allModules$()];
@@ -367,8 +366,8 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!pred || !pred.scores || !pred.scores.genes || !pred.scores.values) return [];
         
         const res: any[] = [];
-        const finalGenes = modules.map(m => m.ensemblID);
-        const finalGenesSymbols = new Map(modules.map(m => [m.ensemblID, m.symbol]));
+        const finalGenes = modules.map((m: SpongEffectsModule) => m.ensemblID);
+        const finalGenesSymbols = new Map(modules.map((m: SpongEffectsModule) => [m.ensemblID, m.symbol]));
         const samples = pred.scores.samples;
         
         for (const ensemblID of finalGenes) {
@@ -382,7 +381,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
             const sample = samples[sampleIdx];
             const val = scoresForGene[sampleIdx] ?? 0;
             
-            const samplePred = pred.data.find(d => d.sampleID === sample);
+            const samplePred = pred.data.find((d: any) => d.sampleID === sample);
             const subtype = samplePred ? samplePred.typePrediction : 'Unknown';
             
             res.push({
@@ -650,6 +649,9 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       this.includeModuleMembers = this.exploreService.includeModuleMembers;
       this.selectedVis = this.exploreService.selectedVis;
       this.MAX_ELEMENTS = this.exploreService.MAX_ELEMENTS;
+      this.sortBy$ = this.exploreService.sortBy;
+      this.minScore1$ = this.exploreService.minScore1;
+      this.minScore2$ = this.exploreService.minScore2;
     }
 
     this.initializeSpongEffectRuns();
@@ -691,11 +693,10 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupEffects(): void {
-    // Keep the form control in sync if the signal changes elsewhere
     effect(() => {
       const value = this.includeModuleMembers();
       if (this.formGroup.get('includeModuleMembers')?.value !== value) {
-        this.formGroup.get('includeModuleMembers')?.setValue(value, { emitEvent: false });
+        this.formGroup.get('includeModuleMembers')?.setValue(value || false, { emitEvent: false });
       }
       const topN = this.topN();
       if (this.formGroup.get('topControl')?.value !== topN) {
@@ -741,8 +742,11 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
     effect(() => {
       const redNodes = this.redNodes();
       const modules = this.filteredAndSortedModules$();
-      if (modules && modules.length > 0 && redNodes) {
-        this.renderLollipopPlot(modules, redNodes);
+      const vis = this.selectedVis();
+      if (vis === 'plot' && modules && modules.length > 0 && redNodes) {
+        setTimeout(() => {
+          this.renderLollipopPlot(modules, redNodes);
+        });
       }
     });
 
@@ -839,10 +843,13 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   private async getMembersForTable(
     modules: SpongEffectsModule[],
   ): Promise<MatTableDataSource<ModuleMember>> {
+    if (!this.exploreService) {
+      return new MatTableDataSource<ModuleMember>([]);
+    }
     const fetchPromises = modules.map(async module => {
-      const key = this.exploreService.getModuleKey(module);
-      if (!this.exploreService.moduleMembersMap.has(key)) {
-        await this.exploreService.fetchModuleMembers(module);
+      const key = this.exploreService!.getModuleKey(module);
+      if (!this.exploreService!.moduleMembersMap.has(key)) {
+        await this.exploreService!.fetchModuleMembers(module);
       }
     });
 
@@ -850,8 +857,8 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const allMembers: ModuleMember[] = [];
     for (const module of modules) {
-      const key = this.exploreService.getModuleKey(module);
-      const members = this.exploreService.moduleMembersMap.get(key) || [];
+      const key = this.exploreService!.getModuleKey(module);
+      const members = this.exploreService!.moduleMembersMap.get(key) || [];
 
       allMembers.push(...members.map(m => ({
         ...m,
@@ -905,20 +912,27 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       responsive: true
     };
 
-    Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
+    const el = this.lollipopPlot()?.nativeElement;
+    if (el) {
+      Plotly.newPlot(el, data, layout, config);
+    }
   }
 
   refreshPlotSizes(): void {
-    const lollipopElement = this.lollipopPlot().nativeElement;
-
-    if (lollipopElement.checkVisibility()) {
+    const lollipopElement = this.lollipopPlot()?.nativeElement;
+    if (lollipopElement && lollipopElement.checkVisibility()) {
       Plotly.Plots.resize(lollipopElement);
     }
   }
 
   clearAll(): void {
-    Plotly.purge(this.lollipopPlot().nativeElement);
-    this.exploreService.moduleMembersMap = new Map<string, ModuleMember[]>();
+    const el = this.lollipopPlot()?.nativeElement;
+    if (el) {
+      Plotly.purge(el);
+    }
+    if (this.exploreService) {
+      this.exploreService.moduleMembersMap = new Map<string, ModuleMember[]>();
+    }
     this.elementLimitWarning.set(false);
   }
 
