@@ -68,7 +68,7 @@ export class ModuleHeatmapComponent {
     this.processEnrichmentScores(this.enrichmentScores$());
   }
 
-  async processEnrichmentScores(scores: Scores): Promise<void> {
+  async processEnrichmentScores(scores: Scores | undefined): Promise<void> {
     if (!scores || !scores.genes || !scores.samples || !scores.values) {
       return;
     }
