@@ -406,6 +406,7 @@ export interface ModuleMember {
   ensemblID: string;
   symbol: string;
   moduleCenter: string;
+  moduleCenterID?: string;
   spongEffects_run_ID: number;
 }
 

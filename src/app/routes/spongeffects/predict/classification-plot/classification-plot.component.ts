@@ -220,7 +220,7 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
         const allPatientScores = patientData.flatMap(p => p.moduleScores);
         if (allPatientScores.length) {
           const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
-          const legendName = patientData.length === 1 ? `Your Sample: ${patientData[0].sampleID}` : `Your Samples (n=${patientData.length})`;
+          const legendName = patientData.length === 1 ? `Your Sample: ${patientData[0].sampleID}` : `Your Samples (Predicted type: ${cls} n=${patientData.length})`;
           maxDensity = Math.max(maxDensity, Math.max(...gaussianKDE(allPatientScores, grid)));
 
           traces.push({

@@ -40,7 +40,7 @@ export class GseaPlotComponent {
     @Inject(MAT_DIALOG_DATA) public data: GseaPlotData,
     private sanitizer: DomSanitizer,
     private backend: BackendService
-  ) {}
+  ) { }
 
   // Using resource API to fetch the image
   imageResource = resource({

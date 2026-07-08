@@ -1,15 +1,16 @@
-import {Component, inject, input} from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatSelectModule} from "@angular/material/select";
-import {MatButtonToggleModule} from "@angular/material/button-toggle";
+import { Component, inject, input } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatSelectModule } from "@angular/material/select";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import {ExploreService} from "../service/explore.service";
-import {MatCardModule} from "@angular/material/card";
-import {capitalize} from "lodash";
-import {MatChipsModule} from '@angular/material/chips';
-import {BrowseService} from "../../../../services/browse.service";
-import {MatInputModule} from "@angular/material/input";
+import { ExploreService } from "../service/explore.service";
+import { MatCardModule } from "@angular/material/card";
+import { capitalize } from "lodash";
+import { MatChipsModule } from '@angular/material/chips';
+import { BrowseService } from "../../../../services/browse.service";
+import { MatInputModule } from "@angular/material/input";
+import { MatAccordion, MatExpansionModule } from "@angular/material/expansion";
 
 @Component({
   selector: 'app-explore-form',
@@ -23,6 +24,8 @@ import {MatInputModule} from "@angular/material/input";
     MatCardModule,
     MatChipsModule,
     MatInputModule,
+    MatAccordion,
+    MatExpansionModule
   ],
   templateUrl: './explore-form.component.html',
   styleUrl: './explore-form.component.scss'

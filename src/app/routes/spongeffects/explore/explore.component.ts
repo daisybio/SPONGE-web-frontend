@@ -1,22 +1,23 @@
-import {Component, signal, inject} from '@angular/core';
-import {MatExpansionModule} from "@angular/material/expansion";
-import {MatIconModule} from "@angular/material/icon";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
-import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import {MatCardModule} from '@angular/material/card';
-import {ClassPerformancePlotComponent} from "./plots/class-performance-plot/class-performance-plot.component";
-import {OverallAccPlotComponent} from "./plots/overall-acc-plot/overall-acc-plot.component";
-import {MatTabsModule} from "@angular/material/tabs";
-import {fromEvent} from "rxjs";
+import { Component, signal, inject } from '@angular/core';
+import { MatExpansionModule } from "@angular/material/expansion";
+import { MatIconModule } from "@angular/material/icon";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatCardModule } from '@angular/material/card';
+import { ClassPerformancePlotComponent } from "./plots/class-performance-plot/class-performance-plot.component";
+import { OverallAccPlotComponent } from "./plots/overall-acc-plot/overall-acc-plot.component";
+import { MatTabsModule } from "@angular/material/tabs";
+import { fromEvent } from "rxjs";
 import { EnrichmentClassPlotComponent } from './plots/enrichment-class-plot/enrichment-class-plot.component';
 import { LollipopPlotComponent } from './plots/lollipop-plot/lollipop-plot.component';
 import { BrowseService } from '../../../services/browse.service';
 import { ExploreService } from './service/explore.service';
 import { ExploreFormComponent } from './form/explore-form.component';
 import { FormComponent } from '../../browse/form/form.component';
-import { MatDrawerContainer, MatDrawer, MatDrawerContent} from '@angular/material/sidenav';
+import { ModuleFormComponent } from './form/module-form/module-form.component';
+import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
 import { ExploreBrowseService } from '../../../services/explore.browse.service';
 
 @Component({
@@ -35,8 +36,9 @@ import { ExploreBrowseService } from '../../../services/explore.browse.service';
     MatTabsModule,
     EnrichmentClassPlotComponent,
     LollipopPlotComponent,
-    ExploreFormComponent, 
+    ExploreFormComponent,
     FormComponent,
+    ModuleFormComponent,
     MatDrawer,
     MatDrawerContainer,
     MatDrawerContent,
@@ -44,8 +46,8 @@ import { ExploreBrowseService } from '../../../services/explore.browse.service';
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss'],
   providers: [{
-    provide: BrowseService, 
-    useClass: ExploreBrowseService 
+    provide: BrowseService,
+    useClass: ExploreBrowseService
   }]
 })
 export class ExploreComponent {

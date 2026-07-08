@@ -1,0 +1,45 @@
+<div style="padding: 16px; border-top: 1px solid #eee;">
+  <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Module Filtering</h3>
+  
+  <form [formGroup]="formGroup" style="margin: 0px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>Display limit</mat-label>
+        <input formControlName="topControl" type="number" matInput max="100" min="3" step="1">
+        <mat-error>Must be between 3 and 100</mat-error>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>Highlight limit (red)</mat-label>
+        <input formControlName="markControl" matInput type="number" max="100" min="1" step="1" />
+        <mat-error>Must be between 1 and 100</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>Sort by</mat-label>
+        <mat-select formControlName="sortBy">
+          @if (source() === 'explore') {
+            <mat-option value="meanAccuracyDecrease">Mean Accuracy Decrease</mat-option>
+            <mat-option value="meanGiniDecrease">Mean Gini Decrease</mat-option>
+          } @else {
+            <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
+            <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
+            <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>{{ source() === 'explore' ? 'Min. Accuracy Decrease' : 'Min. Abs. Enrichment' }}</mat-label>
+        <input formControlName="filterMinScore1" type="number" matInput step="0.01">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>{{ source() === 'explore' ? 'Min. Gini Decrease' : 'Min. Enrichment Variance' }}</mat-label>
+        <input formControlName="filterMinScore2" type="number" matInput step="0.01">
+      </mat-form-field>
+
+    </div>
+  </form>
+</div>

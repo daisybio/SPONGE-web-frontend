@@ -248,7 +248,8 @@ export class BackendService {
     disease: Dataset,
     maxPValue: number,
     identifiers: string[],
-    level: 'gene' | 'transcript'
+    level: 'gene' | 'transcript',
+    limit?: number
   ): Promise<(GeneInteraction | TranscriptInteraction)[]> {
     const route =
       level == 'gene'
@@ -265,6 +266,9 @@ export class BackendService {
       dataset_ID: disease.dataset_ID,
       pValue: maxPValue,
     };
+    if (limit !== undefined) {
+      query['limit'] = limit;
+    }
 
     if (level == 'gene') {
       query['ensg_number'] = identifiers.join(',');

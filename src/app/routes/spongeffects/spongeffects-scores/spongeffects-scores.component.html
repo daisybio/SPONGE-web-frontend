@@ -172,16 +172,16 @@
         }
       </mat-tab>
 
+      <!-- Tab 6: Score Classification -->
+      <!-- <mat-tab label="Score Classification">
+        <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+      </mat-tab> -->
+
       <!-- Tab 5: Prediction Results -->
       <mat-tab label="Prediction Results">
         <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
         <hr>
         <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
-      </mat-tab>
-
-      <!-- Tab 6: Score Classification -->
-      <mat-tab label="Score Classification">
-        <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
       </mat-tab>
 
     </mat-tab-group>

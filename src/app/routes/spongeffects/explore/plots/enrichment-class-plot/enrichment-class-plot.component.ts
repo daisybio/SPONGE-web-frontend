@@ -15,21 +15,6 @@ import { InfoComponent } from "../../../../../components/info/info.component";
 
 declare var Plotly: any;
 
-@Component({
-  selector: 'app-enrichment-class-plot',
-  imports: [
-    MatExpansionModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatProgressBarModule,
-    InfoComponent
-  ],
-  templateUrl: './enrichment-class-plot.component.html',
-  styleUrl: './enrichment-class-plot.component.scss'
-})
 function calculateKDE(values: number[]): { x: number[], y: number[] } {
   if (values.length === 0) return { x: [], y: [] };
   
@@ -58,6 +43,21 @@ function calculateKDE(values: number[]): { x: number[], y: number[] } {
   return { x, y };
 }
 
+@Component({
+  selector: 'app-enrichment-class-plot',
+  imports: [
+    MatExpansionModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatProgressBarModule,
+    InfoComponent
+  ],
+  templateUrl: './enrichment-class-plot.component.html',
+  styleUrl: './enrichment-class-plot.component.scss'
+})
 export class EnrichmentClassPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   versionService = inject(VersionsService);
   exploreService = inject(ExploreService, { optional: true });

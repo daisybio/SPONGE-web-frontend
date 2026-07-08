@@ -17,7 +17,7 @@ import { debounceTime, fromEvent } from 'rxjs';
   templateUrl: './spongeffects.component.html',
   imports: [
     ExploreComponent,
-    PredictComponent,
+    // PredictComponent,
     SpongeffectsScoresComponent,
     MatButtonToggleModule,
     InfoComponent,

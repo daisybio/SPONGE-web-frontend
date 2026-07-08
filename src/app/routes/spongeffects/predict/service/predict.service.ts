@@ -420,9 +420,11 @@ export class PredictService {
                 gene?: { ensg_number: string };
                 transcript?: { enst_number: string };
               }) => {
-                geneIDs.add(
-                  'gene' in m ? m.gene!.ensg_number : m.transcript!.enst_number,
-                );
+                if (m.gene) {
+                  geneIDs.add(m.gene.ensg_number);
+                } else if (m.transcript) {
+                  geneIDs.add(m.transcript.enst_number);
+                }
               },
             );
         } catch (e) {
@@ -441,6 +443,7 @@ export class PredictService {
           maxPValue,
           identifiers,
           level,
+          maxNodes
         );
 
         // Apply client-side mscor filter
@@ -448,22 +451,8 @@ export class PredictService {
           (int: any) => int.mscor >= minMscor,
         );
 
-        // Collect all node IDs from interactions
-        const nodeIDsInEdges = new Set<string>();
-        filteredInteractions.forEach((int: any) => {
-          if ('gene1' in int) {
-            nodeIDsInEdges.add(int.gene1.ensg_number);
-            nodeIDsInEdges.add(int.gene2.ensg_number);
-          } else {
-            nodeIDsInEdges.add(int.transcript_1.enst_number);
-            nodeIDsInEdges.add(int.transcript_2.enst_number);
-          }
-        });
 
-        // Also include orphan module centers (no interactions found)
-        identifiers.forEach((id) => nodeIDsInEdges.add(id));
-
-        // Build synthetic GeneNode objects from interaction data
+        // Build synthetic node objects from interaction data (both gene- and transcript-level)
         const nodeMap = new Map<string, GeneNode>();
         filteredInteractions.forEach((int: any) => {
           if ('gene1' in int) {
@@ -491,13 +480,54 @@ export class PredictService {
             };
             add(int.gene1);
             add(int.gene2);
+          } else {
+            // transcript-level interactions
+            const add = (t: { enst_number: string; gene?: { ensg_number: string; gene_symbol?: string } }) => {
+              if (!nodeMap.has(t.enst_number)) {
+                nodeMap.set(t.enst_number, {
+                  transcript: {
+                    enst_number: t.enst_number,
+                    gene: t.gene ?? { ensg_number: t.enst_number },
+                  },
+                  betweenness: 0,
+                  eigenvector: 0,
+                  node_degree: 0,
+                  sponge_run: {
+                    dataset: {
+                      data_origin: '',
+                      dataset_ID: dataset.dataset_ID,
+                      disease_name: dataset.disease_name,
+                      disease_subtype: '',
+                    },
+                    sponge_run_ID: 0,
+                  },
+                } as any);
+              }
+            };
+            add(int.transcript_1);
+            add(int.transcript_2);
           }
         });
 
-        // Add orphan nodes (module centers with no edges)
+        // Add orphan nodes: any identifier not covered by an interaction
         identifiers.forEach((id) => {
           if (!nodeMap.has(id)) {
-            nodeMap.set(id, {
+            const isTranscript = level === 'transcript';
+            nodeMap.set(id, (isTranscript ? {
+              transcript: { enst_number: id, gene: { ensg_number: id, gene_symbol: id } },
+              betweenness: 0,
+              eigenvector: 0,
+              node_degree: 0,
+              sponge_run: {
+                dataset: {
+                  data_origin: '',
+                  dataset_ID: dataset.dataset_ID,
+                  disease_name: dataset.disease_name,
+                  disease_subtype: '',
+                },
+                sponge_run_ID: 0,
+              },
+            } : {
               gene: { ensg_number: id, gene_symbol: id },
               betweenness: 0,
               eigenvector: 0,
@@ -511,7 +541,7 @@ export class PredictService {
                 },
                 sponge_run_ID: 0,
               },
-            } as GeneNode);
+            }) as any);
           }
         });
 
@@ -546,10 +576,20 @@ export class PredictService {
           nodes = nodes.filter((n) => n.node_degree > 0);
         }
 
-        // Limit to maxNodes (sort by degree for now as centrality is 0)
-        nodes = nodes
+        // Limit to maxNodes, but always keep module center nodes (topModules gene IDs)
+        const moduleCenterIDs = new Set(topModules.map((m: { gene: string }) => m.gene));
+        const centerNodes = nodes.filter((n) => {
+          const id = 'gene' in n ? n.gene.ensg_number : (n as any).transcript.enst_number;
+          return moduleCenterIDs.has(id);
+        });
+        const nonCenterNodes = nodes
+          .filter((n) => {
+            const id = 'gene' in n ? n.gene.ensg_number : (n as any).transcript.enst_number;
+            return !moduleCenterIDs.has(id);
+          })
           .sort((a, b) => b.node_degree - a.node_degree)
-          .slice(0, maxNodes);
+          .slice(0, Math.max(0, maxNodes - centerNodes.length));
+        nodes = [...centerNodes, ...nonCenterNodes];
 
         // Final edge filtering based on remaining nodes
         const finalNodeIDs = new Set(

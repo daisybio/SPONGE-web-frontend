@@ -43,7 +43,9 @@ import {
   SpongEffectsModule,
   SpongEffectsRun,
   ModuleMember,
-  PredictCancerType
+  PredictCancerType,
+  Gene,
+  Transcript
 } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
@@ -57,6 +59,10 @@ import { NetworkComponent } from '../../../../../components/browse-views/network
 import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
 import { BrowseService } from '../../../../../services/browse.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CartService } from '../../../../../services/cart.service';
+import { ModalsService } from '../../../../../components/modals-service/modals.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 declare var Plotly: any;
 
@@ -83,7 +89,8 @@ declare var Plotly: any;
     MatButtonToggleModule,
     NetworkComponent,
     ActiveEntitiesComponent,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
@@ -95,6 +102,36 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   predictService = inject(PredictService, { optional: true });
   browseService = inject(BrowseService);
   infoService = inject(InfoService);
+  modalsService = inject(ModalsService);
+  cartService = inject(CartService);
+
+  openEntityDialog(ensemblID: string, symbol?: string) {
+    if (ensemblID.startsWith('ENSG')) {
+      this.modalsService.openNodeDialog({
+        ensg_number: ensemblID,
+        gene_symbol: symbol
+      } as Gene);
+    } else {
+      this.modalsService.openNodeDialog({
+        enst_number: ensemblID,
+        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
+      } as Transcript);
+    }
+  }
+
+  addToCart(ensemblID: string, symbol?: string) {
+    if (ensemblID.startsWith('ENSG')) {
+      this.cartService.add({
+        ensg_number: ensemblID,
+        gene_symbol: symbol
+      } as Gene);
+    } else {
+      this.cartService.add({
+        enst_number: ensemblID,
+        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
+      } as Transcript);
+    }
+  }
 
   // Inputs
   source = input<'explore' | 'predict'>('explore');
@@ -605,6 +642,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
           const members = this.predictModuleMembersMap.get(key) || [];
           allMembers.push(...members.map(m => ({
             ...m,
+            moduleCenterID: module.ensemblID,
             moduleParams: 'Custom Prediction'
           })));
         }
@@ -624,6 +662,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
           const members = this.exploreService!.moduleMembersMap.get(key) || [];
           allMembers.push(...members.map(m => ({
             ...m,
+            moduleCenterID: module.ensemblID,
             moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
           })));
         }

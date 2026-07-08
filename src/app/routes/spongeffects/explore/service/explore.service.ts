@@ -61,7 +61,7 @@ export class ExploreService {
     const index = this.highestKey().split('_')[1];
     return this.paramSets$()[parseInt(index, 10) - 1];
   });
-  selectedVis = signal<string>('centers');
+  selectedVis = signal<string>('plot');
 
   // For each disease, there are multiple spongeffects runs — filter to get runs for selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
@@ -180,6 +180,9 @@ export class ExploreService {
   topN = signal<number | undefined>(15);
   redNodes = signal<number | undefined>(5);
   includeModuleMembers = signal<boolean | null>(true);
+  sortBy = signal<string>('');
+  minScore1 = signal<number | null>(null);
+  minScore2 = signal<number | null>(null);
 
   selectedModules = resource({
     request: () => ({
