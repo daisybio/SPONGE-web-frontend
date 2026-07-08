@@ -1,3 +1,4 @@
+// Trigger watcher rebuild
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { PredictFormComponent } from '../predict/form/predict-form.component';
 import { PredictService } from '../predict/service/predict.service';
