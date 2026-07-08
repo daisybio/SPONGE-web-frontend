@@ -91,16 +91,6 @@ export class DiseaseSimilarityComponent implements OnDestroy {
 
       return [
         {
-          x: x.filter((_, i) => activeMask[i]),
-          y: y.filter((_, i) => activeMask[i]),
-          type: 'scatter',
-          mode: 'markers',
-          name: 'Active',
-          text: labels
-            .filter((_, i) => activeMask[i])
-            .map(capitalize),
-        },
-        {
           x: x.filter((_, i) => !activeMask[i]),
           y: y.filter((_, i) => !activeMask[i]),
           type: 'scatter',
@@ -108,6 +98,16 @@ export class DiseaseSimilarityComponent implements OnDestroy {
           name: 'Inactive',
           text: labels
             .filter((_, i) => !activeMask[i])
+            .map(capitalize),
+        },
+        {
+          x: x.filter((_, i) => activeMask[i]),
+          y: y.filter((_, i) => activeMask[i]),
+          type: 'scatter',
+          mode: 'markers',
+          name: 'Active',
+          text: labels
+            .filter((_, i) => activeMask[i])
             .map(capitalize),
         },
       ];

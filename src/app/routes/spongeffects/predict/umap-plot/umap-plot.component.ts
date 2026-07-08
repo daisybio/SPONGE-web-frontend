@@ -54,7 +54,7 @@ export class UmapPlotComponent implements OnDestroy {
   predictService = inject(PredictService);
   plotDiv = viewChild.required<ElementRef<HTMLDivElement>>('umapPlot');
 
-  isLoading = computed(() => this.predictService.isLoadingPrediction$());
+  isLoading = computed(() => this.predictService.isLoading$());
   hasData = signal(false);
 
   private resizeObserver: ResizeObserver | null = null;
@@ -136,11 +136,11 @@ export class UmapPlotComponent implements OnDestroy {
         x: userX,
         y: userY,
         text: userText,
-        type: 'scatter',
+        type: 'scattergl',
         mode: 'markers',
         name: 'Your Samples',
         marker: {
-          size: 14,
+          size: 8,
           color: '#e74c3c',
           symbol: 'diamond',
           line: {
@@ -158,10 +158,12 @@ export class UmapPlotComponent implements OnDestroy {
         hovermode: 'closest',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        height: 650,
+        height: 900,
+        width: 1100,
         legend: {
           orientation: 'h',
-          y: -0.15,
+          y: 1,
+          x: 1
         },
       };
 

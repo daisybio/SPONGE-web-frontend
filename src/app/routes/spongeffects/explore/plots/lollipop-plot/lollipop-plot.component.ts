@@ -894,25 +894,37 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {
     const isPredict = this.source() === 'predict';
-    const xData = isPredict
-      ? limitedData.map(g => g.meanEnrichmentScore ?? 0)
-      : limitedData.map(g => g.meanGiniDecrease);
-    const yData = isPredict
-      ? limitedData.map(g => g.varianceEnrichmentScore ?? 0)
-      : limitedData.map(g => g.meanAccuracyDecrease);
+    const greyData = limitedData.slice(redNodes);
+    const redData = limitedData.slice(0, redNodes);
 
-    const data = [{
-      x: xData,
-      y: yData,
-      mode: 'markers',
-      type: 'scatter',
-      name: 'Modules',
-      text: limitedData.map(g => g.symbol),
-      marker: {
-        size: this.defaultMarkerSize,
-        color: limitedData.map((_, i) => i < redNodes ? 'red' : 'grey')
+    const data = [
+      {
+        x: isPredict ? greyData.map(g => g.meanEnrichmentScore ?? 0) : greyData.map(g => g.meanGiniDecrease),
+        y: isPredict ? greyData.map(g => g.varianceEnrichmentScore ?? 0) : greyData.map(g => g.meanAccuracyDecrease),
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Other Modules',
+        text: greyData.map(g => g.symbol),
+        marker: {
+          size: this.defaultMarkerSize,
+          color: 'grey',
+          opacity: 0.5
+        }
+      },
+      {
+        x: isPredict ? redData.map(g => g.meanEnrichmentScore ?? 0) : redData.map(g => g.meanGiniDecrease),
+        y: isPredict ? redData.map(g => g.varianceEnrichmentScore ?? 0) : redData.map(g => g.meanAccuracyDecrease),
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Top Modules',
+        text: redData.map(g => g.symbol),
+        marker: {
+          size: this.defaultMarkerSize,
+          color: 'red',
+          opacity: 1
+        }
       }
-    }];
+    ];
 
     const layout = {
       title: isPredict ? 'Module Enrichment & Variance' : 'Module Importance',
