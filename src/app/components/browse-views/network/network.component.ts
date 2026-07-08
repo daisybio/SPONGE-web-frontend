@@ -92,6 +92,24 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   level$ = computed(() => this.browseService().level$());
+  legendItems$ = signal<{ type: string; color: string }[]>([]);
+
+  getNodeColorForType(nodeType?: string): string {
+    if (!nodeType) return '#052444';
+    const typeLower = nodeType.toLowerCase().replace(/_/g, '').replace(/ /g, '');
+    if (typeLower === 'unknown') return '#052444';
+
+    if (typeLower.includes('proteincoding')) return '#1f77b4'; // Steel Blue
+    if (typeLower.includes('lncrna')) return '#2ca02c'; // Forest Green
+    if (typeLower.includes('mirna') || typeLower.includes('ncrna')) return '#ff7f0e'; // Bright Orange
+    if (typeLower.includes('pseudogene')) return '#9467bd'; // Muted Purple
+    if (typeLower.includes('snrna')) return '#d62728'; // Crimson Red
+    if (typeLower.includes('snorna')) return '#bcbd22'; // Olive Green
+    if (typeLower.includes('trna')) return '#17becf'; // Teal/Cyan
+    if (typeLower.includes('rrna')) return '#e377c2'; // Pink
+
+    return '#8c564b'; // Brown
+  }
   allNodesSelected$ = computed(() => this.browseService().allNodesSelected$());
   allEdgesSelected$ = computed(() => this.browseService().allEdgesSelected$());
 
@@ -148,6 +166,20 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.graph$.subscribe((graph) => {
       this.sigma?.kill();
+
+      // Extract unique node types and calculate color mappings
+      const types = new Set<string>();
+      graph.forEachNode((_, attributes) => {
+        if (attributes['nodeType']) {
+          types.add(attributes['nodeType']);
+        }
+      });
+      const items = Array.from(types).sort().map(type => ({
+        type: type === 'unknown' ? 'Unknown' : capitalize(type.replace(/_/g, ' ')),
+        color: this.getNodeColorForType(type)
+      }));
+      this.legendItems$.set(items);
+
       const sigma = new Sigma(
         graph,
         this.container.nativeElement,
@@ -238,12 +270,12 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     if (!this.sigma?.getGraph().hasNode(node)) {
       return;
     }
-    this.sigma
-      ?.getGraph()
-      .setNodeAttribute(node, 'color', states[state].nodeColor);
-    this.sigma
-      ?.getGraph()
-      .setNodeAttribute(node, 'highlighted', states[state].highlight);
+    const graph = this.sigma.getGraph();
+    const nodeType = graph.getNodeAttribute(node, 'nodeType');
+    const defaultColor = this.getNodeColorForType(nodeType);
+
+    graph.setNodeAttribute(node, 'color', state === State.Default ? defaultColor : states[state].nodeColor);
+    graph.setNodeAttribute(node, 'highlighted', states[state].highlight);
   }
 
   refresh() {

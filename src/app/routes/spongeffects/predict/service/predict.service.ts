@@ -489,12 +489,13 @@ export class PredictService {
         const nodeMap = new Map<string, GeneNode | TranscriptNode>();
         filteredInteractions.forEach((int: any) => {
           if ('gene1' in int) {
-            const add = (g: { ensg_number: string; gene_symbol?: string }) => {
+            const add = (g: { ensg_number: string; gene_symbol?: string; gene_type?: string }) => {
               if (!nodeMap.has(g.ensg_number)) {
                 nodeMap.set(g.ensg_number, {
                   gene: {
                     ensg_number: g.ensg_number,
                     gene_symbol: g.gene_symbol,
+                    gene_type: g.gene_type,
                   },
                   betweenness: 0,
                   eigenvector: 0,
@@ -515,12 +516,13 @@ export class PredictService {
             add(int.gene2);
           } else {
             // transcript-level interactions
-            const add = (t: { enst_number: string; gene?: { ensg_number: string; gene_symbol?: string } }) => {
+            const add = (t: { enst_number: string; transcript_type?: string; gene?: { ensg_number: string; gene_symbol?: string; gene_type?: string } }) => {
               if (!nodeMap.has(t.enst_number)) {
                 nodeMap.set(t.enst_number, {
                   transcript: {
                     enst_number: t.enst_number,
                     gene: t.gene ?? { ensg_number: t.enst_number },
+                    transcript_type: t.transcript_type,
                   },
                   betweenness: 0,
                   eigenvector: 0,

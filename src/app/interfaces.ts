@@ -78,11 +78,13 @@ export enum InteractionSorting {
 export interface Gene {
   ensg_number: string;
   gene_symbol?: string;
+  gene_type?: string;
 }
 
 export interface Transcript {
   enst_number: string;
   gene: Gene;
+  transcript_type?: string;
 }
 
 export interface GeneNode extends SpongeRun {

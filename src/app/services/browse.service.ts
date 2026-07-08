@@ -492,6 +492,13 @@ export class BrowseService {
       // Calculate normalized node size based on degree (range: 5-20)
       const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);
 
+      let nodeType = 'unknown';
+      if ('gene' in node && node.gene.gene_type) {
+        nodeType = node.gene.gene_type;
+      } else if ('transcript' in node && node.transcript.transcript_type) {
+        nodeType = node.transcript.transcript_type;
+      }
+
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
         x: Math.random(), // Coordinates will be overridden by the layout algorithm
@@ -499,6 +506,7 @@ export class BrowseService {
         size: normalizedSize,
         forceLabel: true,
         type: hasInverse ? 'circle' : 'square',
+        nodeType: nodeType,
       });
     });
 
