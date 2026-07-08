@@ -158,24 +158,10 @@
         <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
       </mat-tab>
 
-      <!-- Tab 4: SpongEffects Score Distribution (with custom scores) -->
+      <!-- Tab 4: SpongEffects Score Distribution -->
       <mat-tab label="SpongEffects Score Distribution">
-        @if (predictService.allScores$().length > 0) {
-        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"
-          [disease]="predictService.selectedDataset$()?.disease_name" [level]="predictService.level()"
-          [selectedParamSets]="predictService.selectedParamSets$()" [customScores]="predictService.allScores$()"
-          [customLabel]="'Uploaded Samples'">
-        </app-enrichment-class-plot>
-        } @else {
-        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()">
-        </app-enrichment-class-plot>
-        }
-      </mat-tab>
-
-      <!-- Tab 6: Score Classification -->
-      <!-- <mat-tab label="Score Classification">
         <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
-      </mat-tab> -->
+      </mat-tab>
 
       <!-- Tab 5: Prediction Results -->
       <mat-tab label="Prediction Results">
