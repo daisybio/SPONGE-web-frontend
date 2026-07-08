@@ -1013,6 +1013,14 @@ export class BackendService {
     return this.http.postRequest(request, formData);
   }
 
+  getUmapProjection(
+    level: string,
+    scores: any
+  ): Promise<{ user_umap: any; tcga_umap: any }> {
+    const request = `${API_BASE}/spongEffects/getUmapProjection`;
+    return this.http.postRequest(request, { level, scores });
+  }
+
   getComparisons(version: number) {
     const route = 'comparison';
 

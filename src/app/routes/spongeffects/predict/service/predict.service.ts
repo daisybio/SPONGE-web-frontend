@@ -266,31 +266,48 @@ export class PredictService {
     loader: async (param) => {
       console.log('Recomputing _prediction$ request', param.request);
       const query = param.request.query;
+      let prediction: PredictCancerType;
       if (!query) {
         console.log(
           'No query provided, returning undefined, setting example used',
         );
         const example = await this.examplePrediction;
         this.example_used.set(true);
-        return example;
+        prediction = example;
+      } else {
+        if (!query.useExampleExpression) {
+          this.example_used.set(false);
+        }
+        prediction = await this.backend.predictCancerType(
+          query.version,
+          query.file,
+          query.predictSubtypes,
+          query.logScaling,
+          query.mscor,
+          query.fdr,
+          query.minSize,
+          query.maxSize,
+          query.minExpr,
+          query.method,
+          query.model,
+        );
       }
-      if (!query.useExampleExpression) {
-        this.example_used.set(false);
+
+      // Dynamically fetch UMAP coordinates if not present in response (e.g. static example file)
+      if (prediction && !('user_umap' in prediction) && prediction.scores) {
+        try {
+          const level = prediction.meta?.[0]?.level || 'gene';
+          const umapData = await this.backend.getUmapProjection(level, prediction.scores);
+          if (umapData) {
+            (prediction as any).user_umap = umapData.user_umap;
+            (prediction as any).tcga_umap = umapData.tcga_umap;
+          }
+        } catch (e) {
+          console.error('Error fetching UMAP projection dynamically', e);
+        }
       }
-      const prediction = await this.backend.predictCancerType(
-        query.version,
-        query.file,
-        query.predictSubtypes,
-        query.logScaling,
-        query.mscor,
-        query.fdr,
-        query.minSize,
-        query.maxSize,
-        query.minExpr,
-        query.method,
-        query.model,
-      );
-      console.log('Loaded prediction', prediction);
+
+      console.log('Loaded prediction with UMAP', prediction);
       return prediction;
     },
   });
