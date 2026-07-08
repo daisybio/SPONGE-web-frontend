@@ -10,6 +10,7 @@ import {
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { VersionsService } from './services/versions.service';
+import { CartComponent } from './components/cart/cart.component';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ import { VersionsService } from './services/versions.service';
     MatAnchor,
     MatButtonToggleModule,
     FormsModule,
+    CartComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

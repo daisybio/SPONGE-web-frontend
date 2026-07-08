@@ -1,6 +1,7 @@
 <mat-drawer-container style="min-height: 100%">
   <mat-drawer [opened]="true" mode="side">
     <app-predict-form></app-predict-form>
+    <app-module-form [source]="'predict'"></app-module-form>
 
     <div style="border-top: 1px solid #eee; padding: 16px;">
       <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Reference Network</h3>
@@ -88,10 +89,8 @@
 
   <mat-drawer-content>
     <mat-tab-group>
+      <!-- Tab 1: Patient-specific Network -->
       <mat-tab label="Patient-specific Network">
-
-
-
         <div *ngIf="error$()" style="padding: 20px 20px 0 20px;">
           <mat-card
             style="background-color: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -142,30 +141,50 @@
           <app-active-entities [browseService]="browseService"
             style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
         </div>
-
       </mat-tab>
+
+      <!-- Tab 2: Top ceRNA Modules (Lollipop) -->
+      <mat-tab label="Top ceRNA Modules">
+        <app-lollipop-plot [refreshSignal$]="refreshSignal()" [source]="'predict'"
+          [prediction]="predictService._prediction$.value()">
+        </app-lollipop-plot>
+      </mat-tab>
+
+      <!-- Tab 3: Top ceRNA Centralities (Scatterplot + Table + Heatmap) -->
+      <mat-tab label="Top ceRNA Centralities">
+        <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
+          [refreshSignal$]="refreshSignal()"></app-scatterplot>
+        <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+        <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+      </mat-tab>
+
+      <!-- Tab 4: SpongEffects Score Distribution (with custom scores) -->
       <mat-tab label="SpongEffects Score Distribution">
         @if (predictService.allScores$().length > 0) {
-          <app-enrichment-class-plot
-            [refreshSignal$]="refreshSignal()"
-            [disease]="predictService.selectedDataset$()?.disease_name"
-            [level]="predictService.level()"
-            [selectedParamSets]="predictService.selectedParamSets$()"
-            [customScores]="predictService.allScores$()"
-            [customLabel]="'Uploaded Samples'">
-          </app-enrichment-class-plot>
+        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"
+          [disease]="predictService.selectedDataset$()?.disease_name" [level]="predictService.level()"
+          [selectedParamSets]="predictService.selectedParamSets$()" [customScores]="predictService.allScores$()"
+          [customLabel]="'Uploaded Samples'">
+        </app-enrichment-class-plot>
+        } @else {
+        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()">
+        </app-enrichment-class-plot>
         }
       </mat-tab>
 
-      <mat-tab label="Top ceRNA Modules">
-        @if (predictService._prediction$.value()) {
-          <app-lollipop-plot
-            [refreshSignal$]="refreshSignal()"
-            [source]="'predict'"
-            [prediction]="predictService._prediction$.value()">
-          </app-lollipop-plot>
-        }
+      <!-- Tab 5: Prediction Results -->
+      <mat-tab label="Prediction Results">
+        <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
+        <hr>
+        <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
       </mat-tab>
+
+      <!-- Tab 6: Score Classification -->
+      <mat-tab label="Score Classification">
+        <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+      </mat-tab>
+
     </mat-tab-group>
   </mat-drawer-content>
+
 </mat-drawer-container>
