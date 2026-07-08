@@ -53,7 +53,7 @@ import { VersionsService } from '../../../services/versions.service';
     PredictionResultsComponent,
     PredictionTableComponent,
     ModuleFormComponent,
-    // ClassificationPlotComponent,
+    ClassificationPlotComponent,
     ModuleTableComponent,
     ModuleHeatmapComponent,
     ScatterplotComponent,

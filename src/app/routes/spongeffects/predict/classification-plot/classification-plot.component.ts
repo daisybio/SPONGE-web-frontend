@@ -67,7 +67,7 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
   predictService = inject(PredictService);
   protected readonly capitalize = capitalize;
 
-  refreshSignal$ = input<number>();
+  refreshSignal$ = input();
   isCombinedMode = signal(true);
   protected readonly highlightColor = PATIENT_HIGHLIGHT_COLOR;
 
