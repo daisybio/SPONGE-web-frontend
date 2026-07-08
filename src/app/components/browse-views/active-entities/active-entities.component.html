@@ -25,11 +25,7 @@
                 [matTooltip]="'Show details for ' + BrowseService.getNodeGeneName(node)">
                 {{ BrowseService.getNodeGeneName(node) }}
               </button>
-              <button (click)="addToCart(BrowseService.getNodeID(node), BrowseService.getNodeGeneName(node)); $event.stopPropagation();"
-                [matTooltip]="'Add to Cart'"
-                style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
-              </button>
+              <app-add-to-cart-button [id]="BrowseService.getNodeID(node)" [symbol]="BrowseService.getNodeGeneName(node)"></app-add-to-cart-button>
             </div>
           </mat-card-title>
           <mat-card-subtitle style="padding-left: 4px;">{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>

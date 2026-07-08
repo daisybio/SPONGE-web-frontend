@@ -128,11 +128,7 @@
                 [matTooltip]="'Show details for ' + element[key]">
                 {{ element[key] }}
               </button>
-              <button (click)="addToCart(element.ensemblID, element.symbol); $event.stopPropagation();"
-                [matTooltip]="'Add to Cart'"
-                style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
-                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
-              </button>
+              <app-add-to-cart-button [id]="element.ensemblID" [symbol]="element.symbol"></app-add-to-cart-button>
             </div>
           } @else if (key === 'moduleCenter') {
             @if (element.moduleCenter && element.moduleCenter !== '-') {
@@ -142,11 +138,7 @@
                   [matTooltip]="'Show details for center ' + element.moduleCenter">
                   {{ element.moduleCenter }}
                 </button>
-                <button (click)="addToCart(element.moduleCenterID, element.moduleCenter); $event.stopPropagation();"
-                  [matTooltip]="'Add to Cart'"
-                  style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
-                </button>
+                <app-add-to-cart-button [id]="element.moduleCenterID" [symbol]="element.moduleCenter"></app-add-to-cart-button>
               </span>
             } @else {
               -

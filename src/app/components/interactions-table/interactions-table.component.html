@@ -33,11 +33,7 @@
           matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
           {{ interaction.name_1 }}
         </button>
-        <button (click)="addToCart(interaction.obj1); $event.stopPropagation();"
-          [matTooltip]="'Add to Cart'"
-          style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
-          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
-        </button>
+        <app-add-to-cart-button [entity]="interaction.obj1"></app-add-to-cart-button>
       </div>
     </td>
   </ng-container>
@@ -50,11 +46,7 @@
           matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
           {{ interaction.name_2 }}
         </button>
-        <button (click)="addToCart(interaction.obj2); $event.stopPropagation();"
-          [matTooltip]="'Add to Cart'"
-          style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
-          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
-        </button>
+        <app-add-to-cart-button [entity]="interaction.obj2"></app-add-to-cart-button>
       </div>
     </td>
   </ng-container>

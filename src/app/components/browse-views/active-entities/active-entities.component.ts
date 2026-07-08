@@ -21,12 +21,11 @@ import { MatAnchor, MatButton } from '@angular/material/button';
 import { InteractionModalComponent } from '../../interaction-modal/interaction-modal.component';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ModalsService } from '../../modals-service/modals.service';
-import { MatIcon } from "@angular/material/icon";
-import { CartService } from '../../../services/cart.service';
+import { AddToCartButtonComponent } from '../../add-to-cart-button/add-to-cart-button.component';
 
 @Component({
   selector: 'app-active-entities',
-  imports: [MatTabsModule, MatCardModule, MatButton, MatAnchor, MatTooltip, MatIcon],
+  imports: [MatTabsModule, MatCardModule, MatButton, MatAnchor, MatTooltip, AddToCartButtonComponent],
   templateUrl: './active-entities.component.html',
   styleUrl: './active-entities.component.scss',
 })
@@ -36,7 +35,6 @@ export class ActiveEntitiesComponent {
   protected activeTabIndex = model<number>(0);
   protected modalsService = inject(ModalsService);
   browseService = input.required<BrowseService>();
-  cartService = inject(CartService);
 
   constructor() {
     effect(() => {
@@ -66,19 +64,5 @@ export class ActiveEntitiesComponent {
 
   openModal(entity: Gene | Transcript): void {
     this.modalsService.openNodeDialog(entity);
-  }
-
-  addToCart(ensemblID: string, symbol?: string) {
-    if (ensemblID.startsWith('ENSG')) {
-      this.cartService.add({
-        ensg_number: ensemblID,
-        gene_symbol: symbol
-      } as Gene);
-    } else {
-      this.cartService.add({
-        enst_number: ensemblID,
-        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
-      } as Transcript);
-    }
   }
 }

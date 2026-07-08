@@ -30,8 +30,7 @@ import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
 import { ModalsService } from '../modals-service/modals.service';
 import { InfoService } from '../../services/info.service';
-import { CartService } from '../../services/cart.service';
-import { MatIconModule } from '@angular/material/icon';
+import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
 
 @Component({
   selector: 'app-interactions-table',
@@ -46,7 +45,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatSliderModule,
     FormsModule,
     DecimalPipe,
-    MatIconModule,
+    AddToCartButtonComponent,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
@@ -55,11 +54,6 @@ export class InteractionsTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   modalsService = inject(ModalsService);
-  cartService = inject(CartService);
-
-  addToCart(entity: Gene | Transcript) {
-    this.cartService.add(entity);
-  }
   level$ = input<'gene' | 'transcript'>();
   interactions$ = input.required<(GeneInteraction | TranscriptInteraction)[]>();
   disease$ = input.required<Dataset | undefined>({

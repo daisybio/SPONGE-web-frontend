@@ -59,9 +59,9 @@ import { NetworkComponent } from '../../../../../components/browse-views/network
 import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
 import { BrowseService } from '../../../../../services/browse.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { CartService } from '../../../../../services/cart.service';
 import { ModalsService } from '../../../../../components/modals-service/modals.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AddToCartButtonComponent } from '../../../../../components/add-to-cart-button/add-to-cart-button.component';
 
 declare var Plotly: any;
 
@@ -89,7 +89,8 @@ declare var Plotly: any;
     NetworkComponent,
     ActiveEntitiesComponent,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    AddToCartButtonComponent
   ],
   templateUrl: './lollipop-plot.component.html',
   styleUrls: ['./lollipop-plot.component.scss'],
@@ -102,7 +103,6 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   browseService = inject(BrowseService);
   infoService = inject(InfoService);
   modalsService = inject(ModalsService);
-  cartService = inject(CartService);
 
   openEntityDialog(ensemblID: string, symbol?: string) {
     if (ensemblID.startsWith('ENSG')) {
@@ -112,20 +112,6 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       } as Gene);
     } else {
       this.modalsService.openNodeDialog({
-        enst_number: ensemblID,
-        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
-      } as Transcript);
-    }
-  }
-
-  addToCart(ensemblID: string, symbol?: string) {
-    if (ensemblID.startsWith('ENSG')) {
-      this.cartService.add({
-        ensg_number: ensemblID,
-        gene_symbol: symbol
-      } as Gene);
-    } else {
-      this.cartService.add({
         enst_number: ensemblID,
         gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
       } as Transcript);

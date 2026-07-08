@@ -21,10 +21,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
 import { InfoComponent } from '../../info/info.component';
 import { ModalsService } from '../../modals-service/modals.service';
-import { CartService } from '../../../services/cart.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { AddToCartButtonComponent } from '../../add-to-cart-button/add-to-cart-button.component';
 
 @Component({
   selector: 'app-nodes',
@@ -39,6 +39,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     MatIconModule,
     MatInputModule,
     MatFormFieldModule,
+    AddToCartButtonComponent,
   ],
   templateUrl: './nodes.component.html',
   styleUrl: './nodes.component.scss',
@@ -47,7 +48,6 @@ export class NodesComponent implements AfterViewInit, OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   modalsService = inject(ModalsService);
-  cartService = inject(CartService);
   columns = ['identifier', 'betweenness', 'eigenvector', 'node_degree'];
   dataSource = new MatTableDataSource<any>([]);
   readonly dialog = inject(MatDialog);
@@ -88,9 +88,5 @@ export class NodesComponent implements AfterViewInit, OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
-  }
-
-  addToCart(entity: Gene | Transcript) {
-    this.cartService.add(entity);
   }
 }
