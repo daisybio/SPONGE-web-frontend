@@ -74,5 +74,8 @@ export class ExploreComponent {
     const index = typeof event === 'number' ? event : event.index;
     this.selectedTabIndex.set(index);
     this.refresh();
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
   }
 }

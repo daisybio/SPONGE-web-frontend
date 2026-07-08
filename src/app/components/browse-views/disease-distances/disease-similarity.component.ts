@@ -16,6 +16,7 @@ import {
   MatButtonToggleGroup,
 } from '@angular/material/button-toggle';
 import { InfoComponent } from '../../info/info.component';
+import { VersionsService } from '../../../services/versions.service';
 
 declare const Plotly: any;
 
@@ -32,6 +33,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
   plotDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('plot');
   heatmapDiv$ = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
   dataset = computed(() => this.browseService().disease$());
+  versionsService = inject(VersionsService)
 
   data$ = computed(() => this.browseService().networkResults$());
   plotData$ = computed(() => {
@@ -44,7 +46,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     const isUnspecific = !disease || !disease.disease_subtype || disease.disease_subtype.toLowerCase() === 'unspecific';
 
     // 1. Determine which source data to use (type vs subtype)
-    const sourceData = isUnspecific ? data.type : data.subtype;
+    const sourceData: any = isUnspecific ? data.type : data.subtype;
     if (!sourceData) return;
 
     if (mode === 'scatter') {
@@ -65,15 +67,15 @@ export class DiseaseSimilarityComponent implements OnDestroy {
           const l = label.toLowerCase();
           const dn = disease.disease_name.toLowerCase();
           if (l === dn) return true;
-          const siblings = allDiseases.filter(d => d.disease_name === disease.disease_name);
-          return siblings.some(sib => {
+          const siblings = allDiseases.filter((d: { disease_name: string; }) => d.disease_name === disease.disease_name);
+          return siblings.some((sib) => {
             const sub = sib.disease_subtype?.toLowerCase();
             if (!sub || sub === 'unspecific') return false;
             return l === sub || l.includes(sub) || sub.includes(l);
           });
         };
 
-        scatterData.labels.forEach((label, idx) => {
+        scatterData.labels.forEach((label: string, idx: string | number) => {
           if (isTargetLabel(label)) {
             labels.push(label);
             x.push(scatterData.x[idx]);
@@ -125,8 +127,8 @@ export class DiseaseSimilarityComponent implements OnDestroy {
           const l = label.toLowerCase();
           const dn = disease.disease_name.toLowerCase();
           if (l === dn) return true;
-          const siblings = allDiseases.filter(d => d.disease_name === disease.disease_name);
-          return siblings.some(sib => {
+          const siblings = allDiseases.filter((d: { disease_name: string; }) => d.disease_name === disease.disease_name);
+          return siblings.some((sib) => {
             const sub = sib.disease_subtype?.toLowerCase();
             if (!sub || sub === 'unspecific') return false;
             return l === sub || l.includes(sub) || sub.includes(l);
@@ -134,7 +136,7 @@ export class DiseaseSimilarityComponent implements OnDestroy {
         };
 
         const targetIndices: number[] = [];
-        heatmapData.labels.forEach((label, idx) => {
+        heatmapData.labels.forEach((label: string, idx: number) => {
           if (isTargetLabel(label)) {
             targetIndices.push(idx);
             labels.push(label);

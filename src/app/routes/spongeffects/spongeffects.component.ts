@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, model, resource, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, inject, model, resource, ViewChild, AfterViewInit, effect } from '@angular/core';
 import { ExploreComponent } from "./explore/explore.component";
 import { PredictComponent } from "./predict/predict.component";
 import { SpongeffectsScoresComponent } from "./spongeffects-scores/spongeffects-scores.component";
@@ -34,6 +34,15 @@ export class SpongEffectsComponent implements AfterViewInit {
   mode = this.spongEffectsService.selectedMode$;
 
   @ViewChild('sectionLine') sectionLine!: ElementRef<HTMLHRElement>;
+
+  constructor() {
+    effect(() => {
+      this.mode();
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 150);
+    });
+  }
 
   ngAfterViewInit() {
     this.exploreService.lineTop.set((this.sectionLine.nativeElement.getBoundingClientRect().top + window.scrollY));

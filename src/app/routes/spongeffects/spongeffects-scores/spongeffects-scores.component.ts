@@ -17,7 +17,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
-import { EnrichmentClassPlotComponent } from '../explore/plots/enrichment-class-plot/enrichment-class-plot.component';
+// import { EnrichmentClassPlotComponent } from '../explore/plots/enrichment-class-plot/enrichment-class-plot.component';
 import { LollipopPlotComponent } from '../explore/plots/lollipop-plot/lollipop-plot.component';
 import { PredictionResultsComponent } from '../predict/prediction-results/prediction-results.component';
 import { PredictionTableComponent } from '../predict/prediction-results/prediction-table/prediction-table.component';
@@ -49,7 +49,7 @@ import { VersionsService } from '../../../services/versions.service';
     MatIconModule,
     CommonModule,
     MatTabsModule,
-    EnrichmentClassPlotComponent,
+    // EnrichmentClassPlotComponent,
     LollipopPlotComponent,
     PredictionResultsComponent,
     PredictionTableComponent,
@@ -175,5 +175,11 @@ export class SpongeffectsScoresComponent {
       console.error('Error in getTcgaSpongEffectsScores:', e);
       return [];
     }
+  }
+
+  onTabChange(event: any) {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
   }
 }

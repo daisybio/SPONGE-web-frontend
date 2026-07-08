@@ -194,4 +194,10 @@ export class PredictComponent {
       return [];
     }
   }
+
+  onTabChange(event: any) {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
+  }
 }
