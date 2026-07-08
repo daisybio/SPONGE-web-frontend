@@ -163,6 +163,11 @@
         <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
       </mat-tab>
 
+      <!-- Tab: Sample Similarity (UMAP) -->
+      <mat-tab label="Sample Similarity (UMAP)">
+        <app-umap-plot></app-umap-plot>
+      </mat-tab>
+
       <!-- Tab 5: Prediction Results -->
       <mat-tab label="Prediction Results">
         <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>

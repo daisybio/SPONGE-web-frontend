@@ -28,6 +28,7 @@ import { ModuleHeatmapComponent } from '../predict/module-heatmap/module-heatmap
 import { ScatterplotComponent, ScatterplotDataScource } from '../../../components/scatterplot/scatterplot.component';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
+import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
 
 @Component({
   selector: 'app-spongeffects-scores',
@@ -58,6 +59,7 @@ import { VersionsService } from '../../../services/versions.service';
     ModuleTableComponent,
     ModuleHeatmapComponent,
     ScatterplotComponent,
+    UmapPlotComponent,
   ],
   providers: [BrowseService],
   templateUrl: './spongeffects-scores.component.html',
