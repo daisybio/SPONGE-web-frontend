@@ -61,7 +61,6 @@ import { BrowseService } from '../../../../../services/browse.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CartService } from '../../../../../services/cart.service';
 import { ModalsService } from '../../../../../components/modals-service/modals.service';
-import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 declare var Plotly: any;
@@ -217,10 +216,10 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
     const disease = this.prediction()?.meta[0]?.type_predict || this.predictService?.selectedDataset$()?.disease_name;
     const level = this.predictService?.level() || 'gene';
     if (!version || !disease || !level) return;
-    
+
     const key = `${module.ensemblID}_predict`;
     if (this.predictModuleMembersMap.has(key)) return;
-    
+
     let members: ModuleMember[] = [];
     if (level === 'gene') {
       const response = await this.backend.getSpongEffectsGeneModuleMembers(
@@ -256,11 +255,11 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
     loader: async ({ request }) => {
       const { pred, version, source } = request;
       if (source !== 'predict' || !pred || !pred.scores || !pred.scores.genes || !pred.scores.values || !version) return [];
-      
+
       const genes = pred.scores.genes;
       const values = pred.scores.values;
       const modules: SpongEffectsModule[] = [];
-      
+
       // Resolve all gene symbols in parallel
       const symbolMap = new Map<string, string>();
       await Promise.all(genes.map(async (geneId: string) => {
@@ -277,14 +276,14 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       for (let i = 0; i < genes.length; i++) {
         const geneId = genes[i];
         const scoresForGene = values[i] || [];
-        
+
         const count = scoresForGene.length;
         const sum = scoresForGene.reduce((s: number, v: number) => s + v, 0);
         const mean = count > 0 ? sum / count : 0;
-        const variance = count > 0 
-          ? scoresForGene.reduce((s: number, v: number) => s + Math.pow(v - mean, 2), 0) / count 
+        const variance = count > 0
+          ? scoresForGene.reduce((s: number, v: number) => s + Math.pow(v - mean, 2), 0) / count
           : 0;
-          
+
         modules.push({
           ensemblID: geneId,
           symbol: symbolMap.get(geneId) ?? geneId,
@@ -315,7 +314,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
     const sortBy = this.sortBy$();
     const min1 = this.minScore1$();
     const min2 = this.minScore2$();
-    
+
     // Apply filtering
     if (this.source() === 'explore') {
       if (min1 !== null && min1 !== undefined && !isNaN(min1)) {
@@ -332,7 +331,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
         list = list.filter(m => (m.varianceEnrichmentScore ?? 0) >= min2);
       }
     }
-    
+
     // Apply sorting
     if (sortBy) {
       list.sort((a: any, b: any) => {
@@ -341,7 +340,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
         return valB - valA; // Descending
       });
     }
-    
+
     return list;
   });
 
@@ -401,26 +400,26 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.source() === 'predict') {
         const pred = this.prediction();
         if (!pred || !pred.scores || !pred.scores.genes || !pred.scores.values) return [];
-        
+
         const res: any[] = [];
         const finalGenes = modules.map((m: SpongEffectsModule) => m.ensemblID);
         const finalGenesSymbols = new Map(modules.map((m: SpongEffectsModule) => [m.ensemblID, m.symbol]));
         const samples = pred.scores.samples;
-        
+
         for (const ensemblID of finalGenes) {
           const geneIdx = pred.scores.genes.indexOf(ensemblID);
           if (geneIdx === -1) continue;
-          
+
           const geneSymbol = finalGenesSymbols.get(ensemblID) || ensemblID;
           const scoresForGene = pred.scores.values[geneIdx] || [];
-          
+
           for (let sampleIdx = 0; sampleIdx < samples.length; sampleIdx++) {
             const sample = samples[sampleIdx];
             const val = scoresForGene[sampleIdx] ?? 0;
-            
+
             const samplePred = pred.data.find((d: any) => d.sampleID === sample);
             const subtype = samplePred ? samplePred.typePrediction : 'Unknown';
-            
+
             res.push({
               id: geneSymbol,
               sample_ID: sample,
@@ -538,7 +537,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
     getYAxisTitle: () => {
       const level = this.source() === 'predict' ? this.predictService?.level() : this.exploreService?.level$();
-      const includeMembers = this.source() === 'predict' 
+      const includeMembers = this.source() === 'predict'
         ? (this.formGroup.get('includeModuleMembers')?.value ?? false)
         : (this.exploreService?.includeModuleMembers() ?? false);
       return `Module Center ${level === 'gene' ? 'Gene' : 'Transcript'}${includeMembers ? ' and Module Members' : ''}`;
@@ -570,7 +569,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       value_key: 'score_value'
     };
   });
-  
+
   heatmapParamsExpr = computed(() => {
     const version = this.versionService.versionReadOnly()();
     const disease = this.source() === 'predict'
@@ -587,14 +586,14 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   tableCenters$ = computed(() => {
-    const modules = this.source() === 'predict' 
-      ? this.filteredAndSortedModules$() 
+    const modules = this.source() === 'predict'
+      ? this.filteredAndSortedModules$()
       : (this.exploreService?.selectedModules.value() || []);
-      
+
     const tableEntries = modules.map(module => ({
       ...module,
-      moduleParams: this.source() === 'predict' 
-        ? 'Custom Prediction' 
+      moduleParams: this.source() === 'predict'
+        ? 'Custom Prediction'
         : this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
     const dataSource = new MatTableDataSource(tableEntries);
@@ -616,7 +615,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
       modules: this.selectedModules$(),
       source: this.source(),
       version: this.versionService.versionReadOnly()(),
-      disease: this.source() === 'predict' 
+      disease: this.source() === 'predict'
         ? (this.prediction()?.meta[0]?.type_predict || this.predictService?.selectedDataset$()?.disease_name)
         : this.exploreService?.selectedDisease$(),
       level: this.source() === 'predict' ? this.predictService?.level() : this.exploreService?.level$(),
@@ -635,7 +634,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
         await Promise.all(fetchPromises);
-        
+
         const allMembers: ModuleMember[] = [];
         for (const module of modules) {
           const key = `${module.ensemblID}_predict`;
@@ -655,7 +654,7 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
         await Promise.all(fetchPromises);
-        
+
         const allMembers: ModuleMember[] = [];
         for (const module of modules) {
           const key = this.exploreService!.getModuleKey(module);
@@ -909,10 +908,10 @@ export class LollipopPlotComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {
     const isPredict = this.source() === 'predict';
-    const xData = isPredict 
+    const xData = isPredict
       ? limitedData.map(g => g.meanEnrichmentScore ?? 0)
       : limitedData.map(g => g.meanGiniDecrease);
-    const yData = isPredict 
+    const yData = isPredict
       ? limitedData.map(g => g.varianceEnrichmentScore ?? 0)
       : limitedData.map(g => g.meanAccuracyDecrease);
 

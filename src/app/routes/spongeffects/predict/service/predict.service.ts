@@ -22,6 +22,7 @@ import {
   Dataset,
   BrowseQuery,
   InteractionSorting,
+  TranscriptNode,
 } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
 import { VersionsService } from '../../../../services/versions.service';
@@ -60,22 +61,22 @@ export class PredictService {
   ): Promise<R[]> {
     const results = new Array<R>(items.length);
     const executing = new Set<Promise<any>>();
-    
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const p = (async () => {
         const res = await fn(item);
         results[i] = res;
       })();
-      
+
       executing.add(p);
       p.then(() => executing.delete(p));
-      
+
       if (executing.size >= limit) {
         await Promise.race(executing);
       }
     }
-    
+
     await Promise.all(executing);
     return results;
   }
@@ -211,8 +212,8 @@ export class PredictService {
     const sampleIndices =
       selectedSamples.length > 0
         ? selectedSamples
-            .map((s) => scores.samples.indexOf(s))
-            .filter((i) => i !== -1)
+          .map((s) => scores.samples.indexOf(s))
+          .filter((i) => i !== -1)
         : scores.samples.map((_, i) => i); // all indices
 
     if (sampleIndices.length === 0) return [];
@@ -340,7 +341,7 @@ export class PredictService {
             if (this.moduleIDCache.has(cacheKey)) {
               return this.moduleIDCache.get(cacheKey);
             }
-            
+
             let moduleId: number | undefined;
             if (level === 'gene') {
               const modules = await this.backend.getSpongEffectsGeneModules(
@@ -361,7 +362,7 @@ export class PredictService {
               );
               moduleId = modules[0]?.spongEffects_transcript_module_ID;
             }
-            
+
             if (moduleId !== undefined) {
               this.moduleIDCache.set(cacheKey, moduleId);
             }
@@ -386,22 +387,22 @@ export class PredictService {
 
             const members = await (level === 'gene'
               ? this.backend.getSpongEffectsGeneModuleMembers(
-                  version,
-                  dataset.disease_name,
-                  undefined,
-                  undefined,
-                  undefined,
-                  id,
-                )
+                version,
+                dataset.disease_name,
+                undefined,
+                undefined,
+                undefined,
+                id,
+              )
               : this.backend.getSpongEffectsTranscriptModuleMembers(
-                  version,
-                  dataset.disease_name,
-                  undefined,
-                  undefined,
-                  undefined,
-                  id,
-                ));
-            
+                version,
+                dataset.disease_name,
+                undefined,
+                undefined,
+                undefined,
+                id,
+              ));
+
             this.moduleMembersCache.set(cacheKey, members);
             return members;
           };
@@ -453,7 +454,7 @@ export class PredictService {
 
 
         // Build synthetic node objects from interaction data (both gene- and transcript-level)
-        const nodeMap = new Map<string, GeneNode>();
+        const nodeMap = new Map<string, GeneNode | TranscriptNode>();
         filteredInteractions.forEach((int: any) => {
           if ('gene1' in int) {
             const add = (g: { ensg_number: string; gene_symbol?: string }) => {
@@ -501,7 +502,7 @@ export class PredictService {
                     },
                     sponge_run_ID: 0,
                   },
-                } as any);
+                } as TranscriptNode);
               }
             };
             add(int.transcript_1);
@@ -513,7 +514,7 @@ export class PredictService {
         identifiers.forEach((id) => {
           if (!nodeMap.has(id)) {
             const isTranscript = level === 'transcript';
-            nodeMap.set(id, (isTranscript ? {
+            nodeMap.set(id, isTranscript ? {
               transcript: { enst_number: id, gene: { ensg_number: id, gene_symbol: id } },
               betweenness: 0,
               eigenvector: 0,
@@ -527,7 +528,7 @@ export class PredictService {
                 },
                 sponge_run_ID: 0,
               },
-            } : {
+            } as TranscriptNode : {
               gene: { ensg_number: id, gene_symbol: id },
               betweenness: 0,
               eigenvector: 0,
@@ -541,7 +542,7 @@ export class PredictService {
                 },
                 sponge_run_ID: 0,
               },
-            }) as any);
+            } as GeneNode);
           }
         });
 
@@ -553,7 +554,7 @@ export class PredictService {
           const id =
             'gene' in node
               ? node.gene.ensg_number
-              : (node as any).transcript.enst_number;
+              : node.transcript.enst_number;
           node.node_degree = filteredInteractions.filter((int: any) => {
             if ('gene1' in int) {
               return (
@@ -579,12 +580,12 @@ export class PredictService {
         // Limit to maxNodes, but always keep module center nodes (topModules gene IDs)
         const moduleCenterIDs = new Set(topModules.map((m: { gene: string }) => m.gene));
         const centerNodes = nodes.filter((n) => {
-          const id = 'gene' in n ? n.gene.ensg_number : (n as any).transcript.enst_number;
+          const id = 'gene' in n ? n.gene.ensg_number : n.transcript.enst_number;
           return moduleCenterIDs.has(id);
         });
         const nonCenterNodes = nodes
           .filter((n) => {
-            const id = 'gene' in n ? n.gene.ensg_number : (n as any).transcript.enst_number;
+            const id = 'gene' in n ? n.gene.ensg_number : n.transcript.enst_number;
             return !moduleCenterIDs.has(id);
           })
           .sort((a, b) => b.node_degree - a.node_degree)
@@ -596,7 +597,7 @@ export class PredictService {
           nodes.map((n) =>
             'gene' in n
               ? n.gene.ensg_number
-              : (n as any).transcript.enst_number,
+              : n.transcript.enst_number,
           ),
         );
         const finalEdges = filteredInteractions.filter((int: any) => {

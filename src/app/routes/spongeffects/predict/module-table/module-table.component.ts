@@ -393,6 +393,7 @@ export class ModuleTableComponent {
       ...module,
       memberOrCenter: 'module center',
       moduleCenter: '-',
+      moduleCenterID: module.ensemblID,
       moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
 
@@ -413,6 +414,7 @@ export class ModuleTableComponent {
 
         allMembers.push(...members.map(m => ({
           ...m,
+          moduleCenterID: module.ensemblID,
           memberOrCenter: 'module member' as const,
           moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
         })));

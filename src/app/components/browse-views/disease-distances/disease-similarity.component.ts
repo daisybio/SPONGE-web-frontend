@@ -95,6 +95,8 @@ export class DiseaseSimilarityComponent implements OnDestroy {
         this.mode$() == 'scatter'
           ? 'Euclidean Distances'
           : 'Similarity Heatmap',
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
     });
   });
 
