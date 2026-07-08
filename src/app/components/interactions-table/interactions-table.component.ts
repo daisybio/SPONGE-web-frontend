@@ -66,6 +66,22 @@ export class InteractionsTableComponent implements AfterViewInit {
   minMscor = model(0);
   maxMscor = model(1);
 
+  constructor() {
+    effect(() => {
+      const pLimits = this.pValueLimits();
+      const mscorLim = this.mscorLimits();
+
+      if (pLimits.min !== Infinity && pLimits.max !== -Infinity) {
+        this.minPValue.set(pLimits.min);
+        this.maxPValue.set(pLimits.max);
+      }
+      if (mscorLim.min !== Infinity && mscorLim.max !== -Infinity) {
+        this.minMscor.set(mscorLim.min);
+        this.maxMscor.set(mscorLim.max);
+      }
+    }, { allowSignalWrites: true });
+  }
+
   // Compute data limits
   pValueLimits = computed(() => {
     const interactions = this.interactions$() || [];
