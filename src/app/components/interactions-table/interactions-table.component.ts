@@ -30,6 +30,8 @@ import { capitalize } from 'lodash';
 import { InfoComponent } from '../info/info.component';
 import { ModalsService } from '../modals-service/modals.service';
 import { InfoService } from '../../services/info.service';
+import { CartService } from '../../services/cart.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-interactions-table',
@@ -44,6 +46,7 @@ import { InfoService } from '../../services/info.service';
     MatSliderModule,
     FormsModule,
     DecimalPipe,
+    MatIconModule,
   ],
   templateUrl: './interactions-table.component.html',
   styleUrl: './interactions-table.component.scss',
@@ -52,6 +55,11 @@ export class InteractionsTableComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   modalsService = inject(ModalsService);
+  cartService = inject(CartService);
+
+  addToCart(entity: Gene | Transcript) {
+    this.cartService.add(entity);
+  }
   level$ = input<'gene' | 'transcript'>();
   interactions$ = input.required<(GeneInteraction | TranscriptInteraction)[]>();
   disease$ = input.required<Dataset | undefined>({
@@ -67,6 +75,11 @@ export class InteractionsTableComponent implements AfterViewInit {
   maxMscor = model(1);
 
   constructor() {
+    effect(() => {
+      this.infoService.renderMscorEquation(this.mscorEquation$()!);
+    });
+
+    // Initialize slider values to data limits
     effect(() => {
       const pLimits = this.pValueLimits();
       const mscorLim = this.mscorLimits();
@@ -109,9 +122,9 @@ export class InteractionsTableComponent implements AfterViewInit {
       const pValue = interaction.p_value;
       const mscor = interaction.mscor;
       return pValue >= this.minPValue() &&
-             pValue <= this.maxPValue() &&
-             mscor >= this.minMscor() &&
-             mscor <= this.maxMscor();
+        pValue <= this.maxPValue() &&
+        mscor >= this.minMscor() &&
+        mscor <= this.maxMscor();
     });
 
     return new MatTableDataSource(
@@ -137,23 +150,6 @@ export class InteractionsTableComponent implements AfterViewInit {
     );
   });
   protected readonly capitalize = capitalize;
-
-  constructor() {
-    effect(() => {
-      this.infoService.renderMscorEquation(this.mscorEquation$()!);
-    });
-
-    // Initialize slider values to data limits
-    effect(() => {
-      const pLimits = this.pValueLimits();
-      const mLimits = this.mscorLimits();
-
-      this.minPValue.set(pLimits.min);
-      this.maxPValue.set(pLimits.max);
-      this.minMscor.set(mLimits.min);
-      this.maxMscor.set(mLimits.max);
-    });
-  }
 
   ngAfterViewInit(): void {
     const dataSource = this.dataSource$();

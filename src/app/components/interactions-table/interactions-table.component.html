@@ -28,20 +28,32 @@
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj1)" mat-button matTooltip="Show details about {{interaction.name_1}}"
-        matTooltipPosition="right">
-        {{ interaction.name_1 }}
-      </button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button (click)="openDialog(interaction.obj1)" mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+          matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
+          {{ interaction.name_1 }}
+        </button>
+        <button mat-icon-button color="accent" style="width: 28px; height: 28px; line-height: 28px;"
+          (click)="addToCart(interaction.obj1)" [matTooltip]="'Add to Cart'">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
+        </button>
+      </div>
     </td>
   </ng-container>
 
   <ng-container matColumnDef="name_2">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$() || 'Node') }} 2</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj2)" mat-button matTooltip="Show details about {{interaction.name_2}}"
-        matTooltipPosition="right">
-        {{ interaction.name_2 }}
-      </button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button (click)="openDialog(interaction.obj2)" mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+          matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
+          {{ interaction.name_2 }}
+        </button>
+        <button mat-icon-button color="accent" style="width: 28px; height: 28px; line-height: 28px;"
+          (click)="addToCart(interaction.obj2)" [matTooltip]="'Add to Cart'">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
+        </button>
+      </div>
     </td>
   </ng-container>
 

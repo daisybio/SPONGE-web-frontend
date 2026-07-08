@@ -120,7 +120,41 @@
             {{ columnNames[key] }}
           }
         </th>
-        <td mat-cell *matCellDef="let element">{{ element[key] || "-" }}</td>
+        <td mat-cell *matCellDef="let element">
+          @if (key === 'symbol' || key === 'ensemblID') {
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+                (click)="openEntityDialog(element.ensemblID, element.symbol)"
+                [matTooltip]="'Show details for ' + element[key]">
+                {{ element[key] }}
+              </button>
+              <button mat-icon-button color="accent" style="width: 28px; height: 28px; line-height: 28px;"
+                (click)="addToCart(element.ensemblID, element.symbol)"
+                [matTooltip]="'Add to Cart'">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
+              </button>
+            </div>
+          } @else if (key === 'moduleCenter') {
+            @if (element.moduleCenter && element.moduleCenter !== '-') {
+              <span style="display: inline-flex; align-items: center; gap: 4px;">
+                <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+                  (click)="openEntityDialog(element.moduleCenterID, element.moduleCenter)"
+                  [matTooltip]="'Show details for center ' + element.moduleCenter">
+                  {{ element.moduleCenter }}
+                </button>
+                <button mat-icon-button color="accent" style="width: 28px; height: 28px; line-height: 28px;"
+                  (click)="addToCart(element.moduleCenterID, element.moduleCenter)"
+                  [matTooltip]="'Add to Cart'">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
+                </button>
+              </span>
+            } @else {
+              -
+            }
+          } @else {
+            {{ element[key] || "-" }}
+          }
+        </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

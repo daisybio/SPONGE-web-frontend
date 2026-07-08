@@ -6,10 +6,12 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { debounceTime } from 'rxjs';
 import { HeatmapDataSource } from '../../../../components/heatmap-plot/heatmap-plot.component';
-import { ModuleMember, SpongEffectsRun, SpongEffectsModule } from '../../../../interfaces';
+import { ModuleMember, SpongEffectsRun, SpongEffectsModule, Gene, Transcript } from '../../../../interfaces';
 import { InfoService } from '../../../../services/info.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { ExploreService } from '../../explore/service/explore.service';
+import { ModalsService } from '../../../../components/modals-service/modals.service';
+import { CartService } from '../../../../services/cart.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +26,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { PredictService } from '../service/predict.service';
 import { capitalize } from "lodash";
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 declare var Plotly: any;
 
@@ -46,6 +49,7 @@ declare var Plotly: any;
     ReactiveFormsModule,
     FormsModule,
     InfoComponent,
+    MatTooltipModule,
   ],
   templateUrl: './module-table.component.html',
   styleUrl: './module-table.component.scss',
@@ -55,8 +59,38 @@ export class ModuleTableComponent {
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
   infoService = inject(InfoService);
+  modalsService = inject(ModalsService);
+  cartService = inject(CartService);
   highestParamSet = this.exploreService.highestParamSet;
   protected readonly capitalize = capitalize;
+
+  openEntityDialog(ensemblID: string, symbol?: string) {
+    if (ensemblID.startsWith('ENSG')) {
+      this.modalsService.openNodeDialog({
+        ensg_number: ensemblID,
+        gene_symbol: symbol
+      } as Gene);
+    } else {
+      this.modalsService.openNodeDialog({
+        enst_number: ensemblID,
+        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
+      } as Transcript);
+    }
+  }
+
+  addToCart(ensemblID: string, symbol?: string) {
+    if (ensemblID.startsWith('ENSG')) {
+      this.cartService.add({
+        ensg_number: ensemblID,
+        gene_symbol: symbol
+      } as Gene);
+    } else {
+      this.cartService.add({
+        enst_number: ensemblID,
+        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
+      } as Transcript);
+    }
+  }
 
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$
