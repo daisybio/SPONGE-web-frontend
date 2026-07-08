@@ -47,6 +47,7 @@ interface ScoreBlock {
 interface PredictSample {
   sampleID: string;
   typePrediction: string;
+  subtypePrediction?: string;
 }
 
 interface PatientEntry {
@@ -217,44 +218,47 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
       // Patient KDE
       const patientData = patientModuleScores.get(cls) as PatientEntry[] | undefined;
       if (patientData) {
-        const allPatientScores = patientData.flatMap(p => p.moduleScores);
-        if (allPatientScores.length) {
-          const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
-          const legendName = patientData.length === 1 ? `Your Sample: ${patientData[0].sampleID}` : `Your Samples (Predicted type: ${cls} n=${patientData.length})`;
-          maxDensity = Math.max(maxDensity, Math.max(...gaussianKDE(allPatientScores, grid)));
+        patientData.forEach((p, pIdx) => {
+          const patientScores = p.moduleScores;
+          if (patientScores.length) {
+            const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
+            const legendName = `Your Sample: ${p.sampleID}`;
+            const kdeValues = gaussianKDE(patientScores, grid);
+            maxDensity = Math.max(maxDensity, Math.max(...kdeValues));
 
-          traces.push({
-            x: grid, y: gaussianKDE(allPatientScores, grid),
-            xaxis: xRef, yaxis: yRef,
-            type: 'scatter', mode: 'lines', fill: 'tozeroy',
-            fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
-            line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
-            name: legendName, legendgroup: 'patient',
-            showlegend: isCombinedMode || index === 0,
-            hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
-          });
+            traces.push({
+              x: grid, y: kdeValues,
+              xaxis: xRef, yaxis: yRef,
+              type: 'scatter', mode: 'lines', fill: 'tozeroy',
+              fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
+              line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
+              name: legendName, legendgroup: `patient_${p.sampleID}`,
+              showlegend: isCombinedMode || (index === 0 && pIdx === 0),
+              hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
+            });
 
-          // Rug
-          const rugX: number[] = [];
-          const rugCustom: string[] = [];
-          patientData.forEach((p: PatientEntry) => p.moduleScores.forEach((score, modIdx) => {
-            rugX.push(score);
-            rugCustom.push(p.genes?.[modIdx] ?? `module ${modIdx}`);
-          }));
-          traces.push({
-            x: rugX, y: rugX.map(() => 0), xaxis: xRef, yaxis: yRef,
-            type: 'scatter', mode: 'markers',
-            marker: {
-              color: PATIENT_HIGHLIGHT_COLOR,
-              symbol: 'line-ns',
-              size: 10,
-              line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
-            },
-            name: 'Module markers', legendgroup: 'patient', showlegend: false,
-            customdata: rugCustom,
-            hovertemplate: `<b>Module: %{customdata}</b><br>Score: %{x:.4f}<extra></extra>`,
-          });
-        }
+            // Rug for this specific patient
+            const rugX: number[] = [];
+            const rugCustom: string[] = [];
+            patientScores.forEach((score, modIdx) => {
+              rugX.push(score);
+              rugCustom.push(p.genes?.[modIdx] ?? `module ${modIdx}`);
+            });
+            traces.push({
+              x: rugX, y: rugX.map(() => 0), xaxis: xRef, yaxis: yRef,
+              type: 'scatter', mode: 'markers',
+              marker: {
+                color: PATIENT_HIGHLIGHT_COLOR,
+                symbol: 'line-ns',
+                size: 10,
+                line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
+              },
+              name: `Module markers: ${p.sampleID}`, legendgroup: `patient_${p.sampleID}`, showlegend: false,
+              customdata: rugCustom,
+              hovertemplate: `<b>Module: %{customdata}</b><br>Sample: ${p.sampleID}<br>Score: %{x:.4f}<extra></extra>`,
+            });
+          }
+        });
       }
 
       // disease name annotation
@@ -340,9 +344,11 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
     typeScores: Record<string, ScoreBlock>,
   ): Map<string, PatientEntry[]> {
     const result = new Map<string, PatientEntry[]>();
-    for (const [cls, block] of Object.entries(typeScores)) {
+    for (const [_, block] of Object.entries(typeScores)) {
       if (!block.samples?.length || !block.values?.length) continue;
       block.samples.forEach((sampleID, colIdx) => {
+        const pd = predData.find(d => d.sampleID === sampleID);
+        const cls = pd?.subtypePrediction || 'Unknown';
         const moduleScores = block.values.map(row => row[colIdx] ?? 0);
         if (!result.has(cls)) result.set(cls, []);
         result.get(cls)!.push({ sampleID, moduleScores, genes: block.genes });
