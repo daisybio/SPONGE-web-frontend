@@ -18,6 +18,8 @@ export const SPONGE_EXAMPLE_URL =
 
 export const EXAMPLE_PREDICTION_URL =
   'https://exbio.wzw.tum.de/sponge-files/example_prediction.json';
+export const EXAMPLE_SUBTYPE_PREDICTION_URL =
+  'https://exbio.wzw.tum.de/sponge-files/example_prediction_subtype.json';
 export const IGV_REFGENOME = {
   id: 'hg38',
   name: 'Human (GRCh38/hg38)',

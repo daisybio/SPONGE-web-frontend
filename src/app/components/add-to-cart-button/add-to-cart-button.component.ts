@@ -22,7 +22,7 @@ import { Gene, Transcript } from '../../interfaces';
       border: none;
       padding: 0;
       cursor: pointer;
-      color: var(--accent-color, #e74c3c);
+      color: var(--accent-color, #9d3ce7ff);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -50,7 +50,7 @@ export class AddToCartButtonComponent {
 
   addToCart(event: MouseEvent) {
     event.stopPropagation();
-    
+
     if (this.entity()) {
       this.cartService.add(this.entity()!);
       return;
