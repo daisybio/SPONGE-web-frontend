@@ -25,9 +25,9 @@
                 [matTooltip]="'Show details for ' + BrowseService.getNodeGeneName(node)">
                 {{ BrowseService.getNodeGeneName(node) }}
               </button>
-              <button mat-icon-button color="accent" style="width: 28px; height: 28px; line-height: 28px;"
-                (click)="addToCart(BrowseService.getNodeID(node), BrowseService.getNodeGeneName(node))"
-                [matTooltip]="'Add to Cart'">
+              <button (click)="addToCart(BrowseService.getNodeID(node), BrowseService.getNodeGeneName(node)); $event.stopPropagation();"
+                [matTooltip]="'Add to Cart'"
+                style="background: none; border: none; padding: 0; cursor: pointer; color: var(--accent-color, #e74c3c); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 0;">
                 <mat-icon style="font-size: 16px; width: 16px; height: 16px;">add_shopping_cart</mat-icon>
               </button>
             </div>
