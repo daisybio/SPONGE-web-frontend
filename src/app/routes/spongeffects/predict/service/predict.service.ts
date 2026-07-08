@@ -24,7 +24,7 @@ import {
   InteractionSorting,
   TranscriptNode,
 } from '../../../../interfaces';
-import { EXAMPLE_PREDICTION_URL } from '../../../../constants';
+import { EXAMPLE_PREDICTION_URL, EXAMPLE_SUBTYPE_PREDICTION_URL } from '../../../../constants';
 import { VersionsService } from '../../../../services/versions.service';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 
@@ -250,30 +250,45 @@ export class PredictService {
     };
   });
 
-  examplePrediction = (async () => {
+  examplePrediction_type: Promise<PredictCancerType> = (async () => {
     const response = await fetch(EXAMPLE_PREDICTION_URL);
     const prediction = await response.json();
     return prediction;
   })();
 
-  readonly _prediction$: ResourceRef<PredictCancerType> = resource({
+  examplePrediction_subtype: Promise<PredictCancerType> = (async () => {
+    const response = await fetch(EXAMPLE_SUBTYPE_PREDICTION_URL);
+    const prediction = await response.json();
+    return prediction;
+  })();
+
+  examplePrediction = computed(() => {
+    if (this._subtypes$()) {
+      return this.examplePrediction_subtype;
+    } else {
+      return this.examplePrediction_type;
+    }
+  });
+
+  readonly _prediction$: ResourceRef<PredictCancerType | undefined> = resource({
     request: computed(() => {
       return {
         query: this._query$(),
-        example: this.examplePrediction,
+        example: this.examplePrediction(),
       };
     }),
     loader: async (param) => {
       console.log('Recomputing _prediction$ request', param.request);
       const query = param.request.query;
-      let prediction: PredictCancerType;
+      let prediction: PredictCancerType | undefined;
       if (!query) {
         console.log(
           'No query provided, returning undefined, setting example used',
         );
-        const example = await this.examplePrediction;
+        const example = await this.examplePrediction();
         this.example_used.set(true);
-        prediction = example;
+        // Make a copy so we can mutate user_umap if needed
+        prediction = JSON.parse(JSON.stringify(example));
       } else {
         if (!query.useExampleExpression) {
           this.example_used.set(false);

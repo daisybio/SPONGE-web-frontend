@@ -435,6 +435,9 @@ export interface PredictCancerType {
     values: number[][];
     samples: string[];
   }>;
+  user_umap?: Record<string, { x: number; y: number }>;
+  tcga_umap?: Record<string, { x: number; y: number; class: string }>;
+  umap_projection?: Map<string, { x: number; y: number }>;
 }
 
 export interface ExploreQuery {
@@ -529,6 +532,8 @@ export interface GeneMiRNA extends SpongeRun {
 export interface NetworkResult {
   subtype: {};
   type: {
+
+
     euclidean_distances: {
       labels: string[];
       x: number[];
