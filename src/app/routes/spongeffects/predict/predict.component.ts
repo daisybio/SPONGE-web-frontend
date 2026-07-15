@@ -121,18 +121,29 @@ export class PredictComponent {
         return;
       }
 
+      const level = this.predictService.level();
+
+      // Build Map of Gene/Transcript ID -> { score: number, symbol: string }
+      const tcgaMap = new Map<string, { score: number; symbol: string }>();
+      for (const item of tcga_scores) {
+        const id = level === 'gene' ? item.gene?.ensg_number : item.transcript?.enst_number;
+        const symbol = level === 'gene' ? item.gene?.gene_symbol : item.transcript?.gene?.gene_symbol;
+        if (id) {
+          tcgaMap.set(id, { score: item.score_value || 0, symbol: symbol || id });
+        }
+      }
+
       // Transform scores to scatterplot data format
       const scatterData = scores.genes.map((gene: string, index: number) => {
-        const tcgaScore = tcga_scores[index]?.score_value || 0;
-        const gene_symbol = tcga_scores[index]?.gene?.gene_symbol || gene;
+        const tcgaInfo = tcgaMap.get(gene);
         const customScore = scores.values[index]?.[0] || 0;
 
         return {
-          id: gene_symbol,
-          x: tcgaScore,
+          id: tcgaInfo?.symbol || gene,
+          x: tcgaInfo?.score ?? 0,
           y: customScore,
         };
-      }).filter((item: any) => item.x !== undefined && item.y !== undefined);
+      });
 
       this.transformedData.set(scatterData);
 
@@ -148,47 +159,39 @@ export class PredictComponent {
   async getTcgaSpongEffectsScores(genes: string[]): Promise<any[]> {
     const level = this.predictService.level();
     const version = this.versionsService.versionReadOnly()();
-    const disease = this.predictService.selectedPredictedType$();
+    const disease = this.predictService.selectedPredictedType$() || 'pancancer';
 
     if (!disease || !version || !genes || genes.length === 0) {
       return [];
     }
 
     try {
-      let moduleIDs: number[];
-
-      const BATCH_SIZE = 10; // Concurrency limit for module lookup
-      const fetchModules = async (gene: string) => {
-        if (level === 'gene') {
-          const modules = await this.backend.getSpongEffectsGeneModules(version, disease, undefined, undefined, gene);
-          return modules.map(m => m.spongEffects_gene_module_ID);
-        } else {
-          const modules = await this.backend.getSpongEffectsTranscriptModules(version, disease, undefined, undefined, gene);
-          return modules.map(m => m.spongEffects_transcript_module_ID);
-        }
-      };
-
-      const results: number[][] = [];
-      for (let i = 0; i < genes.length; i += BATCH_SIZE) {
-        const batch = genes.slice(i, i + BATCH_SIZE);
-        results.push(...await Promise.all(batch.map(fetchModules)));
+      let allModules: any[] = [];
+      if (level === 'gene') {
+        allModules = await this.backend.getSpongEffectsGeneModules(version, disease, undefined, 10000);
+      } else {
+        allModules = await this.backend.getSpongEffectsTranscriptModules(version, disease, undefined, 10000);
       }
-      moduleIDs = results.flat();
+
+      const moduleMap = new Map<string, number>();
+      for (const m of allModules) {
+        const id = level === 'gene' ? m.gene?.ensg_number : m.transcript?.enst_number;
+        const moduleId = level === 'gene' ? m.spongEffects_gene_module_ID : m.spongEffects_transcript_module_ID;
+        if (id && moduleId !== undefined) {
+          moduleMap.set(id, moduleId);
+        }
+      }
+
+      const moduleIDs = genes
+        .map(gene => moduleMap.get(gene))
+        .filter((id): id is number => id !== undefined);
 
       if (moduleIDs.length === 0) {
         return [];
       }
 
-      // Batch the final enrichment scores fetch if needed, but the backend fetchSpongEffectsEnrichScores seems to handle an array of IDs.
-      const enrichScores = await this.backend.fetchSpongEffectsEnrichScores(
-        version,
-        this.predictService.level(),
-        moduleIDs,
-        false
-      );
 
-      return enrichScores || [];
-
+      return await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, false, true) || [];
     } catch (error) {
       console.error('Error in getTcgaSpongEffectsScores:', error);
       return [];

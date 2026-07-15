@@ -115,10 +115,15 @@ export class BackendService {
       maxPValue: query.maxPValue,
       minMscor: query.minMscor,
       edgeSorting: query.interactionSorting,
-      nodeSorting: geneSorting,
       maxNodes: query.maxNodes,
       maxEdges: query.maxInteractions,
     };
+    // Only send a node sort when at least one is selected. With none selected the backend
+    // skips the networkAnalysis-based node selection and derives nodes straight from the
+    // edges, so no nodes are lost.
+    if (geneSorting.length > 0) {
+      _query["nodeSorting"] = geneSorting;
+    }
     if (query.ensemblID) {
       _query["ensemblID"] = query.ensemblID;
     }
@@ -691,16 +696,17 @@ export class BackendService {
     version: number,
     level: "gene" | "transcript",
     module_IDs: any[],
-    cluster: boolean = true
+    cluster: boolean = true,
+    average: boolean = false
   ): Promise<any[]> {
 
     if (level === "gene") {
       const route = 'spongEffects/getSpongEffectsGeneModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster }))) ?? [];
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster, average }))) ?? [];
 
     } else {
       const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster }))) ?? [];
+      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster, average }))) ?? [];
     }
   }
 
