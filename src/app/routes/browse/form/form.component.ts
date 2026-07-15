@@ -170,20 +170,6 @@ export class FormComponent implements OnInit {
       });
     });
 
-    this.formGroup.valueChanges.subscribe((config) => {
-      if (
-        !config.sortingDegree &&
-        !config.sortingBetweenness &&
-        !config.sortingEigenvector
-      ) {
-        this.formGroup
-          .get('sortingBetweenness')
-          ?.setValue(true, { emitEvent: false });
-        this.cdr.detectChanges();
-        config.sortingBetweenness = true;
-      }
-    });
-
     effect(() => {
       const config = formSignal();
       const dataset = this.activeDataset();

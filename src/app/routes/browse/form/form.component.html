@@ -49,13 +49,14 @@
               <li><b>Betweenness: </b>
                 <p [innerHTML]="infoService.betweennessText"></p>
               </li>
-              <li><b>Degree:</b>`
+              <li><b>Degree:</b>
                 <p [innerHTML]="infoService.degreeText"></p>
               </li>
               <li><b>Eigenvector: </b>
                 <p [innerHTML]="infoService.eigenvectorText"></p>
               </li>
             </ul>
+            Note: All network analysis metrics are computed on a filtered network: Thus, when applying sorting
           </app-info><br>
           <mat-checkbox formControlName="sortingBetweenness">Betweenness</mat-checkbox>
           <mat-checkbox formControlName="sortingEigenvector">Eigenvector</mat-checkbox>

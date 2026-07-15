@@ -450,7 +450,7 @@ export class BrowseService {
         const uniqueMiRNAs = (await Promise.all(miRNAs$))
           .flat()
           .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
-        return uniqueMiRNAs.map((miRNA): Track => {
+        const tracks = uniqueMiRNAs.map((miRNA): Track => {
           return {
             name: miRNA,
             url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
@@ -462,6 +462,19 @@ export class BrowseService {
             indexed: false,
           };
         });
+
+        const refSeqTrack: any = {
+          name: 'RefSeq Transcripts',
+          format: 'refgene',
+          url: 'https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.txt.gz',
+          indexed: false,
+          nameField: 'name',
+          displayMode: 'EXPANDED',
+          height: 100,
+        };
+        tracks.push(refSeqTrack as Track);
+
+        return tracks;
       },
     });
   }
@@ -473,8 +486,9 @@ export class BrowseService {
   ): Graph {
     const graph = new Graph();
 
-    // Find max node degree for normalization
-    const maxNodeDegree = Math.max(...nodes.map((node) => node.node_degree));
+    // Find max node degree for normalization. Guard against 0/NaN (e.g. nodes fetched without
+    // network-analysis metrics) so node sizes don't become NaN.
+    const maxNodeDegree = Math.max(1, ...nodes.map((node) => node.node_degree || 0));
 
     // Find max mscor for normalization
     const maxMscor = Math.max(
@@ -505,8 +519,10 @@ export class BrowseService {
         y: Math.random(),
         size: normalizedSize,
         forceLabel: true,
-        type: hasInverse ? 'circle' : 'square',
+        // Module centers get a green frame via the 'bordered' node program.
+        type: node.isCenter ? 'bordered' : hasInverse ? 'circle' : 'square',
         nodeType: nodeType,
+        isCenter: !!node.isCenter,
       });
     });
 

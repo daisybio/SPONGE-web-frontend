@@ -26,6 +26,7 @@
     "@ngx-dropzone/cdk": "^19.0.0",
     "@ngx-dropzone/material": "^19.0.0",
     "@sigma/export-image": "^3.0.0",
+    "@sigma/node-border": "^3.0.0",
     "@sigma/node-square": "^3.0.0",
     "@visa-ge/ng-igv": "^0.0.11",
     "file-saver-es": "^2.0.5",
