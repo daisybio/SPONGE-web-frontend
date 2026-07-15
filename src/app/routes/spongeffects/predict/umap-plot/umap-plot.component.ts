@@ -11,6 +11,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PredictService } from '../service/predict.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
@@ -21,7 +25,15 @@ declare var Plotly: any;
 @Component({
   selector: 'app-umap-plot',
   standalone: true,
-  imports: [CommonModule, MatProgressBarModule, InfoComponent],
+  imports: [
+    CommonModule,
+    MatProgressBarModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    InfoComponent,
+  ],
   template: `
     <div style="padding: 16px;">
       @if (isLoading()) {
@@ -29,6 +41,17 @@ declare var Plotly: any;
       } @else if (!hasData()) {
         <div class="card-container" style="padding: 24px; text-align: center; color: #666;">
           <p>No UMAP coordinates available. Please perform a prediction first.</p>
+        </div>
+      } @else {
+        <div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+          <button mat-icon-button [matMenuTriggerFor]="umapDownloadMenu" matTooltip="Download Plot">
+            <mat-icon>download</mat-icon>
+          </button>
+          <mat-menu #umapDownloadMenu="matMenu">
+            <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+            <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+            <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+          </mat-menu>
         </div>
       }
 
@@ -187,6 +210,18 @@ export class UmapPlotComponent implements OnDestroy {
     const div = this.plotDiv()?.nativeElement;
     if (div) {
       Plotly.purge(div);
+    }
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.plotDiv()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'umap_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
     }
   }
 }

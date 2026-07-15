@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatError, MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -39,6 +39,7 @@ import { MatCardModule } from '@angular/material/card';
   imports: [
     MatError,
     MatFormField,
+    MatHint,
     MatInput,
     MatLabel,
     ReactiveFormsModule,
@@ -71,6 +72,21 @@ export class PredictFormComponent {
   allPredictedTypes$ = this.predictService.allPredictedTypes$;
   models$ = this.spongEffectsService.datasets$
   protected readonly capitalize = capitalize;
+
+  // Real subtype names for the currently selected type, sourced from the full SPONGE dataset
+  // catalog (not spongEffectsService.datasets$, which has no subtype-level entries yet — no
+  // subtype-specific spongEffects models have been trained). Shown as a preview of what's
+  // coming; not yet submittable since there's no backend model to run them against.
+  private readonly selectedTypeName$ = toSignal(
+    this.predictService.formGroup.get('model')!.valueChanges,
+    { initialValue: this.predictService.formGroup.get('model')!.value },
+  );
+  subtypesForSelectedType$ = computed(() => {
+    const typeName = this.selectedTypeName$();
+    if (!typeName) return [];
+    return (this.versionService.diseases$().value() || [])
+      .filter((d: Dataset) => d.disease_name === typeName && !!d.disease_subtype);
+  });
   // methods = ['gsva', 'ssgsea', 'OE'];
   methods = {
     gsva: 'GSVA',

@@ -5,6 +5,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { BackendService } from '../../../../services/backend.service';
 import { VersionsService } from '../../../../services/versions.service';
@@ -58,7 +62,17 @@ interface PatientEntry {
 
 @Component({
   selector: 'app-classification-plot',
-  imports: [CommonModule, MatProgressBarModule, MatButtonToggleModule, FormsModule, InfoComponent],
+  imports: [
+    CommonModule,
+    MatProgressBarModule,
+    MatButtonToggleModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    FormsModule,
+    InfoComponent
+  ],
   templateUrl: './classification-plot.component.html',
   styleUrl: './classification-plot.component.scss',
 })
@@ -162,8 +176,6 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
       Plotly.purge(el);
       return;
     }
-    console.debug(`[ClassificationPlot] Rendering ${allClasses.length} classes. TCGA: ${classDensities.size}, Patient: ${patientModuleScores.size}. Combined: ${isCombinedMode}`);
-
     // 5. RANGE: universal limits
     const allXFlat = [
       ...[...classDensities.values()].flatMap(d => d.x),
@@ -379,5 +391,17 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
   private resize() {
     const el = this.plotDiv()?.nativeElement;
     if (el?.checkVisibility?.()) Plotly.Plots.resize(el);
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.plotDiv()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'classification_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
   }
 }
