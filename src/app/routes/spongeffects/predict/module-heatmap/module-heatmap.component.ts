@@ -3,6 +3,7 @@ import { PredictService } from '../service/predict.service';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../components/heatmap-plot/heatmap-plot.component';
 import { BackendService } from '../../../../services/backend.service';
 import { VersionsService } from '../../../../services/versions.service';
+import { symbolCache } from '../../explore/plots/lollipop-plot/lollipop-plot.component';
 
 interface Scores {
   genes: string[];
@@ -25,8 +26,9 @@ export class ModuleHeatmapComponent {
   enrichmentScores$ = computed(() => this.prediction$()?.scores);
   backend = inject(BackendService);
   versionService = inject(VersionsService);
-  selectedPredictedType$ = this.predictService.selectedPredictedType$;
-  // selectedPredictedType$ = signal<string>("Breast Invasive Carcinoma"); // Default value for testing
+  // Synchronized with the shared "Score Scope" selector: filters samples down to the
+  // selected type, or shows all samples for the 'pancancer' scope.
+  selectedScope$ = this.predictService.selectedScope$;
 
 
   refreshSignal$ = input();
@@ -57,9 +59,12 @@ export class ModuleHeatmapComponent {
   };
   
   constructor() {
-    // Effect to process scores when they change
+    // Effect to process scores when they change or patient selection changes
     effect(() => {
-      this.processEnrichmentScores(this.enrichmentScores$());
+      const scores = this.enrichmentScores$();
+      const samples = this.predictService.selectedSamples$();
+      const scope = this.selectedScope$();
+      this.processEnrichmentScores(scores);
     });
   }
   
@@ -78,22 +83,32 @@ export class ModuleHeatmapComponent {
       
       let transformedData: any[] = [];
 
-      // if a predicted type is selected, filter scores
-      if (this.selectedPredictedType$()) {
-        const selectedType = this.selectedPredictedType$();
-        scores.samples = scores.samples.filter((sample: string) => {
-          const prediction = this.getPredictionForSample(sample);
-          return prediction === selectedType;
-        });
-        scores.values = scores.values.map((row: number[]) =>
-          row.filter((_, index: number) => scores.samples[index] !== undefined)
-        );
+      // Make a deep copy so you don't mutate the original data!
+      const copiedScores = {
+        genes: [...scores.genes],
+        samples: [...scores.samples],
+        values: scores.values.map(row => [...row])
+      };
+
+      // Filter by selected samples first
+      const selectedSamples = this.predictService.selectedSamples$();
+      let keepIndices = selectedSamples.length > 0
+        ? copiedScores.samples.map((s, index) => ({ s, index })).filter(({ s }) => selectedSamples.includes(s)).map(({ index }) => index)
+        : copiedScores.samples.map((_, index) => index);
+
+      // For a type-level scope, filter down to samples predicted as that type.
+      // 'pancancer' shows all samples.
+      const selectedType = this.selectedScope$();
+      if (selectedType && selectedType !== 'pancancer') {
+        keepIndices = keepIndices.filter((index) => this.getPredictionForSample(copiedScores.samples[index]) === selectedType);
       }
 
-      // Make a deep copy so you don't mutate the original data!
-      const genes = [...scores.genes];
-      const samples = [...scores.samples];
-      const values = scores.values.map(row => [...row]);
+      copiedScores.samples = keepIndices.map((i) => copiedScores.samples[i]);
+      copiedScores.values = copiedScores.values.map((row: number[]) => keepIndices.map((i) => row[i]));
+
+      const genes = [...copiedScores.genes];
+      const samples = [...copiedScores.samples];
+      const values = copiedScores.values.map(row => [...row]);
 
       // subset for first 12 genes
       let finalGenes = genes;
@@ -103,20 +118,28 @@ export class ModuleHeatmapComponent {
         finalValues = values.slice(0, 12);
       }
 
-      for (const geneId of finalGenes) {
-        let gene_symbol = geneId;
-        const response = await this.backend.getGeneInfo(this.versionService.version$(), geneId);
-        if (response.length === 1) {
-          gene_symbol = response[0].gene_symbol;
-        } else {
-          console.warn(`Gene ID ${geneId} not found in the database or more than one gene symbol found.`);
-        }
+      const missingGenes = finalGenes.filter(g => !symbolCache.has(g));
+      if (missingGenes.length > 0) {
+        await Promise.all(missingGenes.map(async (geneId: string) => {
+          try {
+            const response = await this.backend.getGeneInfo(this.versionService.version$(), geneId);
+            if (response.length === 1 && response[0].gene_symbol) {
+              symbolCache.set(geneId, response[0].gene_symbol);
+            } else {
+              symbolCache.set(geneId, geneId);
+            }
+          } catch (e) {
+            console.error(e);
+            symbolCache.set(geneId, geneId);
+          }
+        }));
       }
 
       finalGenes.forEach((gene, geneIndex) => {
+        const displayName = symbolCache.get(gene) ?? gene;
         samples.forEach((sample, sampleIndex) => {
           transformedData.push({
-            id: gene,
+            id: displayName,
             sample_ID: sample,
             expr_value: finalValues[geneIndex][sampleIndex],
             disease_subtype: this.getPredictionForSample(sample)
@@ -133,7 +156,7 @@ export class ModuleHeatmapComponent {
     const prediction = this.prediction$();
     if (prediction && prediction.data) {
       const samplePrediction = prediction.data.find((prediction_data: any) => prediction_data.sampleID === sampleID);
-      return samplePrediction ? samplePrediction.typePrediction : 'Unknown';
+      return samplePrediction?.typePrediction ?? 'Unknown';
     }
     return 'Unknown';
   }
