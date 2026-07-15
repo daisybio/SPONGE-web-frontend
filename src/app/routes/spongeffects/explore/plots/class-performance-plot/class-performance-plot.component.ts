@@ -16,6 +16,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SelectElement } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { sum, groupBy, uniq } from 'lodash';
@@ -38,6 +41,9 @@ interface PerformanceEntry {
   selector: 'app-class-performance-plot',
   imports: [
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -325,5 +331,17 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
 
   compareSelectElements(a: SelectElement, b: SelectElement): boolean {
     return a && b && a.value === b.value;
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.classPerformPlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'class_performance_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
   }
 }

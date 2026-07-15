@@ -9,6 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ExploreService } from "../../service/explore.service";
 import { PredictService } from "../../../predict/service/predict.service";
 import { InfoComponent } from "../../../../../components/info/info.component";
@@ -47,6 +50,9 @@ function calculateKDE(values: number[]): { x: number[], y: number[] } {
   selector: 'app-enrichment-class-plot',
   imports: [
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -283,5 +289,15 @@ export class EnrichmentClassPlotComponent implements OnInit, AfterViewInit, OnDe
     Plotly.purge(this.enrichmentClassPlot().nativeElement);
   }
 
-
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.enrichmentClassPlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'enrichment_class_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
+  }
 }

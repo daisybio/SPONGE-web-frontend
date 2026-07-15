@@ -8,6 +8,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {ExploreService} from "../../service/explore.service";
 import {InfoComponent} from "../../../../../components/info/info.component";
 
@@ -17,6 +20,9 @@ declare var Plotly: any;
   selector: 'app-overall-acc-plot',
   imports: [
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -108,7 +114,7 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
         modelPerformances.push(entry);
         if (entry.model_type == "modules" && entry.split_type == "test") {
           if (entry.accuracy > highest_accuracy) {
-            highest_accuracy = entry.accuracy_upper;
+            highest_accuracy = entry.accuracy;
             highest_key = key;
           }
         }
@@ -277,6 +283,18 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
     const plotDiv = this.overallAccPlot().nativeElement;
     if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
+    }
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.overallAccPlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'overall_accuracy_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
     }
   }
 }

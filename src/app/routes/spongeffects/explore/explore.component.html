@@ -2,7 +2,7 @@
   <mat-drawer [opened]="true" mode="side">
     <app-explore-form></app-explore-form>
     <app-module-form [source]="'explore'"></app-module-form>
-    @if (selectedTabIndex() == 3 && selectedVis() === 'network') {
+    @if (selectedTabIndex() == 0 && selectedVis() === 'network') {
     <!-- set a vertical line with linePos as vertical offset relative to the viewport  -->
     <!-- <hr style="position: absolute; width: 100%;" [style.top.px]="lineTop()" /> -->
     <hr style="margin: 257px 0 30px 0; width: 99%;" #sectionLine />

@@ -130,6 +130,7 @@ export class ExploreBrowseService extends BrowseService {
 
       const ensemblID = isGene ? clonedNode.gene.ensg_number : clonedNode.transcript.enst_number;
       const isCenter = selectedCenterIDs.has(ensemblID);
+      clonedNode.isCenter = isCenter;
 
       if (isCenter) {
         // Collect parameter thresholds for center models
