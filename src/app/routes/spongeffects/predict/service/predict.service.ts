@@ -3,26 +3,18 @@ import {
   effect,
   inject,
   Injectable,
-  Resource,
   resource,
   ResourceRef,
   Signal,
   signal,
-  WritableSignal,
   linkedSignal,
   untracked,
 } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { BackendService } from '../../../../services/backend.service';
 import {
-  NetworkData,
   PredictCancerType,
-  GeneNode,
-  GeneInteraction,
   Dataset,
-  BrowseQuery,
-  InteractionSorting,
-  TranscriptNode,
 } from '../../../../interfaces';
 import { EXAMPLE_PREDICTION_URL, EXAMPLE_SUBTYPE_PREDICTION_URL } from '../../../../constants';
 import { VersionsService } from '../../../../services/versions.service';
@@ -50,36 +42,6 @@ export class PredictService {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   spongEffectsService = inject(SpongEffectsService);
-
-  private moduleIDCache = new Map<string, number>();
-  private moduleMembersCache = new Map<string, any[]>();
-
-  private async runWithLimit<T, R>(
-    items: T[],
-    limit: number,
-    fn: (item: T) => Promise<R>
-  ): Promise<R[]> {
-    const results = new Array<R>(items.length);
-    const executing = new Set<Promise<any>>();
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const p = (async () => {
-        const res = await fn(item);
-        results[i] = res;
-      })();
-
-      executing.add(p);
-      p.then(() => executing.delete(p));
-
-      if (executing.size >= limit) {
-        await Promise.race(executing);
-      }
-    }
-
-    await Promise.all(executing);
-    return results;
-  }
 
   readonly formGroup = new FormGroup({
     useExampleExpression: new FormControl<boolean>(false, { nonNullable: true }),
@@ -119,93 +81,114 @@ export class PredictService {
   readonly includeModuleMembers$ = signal<boolean>(true);
 
   // Visualization filter signals
-  readonly topNModules$ = signal<number>(10);
-  readonly showOrphans$ = signal<boolean>(true);
-  readonly maxNodes$ = signal<number>(100);
-  readonly minDegree$ = signal<number>(0);
-  readonly minBetweenness$ = signal<number>(0);
-  readonly minEigen$ = signal<number>(0);
-  readonly maxPValue$ = signal<number>(1.0);
-  readonly minMscor$ = signal<number>(0.0);
+  readonly topNModules$ = signal<number>(1);
+  readonly sortBy$ = signal<string>('absMeanEnrichmentScore');
+  readonly minScore1$ = signal<number | null>(null);
+  readonly minScore2$ = signal<number | null>(null);
+  readonly showOrphans$ = signal<boolean>(false);
+  readonly sortingBetweenness$ = signal<boolean>(true);
+  readonly sortingEigenvector$ = signal<boolean>(false);
+  readonly sortingDegree$ = signal<boolean>(false);
+  readonly maxNodes$ = signal<number>(10);
+  readonly minDegree$ = signal<number>(1);
+  readonly minBetweenness$ = signal<number>(0.05);
+  readonly minEigen$ = signal<number>(0.1);
+  readonly interactionSorting$ = signal<string>('pValue');
+  readonly maxInteractions$ = signal<number>(100);
+  readonly maxPValue$ = signal<number>(0.05);
+  readonly minMscor$ = signal<number>(0.1);
+  readonly selectedVis$ = signal<string>('plot');
 
-  readonly allSamples$ = computed(() => {
-    const prediction = this._prediction$.value();
-    return prediction?.scores?.samples || [];
-  });
-
-  // All SPONGE network datasets (with subtypes), used for the reference network selector
+  // Full SPONGE network dataset catalog (all diseases + subtypes). Only used to resolve a
+  // full Dataset object (dataset_ID etc.) for whichever scope name is currently selected —
+  // it is NOT the source of what scopes are selectable (see availableScopes$ below).
   readonly referenceDatasets$ = computed(
     () => this.versionsService.diseases$().value() || [],
   );
-  // Unique disease names from the full SPONGE dataset list
-  readonly referenceDiseases$ = computed(() =>
-    Array.from(
-      new Set(this.referenceDatasets$().map((d: Dataset) => d.disease_name)),
-    ).sort(),
-  );
-
-  // Writable full Dataset selection — updated by DiseaseSelectorComponent
-  readonly selectedReferenceDataset$ = linkedSignal<Dataset | undefined>(() => {
-    console.log('Recomputing selectedReferenceDataset$');
-    const predicted = this.selectedPredictedType$();
-    const datasets = this.referenceDatasets$();
-    if (!datasets || datasets.length === 0) return undefined;
-    if (predicted) {
-      const match = datasets.find(
-        (d: Dataset) => d.disease_name === predicted && !d.disease_subtype,
-      );
-      if (match) return match;
-    }
-    const globalName = this.versionsService.selectedDiseaseName$();
-    if (globalName) {
-      const match = datasets.find((d: Dataset) => d.disease_name === globalName);
-      if (match) return match;
-    }
-    return datasets[0];
-  });
-
-  // Keep string accessors for DiseaseSelectorComponent compatibility
-  readonly selectedReferenceDisease$ = computed(
-    () => this.selectedReferenceDataset$()?.disease_name,
-  );
-  readonly selectedDataset$ = this.selectedReferenceDataset$;
 
   allPredictedTypes$: Signal<string[]> = computed(() => {
-    console.log('Recomputing allPredictedTypes$');
     const prediction = this._prediction$.value();
-    if (!prediction) {
-      console.log('No prediction available, returning empty array');
-      return [];
-    }
+    if (!prediction) return [];
     const data = prediction.data;
-    if (!data) {
-      console.log('No data available, returning empty array');
-      return [];
-    }
+    if (!data) return [];
     const alltypes = Array.from(
       new Set(
-        data.map((entry: { typePrediction: string }) => entry.typePrediction),
+        data
+          .map((entry) => entry.typePrediction)
+          .filter((t): t is string => !!t),
       ),
     );
-    console.log('alltypes', alltypes);
     return alltypes;
   });
 
   selectedPredictedType$ = computed(() => {
-    console.log('Recomputing selectedPredictedType$');
     const prediction = this._prediction$.value();
-    if (!prediction || !prediction.meta) {
-      console.log('No prediction meta available, returning undefined');
-      return undefined;
-    }
+    if (!prediction || !prediction.meta) return undefined;
     return prediction.meta[0].type_predict || undefined;
   });
 
-  readonly topModules$ = computed(() => {
-    const prediction = this._prediction$.value();
-    if (!prediction?.scores) return [];
+  // The disease scope the current prediction's *primary* result belongs to: the predicted
+  // type (pancancer model, type prediction ran), or the explicitly specified model
+  // (type_predict comes back "NA" when a specific model was given), falling back to 'pancancer'.
+  readonly activeModelScope$ = computed(() => {
+    const meta = this._prediction$.value()?.meta?.[0];
+    if (!meta) return 'pancancer';
+    if (meta.type_predict && meta.type_predict !== 'NA') return meta.type_predict;
+    if (meta.specified_type && meta.specified_type !== 'None' && meta.specified_type !== 'NA') {
+      return meta.specified_type;
+    }
+    return 'pancancer';
+  });
 
-    const scores = prediction.scores;
+  // Disease scopes for which the prediction actually computed module enrichment scores:
+  // 'pancancer' is always available (top-level `scores`); each key of `type_scores` adds a
+  // type-specific scope. There is no separate subtype-level score set — subtype is only ever
+  // a predicted label, so it is not offered here as a selectable scope.
+  readonly availableScopes$ = computed(() => {
+    const prediction = this._prediction$.value();
+    const scopes = new Set<string>(['pancancer']);
+    Object.keys(prediction?.type_scores ?? {}).forEach((k) => scopes.add(k));
+    return Array.from(scopes);
+  });
+
+  // Writable scope selection driving both the module/network lookups and which score set
+  // topModules$ is computed from. Defaults to whatever the prediction itself was run against.
+  readonly selectedScope$ = linkedSignal<string>(() => {
+    const scopes = this.availableScopes$();
+    const active = this.activeModelScope$();
+    return scopes.includes(active) ? active : (scopes[0] ?? 'pancancer');
+  });
+
+  // Full Dataset object (dataset_ID etc.) matching the selected scope, needed for the
+  // background SPONGE ceRNA network fetch. 'pancancer' is a real dataset with its own
+  // computed ceRNA network (dataset_ID 126) like any other scope.
+  readonly selectedScopeDataset$ = computed(() => {
+    const scope = this.selectedScope$();
+    const datasets = this.referenceDatasets$();
+    if (datasets.length === 0) return undefined;
+    return (
+      datasets.find((d: Dataset) => d.disease_name === scope && !d.disease_subtype) ??
+      datasets.find((d: Dataset) => d.disease_name === scope) ??
+      datasets[0]
+    );
+  });
+
+  // The module enrichment score matrix for the currently selected scope: pancancer-level
+  // `scores`, or the matching entry of `type_scores` for a type-level scope.
+  readonly activeScores$ = computed(() => {
+    const prediction = this._prediction$.value();
+    if (!prediction) return undefined;
+    const scope = this.selectedScope$();
+    if (scope === 'pancancer') return prediction.scores;
+    return prediction.type_scores?.[scope] ?? prediction.scores;
+  });
+
+  readonly allSamples$ = computed(() => this.activeScores$()?.samples || []);
+
+  readonly topModules$ = computed(() => {
+    const scores = this.activeScores$();
+    if (!scores) return [];
+
     const selectedSamples = this.selectedSamples$();
 
     // Use selected samples or ALL samples if none are selected
@@ -278,13 +261,9 @@ export class PredictService {
       };
     }),
     loader: async (param) => {
-      console.log('Recomputing _prediction$ request', param.request);
       const query = param.request.query;
       let prediction: PredictCancerType | undefined;
       if (!query) {
-        console.log(
-          'No query provided, returning undefined, setting example used',
-        );
         const example = await this.examplePrediction();
         this.example_used.set(true);
         // Make a copy so we can mutate user_umap if needed
@@ -322,342 +301,7 @@ export class PredictService {
         }
       }
 
-      console.log('Loaded prediction with UMAP', prediction);
       return prediction;
-    },
-  });
-
-  readonly moduleNetworkData$ = resource<NetworkData | undefined, any>({
-    request: computed(() => ({
-      topModules: this.topModules$(),
-      includeMembers: this.includeModuleMembers$(),
-      dataset: this.selectedDataset$(),
-      version: this.versionsService.versionReadOnly()(),
-      level: this.level(),
-      // Filters
-      showOrphans: this.showOrphans$(),
-      maxNodes: this.maxNodes$(),
-      minDegree: this.minDegree$(),
-      minBetweenness: this.minBetweenness$(),
-      minEigen: this.minEigen$(),
-      maxPValue: this.maxPValue$(),
-      minMscor: this.minMscor$(),
-    })),
-    loader: async (param) => {
-      const {
-        topModules,
-        includeMembers,
-        dataset,
-        version,
-        level,
-        showOrphans,
-        maxNodes,
-        minDegree,
-        minBetweenness,
-        minEigen,
-        maxPValue,
-        minMscor,
-      } = param.request;
-      if (topModules.length === 0 || !dataset || !version) return undefined;
-
-      // Core gene list: always includes module centers
-      const geneIDs = new Set<string>(
-        topModules.map((m: { gene: string }) => m.gene),
-      );
-
-      if (includeMembers) {
-        try {
-          // Resolve module IDs with caching and concurrency limit
-          const fetchModuleIdWithCache = async (gene: string): Promise<number | undefined> => {
-            const cacheKey = `${gene}_${version}_${dataset.disease_name}_${level}`;
-            if (this.moduleIDCache.has(cacheKey)) {
-              return this.moduleIDCache.get(cacheKey);
-            }
-
-            let moduleId: number | undefined;
-            if (level === 'gene') {
-              const modules = await this.backend.getSpongEffectsGeneModules(
-                version,
-                dataset.disease_name,
-                undefined,
-                undefined,
-                gene,
-              );
-              moduleId = modules[0]?.spongEffects_gene_module_ID;
-            } else {
-              const modules = await this.backend.getSpongEffectsTranscriptModules(
-                version,
-                dataset.disease_name,
-                undefined,
-                undefined,
-                gene,
-              );
-              moduleId = modules[0]?.spongEffects_transcript_module_ID;
-            }
-
-            if (moduleId !== undefined) {
-              this.moduleIDCache.set(cacheKey, moduleId);
-            }
-            return moduleId;
-          };
-
-          // Limit concurrency of module ID queries to 4
-          const moduleIDs = (
-            await this.runWithLimit(
-              topModules.map((m: { gene: string }) => m.gene),
-              4,
-              fetchModuleIdWithCache
-            )
-          ).filter((id): id is number => id !== undefined);
-
-          // Resolve module members with caching and concurrency limit
-          const fetchMembersWithCache = async (id: number): Promise<any[]> => {
-            const cacheKey = `${id}_${version}_${dataset.disease_name}_${level}`;
-            if (this.moduleMembersCache.has(cacheKey)) {
-              return this.moduleMembersCache.get(cacheKey)!;
-            }
-
-            const members = await (level === 'gene'
-              ? this.backend.getSpongEffectsGeneModuleMembers(
-                version,
-                dataset.disease_name,
-                undefined,
-                undefined,
-                undefined,
-                id,
-              )
-              : this.backend.getSpongEffectsTranscriptModuleMembers(
-                version,
-                dataset.disease_name,
-                undefined,
-                undefined,
-                undefined,
-                id,
-              ));
-
-            this.moduleMembersCache.set(cacheKey, members);
-            return members;
-          };
-
-          // Limit concurrency of member queries to 4
-          const allMembers = await this.runWithLimit(
-            moduleIDs,
-            4,
-            fetchMembersWithCache
-          );
-
-          allMembers
-            .flat()
-            .forEach(
-              (m: {
-                gene?: { ensg_number: string };
-                transcript?: { enst_number: string };
-              }) => {
-                if (m.gene) {
-                  geneIDs.add(m.gene.ensg_number);
-                } else if (m.transcript) {
-                  geneIDs.add(m.transcript.enst_number);
-                }
-              },
-            );
-        } catch (e) {
-          console.error('Error fetching module members:', e);
-        }
-      }
-
-      const identifiers = Array.from(geneIDs);
-
-      try {
-        // Fetch all interactions where ANY of the target genes is involved
-        // Use the filter's maxPValue
-        const interactions = await this.backend.getInteractionsSpecific(
-          version,
-          dataset,
-          maxPValue,
-          identifiers,
-          level,
-          maxNodes
-        );
-
-        // Apply client-side mscor filter
-        let filteredInteractions = interactions.filter(
-          (int: any) => int.mscor >= minMscor,
-        );
-
-
-        // Build synthetic node objects from interaction data (both gene- and transcript-level)
-        const nodeMap = new Map<string, GeneNode | TranscriptNode>();
-        filteredInteractions.forEach((int: any) => {
-          if ('gene1' in int) {
-            const add = (g: { ensg_number: string; gene_symbol?: string; gene_type?: string }) => {
-              if (!nodeMap.has(g.ensg_number)) {
-                nodeMap.set(g.ensg_number, {
-                  gene: {
-                    ensg_number: g.ensg_number,
-                    gene_symbol: g.gene_symbol,
-                    gene_type: g.gene_type,
-                  },
-                  betweenness: 0,
-                  eigenvector: 0,
-                  node_degree: 0,
-                  sponge_run: {
-                    dataset: {
-                      data_origin: '',
-                      dataset_ID: dataset.dataset_ID,
-                      disease_name: dataset.disease_name,
-                      disease_subtype: '',
-                    },
-                    sponge_run_ID: 0,
-                  },
-                } as GeneNode);
-              }
-            };
-            add(int.gene1);
-            add(int.gene2);
-          } else {
-            // transcript-level interactions
-            const add = (t: { enst_number: string; transcript_type?: string; gene?: { ensg_number: string; gene_symbol?: string; gene_type?: string } }) => {
-              if (!nodeMap.has(t.enst_number)) {
-                nodeMap.set(t.enst_number, {
-                  transcript: {
-                    enst_number: t.enst_number,
-                    gene: t.gene ?? { ensg_number: t.enst_number },
-                    transcript_type: t.transcript_type,
-                  },
-                  betweenness: 0,
-                  eigenvector: 0,
-                  node_degree: 0,
-                  sponge_run: {
-                    dataset: {
-                      data_origin: '',
-                      dataset_ID: dataset.dataset_ID,
-                      disease_name: dataset.disease_name,
-                      disease_subtype: '',
-                    },
-                    sponge_run_ID: 0,
-                  },
-                } as TranscriptNode);
-              }
-            };
-            add(int.transcript_1);
-            add(int.transcript_2);
-          }
-        });
-
-        // Add orphan nodes: any identifier not covered by an interaction
-        identifiers.forEach((id) => {
-          if (!nodeMap.has(id)) {
-            const isTranscript = level === 'transcript';
-            nodeMap.set(id, isTranscript ? {
-              transcript: { enst_number: id, gene: { ensg_number: id, gene_symbol: id } },
-              betweenness: 0,
-              eigenvector: 0,
-              node_degree: 0,
-              sponge_run: {
-                dataset: {
-                  data_origin: '',
-                  dataset_ID: dataset.dataset_ID,
-                  disease_name: dataset.disease_name,
-                  disease_subtype: '',
-                },
-                sponge_run_ID: 0,
-              },
-            } as TranscriptNode : {
-              gene: { ensg_number: id, gene_symbol: id },
-              betweenness: 0,
-              eigenvector: 0,
-              node_degree: 0,
-              sponge_run: {
-                dataset: {
-                  data_origin: '',
-                  dataset_ID: dataset.dataset_ID,
-                  disease_name: dataset.disease_name,
-                  disease_subtype: '',
-                },
-                sponge_run_ID: 0,
-              },
-            } as GeneNode);
-          }
-        });
-
-        // Apply client-side node filters
-        let nodes = Array.from(nodeMap.values());
-
-        // Update node degrees based on filtered interactions
-        nodes.forEach((node) => {
-          const id =
-            'gene' in node
-              ? node.gene.ensg_number
-              : node.transcript.enst_number;
-          node.node_degree = filteredInteractions.filter((int: any) => {
-            if ('gene1' in int) {
-              return (
-                int.gene1.ensg_number === id || int.gene2.ensg_number === id
-              );
-            } else {
-              return (
-                int.transcript_1.enst_number === id ||
-                int.transcript_2.enst_number === id
-              );
-            }
-          }).length;
-        });
-
-        // Filter by minDegree
-        nodes = nodes.filter((n) => n.node_degree >= minDegree);
-
-        // Filter orphans if requested
-        if (!showOrphans) {
-          nodes = nodes.filter((n) => n.node_degree > 0);
-        }
-
-        // Limit to maxNodes, but always keep module center nodes (topModules gene IDs)
-        const moduleCenterIDs = new Set(topModules.map((m: { gene: string }) => m.gene));
-        const centerNodes = nodes.filter((n) => {
-          const id = 'gene' in n ? n.gene.ensg_number : n.transcript.enst_number;
-          return moduleCenterIDs.has(id);
-        });
-        const nonCenterNodes = nodes
-          .filter((n) => {
-            const id = 'gene' in n ? n.gene.ensg_number : n.transcript.enst_number;
-            return !moduleCenterIDs.has(id);
-          })
-          .sort((a, b) => b.node_degree - a.node_degree)
-          .slice(0, Math.max(0, maxNodes - centerNodes.length));
-        nodes = [...centerNodes, ...nonCenterNodes];
-
-        // Final edge filtering based on remaining nodes
-        const finalNodeIDs = new Set(
-          nodes.map((n) =>
-            'gene' in n
-              ? n.gene.ensg_number
-              : n.transcript.enst_number,
-          ),
-        );
-        const finalEdges = filteredInteractions.filter((int: any) => {
-          if ('gene1' in int) {
-            return (
-              finalNodeIDs.has(int.gene1.ensg_number) &&
-              finalNodeIDs.has(int.gene2.ensg_number)
-            );
-          } else {
-            return (
-              finalNodeIDs.has(int.transcript_1.enst_number) &&
-              finalNodeIDs.has(int.transcript_2.enst_number)
-            );
-          }
-        });
-
-        return {
-          nodes: nodes,
-          inverseNodes: [],
-          edges: finalEdges,
-          disease: dataset,
-        } as NetworkData;
-      } catch (e) {
-        console.error('Error fetching module network:', e);
-        return undefined;
-      }
     },
   });
 
@@ -669,21 +313,96 @@ export class PredictService {
     return this._prediction$.value.asReadonly();
   }
 
+  private lastAutoMinScore1: number | null = null;
+  private lastAutoMinScore2: number | null = null;
+
+  readonly defaultMinScores$ = computed(() => {
+    const scores = this.activeScores$();
+    if (!scores) return { minAbs: 0, minVar: 0 };
+    
+    const selectedSamples = this.selectedSamples$();
+    const sampleIndices = selectedSamples.length > 0
+      ? selectedSamples.map((s) => scores.samples.indexOf(s)).filter((i) => i !== -1)
+      : scores.samples.map((_, i) => i);
+      
+    if (sampleIndices.length === 0) return { minAbs: 0, minVar: 0 };
+
+    const sortBy = this.sortBy$();
+    const limit = this.topNModules$();
+
+    const modules = scores.genes.map((gene, moduleIndex) => {
+      const sum = sampleIndices.reduce((acc, idx) => acc + (scores.values[moduleIndex]?.[idx] ?? 0), 0);
+      const mean = sum / sampleIndices.length;
+      const absMean = Math.abs(mean);
+      
+      const scoresForGene = scores.values[moduleIndex] || [];
+      const selectedScores = sampleIndices.map(idx => scoresForGene[idx] ?? 0);
+      const variance = selectedScores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / selectedScores.length;
+
+      return { absMean, variance, mean };
+    });
+
+    if (sortBy === 'varianceEnrichmentScore') {
+      modules.sort((a, b) => b.variance - a.variance);
+    } else if (sortBy === 'meanEnrichmentScore') {
+      modules.sort((a, b) => b.mean - a.mean);
+    } else {
+      modules.sort((a, b) => b.absMean - a.absMean);
+    }
+
+    const topN = modules.slice(0, limit);
+    if (topN.length === 0) return { minAbs: 0, minVar: 0 };
+
+    const minAbs = Math.min(...topN.map(m => m.absMean));
+    const minVar = Math.min(...topN.map(m => m.variance));
+
+    return { minAbs, minVar };
+  });
+
   constructor() {
+    // Keep the app-wide selected disease (used by Browse/Explore) in sync with whatever
+    // scope the predict view is currently showing, so switching tabs stays consistent.
     effect(() => {
-      const currentDataset = this.selectedReferenceDataset$();
-      if (currentDataset?.disease_name) {
+      const scope = this.selectedScope$();
+      if (scope) {
         untracked(() => {
-          if (this.versionsService.selectedDiseaseName$() !== currentDataset.disease_name) {
-            this.versionsService.selectedDiseaseName$.set(currentDataset.disease_name);
+          if (this.versionsService.selectedDiseaseName$() !== scope) {
+            this.versionsService.selectedDiseaseName$.set(scope);
           }
         });
       }
     });
+
+    // Auto-select all available samples by default
+    effect(() => {
+      const samples = this.allSamples$();
+      untracked(() => {
+        this.selectedSamples$.set(samples);
+      });
+    });
+
+    // Dynamically fill minimum score filters with the minimums of the shown nodes
+    effect(() => {
+      const defaults = this.defaultMinScores$();
+      untracked(() => {
+        const current1 = this.minScore1$();
+        if (current1 === null || current1 === this.lastAutoMinScore1) {
+          const roundedAbs = Math.round(defaults.minAbs * 1000) / 1000;
+          this.minScore1$.set(roundedAbs);
+          this.lastAutoMinScore1 = roundedAbs;
+        }
+
+        const current2 = this.minScore2$();
+        if (current2 === null || current2 === this.lastAutoMinScore2) {
+          const roundedVar = Math.round(defaults.minVar * 1000) / 1000;
+          this.minScore2$.set(roundedVar);
+          this.lastAutoMinScore2 = roundedVar;
+        }
+      });
+    });
   }
 
   request(query: Query) {
-    console.log('query', query);
     this._query$.set(query);
   }
 }
