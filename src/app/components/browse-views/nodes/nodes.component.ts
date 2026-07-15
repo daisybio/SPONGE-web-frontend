@@ -7,6 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
+import { exportToCSV } from '../../../utils/export';
 import {
   Gene,
   GeneNode,
@@ -88,5 +89,9 @@ export class NodesComponent implements AfterViewInit, OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  downloadCSV() {
+    exportToCSV(this.dataSource.data, 'genes_transcripts_table');
   }
 }

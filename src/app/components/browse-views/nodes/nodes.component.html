@@ -1,8 +1,13 @@
-<mat-form-field appearance="outline" style="width: 100%; margin-bottom: 8px;">
-  <mat-label>Filter table...</mat-label>
-  <input matInput (keyup)="applyFilter($event)" placeholder="e.g. BRCA1">
-  <mat-icon matSuffix>search</mat-icon>
-</mat-form-field>
+<div style="display: flex; gap: 16px; align-items: center; width: 100%; margin-bottom: 8px;">
+  <mat-form-field appearance="outline" style="flex-grow: 1;">
+    <mat-label>Filter table...</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="e.g. BRCA1">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+  <button mat-flat-button color="primary" (click)="downloadCSV()" style="height: 56px; margin-top: -18px;">
+    <mat-icon>download</mat-icon> Download CSV
+  </button>
+</div>
 
 <table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
   <ng-container matColumnDef="identifier">

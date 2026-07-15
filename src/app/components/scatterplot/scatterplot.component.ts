@@ -10,9 +10,16 @@ import {
   viewChild,
   AfterViewInit,
   OnDestroy,
+  inject,
 } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { CommonModule } from '@angular/common';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { CartService } from '../../services/cart.service';
+import { Gene, Transcript } from '../../interfaces';
 
 declare const Plotly: any;
 
@@ -27,7 +34,14 @@ export type ScatterplotDataScource = {
 
 @Component({
   selector: 'app-scatterplot',
-  imports: [MatProgressBar, CommonModule],
+  imports: [
+    MatProgressBar,
+    CommonModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+  ],
   templateUrl: './scatterplot.component.html',
   styleUrl: './scatterplot.component.scss',
 })
@@ -40,6 +54,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
   plotRendered = output<void>();
 
   scatterplot = viewChild.required<ElementRef<HTMLDivElement>>('scatterplot');
+  cartService = inject(CartService);
 
   private resizeObserver: ResizeObserver | null = null;
 
@@ -159,8 +174,9 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
         line: { width: 1, color: 'rgba(255, 255, 255, 0.8)' },
       },
       text: data.map(
-        (e) => `Module Center: ${e.id || 'N/A'}<br>X: ${e.x}<br>Y: ${e.y}`,
+        (e) => `Module Center: ${e.id || 'N/A'}<br>X: ${e.x}<br>Y: ${e.y}<br>Click to add to cart`,
       ),
+      customdata: data.map((e) => ({ ensemblID: e.ensemblID || e.id, symbol: e.id })),
       hoverinfo: 'text',
     };
 
@@ -207,8 +223,42 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
 
     try {
       Plotly.newPlot(scatterplotEl, [trace, lineTrace], layout, config);
+      if (scatterplotEl) {
+        (scatterplotEl as any).removeAllListeners?.('plotly_click');
+        (scatterplotEl as any).on('plotly_click', (clickData: any) => {
+          if (clickData?.points?.[0]) {
+            const pt = clickData.points[0];
+            const info = pt.customdata;
+            if (info && info.ensemblID) {
+              if (info.ensemblID.startsWith('ENSG')) {
+                this.cartService.add({
+                  ensg_number: info.ensemblID,
+                  gene_symbol: info.symbol
+                });
+              } else {
+                this.cartService.add({
+                  enst_number: info.ensemblID,
+                  gene: { ensg_number: '', gene_symbol: info.symbol || info.ensemblID }
+                } as Transcript);
+              }
+            }
+          }
+        });
+      }
     } catch (error) {
       console.error('Error rendering scatterplot:', error);
+    }
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.scatterplot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'scatterplot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
     }
   }
 }

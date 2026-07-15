@@ -10,6 +10,7 @@ import {
   viewChild,
   ViewChild,
 } from '@angular/core';
+import { exportToCSV } from '../../utils/export';
 import {
   Dataset,
   Gene,
@@ -23,6 +24,7 @@ import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { BrowseService } from '../../services/browse.service';
@@ -43,6 +45,7 @@ import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-butt
     MatTooltip,
     InfoComponent,
     MatSliderModule,
+    MatIconModule,
     FormsModule,
     DecimalPipe,
     AddToCartButtonComponent,
@@ -161,5 +164,9 @@ export class InteractionsTableComponent implements AfterViewInit {
 
   openDialog(entity: Gene | Transcript) {
     this.modalsService.openNodeDialog(entity);
+  }
+
+  downloadCSV() {
+    exportToCSV(this.dataSource$().data, 'interactions_table');
   }
 }

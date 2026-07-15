@@ -25,6 +25,7 @@ import { MatAnchor, MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { NodeCircleProgram } from 'sigma/rendering';
 import { NodeSquareProgram } from '@sigma/node-square';
+import { createNodeBorderProgram } from '@sigma/node-border';
 import { InfoComponent } from '../../info/info.component';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -57,6 +58,9 @@ const states: Record<
   },
 };
 
+// Green frame drawn around module-center nodes (see 'bordered' node program below).
+const CENTER_FRAME_COLOR = '#00a651';
+
 const sigma_settings: Partial<Settings> = {
   defaultEdgeColor: states[State.Default].edgeColor,
   defaultNodeColor: states[State.Default].nodeColor,
@@ -67,6 +71,13 @@ const sigma_settings: Partial<Settings> = {
   nodeProgramClasses: {
     square: NodeSquareProgram,
     circle: NodeCircleProgram,
+    // Module centers: a green ring around the node, interior keeps the gene-type colour.
+    bordered: createNodeBorderProgram({
+      borders: [
+        { size: { value: 0.3 }, color: { value: CENTER_FRAME_COLOR } },
+        { size: { fill: true }, color: { attribute: 'color' } },
+      ],
+    }),
   },
 };
 
@@ -92,7 +103,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   level$ = computed(() => this.browseService().level$());
-  legendItems$ = signal<{ type: string; color: string }[]>([]);
+  legendItems$ = signal<{ type: string; color: string; frame?: boolean }[]>([]);
 
   getNodeColorForType(nodeType?: string): string {
     if (!nodeType) return '#052444';
@@ -169,15 +180,22 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
       // Extract unique node types and calculate color mappings
       const types = new Set<string>();
+      let hasCenter = false;
       graph.forEachNode((_, attributes) => {
         if (attributes['nodeType']) {
           types.add(attributes['nodeType']);
         }
+        if (attributes['isCenter']) hasCenter = true;
       });
-      const items = Array.from(types).sort().map(type => ({
-        type: type === 'unknown' ? 'Unknown' : capitalize(type.replace(/_/g, ' ')),
-        color: this.getNodeColorForType(type)
-      }));
+      const items: { type: string; color: string; frame?: boolean }[] =
+        Array.from(types).sort().map(type => ({
+          type: type === 'unknown' ? 'Unknown' : capitalize(type.replace(/_/g, ' ')),
+          color: this.getNodeColorForType(type),
+        }));
+      // Module centers are drawn with a green frame; surface that in the legend.
+      if (hasCenter) {
+        items.unshift({ type: 'Module center', color: CENTER_FRAME_COLOR, frame: true });
+      }
       this.legendItems$.set(items);
 
       const sigma = new Sigma(
@@ -275,7 +293,7 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
     const defaultColor = this.getNodeColorForType(nodeType);
 
     graph.setNodeAttribute(node, 'color', state === State.Default ? defaultColor : states[state].nodeColor);
-    graph.setNodeAttribute(node, 'highlighted', states[state].highlight);
+    graph.setNodeAttribute(node, 'highlighted', states[state].highlight || !!graph.getNodeAttribute(node, 'isCenter'));
   }
 
   refresh() {

@@ -4,7 +4,11 @@
     <div style="font-weight: 600; color: #555; margin-right: 8px;">Node Types:</div>
     @for (item of legendItems$(); track item.type) {
       <div style="display: flex; align-items: center; gap: 6px;">
-        <span [style.background-color]="item.color" style="width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.15);"></span>
+        @if (item.frame) {
+          <span [style.border-color]="item.color" style="width: 12px; height: 12px; border-radius: 50%; display: inline-block; border-width: 3px; border-style: solid; box-sizing: border-box;"></span>
+        } @else {
+          <span [style.background-color]="item.color" style="width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.15);"></span>
+        }
         <span style="font-weight: 500; color: #333;">{{ item.type }}</span>
       </div>
     }

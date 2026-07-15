@@ -17,6 +17,8 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 import { CommonModule } from '@angular/common';
 import { capitalize } from 'lodash';
 import { BackendService } from '../../services/backend.service';
+import { CartService } from '../../services/cart.service';
+import { Gene, Transcript } from '../../interfaces';
 
 declare const Plotly: any;
 
@@ -42,6 +44,7 @@ export type HeatmapDataSource = {
 })
 export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   backend = inject(BackendService);
+  cartService = inject(CartService);
 
   // Inputs
   dataSource = input.required<HeatmapDataSource>();
@@ -147,6 +150,29 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
 
     // Render plot
     Plotly.newPlot(heatmapEl, plotData, layout, config);
+
+    if (heatmapEl) {
+      (heatmapEl as any).removeAllListeners?.('plotly_click');
+      (heatmapEl as any).on('plotly_click', (clickData: any) => {
+        if (clickData?.points?.[0]) {
+          const pt = clickData.points[0];
+          const info = pt.customdata;
+          if (info && info.ensemblID) {
+            if (info.ensemblID.startsWith('ENSG')) {
+              this.cartService.add({
+                ensg_number: info.ensemblID,
+                gene_symbol: info.symbol
+              });
+            } else {
+              this.cartService.add({
+                enst_number: info.ensemblID,
+                gene: { ensg_number: '', gene_symbol: info.symbol || info.ensemblID }
+              } as Transcript);
+            }
+          }
+        }
+      });
+    }
   }
 
   private extractSamples(data: any[]): { sample_ID: string, disease_subtype: string }[] {
@@ -160,6 +186,15 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       x: data.map(e => e.sample_ID),
       y: data.map(e => 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)),
       type: 'heatmap',
+      customdata: data.map(e => ({
+        ensemblID: 'gene' in e ? e.gene.ensg_number : (e.transcript ? e.transcript.enst_number : e.id),
+        symbol: 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)
+      })),
+      text: data.map(e => {
+        const symbol = 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id);
+        return `${symbol} (${e.sample_ID})<br>Click cell to add gene/transcript to cart`;
+      }),
+      hoverinfo: 'text+z',
       zmid: dataSource.getZMid ? dataSource.getZMid() : 0,
       showscale: true,
       showlegend: false,

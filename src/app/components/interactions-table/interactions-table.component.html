@@ -1,5 +1,5 @@
-<div class="filter-container">
-  <div class="sliders-row">
+<div class="filter-container" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+  <div class="sliders-row" style="flex-grow: 1;">
     <div class="slider-group">
       <div class="slider-header">
         <label>P-value Range: <span class="value-display">{{ minPValue() | number:'1.2-4' }} - {{ maxPValue() |
@@ -22,6 +22,9 @@
       </mat-slider>
     </div>
   </div>
+  <button mat-flat-button color="primary" (click)="downloadCSV()" style="height: 48px; margin-bottom: 8px;">
+    <mat-icon>download</mat-icon> Download CSV
+  </button>
 </div>
 
 <table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
