@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal, WritableSignal } from '@angular/c
 import { Gene, Transcript } from '../interfaces';
 import { BackendService } from './backend.service';
 import { VersionsService } from './versions.service';
+import { SpongEffectsService } from './spong-effects.service';
 
 export interface CartItem {
   type: 'gene' | 'transcript';
@@ -16,6 +17,7 @@ export interface CartItem {
 export class CartService {
   private backend = inject(BackendService);
   private versionsService = inject(VersionsService);
+  private spongEffectsService = inject(SpongEffectsService);
 
   readonly items: WritableSignal<CartItem[]> = signal([]);
   readonly count = computed(() => this.items().length);
@@ -64,7 +66,7 @@ export class CartService {
       if (level === 'gene') {
         const modules = await this.backend.getSpongEffectsGeneModules(version, disease, undefined, undefined, gene.ensg_number);
         for (const mod of modules) {
-          const members = await this.backend.getSpongEffectsGeneModuleMembers(version, disease, gene.ensg_number, undefined, 100, mod.spongEffects_gene_module_ID);
+          const members = await this.spongEffectsService.getGeneModuleMembers(version, disease, { ensemblID: gene.ensg_number, moduleId: mod.spongEffects_gene_module_ID });
           for (const m of members) {
             this.add(m.gene as Gene);
           }
@@ -73,7 +75,7 @@ export class CartService {
         // Transcripts
         const modules = await this.backend.getSpongEffectsTranscriptModules(version, disease, undefined, undefined, gene.ensg_number);
         for (const mod of modules) {
-          const members = await this.backend.getSpongEffectsTranscriptModuleMembers(version, disease, gene.ensg_number, undefined, 100, mod.spongEffects_transcript_module_ID);
+          const members = await this.spongEffectsService.getTranscriptModuleMembers(version, disease, { ensemblID: gene.ensg_number, moduleId: mod.spongEffects_transcript_module_ID });
           for (const m of members) {
             this.add(m.transcript as Transcript);
           }

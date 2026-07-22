@@ -1,7 +1,7 @@
-import {computed, inject, Injectable, resource, signal} from '@angular/core';
-import {BackendService} from "./backend.service";
-import {VersionsService} from "./versions.service";
-import {SpongEffectsRun, Dataset} from "../interfaces";
+import { computed, inject, Injectable, resource, signal } from '@angular/core';
+import { BackendService } from "./backend.service";
+import { VersionsService } from "./versions.service";
+import { SpongEffectsRun, Dataset, SpongEffectsGeneModuleMembers, SpongEffectsTranscriptModuleMembers } from "../interfaces";
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class SpongEffectsService {
   private readonly _version$ = this.versionsService.versionReadOnly();
 
   readonly selectedMode$ = signal<'explore' | 'predict' | 'enrichment'>('enrichment');
-  
+
   spongEffectsRuns$ = resource({
     request: this._version$,
     loader: async (version) => {
@@ -48,4 +48,43 @@ export class SpongEffectsService {
       .filter((value: string, index: number, self: Array<string>) => self.indexOf(value) === index);
   });
 
+  // ---- Shared, cached module-member access ----------------------------------------------
+  // Module members for a given (disease, module) are needed by several tabs/components — the
+  // network, the module tables, the importance plot, the cart. Route them all through these
+  // cached accessors so the same module is fetched from the backend at most once per
+  // (version, disease, identifier, limit), deduplicating across components and tab switches.
+  private readonly geneMembersCache = new Map<string, SpongEffectsGeneModuleMembers[]>();
+  private readonly transcriptMembersCache = new Map<string, SpongEffectsTranscriptModuleMembers[]>();
+
+  async getGeneModuleMembers(
+    version: number,
+    disease: string,
+    opts: { ensemblID?: string; moduleId?: number; limit?: number } = {}
+  ): Promise<SpongEffectsGeneModuleMembers[]> {
+    const key = `${version}|${disease}|${opts.ensemblID ?? ''}|${opts.moduleId ?? ''}|${opts.limit ?? ''}`;
+    let cached = this.geneMembersCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.getSpongEffectsGeneModuleMembers(
+        version, disease, opts.ensemblID, undefined, opts.limit, opts.moduleId
+      )) ?? [];
+      this.geneMembersCache.set(key, cached);
+    }
+    return cached;
+  }
+
+  async getTranscriptModuleMembers(
+    version: number,
+    disease: string,
+    opts: { ensemblID?: string; moduleId?: number; limit?: number } = {}
+  ): Promise<SpongEffectsTranscriptModuleMembers[]> {
+    const key = `${version}|${disease}|${opts.ensemblID ?? ''}|${opts.moduleId ?? ''}|${opts.limit ?? ''}`;
+    let cached = this.transcriptMembersCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.getSpongEffectsTranscriptModuleMembers(
+        version, disease, opts.ensemblID, undefined, opts.limit, opts.moduleId
+      )) ?? [];
+      this.transcriptMembersCache.set(key, cached);
+    }
+    return cached;
+  }
 }

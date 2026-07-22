@@ -8,7 +8,7 @@ import { ExploreService } from './explore/service/explore.service';
 import { SpongEffectsService } from '../../services/spong-effects.service';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { InfoComponent } from '../../components/info/info.component';
-import { MatDrawerContainer } from '@angular/material/sidenav';
+
 import { MatDivider } from '@angular/material/divider';
 import { debounceTime, fromEvent } from 'rxjs';
 
@@ -17,11 +17,11 @@ import { debounceTime, fromEvent } from 'rxjs';
   templateUrl: './spongeffects.component.html',
   imports: [
     ExploreComponent,
-    // PredictComponent,
+    PredictComponent,
     SpongeffectsScoresComponent,
     MatButtonToggleModule,
     InfoComponent,
-    MatDrawerContainer,
+    PredictComponent
   ],
   styleUrls: ['./spongeffects.component.scss']
 })

@@ -1,65 +1,98 @@
-<mat-drawer-container style="min-height: 100%">
+<mat-drawer-container style="min-height: calc(100vh - 64px)">
   <mat-drawer [opened]="true" mode="side">
 
-    @if (selectedTabIndex() === 0) {
-      <div style="padding: 16px 16px 0 16px; border-bottom: 1px solid #eee; margin-bottom: 8px;">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Score Scope</mat-label>
-          <mat-select [value]="predictService.selectedScope$()"
-            (valueChange)="predictService.selectedScope$.set($event)">
-            @for (scope of predictService.availableScopes$(); track scope) {
-            <mat-option [value]="scope">{{ scope === 'pancancer' ? 'Pancancer' : capitalize(scope) }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+    <div style="margin: 10px;">
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span style="display: flex; align-items: center; gap: 8px;">Run SpongEffects
+                @if (predictService.example_used()) {
+                <span
+                  style="font-size: 0.75em; background: #e6f4ff; color: #0958d9; border: 1px solid #91caff; padding: 2px 8px; border-radius: 12px; font-weight: 500; line-height: 1;">Example
+                  data</span>
+                }
+              </span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-predict-form></app-predict-form>
+        </mat-expansion-panel>
 
-        @if (predictService.availableScopes$().length <= 1) {
-          <p style="font-size: 0.8em; color: #999; margin-top: -8px; margin-bottom: 12px;">
-            Only the pancancer score set is available. Re-run the prediction with "Predict on subtype level" enabled
-            to also get per-type scores.
-          </p>
-        }
+        <mat-expansion-panel expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <span style="display: flex; align-items: center; gap: 8px;">Score Scope
+                <app-info type="icon">
+                  <p>
+                    The feature level (Genes/Transcripts) is preset based on the feature identifiers (ENSG or ENST)
+                    detected in the uploaded expression file.
+                  </p>
+                  @if (predictService.availableScopes$().length <= 1) { <p>
+                    Only the pancancer score set is available. Re-run the prediction with "Predict on subtype level"
+                    enabled
+                    to also get per-type scores.
+                    </p>
+                    }
+                </app-info>
+              </span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
 
-        @if (predictService.prediction$()?.meta?.[0]?.subtype_predict; as subtype) {
-          @if (subtype !== 'NA') {
-            <p style="font-size: 0.8em; color: #999; margin-top: -8px; margin-bottom: 12px;">
-              Predicted subtype: <b>{{ subtype }}</b>
-            </p>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Disease</mat-label>
+            <mat-select [value]="predictService.selectedScope$()"
+              (valueChange)="predictService.selectedScope$.set($event)">
+              @for (scope of predictService.availableScopes$(); track scope) {
+              <mat-option [value]="scope">{{ scope === 'pancancer' ? 'Pancancer' : capitalize(scope) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (availableSubtypes$().length > 0) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Subtype</mat-label>
+            <mat-select [value]="selectedSubtype()" (valueChange)="selectedSubtype.set($event)"
+              [disabled]="!hasSubtypeScores$()"
+              [matTooltip]="!hasSubtypeScores$() ? 'Subtype-level SpongEffects scores are not available for this prediction.' : ''">
+              @for (subtype of availableSubtypes$(); track subtype) {
+              <mat-option [value]="subtype">{{ capitalize(subtype) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
           }
-        }
 
-        <div class="card-container" style="margin-bottom: 16px;">
-          <mat-button-toggle-group [value]="predictService.level()" (change)="predictService.level.set($event.value)">
-            <mat-button-toggle value="gene">Genes</mat-button-toggle>
-            <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
-          </mat-button-toggle-group>
-        </div>
-      </div>
-    }
+          @if (predictService.prediction$()?.meta?.[0]?.subtype_predict; as subtype) {
+          @if (subtype !== 'NA') {
+          <p style="font-size: 0.8em; color: #999; margin-top: -8px; margin-bottom: 12px;">
+            Predicted subtype: <b>{{ subtype }}</b>
+          </p>
+          }
+          }
 
-    <mat-accordion>
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>Run SpongEffects</mat-panel-title>
-        </mat-expansion-panel-header>
-        <app-predict-form></app-predict-form>
-      </mat-expansion-panel>
+          <div class="card-container" style="margin-bottom: 16px;">
+            <mat-button-toggle-group [value]="predictService.level()" (change)="predictService.level.set($event.value)">
+              <mat-button-toggle value="gene"
+                [disabled]="predictService.prediction$() && predictService.prediction$()?.meta?.[0]?.level === 'transcript'">Genes</mat-button-toggle>
+              <mat-button-toggle value="transcript"
+                [disabled]="predictService.prediction$() && predictService.prediction$()?.meta?.[0]?.level === 'gene'">Transcripts</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
 
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>Module Filtering</mat-panel-title>
-        </mat-expansion-panel-header>
-        <app-module-form [source]="'predict'"></app-module-form>
-      </mat-expansion-panel>
+        </mat-expansion-panel>
 
-      @if (selectedTabIndex() === 0) {
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Module Filtering</mat-panel-title>
+          </mat-expansion-panel-header>
+          <app-module-form [source]="'predict'"></app-module-form>
+        </mat-expansion-panel>
+
         <mat-expansion-panel>
           <mat-expansion-panel-header>
             <mat-panel-title>Nodes</mat-panel-title>
           </mat-expansion-panel-header>
 
-          <mat-checkbox style="margin-bottom: 20px; display: block;"
-            [checked]="predictService.showOrphans$()"
+          <mat-checkbox style="margin-bottom: 20px; display: block;" [checked]="predictService.showOrphans$()"
             (change)="predictService.showOrphans$.set($event.checked)">Show orphans</mat-checkbox>
 
           <mat-card appearance="outlined" style="margin-bottom: 20px; padding: 12px 16px;">
@@ -74,25 +107,26 @@
             </mat-card-content>
           </mat-card>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. nodes</mat-label>
             <input matInput type="number" [value]="predictService.maxNodes$()" aria-label="Set max nodes"
               (input)="predictService.maxNodes$.set($any($event.target).valueAsNumber)" min="0" max="100" step="1">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. degree</mat-label>
             <input matInput type="number" [value]="predictService.minDegree$()" aria-label="Set min degree"
               (input)="predictService.minDegree$.set($any($event.target).valueAsNumber)" min="0" max="100" step="1">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. betweenness</mat-label>
             <input matInput type="number" [value]="predictService.minBetweenness$()" aria-label="Set min betweenness"
-              (input)="predictService.minBetweenness$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.05">
+              (input)="predictService.minBetweenness$.set($any($event.target).valueAsNumber)" min="0" max="1"
+              step="0.05">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. eigenvector</mat-label>
             <input matInput type="number" [value]="predictService.minEigen$()" aria-label="Set min eigenvector"
               (input)="predictService.minEigen$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.05">
@@ -104,7 +138,7 @@
             <mat-panel-title>Interactions</mat-panel-title>
           </mat-expansion-panel-header>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Sort by</mat-label>
             <mat-select [value]="predictService.interactionSorting$()"
               (valueChange)="predictService.interactionSorting$.set($event)">
@@ -114,133 +148,123 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. interactions</mat-label>
             <input matInput type="number" [value]="predictService.maxInteractions$()" aria-label="Set max interactions"
-              (input)="predictService.maxInteractions$.set($any($event.target).valueAsNumber)" min="0" max="1000" step="1">
+              (input)="predictService.maxInteractions$.set($any($event.target).valueAsNumber)" min="0" max="1000"
+              step="1">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Max. adj. p-value</mat-label>
             <input matInput type="number" [value]="predictService.maxPValue$()" aria-label="Set max p-value"
               (input)="predictService.maxPValue$.set($any($event.target).valueAsNumber)" min="0" max="1" step="0.01">
           </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-form-field appearance="outline">
             <mat-label>Min. MScor</mat-label>
             <input matInput type="number" [value]="predictService.minMscor$()" aria-label="Set min mscor"
               (input)="predictService.minMscor$.set($any($event.target).valueAsNumber)" min="0" max="2" step="0.01">
           </mat-form-field>
         </mat-expansion-panel>
-      }
-
-    </mat-accordion>
+      </mat-accordion>
+    </div>
   </mat-drawer>
 
   <mat-drawer-content>
-    <mat-tab-group (selectedTabChange)="onTabChange($event)">
+    <mat-tab-group preserveContent (selectedTabChange)="onTabChange($event)">
       <!-- Tab 1: Patient-specific Network -->
       <mat-tab label="Patient-specific Network">
-        <div *ngIf="error$()" style="padding: 20px 20px 0 20px;">
-          <mat-card
-            style="background-color: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-            <mat-card-header
-              style="border-bottom: 1px solid #ffa39e; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center;">
-              <mat-icon
-                style="color: #cf1322; margin-right: 12px; font-size: 24px; width: 24px; height: 24px;">error</mat-icon>
-              <mat-card-title style="color: #cf1322; font-size: 1.15em; font-weight: 600; margin: 0;">
-                Prediction Failed
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <p style="color: #5c5c5c; margin: 0 0 10px 0; font-weight: 500; font-size: 0.95em;">Error Details:</p>
-              <pre
-                style="white-space: pre-wrap; word-break: break-word; font-family: 'Roboto Mono', menlo, monaco, consolas, monospace; font-size: 0.85em; color: #434343; background: #fafafa; padding: 16px; border-radius: 6px; border: 1px solid #f0f0f0; margin: 0; line-height: 1.6; max-height: 400px; overflow-y: auto;">{{ error$() }}</pre>
-            </mat-card-content>
-          </mat-card>
-        </div>
+        @if (tabReady(0)) {
+          <div *ngIf="error$()" style="padding: 20px 20px 0 20px;">
+            <mat-card
+              style="background-color: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <mat-card-header
+                style="border-bottom: 1px solid #ffa39e; padding-bottom: 12px; margin-bottom: 16px; display: flex; align-items: center;">
+                <mat-icon
+                  style="color: #cf1322; margin-right: 12px; font-size: 24px; width: 24px; height: 24px;">error</mat-icon>
+                <mat-card-title style="color: #cf1322; font-size: 1.15em; font-weight: 600; margin: 0;">
+                  Prediction Failed
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p style="color: #5c5c5c; margin: 0 0 10px 0; font-weight: 500; font-size: 0.95em;">Error Details:</p>
+                <pre
+                  style="white-space: pre-wrap; word-break: break-word; font-family: 'Roboto Mono', menlo, monaco, consolas, monospace; font-size: 0.85em; color: #434343; background: #fafafa; padding: 16px; border-radius: 6px; border: 1px solid #f0f0f0; margin: 0; line-height: 1.6; max-height: 400px; overflow-y: auto;">{{ error$() }}</pre>
+              </mat-card-content>
+            </mat-card>
+          </div>
 
-        @if (predictService.topModules$().length > 0) {
-          <div style="font-size: 0.9em; color: #666; margin-bottom: 12px; padding: 0 10px;">
-            Showing top {{predictService.topModules$().length}} {{ predictService.topModules$().length === 1 ? 'module' : 'modules' }} for
-            {{predictService.selectedSamples$().length}} selected {{ predictService.selectedSamples$().length === 1 ? 'patient.' : 'patients.' }}
+          <div class="network-container" style="display: flex; flex-direction: row; position: relative;">
+            @if (browseService.isLoading$()) {
+            <div
+              style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; background: rgba(255,255,255,0.6);">
+              <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
+            </div>
+            }
+            <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
+              [legendSubtitle]="'Showing top ' + predictService.topModules$().length + (predictService.topModules$().length === 1 ? ' module' : ' modules') + ' for ' + predictService.selectedSamples$().length + (predictService.selectedSamples$().length === 1 ? ' selected patient.' : ' selected patients.')"
+              style="min-width: 500px; flex-grow: 3;"></app-network>
+            <app-active-entities [browseService]="browseService"
+              style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
           </div>
         }
-
-        <div class="network-container" style="display: flex; flex-direction: row; position: relative;">
-          @if (browseService.isLoading$()) {
-          <div
-            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; background: rgba(255,255,255,0.6);">
-            <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
-          </div>
-          }
-          <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
-            style="min-width: 500px; flex-grow: 3;"></app-network>
-          <app-active-entities [browseService]="browseService"
-            style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
-        </div>
       </mat-tab>
 
       <!-- Merged Tab: ceRNA Modules & Centralities -->
       <mat-tab label="ceRNA Modules & Centralities">
-        <div style="padding: 16px;">
-          <div style="justify-content: center; display: flex; margin: 10px 0 24px 0;">
-            <mat-button-toggle-group [value]="selectedSubVis()" (change)="selectedSubVis.set($event.value)">
-              <mat-button-toggle value="importance">Module Importance (Lollipop)</mat-button-toggle>
-              <mat-button-toggle value="scatterplot">Centrality Scatterplot</mat-button-toggle>
-              <mat-button-toggle value="details">Module Details Table</mat-button-toggle>
-              <mat-button-toggle value="heatmap">Expression Heatmap</mat-button-toggle>
-            </mat-button-toggle-group>
-          </div>
-
-          @if (selectedSubVis() === 'importance') {
-            <div>
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Top ceRNA Modules Importance</h3>
-              <app-lollipop-plot [refreshSignal$]="refreshSignal()" [source]="'predict'"
-                [prediction]="predictService._prediction$.value()">
-              </app-lollipop-plot>
+        @if (tabReady(1)) {
+          <div style="padding: 16px;">
+            <div style="justify-content: center; display: flex; margin: 10px 0 24px 0;">
+              <mat-button-toggle-group [value]="selectedSubVis()" (change)="selectedSubVis.set($event.value)">
+                <mat-button-toggle value="importance">Module Importance Plot</mat-button-toggle>
+                <mat-button-toggle value="scatterplot">Centrality Scatterplot</mat-button-toggle>
+                <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
+                <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
+                <mat-button-toggle value="heatmap">Score Heatmap</mat-button-toggle>
+                <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle>
+              </mat-button-toggle-group>
             </div>
-          }
 
-          @if (selectedSubVis() === 'scatterplot') {
+            @if (selectedSubVis() === 'scatterplot') {
             <div>
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Module Centrality Comparison</h3>
               <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
                 [refreshSignal$]="refreshSignal()"></app-scatterplot>
             </div>
-          }
+            }
 
-          @if (selectedSubVis() === 'details') {
+            @if (selectedSubVis() !== 'scatterplot') {
             <div>
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Module Members & Detail</h3>
-              <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+              <app-importance-plot [refreshSignal$]="refreshSignal()" [source]="'predict'"
+                [prediction]="predictService._prediction$.value()" [selectedVisInput]="importancePlotVis()">
+              </app-importance-plot>
             </div>
-          }
-
-          @if (selectedSubVis() === 'heatmap') {
-            <div>
-              <h3 style="font-weight: 600; margin-bottom: 8px;">Module Expression Heatmap</h3>
-              <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
       </mat-tab>
 
       <!-- Tab 4: SpongEffects Score Distribution -->
       <mat-tab label="SpongEffects Score Distribution">
-        <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+        @if (tabReady(2)) {
+          <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+        }
       </mat-tab>
 
       <!-- Tab: Sample Similarity (UMAP) -->
       <mat-tab label="Sample Similarity (UMAP)">
-        <app-umap-plot></app-umap-plot>
+        @if (tabReady(3)) {
+          <app-umap-plot></app-umap-plot>
+        }
       </mat-tab>
 
       <!-- Tab 5: Prediction Results -->
       <mat-tab label="Cancer Type Classification">
-        <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
-        <hr>
-        <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+        @if (tabReady(4)) {
+          <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
+          <hr>
+          <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+        }
       </mat-tab>
 
     </mat-tab-group>

@@ -695,19 +695,28 @@ export class BackendService {
   async fetchSpongEffectsEnrichScores(
     version: number,
     level: "gene" | "transcript",
-    module_IDs: any[],
+    module_IDs?: any[],
     cluster: boolean = true,
     average: boolean = false
   ): Promise<any[]> {
-
-    if (level === "gene") {
-      const route = 'spongEffects/getSpongEffectsGeneModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster, average }))) ?? [];
-
-    } else {
-      const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster, average }))) ?? [];
+    const query: Record<string, any> = {
+      sponge_db_version: version,
+      cluster,
+      average,
+    };
+    if (module_IDs && module_IDs.length > 0) {
+      if (level === "gene") {
+        query['spongEffects_gene_module_ID'] = module_IDs.join(',');
+      } else {
+        query['spongEffects_transcript_module_ID'] = module_IDs.join(',');
+      }
     }
+
+    const route = level === "gene"
+      ? 'spongEffects/getSpongEffectsGeneModuleScores'
+      : 'spongEffects/getSpongEffectsTranscriptModuleScores';
+
+    return (await this.http.getRequest<any[]>(this.getRequestURL(route, query))) ?? [];
   }
 
 
