@@ -3,6 +3,7 @@ import { BrowseService } from './browse.service';
 import { PredictService } from '../routes/spongeffects/predict/service/predict.service';
 import { BackendService } from './backend.service';
 import { VersionsService } from './versions.service';
+import { SpongEffectsService } from './spong-effects.service';
 import { Dataset, GeneInteraction, GeneNode, NetworkData, TranscriptInteraction, TranscriptNode, InteractionSorting } from '../interfaces';
 import { isEqual } from 'lodash';
 
@@ -46,12 +47,12 @@ interface PredictNetworkQuery {
  * so the sliders stay instant and never trigger a refetch.
  */
 const moduleIDCache = new Map<string, number>();
-const moduleMembersCache = new Map<string, any[]>();
 const centerEdgesCache = new Map<string, { nodes: (GeneNode | TranscriptNode)[]; edges: (GeneInteraction | TranscriptInteraction)[] }>();
 
 @Injectable()
 export class PredictBrowseService extends BrowseService {
   predictService = inject(PredictService);
+  private spongEffectsService = inject(SpongEffectsService);
 
   constructor() {
     super(inject(BackendService), inject(VersionsService));
@@ -197,10 +198,48 @@ export class PredictBrowseService extends BrowseService {
       }
     }
 
+    // 3b. Fetch missing node metadata from the database directly so that
+    // nodes missing from the backend node response get their real type and symbol.
+    const missingIDs = Array.from(allIDs).filter(id => !nodeMap.has(id));
+    const edgeMeta = new Map<string, { symbol?: string; geneType?: string; transcriptType?: string }>();
+    if (missingIDs.length > 0) {
+      const chunkSize = 50;
+      for (let i = 0; i < missingIDs.length; i += chunkSize) {
+        const chunk = missingIDs.slice(i, i + chunkSize);
+        try {
+          if (level === 'gene') {
+            const info = await this.backend.getGeneInfo(version, chunk.join(','));
+            if (info && Array.isArray(info)) {
+              for (const item of info) {
+                edgeMeta.set(item.ensg_number, {
+                  symbol: item.gene_symbol,
+                  geneType: item.gene_type
+                });
+              }
+            }
+          } else {
+            const info = await this.backend.getTranscriptInfo(version, chunk.join(','));
+            if (info && Array.isArray(info)) {
+              for (const item of info as any[]) {
+                edgeMeta.set(item.enst_number, {
+                  symbol: item.gene?.gene_symbol || item.enst_number,
+                  geneType: item.gene?.gene_type || 'unknown',
+                  transcriptType: item.transcript_type
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching missing node metadata:', e);
+        }
+      }
+    }
+
     // For any IDs (centers or members) not returned by the database, create a bare node
     for (const id of allIDs) {
       if (!nodeMap.has(id)) {
-        nodeMap.set(id, this.minimalNode(id, level, dataset, centerIDs.has(id)));
+        const meta = edgeMeta.get(id);
+        nodeMap.set(id, this.minimalNode(id, level, dataset, centerIDs.has(id), meta?.symbol, meta?.geneType, meta?.transcriptType));
       }
     }
 
@@ -255,14 +294,18 @@ export class PredictBrowseService extends BrowseService {
     // Always include the center node(s), even if isolated.
     for (const m of topModules) {
       if (!nodeMap.has(m.gene)) {
-        nodeMap.set(m.gene, this.minimalNode(m.gene, level, dataset, true));
+        const meta = edgeMeta.get(m.gene);
+        nodeMap.set(m.gene, this.minimalNode(m.gene, level, dataset, true, meta?.symbol, meta?.geneType, meta?.transcriptType));
       }
     }
 
     // Optionally include disconnected members as orphan nodes.
     if (includeMembers && showOrphans) {
       for (const id of memberIDs) {
-        if (!nodeMap.has(id)) nodeMap.set(id, this.minimalNode(id, level, dataset, false));
+        if (!nodeMap.has(id)) {
+          const meta = edgeMeta.get(id);
+          nodeMap.set(id, this.minimalNode(id, level, dataset, false, meta?.symbol, meta?.geneType, meta?.transcriptType));
+        }
       }
     }
 
@@ -344,19 +387,19 @@ export class PredictBrowseService extends BrowseService {
   }
 
   /** Build a bare node for a gene we have no edge data for (isolated center or orphan member). */
-  private minimalNode(id: string, level: 'gene' | 'transcript', dataset: Dataset, isCenter: boolean): GeneNode | TranscriptNode {
+  private minimalNode(id: string, level: 'gene' | 'transcript', dataset: Dataset, isCenter: boolean, symbol?: string, geneType?: string, transcriptType?: string): GeneNode | TranscriptNode {
     const spongeRun = {
       dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' },
       sponge_run_ID: 0,
     };
     if (level === 'gene') {
       return {
-        gene: { ensg_number: id, gene_symbol: id, gene_type: 'unknown' },
+        gene: { ensg_number: id, gene_symbol: symbol || id, gene_type: geneType || 'unknown' },
         betweenness: 0, eigenvector: 0, node_degree: 0, sponge_run: spongeRun,
       } as GeneNode;
     }
     return {
-      transcript: { enst_number: id, gene: { ensg_number: id, gene_symbol: id, gene_type: 'unknown' }, transcript_type: 'unknown' },
+      transcript: { enst_number: id, gene: { ensg_number: id, gene_symbol: symbol || id, gene_type: geneType || 'unknown' }, transcript_type: transcriptType || 'unknown' },
       betweenness: 0, eigenvector: 0, node_degree: 0, sponge_run: spongeRun,
     } as TranscriptNode;
   }
@@ -408,14 +451,11 @@ export class PredictBrowseService extends BrowseService {
   private async resolveModuleMembers(
     id: number, version: number, scope: string, level: 'gene' | 'transcript',
   ): Promise<any[]> {
-    const cacheKey = `${id}_${version}_${scope}_${level}`;
-    if (moduleMembersCache.has(cacheKey)) return moduleMembersCache.get(cacheKey)!;
-
-    const members = await (level === 'gene'
-      ? this.backend.getSpongEffectsGeneModuleMembers(version, scope, undefined, undefined, undefined, id)
-      : this.backend.getSpongEffectsTranscriptModuleMembers(version, scope, undefined, undefined, undefined, id));
-    moduleMembersCache.set(cacheKey, members);
-    return members;
+    // Routed through the shared cache so the network reuses members already fetched by the
+    // module tables / importance plot for the same module (and vice versa).
+    return level === 'gene'
+      ? this.spongEffectsService.getGeneModuleMembers(version, scope, { moduleId: id })
+      : this.spongEffectsService.getTranscriptModuleMembers(version, scope, { moduleId: id });
   }
 }
 

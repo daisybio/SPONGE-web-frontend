@@ -14,7 +14,7 @@
     }
   </mat-drawer>
   <mat-drawer-content>
-    <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedTabChange)="onTabChange($event)">
+    <mat-tab-group preserveContent [selectedIndex]="selectedTabIndex()" (selectedTabChange)="onTabChange($event)">
       <!-- <mat-tab label="Model Performance">
         <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
       </mat-tab>
@@ -22,15 +22,26 @@
         <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
       </mat-tab> -->
       <mat-tab label="Top ceRNA Modules">
-        <app-lollipop-plot [refreshSignal$]="refreshSignal()"></app-lollipop-plot>
+        @if (tabReady(0)) {
+          <app-importance-plot [refreshSignal$]="refreshSignal()"></app-importance-plot>
+        }
       </mat-tab>
       <mat-tab label="SpongEffects Score Distribution">
-        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
+        @if (tabReady(1)) {
+          <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
+        }
+      </mat-tab>
+      <mat-tab label="Sample Similarity (UMAP)">
+        @if (tabReady(2)) {
+          <app-umap-plot mode="explore"></app-umap-plot>
+        }
       </mat-tab>
       <mat-tab label="Benchmarking">
-        <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
-        <hr>
-        <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
+        @if (tabReady(3)) {
+          <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
+          <hr>
+          <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
+        }
       </mat-tab>
       <!-- This was moved to Top ceRNA modules tab -->
       <!-- <mat-tab label="Gene set enrichment analysis">

@@ -8,6 +8,7 @@ import {
   OnDestroy,
   viewChild,
   signal,
+  resource,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -16,6 +17,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PredictService } from '../service/predict.service';
+import { ExploreService } from '../../explore/service/explore.service';
+import { BackendService } from '../../../../services/backend.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
 import { buildColorMap, getDiseaseDisplayName } from '../../../../cancer-colors';
@@ -40,7 +43,13 @@ declare var Plotly: any;
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       } @else if (!hasData()) {
         <div class="card-container" style="padding: 24px; text-align: center; color: #666;">
-          <p>No UMAP coordinates available. Please perform a prediction first.</p>
+          <p>
+            @if (mode() === 'explore') {
+              No UMAP coordinates available.
+            } @else {
+              No UMAP coordinates available. Please perform a prediction first.
+            }
+          </p>
         </div>
       } @else {
         <div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
@@ -60,48 +69,97 @@ declare var Plotly: any;
       </div>
 
       <app-info type="panel">
-        <p>
-          This UMAP plot projects your uploaded samples (shown as large red diamonds)
-          alongside reference TCGA samples (dots, colored by cancer type) using their SpongEffects enrichment scores.
-          Points that are closer together have more similar ceRNA regulation profiles.
-        </p>
-        <p>
-          SpongEffects scores are free of batch effects, allowing direct comparison of your custom samples
-          with the reference TCGA cohort.
-        </p>
+        @if (mode() === 'explore') {
+          <p>
+            This UMAP plot projects reference TCGA samples (dots, colored by cancer type) using their SpongEffects enrichment scores.
+            Points that are closer together have more similar ceRNA regulation profiles.
+          </p>
+        } @else {
+          <p>
+            This UMAP plot projects your uploaded samples (shown as large red diamonds)
+            alongside reference TCGA samples (dots, colored by cancer type) using their SpongEffects enrichment scores.
+            Points that are closer together have more similar ceRNA regulation profiles.
+          </p>
+          <p>
+            SpongEffects scores are free of batch effects, allowing direct comparison of your custom samples
+            with the reference TCGA cohort.
+          </p>
+        }
       </app-info>
     </div>
   `,
 })
 export class UmapPlotComponent implements OnDestroy {
   predictService = inject(PredictService);
+  exploreService = inject(ExploreService, { optional: true });
+  backend = inject(BackendService);
   plotDiv = viewChild.required<ElementRef<HTMLDivElement>>('umapPlot');
 
-  isLoading = computed(() => this.predictService.isLoading$());
-  hasData = signal(false);
+  mode = input<'predict' | 'explore'>('predict');
+
+  exploreUmapResource = resource({
+    request: computed(() => {
+      if (this.mode() !== 'explore') return undefined;
+      const level = this.exploreService?.level$();
+      return level;
+    }),
+    loader: async ({ request: level }) => {
+      if (!level) return undefined;
+      try {
+        const data = await this.backend.getUmapProjection(level, { values: [], samples: [], genes: [] });
+        return data;
+      } catch (e) {
+        console.error('Error fetching TCGA UMAP projection:', e);
+        return undefined;
+      }
+    }
+  });
+
+  isLoading = computed(() => {
+    if (this.mode() === 'explore') {
+      return this.exploreUmapResource.isLoading();
+    }
+    return this.predictService.isLoading$();
+  });
+
+  hasData = computed(() => {
+    if (this.mode() === 'explore') {
+      const data = this.exploreUmapResource.value();
+      return !!(data && data.tcga_umap && Object.keys(data.tcga_umap).length > 0);
+    }
+    const pred = this.predictService.prediction$();
+    return !!(pred && pred.tcga_umap && Object.keys(pred.tcga_umap).length > 0);
+  });
 
   private resizeObserver: ResizeObserver | null = null;
 
   constructor() {
     effect(() => {
-      const pred = this.predictService.prediction$();
+      const mode = this.mode();
       const div = this.plotDiv()?.nativeElement;
-      if (!pred || !div) {
-        this.hasData.set(false);
-        if (div) Plotly.purge(div);
-        return;
+      if (!div) return;
+
+      let tcga_umap: any = null;
+      let user_umap: any = null;
+
+      if (mode === 'explore') {
+        const data = this.exploreUmapResource.value();
+        if (data) {
+          tcga_umap = data.tcga_umap;
+          user_umap = data.user_umap || {};
+        }
+      } else {
+        const pred = this.predictService.prediction$();
+        if (pred) {
+          tcga_umap = pred.tcga_umap;
+          user_umap = pred.user_umap || {};
+        }
       }
 
-      const user_umap = (pred as any).user_umap;
-      const tcga_umap = (pred as any).tcga_umap;
-
-      if (!user_umap || !tcga_umap || Object.keys(tcga_umap).length === 0) {
-        this.hasData.set(false);
+      if (!tcga_umap || Object.keys(tcga_umap).length === 0) {
         Plotly.purge(div);
         return;
       }
-
-      this.hasData.set(true);
 
       // Group TCGA coordinates by cancer class/type
       const groups: { [key: string]: { x: number[]; y: number[]; text: string[] } } = {};
@@ -143,39 +201,41 @@ export class UmapPlotComponent implements OnDestroy {
         });
       }
 
-      // Add user traces
-      const userX: number[] = [];
-      const userY: number[] = [];
-      const userText: string[] = [];
+      if (mode === 'predict') {
+        // Add user traces
+        const userX: number[] = [];
+        const userY: number[] = [];
+        const userText: string[] = [];
 
-      for (const [sample, coords] of Object.entries(user_umap)) {
-        const item = coords as any;
-        userX.push(item.x);
-        userY.push(item.y);
-        userText.push(sample);
+        for (const [sample, coords] of Object.entries(user_umap)) {
+          const item = coords as any;
+          userX.push(item.x);
+          userY.push(item.y);
+          userText.push(sample);
+        }
+
+        traces.push({
+          x: userX,
+          y: userY,
+          text: userText,
+          type: 'scattergl',
+          mode: 'markers',
+          name: 'Your Samples',
+          marker: {
+            size: 8,
+            color: '#e74c3c',
+            symbol: 'diamond',
+            line: {
+              color: '#2c3e50',
+              width: 2,
+            },
+          },
+          hoverinfo: 'text',
+        });
       }
 
-      traces.push({
-        x: userX,
-        y: userY,
-        text: userText,
-        type: 'scattergl',
-        mode: 'markers',
-        name: 'Your Samples',
-        marker: {
-          size: 8,
-          color: '#e74c3c',
-          symbol: 'diamond',
-          line: {
-            color: '#2c3e50',
-            width: 2,
-          },
-        },
-        hoverinfo: 'text',
-      });
-
       const layout = {
-        title: 'UMAP Projection of TCGA & User Samples',
+        title: mode === 'explore' ? 'UMAP Projection of TCGA Samples' : 'UMAP Projection of TCGA & User Samples',
         xaxis: { title: 'UMAP 1', gridcolor: '#f0f0f0' },
         yaxis: { title: 'UMAP 2', gridcolor: '#f0f0f0' },
         hovermode: 'closest',

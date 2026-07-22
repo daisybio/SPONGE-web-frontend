@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, effect } from '@angular/core';
+import { Component, inject, input, OnInit, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,7 @@ import { PredictService } from '../../../predict/service/predict.service';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatAccordion } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-module-form',
@@ -25,7 +26,8 @@ import { MatButtonModule } from '@angular/material/button';
     MatCheckboxModule,
     MatCardModule,
     MatExpansionModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTooltipModule
   ],
   templateUrl: './module-form.component.html',
   styleUrl: './module-form.component.scss'
@@ -34,6 +36,37 @@ export class ModuleFormComponent implements OnInit {
   exploreService = inject(ExploreService);
   predictService = inject(PredictService);
   source = input<'explore' | 'predict'>('explore');
+
+  /** Disable "Show module members" when the Module Importance Plot is shown */
+  membersDisabled = computed(() => {
+    if (this.source() === 'explore') {
+      return (
+        this.exploreService.selectedTabIndex$() === 0 &&
+        this.exploreService.selectedVis() === 'plot'
+      );
+    }
+    return (
+      this.predictService.selectedTabIndex$() === 1 &&
+      (this.predictService.selectedVis$() === 'importance' ||
+        this.predictService.selectedVis$() === 'plot')
+    );
+  });
+
+  /** Read the current value from the service */
+  includeModuleMembersValue = computed(() => {
+    if (this.source() === 'explore') {
+      return this.exploreService.includeModuleMembers() || false;
+    }
+    return this.predictService.includeModuleMembers$() || false;
+  });
+
+  onIncludeMembersChange(checked: boolean) {
+    if (this.source() === 'explore') {
+      this.exploreService.includeModuleMembers.set(checked);
+    } else {
+      this.predictService.includeModuleMembers$.set(checked);
+    }
+  }
 
   selectAllPatients() {
     this.predictService.selectedSamples$.set(this.predictService.allSamples$());
@@ -77,19 +110,7 @@ export class ModuleFormComponent implements OnInit {
       }
     });
 
-    effect(() => {
-      if (this.source() === 'explore') {
-        const value = this.exploreService.includeModuleMembers();
-        if (this.formGroup.get('includeModuleMembers')?.value !== value) {
-          this.formGroup.get('includeModuleMembers')?.setValue(value || false, { emitEvent: false });
-        }
-      } else {
-        const value = this.predictService.includeModuleMembers$();
-        if (this.formGroup.get('includeModuleMembers')?.value !== value) {
-          this.formGroup.get('includeModuleMembers')?.setValue(value || false, { emitEvent: false });
-        }
-      }
-    });
+
 
     effect(() => {
       if (this.source() === 'explore') {
@@ -169,13 +190,7 @@ export class ModuleFormComponent implements OnInit {
         this.exploreService.redNodes.set(value ? value : undefined);
       }
     });
-    this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      if (this.source() === 'explore') {
-        this.exploreService.includeModuleMembers.set(value || false);
-      } else {
-        this.predictService.includeModuleMembers$.set(value || false);
-      }
-    });
+
     this.formGroup.get('sortBy')?.valueChanges.pipe(debounceTime(100)).subscribe((value) => {
       if (this.source() === 'explore') {
         this.exploreService.sortBy.set(value || '');

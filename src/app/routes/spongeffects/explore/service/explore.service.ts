@@ -247,8 +247,8 @@ export class ExploreService {
     const key = this.getModuleKey(module);
 
     if (level === 'gene') {
-      const response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const response = await this.spongEffectsService.getGeneModuleMembers(
+        version, disease, { ensemblID: module.ensemblID }
       );
 
       members = response.map(r => ({
@@ -261,8 +261,8 @@ export class ExploreService {
         spongEffects_run_ID: module.spongEffects_run_ID
       }));
     } else {
-      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const response = await this.spongEffectsService.getTranscriptModuleMembers(
+        version, disease, { ensemblID: module.ensemblID }
       );
 
       members = response.map(r => ({

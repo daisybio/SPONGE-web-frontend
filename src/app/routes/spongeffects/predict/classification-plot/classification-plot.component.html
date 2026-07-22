@@ -7,8 +7,8 @@
   </mat-button-toggle-group>
 </div>
 
-@if (plotResource.isLoading()) {
-<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+@if (plotResource.isLoading() || isLoading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 } @else if (!hasData) {
 <p style="padding: 16px; color: #666;">No prediction data available yet.</p>
 } @else {

@@ -100,6 +100,7 @@ const MIN_DRAG_TIME = 200;
 export class NetworkComponent implements AfterViewInit, OnDestroy {
   @ViewChild('container') container!: ElementRef;
   browseService = input.required<BrowseService>();
+  legendSubtitle = input<string>();
   graph$ = new ReplaySubject<Graph>();
   sigma?: Sigma;
   level$ = computed(() => this.browseService().level$());

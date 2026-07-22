@@ -78,17 +78,14 @@ export class PredictComponent {
       const selectedType = this.predictService.selectedPredictedType$();
 
       if (prediction && selectedType) {
-        // Update params to trigger scatterplot refresh
         this.scatterplotParams.set({
           disease: selectedType,
           prediction: prediction,
-          timestamp: Date.now()
         });
 
-        // Update data asynchronously
-        this.updateScatterplotData().then(() => {
-          this.refresh();
-        });
+        if (this.transformedData().length === 0) {
+          this.updateScatterplotData();
+        }
       }
     });
   }

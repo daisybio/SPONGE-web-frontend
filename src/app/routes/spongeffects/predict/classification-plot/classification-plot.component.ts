@@ -87,7 +87,7 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
   protected readonly highlightColor = PATIENT_HIGHLIGHT_COLOR;
 
   plotDiv = viewChild.required<ElementRef<HTMLDivElement>>('classificationPlot');
-  isLoading = false;
+  isLoading = signal<boolean>(false);
   hasData = false;
 
   private resizeObserver: ResizeObserver | null = null;
@@ -103,11 +103,11 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
     loader: async (param) => {
       const { prediction, version, level, isSubtype, isCombinedMode } = param.request;
       if (!prediction || !version) { this.hasData = false; return null; }
-      this.isLoading = true;
+      this.isLoading.set(true);
       try {
         await this.buildPlot(prediction, version, level, isSubtype, isCombinedMode);
       } finally {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
       return true;
     },
@@ -230,13 +230,16 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
       // Patient KDE
       const patientData = patientModuleScores.get(cls) as PatientEntry[] | undefined;
       if (patientData) {
-        patientData.forEach((p, pIdx) => {
-          const patientScores = p.moduleScores;
-          if (patientScores.length) {
+        if (isCombinedMode) {
+          // Combined mode: pool all samples' scores into one KDE per predicted type
+          const pooledScores = patientData.flatMap(p => p.moduleScores);
+          const pooledGenes = patientData.flatMap(p => p.genes);
+          if (pooledScores.length) {
             const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
-            const legendName = `Your Sample: ${p.sampleID}`;
-            const kdeValues = gaussianKDE(patientScores, grid);
+            const kdeValues = gaussianKDE(pooledScores, grid);
             maxDensity = Math.max(maxDensity, Math.max(...kdeValues));
+            const nSamples = patientData.length;
+            const legendName = `Your ${prettyName} samples (${nSamples})`;
 
             traces.push({
               x: grid, y: kdeValues,
@@ -244,20 +247,15 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
               type: 'scatter', mode: 'lines', fill: 'tozeroy',
               fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
               line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
-              name: legendName, legendgroup: `patient_${p.sampleID}`,
-              showlegend: isCombinedMode || (index === 0 && pIdx === 0),
+              name: legendName, legendgroup: 'patient_pooled',
+              showlegend: index === 0,
               hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
             });
 
-            // Rug for this specific patient
-            const rugX: number[] = [];
-            const rugCustom: string[] = [];
-            patientScores.forEach((score, modIdx) => {
-              rugX.push(score);
-              rugCustom.push(p.genes?.[modIdx] ?? `module ${modIdx}`);
-            });
+            // Rug markers for pooled scores
+            const rugCustom = pooledScores.map((_, i) => pooledGenes?.[i] ?? `module ${i}`);
             traces.push({
-              x: rugX, y: rugX.map(() => 0), xaxis: xRef, yaxis: yRef,
+              x: pooledScores, y: pooledScores.map(() => 0), xaxis: xRef, yaxis: yRef,
               type: 'scatter', mode: 'markers',
               marker: {
                 color: PATIENT_HIGHLIGHT_COLOR,
@@ -265,12 +263,55 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
                 size: 10,
                 line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
               },
-              name: `Module markers: ${p.sampleID}`, legendgroup: `patient_${p.sampleID}`, showlegend: false,
+              name: 'Module markers', legendgroup: 'patient_pooled', showlegend: false,
               customdata: rugCustom,
-              hovertemplate: `<b>Module: %{customdata}</b><br>Sample: ${p.sampleID}<br>Score: %{x:.4f}<extra></extra>`,
+              hovertemplate: `<b>Module: %{customdata}</b><br>Score: %{x:.4f}<extra></extra>`,
             });
           }
-        });
+        } else {
+          // Stacked mode: one curve per sample (unchanged)
+          patientData.forEach((p, pIdx) => {
+            const patientScores = p.moduleScores;
+            if (patientScores.length) {
+              const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
+              const legendName = `Your Sample: ${p.sampleID}`;
+              const kdeValues = gaussianKDE(patientScores, grid);
+              maxDensity = Math.max(maxDensity, Math.max(...kdeValues));
+
+              traces.push({
+                x: grid, y: kdeValues,
+                xaxis: xRef, yaxis: yRef,
+                type: 'scatter', mode: 'lines', fill: 'tozeroy',
+                fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
+                line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
+                name: legendName, legendgroup: `patient_${p.sampleID}`,
+                showlegend: index === 0 && pIdx === 0,
+                hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
+              });
+
+              // Rug for this specific patient
+              const rugX: number[] = [];
+              const rugCustom: string[] = [];
+              patientScores.forEach((score, modIdx) => {
+                rugX.push(score);
+                rugCustom.push(p.genes?.[modIdx] ?? `module ${modIdx}`);
+              });
+              traces.push({
+                x: rugX, y: rugX.map(() => 0), xaxis: xRef, yaxis: yRef,
+                type: 'scatter', mode: 'markers',
+                marker: {
+                  color: PATIENT_HIGHLIGHT_COLOR,
+                  symbol: 'line-ns',
+                  size: 10,
+                  line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
+                },
+                name: `Module markers: ${p.sampleID}`, legendgroup: `patient_${p.sampleID}`, showlegend: false,
+                customdata: rugCustom,
+                hovertemplate: `<b>Module: %{customdata}</b><br>Sample: ${p.sampleID}<br>Score: %{x:.4f}<extra></extra>`,
+              });
+            }
+          });
+        }
       }
 
       // disease name annotation

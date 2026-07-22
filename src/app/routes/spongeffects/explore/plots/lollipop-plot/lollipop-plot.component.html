@@ -4,59 +4,60 @@
     The plot shows the top rated SpongEffect modules. You can increase or decrease the number of displayed modules and select how many top rated modules you would like to include in the expression analysis. 
   </p> -->
 
+  @if (source() !== 'predict') {
   <div style="justify-content: center; display: flex; margin: 20px 0 50px 0;">
-    <mat-button-toggle-group name="vis" [value]="selectedVis()" (change)="selectedVis.set($event.value)">
+    <mat-button-toggle-group name="vis" [value]="selectedVis()" (change)="changeVis($event.value)">
       <mat-button-toggle value="plot">Module Importance Plot</mat-button-toggle>
       <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
       <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
       <mat-button-toggle value="heatmap">Module Heatmap</mat-button-toggle>
       @if (source() !== 'predict') {
-        <mat-button-toggle value="network">Network</mat-button-toggle>
+      <mat-button-toggle value="network">Network</mat-button-toggle>
       }
       <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle>
     </mat-button-toggle-group>
   </div>
+  }
 
   @if (selectedVis() === 'plot') {
-    @if (lolipopPlotData.isLoading()) {
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: -40px; position: relative; z-index: 10;">
-      <form [formGroup]="formGroup" style="display: flex; align-items: center;">
-        <mat-form-field appearance="outline" style="max-width: 180px; font-size: 13px; margin-top: 10px;">
-          <mat-label>Highlight limit (red)</mat-label>
-          <input formControlName="markControl" matInput type="number" max="100" min="1" step="1" />
-          <mat-error>Must be between 1 and 100</mat-error>
-        </mat-form-field>
-      </form>
-      <button mat-icon-button [matMenuTriggerFor]="lollipopDownloadMenu" matTooltip="Download Plot">
-        <mat-icon>download</mat-icon>
+  @if (isPlotLoading()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+  <div
+    style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 20px;">
+      <button mat-stroked-button color="primary" (click)="toggleRemaining()">
+        {{ showRemaining() ? 'Remove remaining modules' : 'Add remaining modules' }}
       </button>
-      <mat-menu #lollipopDownloadMenu="matMenu">
-        <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
-        <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
-        <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
-      </mat-menu>
     </div>
-    <div class="lollipop-plot-div">
-      <div #lollipopPlot class="lollipop-plot"></div>
-    </div>
+    <button mat-icon-button [matMenuTriggerFor]="lollipopDownloadMenu" matTooltip="Download Plot">
+      <mat-icon>download</mat-icon>
+    </button>
+    <mat-menu #lollipopDownloadMenu="matMenu">
+      <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+      <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+      <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+    </mat-menu>
+  </div>
+  <div class="lollipop-plot-div">
+    <div #lollipopPlot class="lollipop-plot"></div>
+  </div>
 
-    <app-info type="panel">
-      <p>
-        The plot shows the top rated SpongEffect modules sorted by the mean decrease in accuracy followed by
-        sorting the mean decrease in Gini index.
-        The mean decrease in Gini index reflects how much each variable contributes to the the structure of
-        nodes and leaves in a random forest. Similarly, higher values for the decrease in accuracy
-        indicates that the variable is more important in the model.
-      </p>
-      <p>
-        Module centralities located in the top-right corner of the plot play a crucial role in distinguishing
-        between the various cancer (sub-)types.
-        You can adjust the number of displayed modules
-        and specify how many top-ranked modules you would like to include in the expression analysis.
-      </p>
-    </app-info>
+  <app-info type="panel">
+    <p>
+      The plot shows the top rated SpongEffect modules sorted by the mean decrease in accuracy followed by
+      sorting the mean decrease in Gini index.
+      The mean decrease in Gini index reflects how much each variable contributes to the the structure of
+      nodes and leaves in a random forest. Similarly, higher values for the decrease in accuracy
+      indicates that the variable is more important in the model.
+    </p>
+    <p>
+      Module centralities located in the top-right corner of the plot play a crucial role in distinguishing
+      between the various cancer (sub-)types.
+      You can adjust the number of displayed modules
+      and specify how many top-ranked modules you would like to include in the expression analysis.
+    </p>
+  </app-info>
   }
 
   @if (selectedVis() === 'centers') {
@@ -78,16 +79,16 @@
         </th>
         <td mat-cell *matCellDef="let element">
           @if (key === 'symbol' || key === 'ensemblID') {
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
-                (click)="openEntityDialog(element.ensemblID, element.symbol)"
-                [matTooltip]="'Show details for ' + element[key]">
-                {{ element[key] }}
-              </button>
-              <app-add-to-cart-button [id]="element.ensemblID" [symbol]="element.symbol"></app-add-to-cart-button>
-            </div>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+              (click)="openEntityDialog(element.ensemblID, element.symbol)"
+              [matTooltip]="'Show details for ' + element[key]">
+              {{ element[key] }}
+            </button>
+            <app-add-to-cart-button [id]="element.ensemblID" [symbol]="element.symbol"></app-add-to-cart-button>
+          </div>
           } @else {
-            {{ element[key] || '-'}}
+          {{ element[key] || '-'}}
           }
         </td>
       </ng-container>
@@ -101,7 +102,7 @@
         </td>
       </tr>
       <!-- if the modules are loading, also the table will get updated -->
-      @if (lolipopPlotData.isLoading()) {
+      @if (isPlotLoading()) {
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       }
     </table>
@@ -130,25 +131,26 @@
         </th>
         <td mat-cell *matCellDef="let element">
           @if (key === 'symbol' || key === 'ensemblID') {
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
-                (click)="openEntityDialog(element.ensemblID, element.symbol)"
-                [matTooltip]="'Show details for ' + element[key]">
-                {{ element[key] }}
-              </button>
-              <app-add-to-cart-button [id]="element.ensemblID" [symbol]="element.symbol"></app-add-to-cart-button>
-            </div>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+              (click)="openEntityDialog(element.ensemblID, element.symbol)"
+              [matTooltip]="'Show details for ' + element[key]">
+              {{ element[key] }}
+            </button>
+            <app-add-to-cart-button [id]="element.ensemblID" [symbol]="element.symbol"></app-add-to-cart-button>
+          </div>
           } @else if (key === 'moduleCenter') {
-            <span style="display: inline-flex; align-items: center; gap: 4px;">
-              <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
-                (click)="openEntityDialog(element.moduleCenterID, element.moduleCenter)"
-                [matTooltip]="'Show details for center ' + element.moduleCenter">
-                {{ element.moduleCenter }}
-              </button>
-              <app-add-to-cart-button [id]="element.moduleCenterID" [symbol]="element.moduleCenter"></app-add-to-cart-button>
-            </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px;">
+            <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+              (click)="openEntityDialog(element.moduleCenterID, element.moduleCenter)"
+              [matTooltip]="'Show details for center ' + element.moduleCenter">
+              {{ element.moduleCenter }}
+            </button>
+            <app-add-to-cart-button [id]="element.moduleCenterID"
+              [symbol]="element.moduleCenter"></app-add-to-cart-button>
+          </span>
           } @else {
-            {{ element[key] || '-'}}
+          {{ element[key] || '-'}}
           }
         </td>
       </ng-container>
@@ -162,7 +164,7 @@
         </td>
       </tr>
       <!-- if the modules are loading, also the table will get updated -->
-      @if (lolipopPlotData.isLoading()) {
+      @if (isPlotLoading()) {
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       }
     </table>
@@ -188,11 +190,14 @@
   </div> -->
   <!-- NEW heatmap -->
   @if (selectedVis() === 'heatmap') {
+  <!-- SpongEffects module score across the selected samples (uploaded samples for predict). -->
   <app-heatmap-plot [dataSource]="heatmapDataSourceEnrich()" [params]="heatmapParamsEnrich()"
     [refreshSignal]="refreshSignal$()" [height]="'600px'" (plotRendered)="onPlotRendered()">
   </app-heatmap-plot>
 
-  @if (source() === 'explore') {
+  <!-- TCGA expression heatmap: only meaningful for the explore route (real TCGA samples). For
+       predict the uploaded samples have no stored expression, so it is hidden. -->
+  @if (source() !== 'predict') {
   <app-heatmap-plot [dataSource]="heatmapDataSourceExpr()" [params]="heatmapParamsExpr()"
     [refreshSignal]="refreshSignal$()" [height]="'600px'" (plotRendered)="onPlotRendered()">
   </app-heatmap-plot>

@@ -3,7 +3,7 @@ import { PredictService } from '../service/predict.service';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../components/heatmap-plot/heatmap-plot.component';
 import { BackendService } from '../../../../services/backend.service';
 import { VersionsService } from '../../../../services/versions.service';
-import { symbolCache } from '../../explore/plots/lollipop-plot/lollipop-plot.component';
+import { symbolCache, ensureGeneSymbols } from '../../explore/plots/lollipop-plot/lollipop-plot.component';
 
 interface Scores {
   genes: string[];
@@ -118,22 +118,7 @@ export class ModuleHeatmapComponent {
         finalValues = values.slice(0, 12);
       }
 
-      const missingGenes = finalGenes.filter(g => !symbolCache.has(g));
-      if (missingGenes.length > 0) {
-        await Promise.all(missingGenes.map(async (geneId: string) => {
-          try {
-            const response = await this.backend.getGeneInfo(this.versionService.version$(), geneId);
-            if (response.length === 1 && response[0].gene_symbol) {
-              symbolCache.set(geneId, response[0].gene_symbol);
-            } else {
-              symbolCache.set(geneId, geneId);
-            }
-          } catch (e) {
-            console.error(e);
-            symbolCache.set(geneId, geneId);
-          }
-        }));
-      }
+      await ensureGeneSymbols(this.backend, this.versionService.version$(), finalGenes);
 
       finalGenes.forEach((gene, geneIndex) => {
         const displayName = symbolCache.get(gene) ?? gene;

@@ -16,7 +16,7 @@ import {
   PredictCancerType,
   Dataset,
 } from '../../../../interfaces';
-import { EXAMPLE_PREDICTION_URL, EXAMPLE_SUBTYPE_PREDICTION_URL } from '../../../../constants';
+import { EXAMPLE_PREDICTION_URL, EXAMPLE_SUBTYPE_PREDICTION_URL, SPONGE_EXAMPLE_URL } from '../../../../constants';
 import { VersionsService } from '../../../../services/versions.service';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 
@@ -90,14 +90,15 @@ export class PredictService {
   readonly sortingEigenvector$ = signal<boolean>(false);
   readonly sortingDegree$ = signal<boolean>(false);
   readonly maxNodes$ = signal<number>(10);
-  readonly minDegree$ = signal<number>(1);
-  readonly minBetweenness$ = signal<number>(0.05);
-  readonly minEigen$ = signal<number>(0.1);
+  readonly minDegree$ = signal<number>(0);
+  readonly minBetweenness$ = signal<number>(0);
+  readonly minEigen$ = signal<number>(0);
   readonly interactionSorting$ = signal<string>('pValue');
   readonly maxInteractions$ = signal<number>(100);
   readonly maxPValue$ = signal<number>(0.05);
   readonly minMscor$ = signal<number>(0.1);
   readonly selectedVis$ = signal<string>('plot');
+  readonly selectedTabIndex$ = signal<number>(0);
 
   // Full SPONGE network dataset catalog (all diseases + subtypes). Only used to resolve a
   // full Dataset object (dataset_ID etc.) for whichever scope name is currently selected —
@@ -387,22 +388,95 @@ export class PredictService {
       untracked(() => {
         const current1 = this.minScore1$();
         if (current1 === null || current1 === this.lastAutoMinScore1) {
-          const roundedAbs = Math.round(defaults.minAbs * 1000) / 1000;
+          const roundedAbs = Math.floor(defaults.minAbs * 1000) / 1000;
           this.minScore1$.set(roundedAbs);
           this.lastAutoMinScore1 = roundedAbs;
         }
 
         const current2 = this.minScore2$();
         if (current2 === null || current2 === this.lastAutoMinScore2) {
-          const roundedVar = Math.round(defaults.minVar * 1000) / 1000;
+          const roundedVar = Math.floor(defaults.minVar * 1000) / 1000;
           this.minScore2$.set(roundedVar);
           this.lastAutoMinScore2 = roundedVar;
         }
       });
     });
+
+    // Auto-update level in sync with the loaded prediction's level metadata
+    effect(() => {
+      const prediction = this.prediction$();
+      if (prediction) {
+        const level = prediction.meta?.[0]?.level;
+        if (level === 'gene' || level === 'transcript') {
+          untracked(() => {
+            this.level.set(level);
+          });
+        }
+      }
+    });
   }
 
   request(query: Query) {
+    // A new prediction means new input expression — drop the cached parse.
+    this.uploadedExpressionCache = undefined;
     this._query$.set(query);
   }
+
+  // ---- Uploaded expression matrix (for the expression heatmap) --------------------------
+  // The prediction was computed from the user's uploaded expression CSV (or the example file).
+  // The raw matrix isn't in the prediction response, so we parse it client-side, once, and
+  // cache it. Sample columns line up with prediction.scores.samples.
+  private uploadedExpressionCache: Promise<{ samples: string[]; values: Map<string, number[]> }> | undefined;
+
+  async getUploadedExpression(): Promise<{ samples: string[]; values: Map<string, number[]> }> {
+    if (!this.uploadedExpressionCache) {
+      this.uploadedExpressionCache = (async () => {
+        const query = this._query$();
+        const useExample = query ? query.useExampleExpression : true;
+        const file = (!useExample && query?.file) ? query.file : this.fileCtrl.value;
+        let text: string;
+        if (file && !useExample) {
+          text = await file.text();
+        } else {
+          text = await (await fetch(SPONGE_EXAMPLE_URL)).text();
+        }
+        return parseExpressionMatrix(text);
+      })().catch((e) => {
+        console.error('Failed to parse uploaded expression matrix', e);
+        this.uploadedExpressionCache = undefined; // allow retry
+        return { samples: [], values: new Map<string, number[]>() };
+      });
+    }
+    return this.uploadedExpressionCache;
+  }
+}
+
+/**
+ * Parse an expression CSV/TSV where rows are genes/transcripts (Ensembl IDs in the first
+ * column) and columns are samples (IDs in the header row). Returns the sample list and a
+ * per-feature array of values aligned to that sample order.
+ */
+function parseExpressionMatrix(text: string): { samples: string[]; values: Map<string, number[]> } {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return { samples: [], values: new Map() };
+
+  const delim = [',', '\t', ';'].reduce((best, d) =>
+    lines[0].split(d).length > lines[0].split(best).length ? d : best, ',');
+
+  const header = lines[0].split(delim).map((c) => c.trim().replace(/^"|"$/g, ''));
+  const samples = header.slice(1); // first header cell is the ID-column label
+  const values = new Map<string, number[]>();
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(delim);
+    const id = cols[0].trim().replace(/^"|"$/g, '');
+    if (!id) continue;
+    const row = new Array<number>(samples.length);
+    for (let j = 0; j < samples.length; j++) {
+      const v = parseFloat(cols[j + 1]);
+      row[j] = isNaN(v) ? 0 : v;
+    }
+    values.set(id, row);
+  }
+  return { samples, values };
 }

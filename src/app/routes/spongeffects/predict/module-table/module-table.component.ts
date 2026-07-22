@@ -11,6 +11,7 @@ import { ModuleMember, SpongEffectsRun, SpongEffectsModule, Gene, Transcript } f
 import { InfoService } from '../../../../services/info.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { ExploreService } from '../../explore/service/explore.service';
+import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { ModalsService } from '../../../../components/modals-service/modals.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -61,6 +62,7 @@ export class ModuleTableComponent {
   private backend = inject(BackendService);
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
+  private spongEffectsService = inject(SpongEffectsService);
   private cartService = inject(CartService);
   infoService = inject(InfoService);
   modalsService = inject(ModalsService);
@@ -88,8 +90,8 @@ export class ModuleTableComponent {
 
   refreshSignal$ = input();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  paginator = viewChild(MatPaginator);
+  sort = viewChild(MatSort);
 
   blueNodes = computed(() => this.predictService.topNModules$());
   redNodes = computed(() => this.predictService.topNModules$());
@@ -166,7 +168,7 @@ export class ModuleTableComponent {
     request: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.selectedDisease(),
-      level: this.exploreService.level$(),
+      level: this.predictService.level() || this.exploreService.level$(),
     }),
     loader: ({ request }) => {
       const { version, cancer, level } = request;
@@ -225,9 +227,11 @@ export class ModuleTableComponent {
   private setupEffects(): void {
     effect(() => {
       const table = this.tableDataResource.value();
-      if (table && this.paginator && this.sort) {
-        table.paginator = this.paginator;
-        table.sort = this.sort;
+      const pag = this.paginator();
+      const s = this.sort();
+      if (table && pag && s) {
+        table.paginator = pag;
+        table.sort = s;
       }
     });
   }
@@ -326,8 +330,8 @@ export class ModuleTableComponent {
 
   private async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {
     const version = this.versionService.versionReadOnly()();
-    const disease = this.exploreService.selectedDisease$();
-    const level = this.exploreService.level$();
+    const disease = this.predictService.selectedScope$() || this.exploreService.selectedDisease$();
+    const level = this.predictService.level() || this.exploreService.level$();
 
     if (!version || !disease || !level) return;
 
@@ -335,8 +339,9 @@ export class ModuleTableComponent {
     const key = this.getModuleKey(module);
 
     if (level === 'gene') {
-      const response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const moduleId = (module as any).spongEffects_gene_module_ID || (module as any).spongEffects_module_ID;
+      const response = await this.spongEffectsService.getGeneModuleMembers(
+        version, disease, { ensemblID: module.ensemblID, limit: this.MAX_ELEMENTS, moduleId }
       );
 
       members = response.map(r => ({
@@ -349,8 +354,9 @@ export class ModuleTableComponent {
         spongEffects_run_ID: module.spongEffects_run_ID
       }));
     } else {
-      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const moduleId = (module as any).spongEffects_transcript_module_ID || (module as any).spongEffects_module_ID;
+      const response = await this.spongEffectsService.getTranscriptModuleMembers(
+        version, disease, { ensemblID: module.ensemblID, limit: this.MAX_ELEMENTS, moduleId }
       );
 
       members = response.map(r => ({

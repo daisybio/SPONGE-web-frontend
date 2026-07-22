@@ -62,6 +62,10 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   
   private resizeObserver: ResizeObserver | null = null;
   
+  isLoading = computed(() => {
+    return this.heatmapResource.isLoading() || !!this.params()?.isLoading;
+  });
+  
   // Resource-based data fetching
   heatmapResource = resource({
     request: computed(() => {

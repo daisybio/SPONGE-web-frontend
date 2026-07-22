@@ -1,69 +1,70 @@
 <form [formGroup]="formGroup">
 
-  <mat-expansion-panel [expanded]="true">
-    <mat-expansion-panel-header>
-      <mat-panel-title>Module Filtering</mat-panel-title>
-    </mat-expansion-panel-header>
+  @if (source() === 'predict') {
+  <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 16px;">
+    <mat-label>Patients to Consider</mat-label>
+    <mat-select [value]="predictService.selectedSamples$()" (valueChange)="predictService.selectedSamples$.set($event)"
+      multiple>
+      <div
+        style="display: flex; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10;"
+        (click)="$event.stopPropagation(); $event.preventDefault()">
+        <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
+          (click)="selectAllPatients(); $event.stopPropagation()">
+          Select All
+        </button>
+        <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
+          (click)="clearAllPatients(); $event.stopPropagation()">
+          Clear
+        </button>
+      </div>
+      @for (sample of predictService.allSamples$(); track sample) {
+      <mat-option [value]="sample">{{sample}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
 
-    @if (source() === 'predict') {
-      <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 16px;">
-        <mat-label>Patients to Consider</mat-label>
-        <mat-select [value]="predictService.selectedSamples$()"
-          (valueChange)="predictService.selectedSamples$.set($event)" multiple>
-          <div style="display: flex; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10;"
-            (click)="$event.stopPropagation(); $event.preventDefault()">
-            <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
-              (click)="selectAllPatients(); $event.stopPropagation()">
-              Select All
-            </button>
-            <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
-              (click)="clearAllPatients(); $event.stopPropagation()">
-              Clear
-            </button>
-          </div>
-          @for (sample of predictService.allSamples$(); track sample) {
-          <mat-option [value]="sample">{{sample}}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    }
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>Max module centers</mat-label>
+    <input formControlName="topControl" type="number" matInput max="100" min="1" step="1"
+      aria-label="Max module centers">
+    <mat-error>Must be between 1 and 100</mat-error>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Max module centers</mat-label>
-      <input formControlName="topControl" type="number" matInput max="100" min="1" step="1">
-      <mat-error>Must be between 1 and 100</mat-error>
-    </mat-form-field>
-
-    <mat-checkbox formControlName="includeModuleMembers" style="margin-bottom: 16px; display: block;">
-      Show module members
-    </mat-checkbox>
+  <mat-checkbox style="margin-bottom: 16px; display: block;"
+    [checked]="includeModuleMembersValue()"
+    [disabled]="membersDisabled()"
+    (change)="onIncludeMembersChange($event.checked)"
+    [matTooltip]="membersDisabled() ? 'Not available for Module Importance Plot' : ''">
+    Show module members
+  </mat-checkbox>
 
 
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>Sort by</mat-label>
-      <mat-select formControlName="sortBy">
-        @if (source() === 'explore') {
-        <mat-option value="meanAccuracyDecrease">Mean Accuracy Decrease</mat-option>
-        <mat-option value="meanGiniDecrease">Mean Gini Decrease</mat-option>
-        } @else {
-        <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
-        <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
-        <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>Sort by</mat-label>
+    <mat-select formControlName="sortBy">
+      @if (source() === 'explore') {
+      <mat-option value="meanAccuracyDecrease">Mean Accuracy Decrease</mat-option>
+      <mat-option value="meanGiniDecrease">Mean Gini Decrease</mat-option>
+      } @else {
+      <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
+      <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
+      <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>{{ source() === 'explore' ? 'Min. Accuracy Decrease' : 'Min. Abs. Enrichment' }}</mat-label>
-      <input formControlName="filterMinScore1" type="number" matInput step="0.01">
-    </mat-form-field>
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>{{ source() === 'explore' ? 'Min. Accuracy Decrease' : 'Min. Abs. Enrichment' }}</mat-label>
+    <input formControlName="filterMinScore1" type="number" matInput step="0.01" aria-label="Min Accuracy Decrease">
+  </mat-form-field>
 
-    <mat-form-field appearance="outline" style="width: 100%;">
-      <mat-label>{{ source() === 'explore' ? 'Min. Gini Decrease' : 'Min. Enrichment Variance' }}</mat-label>
-      <input formControlName="filterMinScore2" type="number" matInput step="0.01">
-    </mat-form-field>
+  <mat-form-field appearance="outline" style="width: 100%;">
+    <mat-label>{{ source() === 'explore' ? 'Min. Gini Decrease' : 'Min. Enrichment Variance' }}</mat-label>
+    <input formControlName="filterMinScore2" type="number" matInput step="0.01" aria-label="Min Gini Decrease">
+  </mat-form-field>
 
-  </mat-expansion-panel>
+
 
 </form>

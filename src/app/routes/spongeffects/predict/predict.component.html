@@ -16,20 +16,26 @@
     }
 
     <div class="predict-results">
-      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+      <mat-tab-group preserveContent (selectedTabChange)="onTabChange($event)">
         <!-- This was moved to Compute SpongEffects Scores -->
         <mat-tab label="Top ceRNA Centralities">
-          <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
-            [refreshSignal$]="refreshSignal()"></app-scatterplot>
-          <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
-          <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+          <ng-template matTabContent>
+            <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
+              [refreshSignal$]="refreshSignal()"></app-scatterplot>
+            <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+            <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+          </ng-template>
         </mat-tab>
         <mat-tab label="SpongEffects Score Distribution">
-          <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+          <ng-template matTabContent>
+            <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+          </ng-template>
         </mat-tab>
         <mat-tab label="Prediction Results">
-          <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
-          <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+          <ng-template matTabContent>
+            <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
+            <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+          </ng-template>
         </mat-tab>
       </mat-tab-group>
     </div>
