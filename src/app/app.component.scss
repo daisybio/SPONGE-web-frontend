@@ -1,3 +1,122 @@
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  background-color: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+  border-bottom: 3px solid var(--app-accent, #1565c0);
+  height: 60px;
+  min-height: 60px;
+  padding: 0 16px;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 1.45rem;
+  letter-spacing: 1px;
+  text-decoration: none;
+  background: linear-gradient(90deg, #8e3b9c 0%, #1565c0 50%, #2e7d32 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding-right: 8px;
+  display: inline-block;
+}
+
+.version-toggle {
+  transform: scale(0.85);
+  transform-origin: left center;
+  flex-shrink: 0;
+}
+
+.app-nav {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 12px;
+  margin: 0 16px;
+  min-width: 0;
+}
+
+.secondary-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+// Each analysis link carries its section color: text in the section color on a light tint of it,
+// and a solid fill (white text) when it's the active section.
+.nav-link {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--link-color, #4b5563);
+  background-color: var(--link-bg, rgba(255, 255, 255, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    color: #ffffff;
+    background-color: var(--link-color, #1565c0);
+    border-color: var(--link-color, #1565c0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.nav-sep {
+  width: 1px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.12);
+  margin: 0 6px;
+}
+
+.ext-link {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: #6b7280;
+  font-size: 0.82rem;
+  padding: 0 10px;
+  border-radius: 8px;
+
+  &:hover {
+    color: #1f2937;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  // Documentation/Download use this style too; mark the active one in the live accent.
+  &.ext-active {
+    color: var(--app-accent, #1565c0);
+    font-weight: 600;
+  }
+}
+
 .footer {
   background-color: #f8f9fa;
   padding: 20px 0;

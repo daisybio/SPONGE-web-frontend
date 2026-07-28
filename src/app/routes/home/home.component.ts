@@ -19,13 +19,13 @@ import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { capitalize } from 'lodash';
 import { MatCardModule } from '@angular/material/card';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 declare const Plotly: any;
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, CarouselComponent, SlideComponent, MatProgressSpinner, MatCardModule],
+  imports: [FormsModule, CarouselComponent, SlideComponent, MatProgressSpinner, MatCardModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
