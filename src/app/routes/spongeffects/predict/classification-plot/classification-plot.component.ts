@@ -1,25 +1,12 @@
-import {
-  Component, computed, effect, ElementRef, inject, input, resource, viewChild,
-  AfterViewInit, OnDestroy, signal
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { FormsModule } from '@angular/forms';
+import { Component, computed, inject, input, resource, signal } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { PredictService } from '../service/predict.service';
-import { InfoComponent } from '../../../../components/info/info.component';
 import { EnrichmentScoreDistributions, PlotData } from '../../../../interfaces';
-import { capitalize } from 'lodash';
-import { buildColorMap, hexToRgba, PATIENT_HIGHLIGHT_COLOR, PATIENT_HIGHLIGHT_RGBA, getDiseaseDisplayName } from '../../../../cancer-colors';
-
-
-declare var Plotly: any;
+import { buildColorMap, PATIENT_HIGHLIGHT_COLOR, PATIENT_HIGHLIGHT_RGBA, getDiseaseDisplayName } from '../../../../cancer-colors';
+import {
+  DensityPlotComponent, DensityRow, DensityCurve, DensityRug, DensityPlotConfig,
+} from '../../../../components/density-plot/density-plot.component';
 
 /** Simple Gaussian KDE evaluated over a fixed x-grid. */
 function gaussianKDE(values: number[], xGrid: number[], bandwidth?: number): number[] {
@@ -42,6 +29,36 @@ function linspace(a: number, b: number, n: number): number[] {
   return Array.from({ length: n }, (_, i) => a + (i / (n - 1)) * (b - a));
 }
 
+function normalizeSubtypeClass(cls: string, availableClasses: string[]): string {
+  if (!cls || !availableClasses.length) return cls || 'Unknown';
+  if (availableClasses.includes(cls)) return cls;
+
+  const lower = cls.toLowerCase().trim();
+  for (const ac of availableClasses) {
+    if (ac.toLowerCase() === lower) return ac;
+  }
+  for (const ac of availableClasses) {
+    if (ac.toLowerCase().endsWith('_' + lower) || lower.endsWith('_' + ac.toLowerCase())) {
+      return ac;
+    }
+  }
+  return cls;
+}
+
+function splitDensityCurves(xs: number[], ys: number[]): { x: number[]; y: number[] }[] {
+  const curves: { x: number[]; y: number[] }[] = [];
+  let cx: number[] = [], cy: number[] = [];
+  for (let i = 0; i < xs.length; i++) {
+    if (isNaN(xs[i]) || isNaN(ys[i])) {
+      if (cx.length) { curves.push({ x: cx, y: cy }); cx = []; cy = []; }
+    } else {
+      cx.push(xs[i]); cy.push(ys[i]);
+    }
+  }
+  if (cx.length) curves.push({ x: cx, y: cy });
+  return curves;
+}
+
 interface ScoreBlock {
   genes: string[];
   values: number[][];
@@ -60,37 +77,26 @@ interface PatientEntry {
   genes: string[];
 }
 
+/**
+ * Compute "SpongEffects Score Distribution": TCGA reference density per cancer class overlaid with
+ * the uploaded samples' per-module enrichment scores (pooled in combined mode, one curve per
+ * sample in stacked mode) plus rug ticks. Data prep only — rendering, the Combined/Stacked toggle,
+ * download and hover live in the shared {@link DensityPlotComponent}.
+ */
 @Component({
   selector: 'app-classification-plot',
-  imports: [
-    CommonModule,
-    MatProgressBarModule,
-    MatButtonToggleModule,
-    MatMenuModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    FormsModule,
-    InfoComponent
-  ],
+  imports: [DensityPlotComponent],
   templateUrl: './classification-plot.component.html',
   styleUrl: './classification-plot.component.scss',
 })
-export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
+export class ClassificationPlotComponent {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   predictService = inject(PredictService);
-  protected readonly capitalize = capitalize;
+  protected readonly highlightColor = PATIENT_HIGHLIGHT_COLOR;
 
   refreshSignal$ = input();
   isCombinedMode = signal(true);
-  protected readonly highlightColor = PATIENT_HIGHLIGHT_COLOR;
-
-  plotDiv = viewChild.required<ElementRef<HTMLDivElement>>('classificationPlot');
-  isLoading = signal<boolean>(false);
-  hasData = false;
-
-  private resizeObserver: ResizeObserver | null = null;
 
   plotResource = resource({
     request: computed(() => ({
@@ -99,54 +105,33 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
       level: this.predictService.level(),
       isSubtype: this.predictService._subtypes$(),
       isCombinedMode: this.isCombinedMode(),
+      selectedScope: this.predictService.selectedScope$(),
     })),
     loader: async (param) => {
       const { prediction, version, level, isSubtype, isCombinedMode } = param.request;
-      if (!prediction || !version) { this.hasData = false; return null; }
-      this.isLoading.set(true);
-      try {
-        await this.buildPlot(prediction, version, level, isSubtype, isCombinedMode);
-      } finally {
-        this.isLoading.set(false);
-      }
-      return true;
+      if (!prediction || !version) return null;
+      return await this.buildRows(prediction, version, level, isSubtype, isCombinedMode);
     },
   });
 
-  refreshEffect = effect(() => {
-    this.refreshSignal$();
-    this.resize();
-  });
+  rows = computed<DensityRow[]>(() => this.plotResource.value()?.rows ?? []);
+  config = computed<DensityPlotConfig>(() => this.plotResource.value()?.config ?? { title: '' });
 
-  ngAfterViewInit() {
-    this.resizeObserver = new ResizeObserver(() => this.resize());
-    const el = this.plotDiv()?.nativeElement;
-    if (el) this.resizeObserver.observe(el);
-  }
-
-  ngOnDestroy() {
-    this.resizeObserver?.disconnect();
-    const el = this.plotDiv()?.nativeElement;
-    if (el) Plotly.purge(el);
-  }
-
-  private async buildPlot(prediction: any, version: number, level: string, isSubtype: boolean, isCombinedMode: boolean) {
-    const el = this.plotDiv()?.nativeElement;
-    if (!el) return;
-    this.hasData = false;
-
+  private async buildRows(
+    prediction: any, version: number, level: string, isSubtype: boolean, isCombinedMode: boolean,
+  ): Promise<{ rows: DensityRow[]; config: DensityPlotConfig } | null> {
     // 1. Meta logic
+    const selectedScope = this.predictService.selectedScope$();
     const predictedType: string = prediction.meta?.[0]?.type_predict ?? 'pancancer';
-    const disease = isSubtype ? predictedType : 'pancancer';
+    const disease = isSubtype ? (selectedScope !== 'pancancer' ? selectedScope : predictedType) : 'pancancer';
     const labelKind = isSubtype ? 'Subtype' : 'Type';
     const predictedClass = isSubtype ? (prediction.meta?.[0]?.subtype_predict) : predictedType;
 
-    // fetch TCGA background density curves
-    let classDensities: Map<string, PlotData> = new Map();
+    // 2. TCGA background density curves
+    const classDensities: Map<string, PlotData> = new Map();
     try {
       const densities: EnrichmentScoreDistributions[] =
         await this.backend.getEnrichmentScoreDistributions(version, disease, level, {});
-
       for (const entry of densities) {
         if (!classDensities.has(entry.prediction_class)) {
           classDensities.set(entry.prediction_class, { x: [], y: [] });
@@ -159,232 +144,138 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
       console.error('Failed to load distributions:', e);
     }
 
-    // 3. Patient Scores
+    // 3. Patient scores (labels normalized to TCGA density keys)
     const predData: PredictSample[] = prediction.data ?? [];
+    const availableClasses = [...classDensities.keys()];
     const patientModuleScores = isSubtype
-      ? this.buildPatientModuleScoresByType(predData, prediction.type_scores ?? {})
-      : this.buildPatientModuleScoresByClass(predData, prediction.scores);
+      ? this.buildPatientModuleScoresByType(predData, prediction.type_scores ?? {}, availableClasses)
+      : this.buildPatientModuleScoresByClass(predData, prediction.scores, availableClasses);
 
-    // 4. ORDERING: predicted class at the tail (top row in Plotly ridgeline)
+    // 4. Ordering: predicted class last
     let allClasses = [...new Set([...classDensities.keys(), ...patientModuleScores.keys()])].sort();
-    if (predictedClass && allClasses.includes(predictedClass)) {
-      allClasses = [...allClasses.filter(c => c !== predictedClass), predictedClass];
+    const normalizedPredicted = predictedClass ? normalizeSubtypeClass(predictedClass, availableClasses) : predictedClass;
+    if (normalizedPredicted && allClasses.includes(normalizedPredicted)) {
+      allClasses = [...allClasses.filter(c => c !== normalizedPredicted), normalizedPredicted];
     }
+    if (allClasses.length === 0) return null;
 
-    if (allClasses.length === 0) {
-      console.warn('[ClassificationPlot] No classes to render.');
-      Plotly.purge(el);
-      return;
-    }
-    // 5. RANGE: universal limits
+    // 5. Universal x-range
     const allXFlat = [
       ...[...classDensities.values()].flatMap(d => d.x),
-      ...[...patientModuleScores.values()].flatMap(pts => pts.flatMap(p => p.moduleScores))
+      ...[...patientModuleScores.values()].flatMap(pts => pts.flatMap(p => p.moduleScores)),
     ];
     const globalMin = allXFlat.length ? Math.floor(Math.min(...allXFlat)) : -5;
     const globalMax = allXFlat.length ? Math.ceil(Math.max(...allXFlat)) : 5;
 
-    // Build color map for all classes
-    const colorMap = buildColorMap(
-      allClasses,
-      isSubtype ? disease : undefined  // pass parent type when rendering subtypes
-    );
+    const colorMap = buildColorMap(allClasses, isSubtype ? disease : undefined);
 
-    const traces: any[] = [];
-    const annotations: any[] = [];
-    const axisEntries: { xKey: string; yKey: string; xRef: string; yRef: string }[] = [];
-
-    const plotHeight = isCombinedMode ? 500 : Math.max(400, allClasses.length * 150);
+    const rows: DensityRow[] = [];
 
     allClasses.forEach((cls, index) => {
       const clsColor = colorMap[cls] ?? '#888888';
-      const xRef = isCombinedMode ? 'x' : (index === 0 ? 'x' : `x${index + 1}`);
-      const yRef = isCombinedMode ? 'y' : (index === 0 ? 'y' : `y${index + 1}`);
-      const xKey = isCombinedMode ? 'xaxis' : (index === 0 ? 'xaxis' : `xaxis${index + 1}`);
-      const yKey = isCombinedMode ? 'yaxis' : (index === 0 ? 'yaxis' : `yaxis${index + 1}`);
-      if (!isCombinedMode) axisEntries.push({ xKey, yKey, xRef, yRef });
-
       const prettyName = getDiseaseDisplayName(cls);
+      const curves: DensityCurve[] = [];
+      const rug: DensityRug[] = [];
 
-      let maxDensity: number = Math.max(...classDensities.get(cls)?.y ?? []);
-
-      // TCGA Curve(s)
+      // TCGA background curve(s)
       const bg = classDensities.get(cls);
       if (bg) {
-        const bgTraces = this.splitDensityCurves(bg.x, bg.y);
-        bgTraces.forEach((curve, ci) => {
-          traces.push({
-            x: curve.x, y: curve.y, xaxis: xRef, yaxis: yRef,
-            type: 'scatter', mode: 'lines', fill: 'tozeroy',
-            fillcolor: hexToRgba(clsColor, isCombinedMode ? 0.2 : 0.35),
-            opacity: 1,
-            name: isCombinedMode ? prettyName : `Background: ${prettyName}`,
-            legendgroup: cls,
-            showlegend: isCombinedMode ? ci === 0 : false,
-            line: { width: 1.5, color: clsColor },
-            hovertemplate: `<b>${prettyName}</b><br>Score: %{x:.3f}<br>Density: %{y:.4f}<extra></extra>`,
+        splitDensityCurves(bg.x, bg.y).forEach((seg, ci) => {
+          curves.push({
+            x: seg.x, y: seg.y,
+            color: clsColor,
+            fillOpacity: isCombinedMode ? 0.2 : 0.35,
+            legendName: isCombinedMode ? prettyName : `Background: ${prettyName}`,
+            legendGroup: cls,
+            showInLegend: isCombinedMode ? ci === 0 : false,
+            hoverName: prettyName,
           });
         });
       }
 
-      // Patient KDE
-      const patientData = patientModuleScores.get(cls) as PatientEntry[] | undefined;
-      if (patientData) {
-        if (isCombinedMode) {
-          // Combined mode: pool all samples' scores into one KDE per predicted type
-          const pooledScores = patientData.flatMap(p => p.moduleScores);
-          const pooledGenes = patientData.flatMap(p => p.genes);
-          if (pooledScores.length) {
-            const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
-            const kdeValues = gaussianKDE(pooledScores, grid);
-            maxDensity = Math.max(maxDensity, Math.max(...kdeValues));
-            const nSamples = patientData.length;
-            const legendName = `Your ${prettyName} samples (${nSamples})`;
-
-            traces.push({
-              x: grid, y: kdeValues,
-              xaxis: xRef, yaxis: yRef,
-              type: 'scatter', mode: 'lines', fill: 'tozeroy',
-              fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
-              line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
-              name: legendName, legendgroup: 'patient_pooled',
-              showlegend: index === 0,
-              hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
-            });
-
-            // Rug markers for pooled scores
-            const rugCustom = pooledScores.map((_, i) => pooledGenes?.[i] ?? `module ${i}`);
-            traces.push({
-              x: pooledScores, y: pooledScores.map(() => 0), xaxis: xRef, yaxis: yRef,
-              type: 'scatter', mode: 'markers',
-              marker: {
-                color: PATIENT_HIGHLIGHT_COLOR,
-                symbol: 'line-ns',
-                size: 10,
-                line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
-              },
-              name: 'Module markers', legendgroup: 'patient_pooled', showlegend: false,
-              customdata: rugCustom,
-              hovertemplate: `<b>Module: %{customdata}</b><br>Score: %{x:.4f}<extra></extra>`,
-            });
-          }
-        } else {
-          // Stacked mode: one curve per sample (unchanged)
-          patientData.forEach((p, pIdx) => {
-            const patientScores = p.moduleScores;
-            if (patientScores.length) {
-              const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
-              const legendName = `Your Sample: ${p.sampleID}`;
-              const kdeValues = gaussianKDE(patientScores, grid);
-              maxDensity = Math.max(maxDensity, Math.max(...kdeValues));
-
-              traces.push({
-                x: grid, y: kdeValues,
-                xaxis: xRef, yaxis: yRef,
-                type: 'scatter', mode: 'lines', fill: 'tozeroy',
-                fillcolor: PATIENT_HIGHLIGHT_RGBA(0.15),
-                line: { color: PATIENT_HIGHLIGHT_COLOR, width: 2.5 },
-                name: legendName, legendgroup: `patient_${p.sampleID}`,
-                showlegend: index === 0 && pIdx === 0,
-                hovertemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
-              });
-
-              // Rug for this specific patient
-              const rugX: number[] = [];
-              const rugCustom: string[] = [];
-              patientScores.forEach((score, modIdx) => {
-                rugX.push(score);
-                rugCustom.push(p.genes?.[modIdx] ?? `module ${modIdx}`);
-              });
-              traces.push({
-                x: rugX, y: rugX.map(() => 0), xaxis: xRef, yaxis: yRef,
-                type: 'scatter', mode: 'markers',
-                marker: {
-                  color: PATIENT_HIGHLIGHT_COLOR,
-                  symbol: 'line-ns',
-                  size: 10,
-                  line: { color: PATIENT_HIGHLIGHT_COLOR, width: 1.5 }
-                },
-                name: `Module markers: ${p.sampleID}`, legendgroup: `patient_${p.sampleID}`, showlegend: false,
-                customdata: rugCustom,
-                hovertemplate: `<b>Module: %{customdata}</b><br>Sample: ${p.sampleID}<br>Score: %{x:.4f}<extra></extra>`,
-              });
-            }
-          });
-        }
-      }
-
-      // disease name annotation
+      // Stacked mode: one patient curve + rug per sample
       if (!isCombinedMode) {
-        annotations.push({
-          xref: xRef, yref: yRef,
-          x: globalMin + 1.5,
-          // y: this.subplotLabelY(index, allClasses.length, 70 / plotHeight / allClasses.length),
-          y: maxDensity / 2,
-          text: `${prettyName}`,
-          align: 'left', showarrow: false,
-          xanchor: 'left', yanchor: 'middle'
+        const patientData = patientModuleScores.get(cls);
+        patientData?.forEach((p, pIdx) => {
+          if (!p.moduleScores.length) return;
+          const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
+          const legendName = `Your Sample: ${p.sampleID}`;
+          curves.push({
+            x: grid, y: gaussianKDE(p.moduleScores, grid),
+            color: PATIENT_HIGHLIGHT_COLOR, lineWidth: 2.5,
+            fillColor: PATIENT_HIGHLIGHT_RGBA(0.15),
+            legendName, legendGroup: `patient_${p.sampleID}`,
+            showInLegend: index === 0 && pIdx === 0,
+            hoverTemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
+          });
+          rug.push({
+            x: p.moduleScores,
+            color: PATIENT_HIGHLIGHT_COLOR,
+            labels: p.moduleScores.map((_, modIdx) => p.genes?.[modIdx] ?? `module ${modIdx}`),
+            legendGroup: `patient_${p.sampleID}`,
+            hoverTemplate: `<b>Module: %{customdata}</b><br>Sample: ${p.sampleID}<br>Score: %{x:.4f}<extra></extra>`,
+          });
         });
       }
+
+      rows.push({ key: cls, label: prettyName, color: clsColor, curves, rug });
     });
 
-    if (isCombinedMode) axisEntries.push({ xKey: 'xaxis', yKey: 'yaxis', xRef: 'x', yRef: 'y' });
-
-    const layout: any = {
-      showlegend: true, autosize: true, height: plotHeight,
-      title: {
-        text: `SpongEffects Enrichment Score Density per Cancer ${labelKind}` +
-          `<br><sub style="color:${PATIENT_HIGHLIGHT_COLOR}; font-size: 12px">Red = your uploaded samples</sub>`,
-        font: { size: 14 },
-      },
-      paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-      legend: { orientation: 'h', x: 0.5, y: -0.5, xanchor: 'center' },
-      margin: {
-        t: 80, b: 70,
-        l: 60, // wide left margin for labels in stacked mode
-        r: 40
-      }, annotations,
-    };
-
-    if (!isCombinedMode) {
-      layout.grid = { rows: allClasses.length, columns: 1, pattern: 'independent', roworder: 'bottom to top' };
+    // Combined mode: a single pooled patient curve across ALL uploaded samples, drawn on top.
+    if (isCombinedMode) {
+      const allEntries = [...patientModuleScores.values()].flat();
+      const pooledScores = allEntries.flatMap(p => p.moduleScores);
+      const pooledGenes = allEntries.flatMap(p => p.genes ?? []);
+      if (pooledScores.length) {
+        const grid = linspace(globalMin - 0.5, globalMax + 0.5, 256);
+        const legendName = `Your uploaded samples (${allEntries.length})`;
+        rows.push({
+          key: 'patient_pooled',
+          label: legendName,
+          color: PATIENT_HIGHLIGHT_COLOR,
+          curves: [{
+            x: grid, y: gaussianKDE(pooledScores, grid),
+            color: PATIENT_HIGHLIGHT_COLOR, lineWidth: 2.5,
+            fillColor: PATIENT_HIGHLIGHT_RGBA(0.15),
+            legendName, legendGroup: 'patient_pooled', showInLegend: true,
+            hoverTemplate: `<b>${legendName}</b><br>Score: %{x:.3f}<extra></extra>`,
+          }],
+          rug: [{
+            x: pooledScores,
+            color: PATIENT_HIGHLIGHT_COLOR,
+            labels: pooledScores.map((_, i) => pooledGenes?.[i] ?? `module ${i}`),
+            legendGroup: 'patient_pooled',
+            hoverTemplate: `<b>Module: %{customdata}</b><br>Score: %{x:.4f}<extra></extra>`,
+          }],
+        });
+      }
     }
 
-    axisEntries.forEach((ax, idx) => {
-      layout[ax.xKey] = {
-        range: [globalMin, globalMax],
-        showgrid: true,
-        zeroline: true,
-        showticklabels: isCombinedMode || idx === 0,
-        ...((isCombinedMode || idx === 0) ? {
-          title: { text: 'SpongEffects Enrichment Score', font: { size: 11 } },
-          automargin: true
-        } : {}),
-      };
-      layout[ax.yKey] = {
-        showgrid: true,
-        zeroline: true,
-        automargin: true,
-        showticklabels: false
-      };
-    });
-
-    Plotly.newPlot(el, traces, layout, { responsive: true, displayModeBar: false });
-    this.hasData = true;
+    const config: DensityPlotConfig = {
+      title: `SpongEffects Enrichment Score Density per Cancer ${labelKind}` +
+        `<br><sub style="color:${PATIENT_HIGHLIGHT_COLOR}; font-size: 12px">Red = your uploaded samples</sub>`,
+      showYTicks: false,
+      combinedHeight: 500,
+      stackedRowHeight: 150,
+      xRange: [globalMin, globalMax],
+      downloadFilename: 'classification_plot',
+    };
+    return { rows, config };
   }
 
   private buildPatientModuleScoresByClass(
     predData: PredictSample[],
     scores: ScoreBlock,
+    availableClasses?: string[],
   ): Map<string, PatientEntry[]> {
     const result = new Map<string, PatientEntry[]>();
     if (!scores?.samples?.length || !scores?.values?.length) return result;
 
     scores.samples.forEach((sampleID, colIdx) => {
-      const pd = predData.find(d => d.sampleID === sampleID);
-      const cls = pd?.typePrediction;
-      if (!cls) return;
-
+      const pd = predData.find(d => d.sampleID === sampleID || d.sampleID?.toLowerCase() === sampleID?.toLowerCase());
+      const rawCls = pd?.typePrediction;
+      if (!rawCls) return;
+      const cls = availableClasses?.length ? normalizeSubtypeClass(rawCls, availableClasses) : rawCls;
       const moduleScores = scores.values.map(row => row[colIdx] ?? 0);
       if (!result.has(cls)) result.set(cls, []);
       result.get(cls)!.push({ sampleID, moduleScores, genes: scores.genes });
@@ -395,54 +286,20 @@ export class ClassificationPlotComponent implements AfterViewInit, OnDestroy {
   private buildPatientModuleScoresByType(
     predData: PredictSample[],
     typeScores: Record<string, ScoreBlock>,
+    availableClasses?: string[],
   ): Map<string, PatientEntry[]> {
     const result = new Map<string, PatientEntry[]>();
     for (const [_, block] of Object.entries(typeScores)) {
       if (!block.samples?.length || !block.values?.length) continue;
       block.samples.forEach((sampleID, colIdx) => {
-        const pd = predData.find(d => d.sampleID === sampleID);
-        const cls = pd?.subtypePrediction || 'Unknown';
+        const pd = predData.find(d => d.sampleID === sampleID || d.sampleID?.toLowerCase() === sampleID?.toLowerCase());
+        const rawCls = pd?.subtypePrediction || 'Unknown';
+        const cls = availableClasses?.length ? normalizeSubtypeClass(rawCls, availableClasses) : rawCls;
         const moduleScores = block.values.map(row => row[colIdx] ?? 0);
         if (!result.has(cls)) result.set(cls, []);
         result.get(cls)!.push({ sampleID, moduleScores, genes: block.genes });
       });
     }
     return result;
-  }
-
-  private splitDensityCurves(xs: number[], ys: number[]): { x: number[]; y: number[]; module?: string }[] {
-    const curves: { x: number[]; y: number[]; module?: string }[] = [];
-    let cx: number[] = [], cy: number[] = [];
-    for (let i = 0; i < xs.length; i++) {
-      if (isNaN(xs[i]) || isNaN(ys[i])) {
-        if (cx.length) { curves.push({ x: cx, y: cy }); cx = []; cy = []; }
-      } else {
-        cx.push(xs[i]); cy.push(ys[i]);
-      }
-    }
-    if (cx.length) curves.push({ x: cx, y: cy });
-    return curves;
-  }
-
-  private subplotLabelY(index: number, total: number, margin: number): number {
-    const rowHeight = 1 / total;
-    return (rowHeight + ((index - 1) * (rowHeight + margin)) + (rowHeight / 2));
-  }
-
-  private resize() {
-    const el = this.plotDiv()?.nativeElement;
-    if (el?.checkVisibility?.()) Plotly.Plots.resize(el);
-  }
-
-  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
-    const el = this.plotDiv()?.nativeElement;
-    if (el) {
-      Plotly.downloadImage(el, {
-        format: format,
-        filename: 'classification_plot_' + Date.now(),
-        width: 800,
-        height: 600
-      });
-    }
   }
 }

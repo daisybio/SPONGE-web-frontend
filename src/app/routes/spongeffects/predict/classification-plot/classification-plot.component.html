@@ -1,39 +1,9 @@
-<div class="plot-options" style="padding: 16px 16px 0 16px; display: flex; align-items: center; gap: 12px;">
-  <span style="font-weight: 500; font-size: 0.9em;">Plot Mode:</span>
-  <mat-button-toggle-group [value]="isCombinedMode()" (change)="isCombinedMode.set($event.value)"
-    aria-label="Plot Mode">
-    <mat-button-toggle [value]="true">Combined</mat-button-toggle>
-    <mat-button-toggle [value]="false">Stacked</mat-button-toggle>
-  </mat-button-toggle-group>
-</div>
-
-@if (plotResource.isLoading() || isLoading()) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-} @else if (!hasData) {
-<p style="padding: 16px; color: #666;">No prediction data available yet.</p>
-} @else {
-  <div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
-    <button mat-icon-button [matMenuTriggerFor]="classifDownloadMenu" matTooltip="Download Plot">
-      <mat-icon>download</mat-icon>
-    </button>
-    <mat-menu #classifDownloadMenu="matMenu">
-      <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
-      <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
-      <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
-    </mat-menu>
-  </div>
-}
-
-<div style="width: 100%; overflow-y: auto;">
-  <div #classificationPlot style="width: 100%; height: auto; min-height: 400px;"></div>
-</div>
-
-<app-info type="panel">
+<app-density-plot [rows]="rows()" [config]="config()" [loading]="plotResource.isLoading()"
+  [combined]="isCombinedMode()" (combinedChange)="isCombinedMode.set($event)" [refreshSignal$]="refreshSignal$()">
   <p>
-    The TCGA enrichment score distributions (shaded areas) show the expected score range per cancer class.
-    <strong [style.color]="highlightColor">Red shaded curves</strong> = KDE over your uploaded samples' per-module
-    SpongEffects
-    enrichment scores.
-    Hover over any curve to see the module center gene.
+    Each shaded area is the distribution of SpongEffects enrichment scores across the TCGA reference cohort for one
+    cancer class. The <strong [style.color]="highlightColor">red overlay</strong> is the same distribution for your
+    uploaded samples (pooled in Combined mode, one curve per sample in Stacked); the red ticks beneath it mark the
+    individual module scores &mdash; hover a tick to see its module center gene.
   </p>
-</app-info>
+</app-density-plot>
