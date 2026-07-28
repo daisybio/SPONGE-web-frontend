@@ -25,6 +25,26 @@ import { buildColorMap, getDiseaseDisplayName } from '../../../../cancer-colors'
 
 declare var Plotly: any;
 
+function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: string; subtypeName?: string } {
+  if (!typeStr && !subtypeStr) return {};
+
+  const typeName = typeStr ? getDiseaseDisplayName(typeStr) : undefined;
+  if (!subtypeStr) return { typeName };
+
+  let rawSubtype = subtypeStr;
+  if (typeStr && rawSubtype.toLowerCase().startsWith(typeStr.toLowerCase() + '_')) {
+    rawSubtype = rawSubtype.slice(typeStr.length + 1);
+  } else if (rawSubtype.includes('_')) {
+    const parts = rawSubtype.split('_');
+    if (parts.length === 2 && parts[0].length <= 5) {
+      rawSubtype = parts[1];
+    }
+  }
+
+  const subtypeName = getDiseaseDisplayName(rawSubtype);
+  return { typeName, subtypeName };
+}
+
 @Component({
   selector: 'app-umap-plot',
   standalone: true,
@@ -161,6 +181,11 @@ export class UmapPlotComponent implements OnDestroy {
         return;
       }
 
+      const pred = mode === 'predict' ? this.predictService.prediction$() : undefined;
+      const isSubtype = mode === 'predict'
+        ? (this.predictService._subtypes$() || (pred?.meta?.[0]?.subtype_predict !== undefined && pred?.meta?.[0]?.subtype_predict !== 'NA'))
+        : (this.exploreService?.selectedDisease$() !== 'pancancer');
+
       // Group TCGA coordinates by cancer class/type
       const groups: { [key: string]: { x: number[]; y: number[]; text: string[] } } = {};
       for (const [patient, info] of Object.entries(tcga_umap)) {
@@ -197,11 +222,23 @@ export class UmapPlotComponent implements OnDestroy {
             color: color,
             opacity: 0.5,
           },
-          hoverinfo: 'text+name',
+          hoverinfo: 'text',
         });
       }
 
       if (mode === 'predict') {
+        // Build prediction lookup for user samples (case/format insensitive)
+        const predDataMap = new Map<string, { typePrediction?: string; subtypePrediction?: string }>();
+        if (pred?.data) {
+          for (const item of pred.data) {
+            if (item.sampleID) {
+              predDataMap.set(item.sampleID, item);
+              predDataMap.set(item.sampleID.toLowerCase(), item);
+              predDataMap.set(item.sampleID.replace(/[^a-zA-Z0-9]/g, ''), item);
+            }
+          }
+        }
+
         // Add user traces
         const userX: number[] = [];
         const userY: number[] = [];
@@ -211,7 +248,44 @@ export class UmapPlotComponent implements OnDestroy {
           const item = coords as any;
           userX.push(item.x);
           userY.push(item.y);
-          userText.push(sample);
+
+          const samplePred = predDataMap.get(sample) ||
+            predDataMap.get(sample.toLowerCase()) ||
+            predDataMap.get(sample.replace(/[^a-zA-Z0-9]/g, ''));
+
+          const typePred = (samplePred?.typePrediction && samplePred.typePrediction !== 'NA' && samplePred.typePrediction !== 'None')
+            ? samplePred.typePrediction
+            : (pred?.meta?.[0]?.type_predict && pred.meta[0].type_predict !== 'NA' && pred.meta[0].type_predict !== 'None'
+              ? pred.meta[0].type_predict
+              : undefined);
+
+          const subtypePred = (samplePred?.subtypePrediction && samplePred.subtypePrediction !== 'NA' && samplePred.subtypePrediction !== 'None')
+            ? samplePred.subtypePrediction
+            : (pred?.meta?.[0]?.subtype_predict && pred.meta[0].subtype_predict !== 'NA' && pred.meta[0].subtype_predict !== 'None'
+              ? pred.meta[0].subtype_predict
+              : undefined);
+
+          let hoverLabel: string | undefined;
+          if (isSubtype) {
+            const { typeName, subtypeName } = formatSubtypeName(typePred, subtypePred);
+            if (typeName && subtypeName) {
+              hoverLabel = typeName.toLowerCase() === subtypeName.toLowerCase() ? typeName : `${typeName} - ${subtypeName}`;
+            } else if (subtypeName) {
+              hoverLabel = subtypeName;
+            } else if (typeName) {
+              hoverLabel = typeName;
+            }
+          } else {
+            if (typePred) {
+              hoverLabel = getDiseaseDisplayName(typePred);
+            }
+          }
+
+          if (hoverLabel) {
+            userText.push(`${sample} (${hoverLabel})`);
+          } else {
+            userText.push(sample);
+          }
         }
 
         traces.push({

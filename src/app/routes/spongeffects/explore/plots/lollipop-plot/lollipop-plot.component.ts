@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   input,
+  linkedSignal,
   resource,
   signal,
   viewChild,
@@ -52,13 +53,11 @@ import { BackendService } from '../../../../../services/backend.service';
 import { VersionsService } from '../../../../../services/versions.service';
 import { ExploreService } from '../../service/explore.service';
 import { PredictService } from '../../../predict/service/predict.service';
-import { SpongEffectsService } from '../../../../../services/spong-effects.service';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
 import { debounceTime } from 'rxjs';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../../../components/heatmap-plot/heatmap-plot.component';
-import { NetworkComponent } from '../../../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../../../components/browse-views/active-entities/active-entities.component';
+import { ScatterplotComponent, ScatterplotDataScource } from '../../../../../components/scatterplot/scatterplot.component';
 import { BrowseService } from '../../../../../services/browse.service';
 import { PredictBrowseService } from '../../../../../services/predict.browse.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -108,9 +107,8 @@ export async function ensureGeneSymbols(backend: BackendService, version: number
     InfoComponent,
     MatButtonModule,
     ReusableHeatmapComponent,
+    ScatterplotComponent,
     MatButtonToggleModule,
-    NetworkComponent,
-    ActiveEntitiesComponent,
     MatProgressSpinnerModule,
     MatTooltipModule,
     AddToCartButtonComponent
@@ -121,7 +119,6 @@ export async function ensureGeneSymbols(backend: BackendService, version: number
 export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy {
   private backend = inject(BackendService);
   private versionService = inject(VersionsService);
-  private spongEffectsService = inject(SpongEffectsService);
   exploreService = inject(ExploreService, { optional: true });
   predictService = inject(PredictService, { optional: true });
   predictBrowseService = inject(PredictBrowseService, { optional: true });
@@ -164,6 +161,26 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       this.internalSelectedVis.set(value);
     }
   }
+
+  selectedHeatmapType = computed<'enrichment' | 'expression'>(() => {
+    if (this.source() === 'predict') {
+      return this.predictService ? this.predictService.selectedHeatmapType$() : 'enrichment';
+    }
+    return this.exploreService ? this.exploreService.selectedHeatmapType() : 'enrichment';
+  });
+
+  onHeatmapTypeChange(value: 'enrichment' | 'expression') {
+    if (this.source() === 'predict' && this.predictService) {
+      this.predictService.selectedHeatmapType$.set(value);
+    } else if (this.exploreService) {
+      this.exploreService.selectedHeatmapType.set(value);
+    }
+  }
+
+  expressionLabel = computed(() => {
+    const level = this.source() === 'predict' ? this.predictService?.level() : this.exploreService?.level$();
+    return level === 'transcript' ? 'Transcript Expression' : 'Gene Expression';
+  });
 
   selectedParamSets = computed(() => {
     if (this.source() === 'predict') return [];
@@ -251,42 +268,6 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
   elementLimitWarning = signal(false);
   spongEffectRuns = new Map<number, SpongEffectsRun>();
 
-  predictModuleMembersMap = new Map<string, ModuleMember[]>();
-
-  async fetchPredictModuleMembers(module: SpongEffectsModule): Promise<void> {
-    const version = this.versionService.versionReadOnly()();
-    const disease = this.predictService?.selectedScope$();
-    const level = this.predictService?.level() || 'gene';
-    if (!version || !disease || !level) return;
-
-    const key = `${module.ensemblID}_predict`;
-    if (this.predictModuleMembersMap.has(key)) return;
-
-    let members: ModuleMember[] = [];
-    if (level === 'gene') {
-      const response = await this.spongEffectsService.getGeneModuleMembers(
-        version, disease, { ensemblID: module.ensemblID }
-      );
-      members = response.map(r => ({
-        ensemblID: r.gene.ensg_number,
-        symbol: r.gene.gene_symbol,
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: 0
-      }));
-    } else {
-      const response = await this.spongEffectsService.getTranscriptModuleMembers(
-        version, disease, { ensemblID: module.ensemblID }
-      );
-      members = response.map(r => ({
-        ensemblID: r.transcript.enst_number,
-        symbol: r.transcript.gene.gene_symbol,
-        moduleCenter: module.symbol,
-        spongEffects_run_ID: 0
-      }));
-    }
-    this.predictModuleMembersMap.set(key, members);
-  }
-
   // Caching and symbol resolution for predict mode
   predictionModulesResource = resource({
     request: () => ({
@@ -364,7 +345,9 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.source() === 'predict') {
       return (
         this.predictionModulesResource.isLoading() ||
-        this.tableMembersResource.isLoading()
+        this.tableMembersResource.isLoading() ||
+        // The centers/members tables mirror the network's nodes, so reflect its load state.
+        (this.predictBrowseService?.isLoading$() ?? false)
       );
     }
     return (
@@ -510,31 +493,39 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         const finalGenesSymbols = new Map(modules.map((m: SpongEffectsModule) => [m.ensemblID, m.symbol]));
         const allSamples = pred.scores.samples;
 
+        // Precompute O(1) lookups so the cell loop below is linear, not O(genes × samples ×
+        // predictions): gene id -> row index, and sample id -> predicted subtype.
+        const geneRowIndex = new Map<string, number>();
+        pred.scores.genes.forEach((g: string, i: number) => geneRowIndex.set(g, i));
+        const subtypeBySample = new Map<string, string>();
+        for (const d of ((pred.data ?? []) as any[])) {
+          if (d?.sampleID) subtypeBySample.set(d.sampleID, d.typePrediction ?? 'Unknown');
+        }
+
         // Restrict columns to the selected patients (left-hand filter); all samples if none.
         const selectedSamples: string[] = this.predictService?.selectedSamples$() ?? [];
         const sampleIdxs = selectedSamples.length > 0
           ? selectedSamples.map(s => allSamples.indexOf(s)).filter(i => i !== -1)
           : allSamples.map((_: string, i: number) => i);
+        // Resolve each column's sample id + subtype once, not per cell.
+        const columns = sampleIdxs.map((idx: number) => {
+          const sample = allSamples[idx] ?? '';
+          return { idx, sample, subtype: subtypeBySample.get(sample) ?? 'Unknown' };
+        });
 
         for (const ensemblID of finalGenes) {
-          const geneIdx = pred.scores.genes.indexOf(ensemblID);
-          if (geneIdx === -1) continue;
+          const geneIdx = geneRowIndex.get(ensemblID);
+          if (geneIdx === undefined) continue;
 
           const geneSymbol = finalGenesSymbols.get(ensemblID) || ensemblID;
           const scoresForGene = pred.scores.values[geneIdx] || [];
 
-          for (const sampleIdx of sampleIdxs) {
-            const sample = allSamples[sampleIdx];
-            const val = scoresForGene[sampleIdx] ?? 0;
-
-            const samplePred = pred.data.find((d: any) => d.sampleID === sample);
-            const subtype = samplePred ? samplePred.typePrediction : 'Unknown';
-
+          for (const col of columns) {
             res.push({
               id: geneSymbol,
-              sample_ID: sample,
-              score_value: val,
-              disease_subtype: subtype
+              sample_ID: col.sample,
+              score_value: scoresForGene[col.idx] ?? 0,
+              disease_subtype: col.subtype
             });
           }
         }
@@ -590,7 +581,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       return `Module Center ${level === 'gene' ? 'Gene' : 'Transcript'}`;
     },
 
-    getZAxisTitle: () => 'SpongEffects Module<br>Enrichment Score',
+    getZAxisTitle: () => 'Enrichment<br>Score',
 
     getZMid: () => 0,
 
@@ -612,25 +603,15 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       // uploaded samples — the TCGA expression table (used for explore below) does not contain
       // them.
       if (this.source() === 'predict') {
-        const geneSet = new Set<string>(modules.map((m: { ensemblID: string }) => m.ensemblID));
-        if (includeMembers) {
-          // Make sure members are resolved for each selected module, then add them.
-          await Promise.all(modules.map((m: SpongEffectsModule) =>
-            this.predictModuleMembersMap.has(`${m.ensemblID}_predict`)
-              ? Promise.resolve()
-              : this.fetchPredictModuleMembers(m)));
-          for (const module of modules) {
-            const members = this.predictModuleMembersMap.get(`${module.ensemblID}_predict`) || [];
-            members.forEach(mem => geneSet.add(mem.ensemblID));
-          }
-        }
-        let geneList = Array.from(geneSet);
-        this.elementLimitWarning.set(false);
-        if (this.MAX_ELEMENTS && geneList.length > this.MAX_ELEMENTS) {
-          geneList = geneList.slice(0, this.MAX_ELEMENTS);
-          this.elementLimitWarning.set(true);
-        }
-        await ensureGeneSymbols(this.backend, version, geneList);
+        // Show exactly the patient-specific network's nodes (center[s] + the displayed members),
+        // so the heatmap matches the network and the module tables. The network already resolved
+        // symbols and capped the member count, so there is no member fetch and no symbol fetch
+        // here, and no separate MAX_ELEMENTS cap.
+        const networkNodes: any[] = (params.networkNodes ?? []);
+        const geneEntries = networkNodes.map((n: any) => ({
+          id: BrowseService.getNodeID(n),
+          symbol: this.nodeSymbol(n),
+        }));
 
         const { samples: allSamples, values } = await this.predictService!.getUploadedExpression();
         const selectedSamples: string[] = this.predictService?.selectedSamples$() ?? [];
@@ -639,18 +620,25 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
           : allSamples.map((_: string, i: number) => i);
 
         const pred = this.prediction();
+        // sample id -> predicted subtype, resolved once (was an O(cells × predictions) find).
+        const subtypeBySample = new Map<string, string>();
+        for (const d of ((pred?.data ?? []) as any[])) {
+          if (d?.sampleID) subtypeBySample.set(d.sampleID, d.typePrediction ?? 'Unknown');
+        }
+        const columns = sampleIdxs.map((idx: number) => {
+          const sample = allSamples[idx] ?? '';
+          return { idx, sample, subtype: subtypeBySample.get(sample) ?? 'Unknown' };
+        });
+
         const res: any[] = [];
-        for (const gene of geneList) {
-          const row = values.get(gene);
-          const symbol = symbolCache.get(gene) || gene;
-          for (const idx of sampleIdxs) {
-            const sample = allSamples[idx];
-            const samplePred = pred?.data?.find((d: any) => d.sampleID === sample);
+        for (const g of geneEntries) {
+          const row = values.get(g.id);
+          for (const col of columns) {
             res.push({
-              id: symbol,
-              sample_ID: sample,
-              expr_value: row ? (row[idx] ?? 0) : 0,
-              disease_subtype: samplePred ? samplePred.typePrediction : 'Unknown',
+              id: g.symbol,
+              sample_ID: col.sample,
+              expr_value: row ? (row[col.idx] ?? 0) : 0,
+              disease_subtype: col.subtype,
             });
           }
         }
@@ -683,7 +671,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         ? this.predictService?.selectedScopeDataset$()?.dataset_ID
         : this.exploreService?.selectedDiseaseObject$()?.dataset_ID;
       if (dataset_ID === undefined) return [];
-      
+
       const expressionData = await this.backend.fetchExpressionData(version, elements, dataset_ID, disease, level);
 
       // Add disease subtype information
@@ -752,9 +740,52 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       // predict data source filters the score matrix to these samples.
       selectedSamples: this.predictService?.selectedSamples$() ?? [],
       includeMembers: false,
-      value_key: 'score_value'
+      value_key: 'score_value',
+      // Show the spinner while the module centers this heatmap plots are still being resolved.
+      isLoading: this.source() === 'predict' ? this.predictionModulesResource.isLoading() : false,
     };
   });
+
+  // Explore: per-module enrichment mean vs variance across the reference (TCGA) samples.
+  // Fetches per-sample enrichment scores for the selected modules and aggregates them, so each
+  // point is a module: x = mean enrichment score, y = variance of that score across samples.
+  enrichmentMeanVarDataSource: ScatterplotDataScource = {
+    getData: async (params: any) => {
+      const { version, level, modules } = params;
+      if (!version || !level || !modules || modules.length === 0) return [];
+      const moduleIDs = modules.map((m: SpongEffectsModule) => m.spongEffects_module_ID);
+      // average=false so we get per-sample scores and can compute the variance ourselves.
+      const enrichData = await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, false, false);
+      const byModule = new Map<string, { symbol: string; scores: number[] }>();
+      for (const e of enrichData as any[]) {
+        const id = level === 'gene' ? e.gene?.ensg_number : e.transcript?.enst_number;
+        if (!id) continue;
+        const symbol = (level === 'gene' ? e.gene?.gene_symbol : e.transcript?.enst_number) ?? id;
+        if (!byModule.has(id)) byModule.set(id, { symbol, scores: [] });
+        byModule.get(id)!.scores.push(e.score_value ?? 0);
+      }
+      const points: any[] = [];
+      for (const [ensemblID, { symbol, scores }] of byModule) {
+        const n = scores.length;
+        if (n === 0) continue;
+        const mean = scores.reduce((s, v) => s + v, 0) / n;
+        const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+        points.push({ id: symbol, ensemblID, x: mean, y: variance, isTop: true });
+      }
+      return points;
+    },
+    getTitle: () => 'Enrichment: Mean vs Variance',
+    getXTitle: () => 'Mean Enrichment Score',
+    getYTitle: () => 'Enrichment Score Variance',
+    getColorScale: () => '',
+  };
+
+  enrichmentScatterParams = computed(() => ({
+    version: this.versionService.versionReadOnly()(),
+    disease: this.exploreService?.selectedDisease$(),
+    level: this.exploreService?.level$(),
+    modules: this.selectedModules$(),
+  }));
 
   heatmapParamsExpr = computed(() => {
     const version = this.versionService.versionReadOnly()();
@@ -762,42 +793,105 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       ? (this.predictService?.selectedScope$())
       : this.exploreService?.selectedDisease$();
     const level = this.source() === 'predict' ? this.predictService?.level() : this.exploreService?.level$();
-    
-    let modules = this.selectedModules$();
-    if (this.source() === 'predict' && this.predictBrowseService) {
-      const networkNodes = this.predictBrowseService.nodes$();
-      if (networkNodes.length > 0) {
-        const networkCenterIDs = new Set(
-          networkNodes.filter((n: any) => n.isCenter).map((n: any) => BrowseService.getNodeID(n))
-        );
-        modules = modules.filter(m => networkCenterIDs.has(m.ensemblID));
-      }
-    }
+
+    // Selected modules (left-hand filter), same set as the dotplot/scatterplot.
+    const modules = this.selectedModules$();
 
     return {
       version,
       disease,
       level,
       modules,
+      // Re-render when the patient selection changes (predict data source filters to these).
+      selectedSamples: this.predictService?.selectedSamples$() ?? [],
       includeMembers: this.source() === 'predict'
         ? (this.predictService?.includeModuleMembers$() ?? false)
         : (this.exploreService?.includeModuleMembers() ?? false),
+      // Predict: the network's rendered nodes drive the heatmap rows (same genes as the network
+      // and tables); reloads the heatmap when the network changes.
+      networkNodes: this.source() === 'predict' ? this.stableNetworkNodes$() : [],
+      // Surface the upstream network load so the heatmap shows its spinner while the nodes this
+      // heatmap depends on are still being fetched (getData would otherwise return empty fast).
+      isLoading: this.source() === 'predict' ? (this.predictBrowseService?.isLoading$() ?? false) : false,
     };
   });
 
-  tableCenters$ = computed(() => {
-    // Show exactly the modules selected via the left-hand filter (same set as the dotplot /
-    // scatterplot). Do NOT re-filter by the network tab's rendered nodes — that coupled the
-    // table to the network's load state and could empty it out.
-    const modules = this.source() === 'predict'
-      ? this.filteredAndSortedModules$()
-      : (this.exploreService?.selectedModules.value() || []);
+  // The patient-specific network's rendered nodes/edges, but retaining the last non-empty value
+  // so a transient empty during a network reload does not blank the tables (which is what the
+  // old direct coupling to nodes$() did). Predict mode only; null service in explore mode.
+  private readonly stableNetworkNodes$ = linkedSignal<any[], any[]>({
+    source: () => (this.predictBrowseService?.nodes$() ?? []) as any[],
+    computation: (nodes, prev) => (nodes.length > 0 ? nodes : (prev?.value ?? [])),
+  });
+  private readonly stableNetworkEdges$ = linkedSignal<any[], any[]>({
+    source: () => (this.predictBrowseService?.interactions$() ?? []) as any[],
+    computation: (edges, prev) => (edges.length > 0 ? edges : (prev?.value ?? [])),
+  });
 
+  private nodeSymbol(n: any): string {
+    const id = BrowseService.getNodeID(n);
+    return n?.gene?.gene_symbol ?? n?.transcript?.gene?.gene_symbol ?? symbolCache.get(id) ?? id;
+  }
+
+  /** Map each displayed member node to the center it connects to (via the network edges). */
+  private memberCenterMap(nodes: any[], edges: any[]): Map<string, any> {
+    const centers = nodes.filter((n) => n.isCenter);
+    const centerIDs = new Set(centers.map((c) => BrowseService.getNodeID(c)));
+    const byId = new Map(centers.map((c) => [BrowseService.getNodeID(c), c]));
+    const result = new Map<string, any>();
+    for (const int of edges as any[]) {
+      const [a, b] = 'gene1' in int
+        ? [int.gene1.ensg_number, int.gene2.ensg_number]
+        : [int.transcript_1.enst_number, int.transcript_2.enst_number];
+      if (centerIDs.has(a) && !centerIDs.has(b) && !result.has(b)) result.set(b, byId.get(a));
+      else if (centerIDs.has(b) && !centerIDs.has(a) && !result.has(a)) result.set(a, byId.get(b));
+    }
+    // Fall back to the sole/first center for members with no explicit center edge.
+    const fallback = centers[0];
+    for (const n of nodes) {
+      const id = BrowseService.getNodeID(n);
+      if (!n.isCenter && !result.has(id)) result.set(id, fallback);
+    }
+    return result;
+  }
+
+  tableCenters$ = computed<MatTableDataSource<any>>(() => {
+    // Predict: show exactly the network's center node(s), so the table matches the network.
+    // Enrichment-score columns are joined in from the prediction modules by ensembl ID.
+    if (this.source() === 'predict') {
+      const nodes = this.stableNetworkNodes$();
+      const scoreByID = new Map<string, SpongEffectsModule>();
+      for (const m of (this.predictionModulesResource.value() ?? [])) {
+        scoreByID.set(m.ensemblID, m);
+      }
+      const tableEntries = nodes
+        .filter((n) => n.isCenter)
+        .map((n) => {
+          const id = BrowseService.getNodeID(n);
+          const meta = scoreByID.get(id);
+          return {
+            ensemblID: id,
+            symbol: this.nodeSymbol(n),
+            meanEnrichmentScore: meta?.meanEnrichmentScore ?? 0,
+            absMeanEnrichmentScore: meta?.absMeanEnrichmentScore ?? 0,
+            varianceEnrichmentScore: meta?.varianceEnrichmentScore ?? 0,
+            spongEffects_run_ID: 0,
+            spongEffects_module_ID: 0,
+            moduleParams: 'Custom Prediction',
+          };
+        });
+      const dataSource = new MatTableDataSource(tableEntries);
+      if (this.paginator && this.sort) {
+        dataSource.paginator = this.paginator;
+        dataSource.sort = this.sort;
+      }
+      return dataSource;
+    }
+
+    const modules = this.exploreService?.selectedModules.value() || [];
     const tableEntries = modules.map(module => ({
       ...module,
-      moduleParams: this.source() === 'predict'
-        ? 'Custom Prediction'
-        : this.spongEffectsRunParamsString(module.spongEffects_run_ID)
+      moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
     const dataSource = new MatTableDataSource(tableEntries);
     if (this.paginator && this.sort) {
@@ -822,36 +916,38 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         ? (this.predictService?.selectedScope$())
         : this.exploreService?.selectedDisease$(),
       level: this.source() === 'predict' ? this.predictService?.level() : this.exploreService?.level$(),
+      // Predict: the exact member nodes the network renders (retained across reloads).
+      networkNodes: this.source() === 'predict' ? this.stableNetworkNodes$() : [],
+      networkEdges: this.source() === 'predict' ? this.stableNetworkEdges$() : [],
     }),
     loader: async ({ request }) => {
-      const { modules, source, version, disease, level } = request;
+      const { modules, source, version, disease, level, networkNodes, networkEdges } = request;
+
+      if (source === 'predict') {
+        // Show exactly the network's displayed members (non-center nodes), so the table and the
+        // patient-specific network always agree on which members are shown.
+        const centerMap = this.memberCenterMap(networkNodes, networkEdges);
+        const allMembers: ModuleMember[] = networkNodes
+          .filter((n) => !n.isCenter)
+          .map((n) => {
+            const center = centerMap.get(BrowseService.getNodeID(n));
+            return {
+              ensemblID: BrowseService.getNodeID(n),
+              symbol: this.nodeSymbol(n),
+              moduleCenter: center ? this.nodeSymbol(center) : '-',
+              moduleCenterID: center ? BrowseService.getNodeID(center) : '',
+              spongEffects_run_ID: 0,
+              moduleParams: 'Custom Prediction',
+            } as ModuleMember;
+          });
+        return new MatTableDataSource(allMembers);
+      }
+
       if (modules.length === 0 || !version || !disease || !level) {
         return new MatTableDataSource<ModuleMember>([]);
       }
 
-      if (source === 'predict') {
-        const fetchPromises = modules.map(async module => {
-          const key = `${module.ensemblID}_predict`;
-          if (!this.predictModuleMembersMap.has(key)) {
-            await this.fetchPredictModuleMembers(module);
-          }
-        });
-        await Promise.all(fetchPromises);
-
-        const allMembers: ModuleMember[] = [];
-        for (const module of modules) {
-          const key = `${module.ensemblID}_predict`;
-          const members = this.predictModuleMembersMap.get(key) || [];
-          allMembers.push(...members.map(m => ({
-            ...m,
-            moduleCenterID: module.ensemblID,
-            moduleParams: 'Custom Prediction'
-          })));
-        }
-        // Members of the selected modules, consistent with the dotplot/table selection — not
-        // re-filtered by the network tab's rendered nodes.
-        return new MatTableDataSource(allMembers);
-      } else {
+      {
         const fetchPromises = modules.map(async module => {
           const key = this.exploreService!.getModuleKey(module);
           if (!this.exploreService!.moduleMembersMap.has(key)) {
@@ -885,6 +981,9 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  // Guards the background expression-matrix preload to run once per prediction.
+  private _expressionPreloadedFor: unknown = null;
+
   constructor() {
     if (this.source() === 'explore' && this.exploreService) {
       this.topN = this.exploreService.topN;
@@ -899,6 +998,26 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.initializeSpongEffectRuns();
     this.setupEffects();
+
+    // As soon as the current view has finished loading, warm the uploaded expression matrix in
+    // the background (predict only). It is the fetch+parse behind the expression heatmap and is
+    // independent of the module selection, so opening Heatmaps → Expression then renders without
+    // a load wait. `source()` is read inside the effect because signal inputs are not yet bound
+    // in the constructor. Re-arms per prediction (a new upload clears predictService's cache).
+    effect(() => {
+      if (this.source() !== 'predict' || !this.predictService) return;
+      const prediction = this.predictService.prediction$();
+      const stillLoading = this.isPlotLoading();
+      if (!prediction || stillLoading) return;
+      if (this._expressionPreloadedFor === prediction) return;
+      this._expressionPreloadedFor = prediction;
+      const preload = () => { this.predictService!.getUploadedExpression().catch(() => {}); };
+      if (typeof (window as any).requestIdleCallback === 'function') {
+        (window as any).requestIdleCallback(preload);
+      } else {
+        setTimeout(preload, 300);
+      }
+    });
 
     this.formGroup.get('topControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
       this.topN.set(value ? value : undefined);
@@ -980,15 +1099,15 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     effect(() => {
-       const redNodes = this.redNodes();
-       const modules = this.plotModules$();
-       const vis = this.selectedVis();
-       if (vis === 'plot' && modules && modules.length > 0 && redNodes) {
-         setTimeout(() => {
-           this.renderLollipopPlot(modules, redNodes);
-         });
-       }
-     });
+      const redNodes = this.redNodes();
+      const modules = this.plotModules$();
+      const vis = this.selectedVis();
+      if (vis === 'plot' && modules && modules.length > 0 && redNodes) {
+        setTimeout(() => {
+          this.renderLollipopPlot(modules, redNodes);
+        });
+      }
+    });
 
     // Wire paginator/sort to whichever table is currently shown. The centers and members
     // tables live in mutually-exclusive @if blocks and share a single @ViewChild paginator/
@@ -1067,6 +1186,35 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
     }
+    // Attach enrichment metrics (mean / abs-mean / variance across the reference TCGA samples)
+    // so the drawer can sort modules by them, mirroring the predict view. Best-effort: on failure
+    // the modules simply lack these fields and enrichment sorting falls back to 0.
+    try {
+      const moduleIDs = data.map(m => m.spongEffects_module_ID).filter((id): id is number => id != null);
+      if (moduleIDs.length > 0) {
+        const enrich = await this.backend.fetchSpongEffectsEnrichScores(version, level as 'gene' | 'transcript', moduleIDs, false, false);
+        const scoresById = new Map<string, number[]>();
+        for (const e of enrich as any[]) {
+          const id = level === 'gene' ? e.gene?.ensg_number : e.transcript?.enst_number;
+          if (!id) continue;
+          if (!scoresById.has(id)) scoresById.set(id, []);
+          scoresById.get(id)!.push(e.score_value ?? 0);
+        }
+        for (const m of data) {
+          const scores = scoresById.get(m.ensemblID);
+          if (scores && scores.length > 0) {
+            const mean = scores.reduce((s, v) => s + v, 0) / scores.length;
+            const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / scores.length;
+            m.meanEnrichmentScore = mean;
+            m.absMeanEnrichmentScore = Math.abs(mean);
+            m.varianceEnrichmentScore = variance;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to attach enrichment metrics to explore modules:', e);
+    }
+
     return data;
   }
 
@@ -1156,7 +1304,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     ];
 
     const layout = {
-      title: isPredict ? 'Module Enrichment & Variance' : 'Module Importance',
+      title: isPredict ? 'Enrichment: Mean vs Variance' : 'Module Importance',
       showlegend: false,
       autosize: true,
       hovermode: 'closest',

@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect } from '@angular/core';
+import { Component, signal, inject, effect, computed } from '@angular/core';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from "@angular/material/form-field";
@@ -15,11 +15,13 @@ import { ImportancePlotComponent } from './plots/lollipop-plot/lollipop-plot.com
 import { BrowseService } from '../../../services/browse.service';
 import { ExploreService } from './service/explore.service';
 import { ExploreFormComponent } from './form/explore-form.component';
-import { FormComponent } from '../../browse/form/form.component';
+import { NetworkFiltersComponent } from '../../../components/network-filters/network-filters.component';
 import { ModuleFormComponent } from './form/module-form/module-form.component';
 import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/material/sidenav';
 import { ExploreBrowseService } from '../../../services/explore.browse.service';
 import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
+import { NetworkComponent } from '../../../components/browse-views/network/network.component';
+import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
 
 @Component({
   selector: 'app-explore',
@@ -38,12 +40,14 @@ import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
     EnrichmentClassPlotComponent,
     ImportancePlotComponent,
     ExploreFormComponent,
-    FormComponent,
+    NetworkFiltersComponent,
     ModuleFormComponent,
     MatDrawer,
     MatDrawerContainer,
     MatDrawerContent,
     UmapPlotComponent,
+    NetworkComponent,
+    ActiveEntitiesComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss'],
@@ -55,9 +59,13 @@ import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
 export class ExploreComponent {
   refreshSignal = signal<number>(0);
   exploreService = inject(ExploreService)
-  lineTop = this.exploreService.lineTop;
   selectedTabIndex = this.exploreService.selectedTabIndex$;
-  selectedVis = this.exploreService.selectedVis;
+
+  // True while the reference network is (re)building — covers both the module-resolution phase
+  // (e.g. after changing Disease) and the network fetch itself, so the spinner shows throughout.
+  isNetworkLoading = computed(() =>
+    this.browseService.isLoading$() || this.exploreService.selectedModules.isLoading()
+  );
 
   // Once the active tab has finished its initial load, prefetch the other tabs on idle so
   // switching to them is instant. preserveContent keeps them mounted, so returning never

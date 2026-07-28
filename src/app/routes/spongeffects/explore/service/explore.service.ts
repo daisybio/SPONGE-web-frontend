@@ -45,16 +45,27 @@ export class ExploreService {
     computation: (source) => source
   });
 
+  // Subtype selection (mirrors the Browse disease-selector). Resets to the unspecific subtype
+  // (null) whenever the disease changes. No spongEffects datasets carry subtypes yet, so the
+  // dropdown is present but effectively single-option today — it becomes active automatically
+  // once subtype datasets exist.
+  selectedSubtype$: WritableSignal<string | null> = linkedSignal({
+    source: () => this.selectedDisease$(),
+    computation: () => null,
+  });
+
+  // The datasets available for the current disease — one per subtype (incl. the unspecific one).
+  availableSubtypes$ = computed(() => {
+    const disease = this.selectedDisease$();
+    return this.diseases$().filter((d) => d.disease_name === disease);
+  });
+
   selectedDiseaseObject$: WritableSignal<Dataset> = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
-    const datasets = this.diseases$();
-    const selectedDataset = datasets.find(
-      (d) => d.disease_name === selectedDisease,
-    );
-    if (!selectedDataset) {
-      return {} as Dataset;
-    }
-    return selectedDataset;
+    const subtype = this.selectedSubtype$();
+    const matches = this.diseases$().filter((d) => d.disease_name === selectedDisease);
+    const bySubtype = matches.find((d) => (d.disease_subtype ?? null) === (subtype ?? null));
+    return bySubtype ?? matches.find((d) => d.disease_subtype == null) ?? matches[0] ?? ({} as Dataset);
   });
   highestKey: WritableSignal<string> = signal<string>(''); // best model for the selected disease and level, e.g. 'paramSet_1'
   highestParamSet = computed(() => {
@@ -62,6 +73,25 @@ export class ExploreService {
     return this.paramSets$()[parseInt(index, 10) - 1];
   });
   selectedVis = signal<string>('plot');
+  selectedHeatmapType = signal<'enrichment' | 'expression'>('enrichment');
+
+  // Network-filter signals — mirror PredictService so the shared <app-network-filters> drawer
+  // (NetworkFilterSignals) drives the Explore reference network. Defaults match the values the
+  // old <app-form> was seeded with for Explore.
+  readonly showOrphans$ = signal<boolean>(true);
+  readonly sortingBetweenness$ = signal<boolean>(true);
+  readonly sortingEigenvector$ = signal<boolean>(false);
+  readonly sortingDegree$ = signal<boolean>(false);
+  readonly maxNodes$ = signal<number>(10);
+  readonly minDegree$ = signal<number>(0);
+  readonly minBetweenness$ = signal<number>(0);
+  readonly minEigen$ = signal<number>(0);
+  readonly interactionSorting$ = signal<string>('pValue');
+  readonly maxInteractions$ = signal<number>(100);
+  readonly maxPValue$ = signal<number>(1);
+  readonly minMscor$ = signal<number>(0);
+  readonly geneType$ = signal<string>('all');
+  readonly supportFilter$ = signal<'all' | 'has_inverse' | 'no_inverse'>('all');
 
   // For each disease, there are multiple spongeffects runs — filter to get runs for selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
@@ -106,10 +136,14 @@ export class ExploreService {
   readonly selectedParamSets$: WritableSignal<{ [key: string]: any }> = signal({});
 
   constructor() {
-    // Sync local selected disease back to global VersionsService state
+    // Sync local selected disease back to global VersionsService state. Only write when the
+    // explore view is the active spongEffects mode — the explore and enrichment views are both
+    // instantiated at once (hidden), so without this gate explore's fallback disease would
+    // overwrite the scope the enrichment/predict view pushes for the Browse preselection.
     effect(() => {
       const localSelected = this.selectedDisease$();
-      if (localSelected) {
+      const mode = this.spongEffectsService.selectedMode$();
+      if (localSelected && mode === 'explore') {
         untracked(() => {
           if (this.versionsService.selectedDiseaseName$() !== localSelected) {
             this.versionsService.selectedDiseaseName$.set(localSelected);
@@ -177,8 +211,7 @@ export class ExploreService {
   });
 
   // For the top ceRNA modules tab
-  topN = signal<number | undefined>(15);
-  redNodes = signal<number | undefined>(5);
+  topN = signal<number | undefined>(1);
   includeModuleMembers = signal<boolean | null>(true);
   sortBy = signal<string>('');
   minScore1 = signal<number | null>(null);
@@ -186,7 +219,6 @@ export class ExploreService {
 
   selectedModules = resource({
     request: () => ({
-      redNodes: this.redNodes(),
       version: this.versionsService.versionReadOnly()(),
       disease: this.selectedDisease$(),
       level: this.level$(),
@@ -194,7 +226,7 @@ export class ExploreService {
       topN: this.topN(),
     }),
     loader: async ({ request }) => {
-      const { redNodes, version, disease, level, selectedParamSets, topN } = request;
+      const { version, disease, level, selectedParamSets, topN } = request;
       if (!version || !disease || !level || !selectedParamSets) {
         return [];
       }
@@ -229,7 +261,7 @@ export class ExploreService {
           })));
         });
       }
-      return modules.slice(0, redNodes);
+      return modules.slice(0, topN);
     }
   });
 

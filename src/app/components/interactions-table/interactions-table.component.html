@@ -1,4 +1,9 @@
 <div class="filter-container" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+  <mat-form-field appearance="outline" class="search-field" style="flex: 1 1 100%;">
+    <mat-label>Search table...</mat-label>
+    <input matInput [(ngModel)]="searchText" placeholder="e.g. BRCA1">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
   <div class="sliders-row" style="flex-grow: 1;">
     <div class="slider-group">
       <div class="slider-header">
@@ -27,7 +32,7 @@
   </button>
 </div>
 
-<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
@@ -50,6 +55,11 @@
           {{ interaction.name_2 }}
         </button>
         <app-add-to-cart-button [entity]="interaction.obj2"></app-add-to-cart-button>
+        @if (interaction.isVirtual) {
+          <app-info type="icon" title="Virtual Star Edge Info">
+            This interaction is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+          </app-info>
+        }
       </div>
     </td>
   </ng-container>

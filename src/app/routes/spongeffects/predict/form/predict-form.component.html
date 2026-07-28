@@ -1,6 +1,5 @@
 <form [formGroup]="formGroup">
   <!-- <h3 style="margin: 0 0 16px 0; font-size: 1.1em; font-weight: 500;">Run SpongEffects on Custom Data</h3> -->
-
   <mat-expansion-panel [expanded]="true">
     <mat-expansion-panel-header>
       <mat-panel-title>Select expression file
@@ -20,13 +19,10 @@
         </app-info>
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <mat-checkbox formControlName="useExampleExpression">Use example</mat-checkbox>
-    @if (selectedExpressionFile$() | async; as selectedExpressionFile) {
-    <span class="spacer"></span>
-    <button (click)="showExpressionFile(selectedExpressionFile)" class="example-expression-button" mat-button>
-      Show example
-    </button>
-    }
+    <mat-checkbox formControlName="useExampleExpression">Use
+      <span class="example-data-badge example-data-badge--lg" (click)="showExampleData(); $event.stopPropagation()"
+        matTooltip="Preview the example data">example data</span>
+    </mat-checkbox>
 
     @if (!useExampleExpression$()) {
     <mat-form-field appearance="outline" class="full-width" style="width: 100%; margin-top: 10px;">
@@ -80,9 +76,13 @@
     <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
       <mat-label>Disease</mat-label>
       <mat-select formControlName="model">
-        @for (model of models$(); track model.dataset_ID) {
+        @let models = sortedModels$();
+        @for (model of models; track model.dataset_ID; let index = $index) {
         <mat-option [value]="model.disease_name">{{ capitalize(model.disease_name) }}</mat-option>
-        }
+        @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) { <mat-divider>
+          </mat-divider>
+          }
+          }
       </mat-select>
     </mat-form-field>
 
@@ -236,5 +236,4 @@
       </button>
     </div>
   </div>
-
 </form>

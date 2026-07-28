@@ -7,14 +7,12 @@
   @if (source() !== 'predict') {
   <div style="justify-content: center; display: flex; margin: 20px 0 50px 0;">
     <mat-button-toggle-group name="vis" [value]="selectedVis()" (change)="changeVis($event.value)">
-      <mat-button-toggle value="plot">Module Importance Plot</mat-button-toggle>
+      <mat-button-toggle value="plot">Module Importance: Gini vs Accuracy</mat-button-toggle>
+      <mat-button-toggle value="enrichmentScatter">Enrichment: Mean vs Variance</mat-button-toggle>
       <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
       <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
-      <mat-button-toggle value="heatmap">Module Heatmap</mat-button-toggle>
-      @if (source() !== 'predict') {
-      <mat-button-toggle value="network">Network</mat-button-toggle>
-      }
-      <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle>
+      <mat-button-toggle value="heatmap">Heatmaps</mat-button-toggle>
+      <!-- <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle> -->
     </mat-button-toggle-group>
   </div>
   }
@@ -44,6 +42,16 @@
   </div>
 
   <app-info type="panel">
+    @if (source() === 'predict') {
+    <p>
+      Each point is a SpongEffects module. The x-axis shows the module's <b>mean enrichment score</b> across the
+      selected patient samples, and the y-axis shows the <b>variance</b> of that enrichment score across those samples.
+    </p>
+    <p>
+      Modules on the right are consistently strongly enriched across the selected patients, while modules higher up
+      vary more from patient to patient. Click a point to add its module center to the cart.
+    </p>
+    } @else {
     <p>
       The plot shows the top rated SpongEffect modules sorted by the mean decrease in accuracy followed by
       sorting the mean decrease in Gini index.
@@ -56,6 +64,22 @@
       between the various cancer (sub-)types.
       You can adjust the number of displayed modules
       and specify how many top-ranked modules you would like to include in the expression analysis.
+    </p>
+    }
+  </app-info>
+  }
+
+  @if (selectedVis() === 'enrichmentScatter') {
+  <app-scatterplot [dataSource]="enrichmentMeanVarDataSource" [params]="enrichmentScatterParams()"
+    [refreshSignal$]="refresh$()"></app-scatterplot>
+  <app-info type="panel">
+    <p>
+      Each point is a SpongEffects module. The x-axis shows the module's <b>mean enrichment score</b> across the
+      reference (TCGA) samples, and the y-axis shows the <b>variance</b> of that enrichment score across those samples.
+    </p>
+    <p>
+      Modules further to the right are consistently strongly enriched across the cohort, while modules higher up vary
+      more from sample to sample (potentially subtype-specific). Click a point to add its module center to the cart.
     </p>
   </app-info>
   }
@@ -190,18 +214,39 @@
   </div> -->
   <!-- NEW heatmap -->
   @if (selectedVis() === 'heatmap') {
+  <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+    <mat-button-toggle-group [value]="selectedHeatmapType()" (change)="onHeatmapTypeChange($event.value)">
+      <mat-button-toggle value="enrichment">Module Enrichment Scores</mat-button-toggle>
+      <mat-button-toggle value="expression">{{ expressionLabel() }}</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  @if (selectedHeatmapType() === 'enrichment') {
   <!-- SpongEffects module score across the selected samples (uploaded samples for predict). -->
   <app-heatmap-plot [dataSource]="heatmapDataSourceEnrich()" [params]="heatmapParamsEnrich()"
     [refreshSignal]="refreshSignal$()" [height]="'600px'" (plotRendered)="onPlotRendered()">
   </app-heatmap-plot>
+  }
 
-  <!-- TCGA expression heatmap: only meaningful for the explore route (real TCGA samples). For
-       predict the uploaded samples have no stored expression, so it is hidden. -->
-  @if (source() !== 'predict') {
+  @if (selectedHeatmapType() === 'expression') {
+  <!-- Expression heatmap: for predict, built from the user's uploaded expression matrix
+         (centers + members when the checkbox is on); for explore, TCGA expression. -->
   <app-heatmap-plot [dataSource]="heatmapDataSourceExpr()" [params]="heatmapParamsExpr()"
     [refreshSignal]="refreshSignal$()" [height]="'600px'" (plotRendered)="onPlotRendered()">
   </app-heatmap-plot>
   }
+
+  <app-info type="panel">
+    <p>
+      Rows are the selected module centers and columns are samples
+      ({{ source() === 'predict' ? 'your uploaded patient samples' : 'reference TCGA samples' }}).
+    </p>
+    <p>
+      <b>Module Enrichment Scores</b> colors each cell by the module's SpongEffects enrichment score in that sample
+      (how strongly the module's ceRNA program is active). <b>{{ expressionLabel() }}</b> instead colors each cell by
+      the underlying gene/transcript expression for the same modules. Use the toggle above to switch between them.
+    </p>
+  </app-info>
   }
 
   @if (selectedVis() === 'gprofiler') {
@@ -213,19 +258,5 @@
   </div>
   }
 
-  @if (selectedVis() === 'network') {
-  @if (!isLoading$()) {
-  <div style="display: flex; flex-direction: row">
-    <app-network [browseService]="browseService" [refreshSignal]="refresh$()"
-      style="min-width: 500px; flex-grow: 3"></app-network>
-    <app-active-entities [browseService]="browseService"
-      style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
-  </div>
-  }@else {
-  <div class="spinner-container">
-    <mat-spinner mode="indeterminate"></mat-spinner>
-  </div>
-  }
-  }
 
 </div>

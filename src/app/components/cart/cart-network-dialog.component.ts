@@ -108,9 +108,9 @@ export class CartNetworkDialogComponent {
             if (!nodeMap.has(g.ensg_number)) {
               nodeMap.set(g.ensg_number, {
                 gene: g,
-                betweenness: 0,
-                eigenvector: 0,
-                node_degree: 0,
+                betweenness: null,
+                eigenvector: null,
+                node_degree: null,
                 sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
               } as GeneNode);
             }
@@ -125,9 +125,9 @@ export class CartNetworkDialogComponent {
           if (!nodeMap.has(g.ensg_number)) {
             nodeMap.set(g.ensg_number, {
               gene: g,
-              betweenness: 0,
-              eigenvector: 0,
-              node_degree: 0,
+              betweenness: null,
+              eigenvector: null,
+              node_degree: null,
               sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
             } as GeneNode);
           }

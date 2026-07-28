@@ -1,3 +1,14 @@
 mat-form-field {
-  width: 80%;
+  width: 70%;
+}
+
+// No divider border on the side drawer, even when its content overflows and a scrollbar appears.
+:host ::ng-deep .mat-drawer-side {
+  border-right: none;
+  border-left: none;
+}
+
+// Tighter body padding for the "Run SpongEffects" panel (default is 0 24px 16px).
+.with_inner ::ng-deep .mat-expansion-panel-body {
+  padding: 0 12px 8px;
 }

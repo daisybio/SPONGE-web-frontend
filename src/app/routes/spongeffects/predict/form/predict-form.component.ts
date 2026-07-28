@@ -18,6 +18,7 @@ import { MatDropzone } from '@ngx-dropzone/material';
 import { FileInputDirective } from '@ngx-dropzone/cdk';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatTableModule } from '@angular/material/table';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -59,6 +60,7 @@ import { MatCardModule } from '@angular/material/card';
     MatTooltipModule,
     InfoComponent,
     MatCardModule,
+    MatDividerModule,
   ],
   templateUrl: './predict-form.component.html',
   styleUrl: './predict-form.component.scss',
@@ -70,7 +72,14 @@ export class PredictFormComponent {
   spongEffectsService = inject(SpongEffectsService);
   selectedPredictedType = this.predictService.selectedPredictedType$;
   allPredictedTypes$ = this.predictService.allPredictedTypes$;
-  models$ = this.spongEffectsService.datasets$
+  models$ = this.spongEffectsService.datasets$;
+  sortedModels$ = computed(() => {
+    const models = this.models$() || [];
+    const pan = models.filter((m) => m.disease_name.toLowerCase() === 'pancancer');
+    const others = models.filter((m) => m.disease_name.toLowerCase() !== 'pancancer')
+      .sort((a, b) => a.disease_name.localeCompare(b.disease_name));
+    return [...pan, ...others];
+  });
   protected readonly capitalize = capitalize;
 
   // Real subtype names for the currently selected type, sourced from the full SPONGE dataset
@@ -149,6 +158,11 @@ export class PredictFormComponent {
       height: '410px',
       width: '600px',
     });
+  }
+
+  /** Preview the example dataset (used by the "example data" badge). */
+  async showExampleData() {
+    this.showExpressionFile(await this.exampleDataFile);
   }
 
   downloadResults() {

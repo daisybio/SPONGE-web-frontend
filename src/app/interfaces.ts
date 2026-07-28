@@ -79,28 +79,36 @@ export interface Gene {
   ensg_number: string;
   gene_symbol?: string;
   gene_type?: string;
+  betweenness?: number | null;
+  eigenvector?: number | null;
+  node_degree?: number | null;
 }
 
 export interface Transcript {
   enst_number: string;
   gene: Gene;
   transcript_type?: string;
+  betweenness?: number | null;
+  eigenvector?: number | null;
+  node_degree?: number | null;
 }
 
 export interface GeneNode extends SpongeRun {
-  betweenness: number;
-  eigenvector: number;
+  betweenness: number | null;
+  eigenvector: number | null;
   gene: Gene;
-  node_degree: number;
+  node_degree: number | null;
   isCenter?: boolean;
+  has_inverse?: boolean;
 }
 
 export interface TranscriptNode extends SpongeRun {
-  betweenness: number;
-  eigenvector: number;
+  betweenness: number | null;
+  eigenvector: number | null;
   transcript: Transcript;
-  node_degree: number;
+  node_degree: number | null;
   isCenter?: boolean;
+  has_inverse?: boolean;
 }
 
 export interface GeneInteraction extends SpongeRun {
@@ -135,6 +143,8 @@ export interface BrowseQuery {
   maxInteractions: number;
   maxPValue: number;
   minMscor: number;
+  geneType?: string;
+  supportFilter?: 'all' | 'has_inverse' | 'no_inverse';
 }
 
 export interface CeRNA {
@@ -545,21 +555,23 @@ export interface GeneMiRNA extends SpongeRun {
   coefficient: number;
 }
 
-export interface NetworkResult {
-  subtype: {};
-  type: {
-
-
-    euclidean_distances: {
-      labels: string[];
-      x: number[];
-      y: number[];
-    };
-    scores: {
-      labels: string[];
-      values: number[][];
-    };
+export interface DiseaseSimilarityBlock {
+  euclidean_distances: {
+    labels: string[];
+    x: number[];
+    y: number[];
   };
+  scores: {
+    labels: string[];
+    values: number[][];
+  };
+}
+
+export interface NetworkResult {
+  // Empty ({}) when the selected cancer type has no subtypes with their own runs;
+  // otherwise holds the similarity among that type's subtypes.
+  subtype: Partial<DiseaseSimilarityBlock>;
+  type: DiseaseSimilarityBlock;
 }
 
 export interface Comparison {

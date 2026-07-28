@@ -3,7 +3,7 @@
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 } @else {
-  @if (!heatmapResource.value()) {
+  @if (!heatmapResource.value()?.length) {
     <p>No data available</p>
   }
 }

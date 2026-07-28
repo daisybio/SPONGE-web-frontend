@@ -146,7 +146,19 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
 
     // Create layout
     const layout = this.createLayout(samples, dataSource, params);
-    
+
+    // Grow the plot vertically with the number of gene rows so every y label fits (see the
+    // forced per-category ticks in createLayout). Falls back to the configured height for small
+    // heatmaps; taller plots simply make the page scroll.
+    const geneCount = new Set(
+      data.map(e => ('gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)))
+    ).size;
+    const baseHeight = parseInt(this.height(), 10) || 600;
+    const ROW_PX = 22;
+    const plotHeight = Math.max(baseHeight, geneCount * ROW_PX + 200);
+    layout.height = plotHeight;
+    heatmapEl.style.height = `${plotHeight}px`;
+
     // Create config
     const config = {
       responsive: true,
@@ -204,13 +216,15 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       showlegend: false,
       colorscale: dataSource.getColorScale ? dataSource.getColorScale() : "RdBu",
       colorbar: {
-        len: 0.5,
-        lenmode: 'fraction',
+        // Fixed pixel length (not a fraction of height) so it stays a sensible size on tall
+        // plots, and top-aligned to sit alongside the legend rather than stretching the height.
+        len: 300,
+        lenmode: 'pixels',
         title: dataSource.getZAxisTitle ? dataSource.getZAxisTitle() : 'Normalized<br>expression',
         xanchor: 'left',
-        yanchor: 'bottom',
+        yanchor: 'top',
         x: 1.01,
-        y: 0,
+        y: 1,
         ypad: 0,
       },
     };
@@ -304,6 +318,12 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         automargin: true,
         domain: [0, showSubtypes ? 0.9 : 1],
         showticklabels: true,
+        // Show a label for every gene, not Plotly's auto-thinned subset. Paired with the
+        // row-count-driven plot height below so the labels have room and don't overlap.
+        type: 'category',
+        tickmode: 'linear',
+        tick0: 0,
+        dtick: 1,
       },
       yaxis2: {
         automargin: true,
@@ -317,8 +337,10 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
+      // Placed in its own column to the right of the colorbar (which sits at x: 1.01). Sharing
+      // that column made a tall legend (many subtypes / short plot) overlap the colorbar.
       legend: {
-        x: 1.01,
+        x: 1.15,
         y: 1,
         xanchor: 'left',
         yanchor: 'top',
@@ -327,11 +349,6 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         },
       },
     };
-
-    // Special case for pancancer
-    if (params.disease && params.disease.disease_name === 'pancancer') {
-      layout.legend.x = 1.15;
-    }
 
     return layout;
   }

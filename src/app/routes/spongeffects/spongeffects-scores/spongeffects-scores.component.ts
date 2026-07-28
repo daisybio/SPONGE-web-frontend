@@ -13,6 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -32,6 +33,12 @@ import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
 import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
 import { InfoComponent } from '../../../components/info/info.component';
+import { NetworkFiltersComponent } from '../../../components/network-filters/network-filters.component';
+
+import { getDiseaseDisplayName } from '../../../cancer-colors';
+import { MatDialog } from '@angular/material/dialog';
+import { ExampleFileModalComponent } from '../predict/form/example-file-modal/example-file-modal.component';
+import { SPONGE_EXAMPLE_URL } from '../../../constants';
 
 @Component({
   selector: 'app-spongeffects-scores',
@@ -40,6 +47,7 @@ import { InfoComponent } from '../../../components/info/info.component';
     PredictFormComponent,
     NetworkComponent,
     ActiveEntitiesComponent,
+    NetworkFiltersComponent,
     MatDrawer,
     MatDrawerContainer,
     MatDrawerContent,
@@ -49,6 +57,7 @@ import { InfoComponent } from '../../../components/info/info.component';
     MatInputModule,
     MatCheckboxModule,
     MatSelectModule,
+    MatDividerModule,
     MatCardModule,
     MatIconModule,
     MatTooltipModule,
@@ -73,7 +82,17 @@ export class SpongeffectsScoresComponent {
   browseService = inject(PredictBrowseService);
   private backend = inject(BackendService);
   private versionsService = inject(VersionsService);
+  private dialog = inject(MatDialog);
+
+  /** Open the same example-data preview modal as the form's "Show example" button. */
+  async showExampleData(): Promise<void> {
+    const response = await fetch(SPONGE_EXAMPLE_URL);
+    const blob = await response.blob();
+    const file = new File([blob], 'example.csv', { type: 'text/csv' });
+    this.dialog.open(ExampleFileModalComponent, { data: file, height: '410px', width: '600px' });
+  }
   protected readonly capitalize = capitalize;
+  protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
 
   refreshSignal = signal<number>(0);
   selectedTabIndex = signal<number>(0);
@@ -118,9 +137,9 @@ export class SpongeffectsScoresComponent {
       await this.updateScatterplotData(params?.showRemaining === true);
       return this.transformedData();
     },
-    getTitle: () => 'Top ceRNA Modules for Uploaded Samples',
+    getTitle: () => 'Enrichment: TCGA vs Patient',
     getXTitle: () => 'Mean TCGA Enrichment Score',
-    getYTitle: () => 'Custom Enrichment Score',
+    getYTitle: () => 'Patient Enrichment Score',
     getColorScale: () => '',
   });
 
@@ -168,7 +187,7 @@ export class SpongeffectsScoresComponent {
       const topN = this.predictService.topNModules$();
       const nodesLength = this.browseService ? this.browseService.nodes$().length : 0;
 
-      if (prediction && tabIndex === 1 && subVis === 'scatterplot') {
+      if (prediction && tabIndex === 2 && subVis === 'scatterplot') {
         // Changing params reloads the scatterplot resource, which re-runs updateScatterplotData
         // via getData (with the current showRemaining). Don't call updateScatterplotData()
         // directly here — a second, showRemaining-unaware write would race with and clobber
@@ -291,7 +310,6 @@ export class SpongeffectsScoresComponent {
     try {
       let res: any[] = [];
       if (loadAll) {
-        // Direct call: No module IDs needed! Backend computes averages for ALL modules directly.
         res = await this.backend.fetchSpongEffectsEnrichScores(version, level, undefined, false, true) || [];
       } else {
         const idsParam = genes.join(',');

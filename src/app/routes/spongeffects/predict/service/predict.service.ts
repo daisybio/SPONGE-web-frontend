@@ -95,9 +95,12 @@ export class PredictService {
   readonly minEigen$ = signal<number>(0);
   readonly interactionSorting$ = signal<string>('pValue');
   readonly maxInteractions$ = signal<number>(100);
-  readonly maxPValue$ = signal<number>(0.05);
-  readonly minMscor$ = signal<number>(0.1);
+  readonly maxPValue$ = signal<number>(1);
+  readonly minMscor$ = signal<number>(0);
+  readonly geneType$ = signal<string>('all');
+  readonly supportFilter$ = signal<'all' | 'has_inverse' | 'no_inverse'>('all');
   readonly selectedVis$ = signal<string>('plot');
+  readonly selectedHeatmapType$ = signal<'enrichment' | 'expression'>('enrichment');
   readonly selectedTabIndex$ = signal<number>(0);
 
   // Full SPONGE network dataset catalog (all diseases + subtypes). Only used to resolve a
@@ -320,12 +323,12 @@ export class PredictService {
   readonly defaultMinScores$ = computed(() => {
     const scores = this.activeScores$();
     if (!scores) return { minAbs: 0, minVar: 0 };
-    
+
     const selectedSamples = this.selectedSamples$();
     const sampleIndices = selectedSamples.length > 0
       ? selectedSamples.map((s) => scores.samples.indexOf(s)).filter((i) => i !== -1)
       : scores.samples.map((_, i) => i);
-      
+
     if (sampleIndices.length === 0) return { minAbs: 0, minVar: 0 };
 
     const sortBy = this.sortBy$();
@@ -335,7 +338,7 @@ export class PredictService {
       const sum = sampleIndices.reduce((acc, idx) => acc + (scores.values[moduleIndex]?.[idx] ?? 0), 0);
       const mean = sum / sampleIndices.length;
       const absMean = Math.abs(mean);
-      
+
       const scoresForGene = scores.values[moduleIndex] || [];
       const selectedScores = sampleIndices.map(idx => scoresForGene[idx] ?? 0);
       const variance = selectedScores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / selectedScores.length;
@@ -361,11 +364,14 @@ export class PredictService {
   });
 
   constructor() {
-    // Keep the app-wide selected disease (used by Browse/Explore) in sync with whatever
-    // scope the predict view is currently showing, so switching tabs stays consistent.
+    // Keep the app-wide selected disease (used by Browse/Explore) in sync with whatever scope
+    // the predict view is currently showing, so navigating to Browse preselects it. Only write
+    // when the enrichment view is the active spongEffects mode — otherwise this fights the
+    // ExploreService, which also pushes its own selected disease into the same global signal.
     effect(() => {
       const scope = this.selectedScope$();
-      if (scope) {
+      const mode = this.spongEffectsService.selectedMode$();
+      if (scope && mode !== 'explore') {
         untracked(() => {
           if (this.versionsService.selectedDiseaseName$() !== scope) {
             this.versionsService.selectedDiseaseName$.set(scope);

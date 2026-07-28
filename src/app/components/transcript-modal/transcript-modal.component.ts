@@ -31,12 +31,18 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { BrowseService } from '../../services/browse.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { MatChip } from '@angular/material/chips';
+import { Router } from '@angular/router';
+import { PredictService } from '../../routes/spongeffects/predict/service/predict.service';
 import { MatTooltip } from '@angular/material/tooltip';
 import { AS_DESCRIPTIONS, IGV_REFGENOME } from '../../constants';
 import { ModalsService } from '../modals-service/modals.service';
 import { Igv, Location } from '@visa-ge/ng-igv';
 import { AsyncPipe } from '@angular/common';
+
+import { InfoComponent } from '../info/info.component';
+import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
 
 interface AsEventWithPsi extends AlternativeSplicingEvent {
   psi: Promise<number>;
@@ -55,10 +61,13 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
     MatInputModule,
     FormsModule,
     MatProgressSpinner,
+    MatProgressBar,
     MatChip,
     MatTooltip,
     AsyncPipe,
     Igv,
+    InfoComponent,
+    AddToCartButtonComponent,
   ],
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss',
@@ -76,6 +85,101 @@ export class TranscriptModalComponent implements AfterViewInit {
   readonly backend = inject(BackendService);
   readonly version$ = this.versionsService.versionReadOnly();
   readonly activeTab$ = model<number>(0);
+
+  private router = inject(Router);
+  private predictService = inject(PredictService, { optional: true });
+  readonly isBrowseRoute$ = computed(() => this.router.url.includes('/browse'));
+
+  get enstNumber(): string | undefined {
+    const t = this.transcript as any;
+    return t?.enst_number || t?.enst || t?.transcript?.enst_number;
+  }
+
+  // SpongEffects module for this transcript (best model run). Not filtered by disease: runs are
+  // pancancer (disease is null on the runs), so a disease_name filter returns zero modules.
+  readonly module_IDs$ = resource({
+    request: computed(() => ({ version: this.version$(), enst: this.enstNumber })),
+    loader: async (params) => {
+      const { version, enst } = params.request;
+      if (!enst) return [];
+      return await this.backend.getSpongEffectsTranscriptModules(version, undefined, {}, undefined, enst);
+    },
+  });
+
+  // Averaged TCGA enrichment scores (mean + variance) for the transcript's module(s).
+  readonly tcgaEffects$ = resource({
+    request: computed(() => ({
+      version: this.version$(),
+      module_ids: this.module_IDs$.value()?.map((m) => m.spongEffects_transcript_module_ID),
+    })),
+    loader: async (params) => {
+      const { version, module_ids } = params.request;
+      if (!module_ids || module_ids.length === 0) return [];
+      return await this.backend.fetchSpongEffectsEnrichScores(version, 'transcript', module_ids, false, true);
+    },
+  });
+
+  // Custom (uploaded-sample) enrichment scores for this transcript, when a transcript-level
+  // prediction is active. Undefined otherwise (e.g. Explore / gene-level prediction).
+  readonly customEffects$ = computed(() => {
+    const scores = this.predictService?.activeScores$();
+    if (!scores || !scores.genes || !scores.values) return undefined;
+    const targetEnst = this.enstNumber?.toLowerCase();
+    if (!targetEnst) return undefined;
+    const idx = scores.genes.findIndex((entry: any) => {
+      let str = '';
+      if (typeof entry === 'string') str = entry.toLowerCase();
+      else if (entry && typeof entry === 'object') str = (entry.enst_number || entry.transcript?.enst_number || '').toLowerCase();
+      return str === targetEnst || str.includes(targetEnst);
+    });
+    if (idx === -1) return undefined;
+    const vals = scores.values[idx] || [];
+    if (vals.length === 0) return undefined;
+    const mean = vals.reduce((a: number, b: number) => a + b, 0) / vals.length;
+    const variance = vals.reduce((a: number, b: number) => a + Math.pow(b - mean, 2), 0) / vals.length;
+    return { mean, variance, count: vals.length };
+  });
+
+  formatScore(val: number | null | undefined): string {
+    if (val === null || val === undefined || isNaN(val)) return 'N/A';
+    if (val === 0) return '0';
+    const abs = Math.abs(val);
+    if (abs < 0.001 || abs >= 10000) return val.toExponential(4);
+    return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  }
+
+  readonly effectiveCentralities$ = computed(() => {
+    const t = this.transcript as any;
+    if (t.betweenness !== undefined && t.betweenness !== null) {
+      return {
+        betweenness: t.betweenness,
+        eigenvector: t.eigenvector ?? null,
+        node_degree: t.node_degree ?? null,
+      };
+    }
+
+    const enst = this.transcript.enst_number;
+    const activeNodes = this.browseService.nodes$() || [];
+    const match = activeNodes.find((n) => BrowseService.getNodeID(n) === enst);
+    if (match) {
+      return {
+        betweenness: match.betweenness ?? null,
+        eigenvector: match.eigenvector ?? null,
+        node_degree: match.node_degree ?? null,
+      };
+    }
+
+    return {
+      betweenness: t.betweenness ?? null,
+      eigenvector: t.eigenvector ?? null,
+      node_degree: t.node_degree ?? null,
+    };
+  });
+
+  readonly isFallback = computed(() => {
+    const c = this.effectiveCentralities$();
+    return c.betweenness === null || c.betweenness === undefined || c.node_degree === null || c.node_degree === undefined;
+  });
   asDatasource = new MatTableDataSource<AlternativeSplicingEvent>();
 
   miRNAtracks$ = this.browseService.getMiRNATracksForNode(this.transcript);
@@ -111,6 +215,12 @@ export class TranscriptModalComponent implements AfterViewInit {
     } else {
       return 'Unknown';
     }
+  });
+
+  readonly diggerInfo$ = resource({
+    request: () => this.transcript.enst_number,
+    loader: async (param) =>
+      this.backend.checkDigger(param.request, 'transcript'),
   });
 
   alternativeSplicingEvents = resource({

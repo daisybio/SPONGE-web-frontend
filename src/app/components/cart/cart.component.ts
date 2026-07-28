@@ -84,6 +84,13 @@ export class CartComponent {
   });
 
   datasets = computed(() => this.datasetsResource.value() ?? []);
+  sortedDatasets = computed(() => {
+    const ds = this.datasets();
+    const pan = ds.filter((d) => d.disease_name.toLowerCase() === 'pancancer');
+    const others = ds.filter((d) => d.disease_name.toLowerCase() !== 'pancancer')
+      .sort((a, b) => a.disease_name.localeCompare(b.disease_name));
+    return [...pan, ...others];
+  });
   selectedDisease = signal<Dataset | null>(null);
 
   items = this.cartService.items;
@@ -92,7 +99,7 @@ export class CartComponent {
   constructor() {
     // Auto-select first disease when datasets load
     effect(() => {
-      const ds = this.datasets();
+      const ds = this.sortedDatasets();
       if (ds.length > 0 && !this.selectedDisease()) {
         this.selectedDisease.set(ds[0]);
       }

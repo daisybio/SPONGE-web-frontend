@@ -8,46 +8,45 @@
             <mat-panel-title>Gene</mat-panel-title>
           </mat-expansion-panel-header>
           @if (geneInfo$.isLoading()) {
-            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
           }
           @if (geneInfo$.value(); as geneInfo) {
-            <table>
-              <tr>
-                <th>Ensembl ID</th>
-                <td>{{ geneInfo.ensg_number }}</td>
-              </tr>
-              <tr>
-                <th>Position</th>
-                <td>{{ geneInfo.chromosome_name }}:{{ geneInfo.start_pos }}-{{ geneInfo.end_pos }}</td>
-              </tr>
-              <tr>
-                <th>Type</th>
-                <td>{{ geneInfo.gene_type }}</td>
-              </tr>
-              <tr>
-                <th>Description</th>
-                <td>{{ geneInfo.description }}</td>
-              </tr>
-              <tr>
-                <th>Cytoband</th>
-                <td>{{ geneInfo.cytoband }}</td>
-              </tr>
-            </table>
+          <table>
+            <tr>
+              <th>Ensembl ID</th>
+              <td>{{ geneInfo.ensg_number }}</td>
+            </tr>
+            <tr>
+              <th>Position</th>
+              <td>{{ geneInfo.chromosome_name }}:{{ geneInfo.start_pos }}-{{ geneInfo.end_pos }}</td>
+            </tr>
+            <tr>
+              <th>Type</th>
+              <td>{{ geneInfo.gene_type }}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{ geneInfo.description }}</td>
+            </tr>
+            <tr>
+              <th>Cytoband</th>
+              <td>{{ geneInfo.cytoband }}</td>
+            </tr>
+          </table>
           }
         </mat-expansion-panel>
         @if (wikipathways$.value(); as pathways) {
-          @if (pathways.length > 0) {
-            <mat-expansion-panel>
-              <mat-expansion-panel-header>
-                <mat-panel-title>WikiPathways</mat-panel-title>
-              </mat-expansion-panel-header>
-              @for (pathway of pathways; track pathway) {
-                <a [href]="'https://www.wikipathways.org/pathways/' + pathway.wp_key"
-                   target="_blank"
-                   mat-flat-button>{{ pathway.wp_key }}</a>
-              }
-            </mat-expansion-panel>
+        @if (pathways.length > 0) {
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>WikiPathways</mat-panel-title>
+          </mat-expansion-panel-header>
+          @for (pathway of pathways; track pathway) {
+          <a [href]="'https://www.wikipathways.org/pathways/' + pathway.wp_key" target="_blank" mat-flat-button>{{
+            pathway.wp_key }}</a>
           }
+        </mat-expansion-panel>
+        }
         }
         @if (hallmarks$.value(); as hallmarks) {
           @if (hallmarks.length > 0) {
@@ -65,83 +64,142 @@
         }
       </mat-accordion>
     </mat-tab>
-    @if (goTerms$.value() && goTerms$.value()!.length > 0) {
-      <mat-tab label="Gene ontology">
-        <mat-form-field style="padding: 10px; width: 100%">
-          <mat-label>Search</mat-label>
-          <input [(ngModel)]="goFilter" matInput placeholder="Search for GO terms">
-          <mat-hint>Case insensitive</mat-hint>
-        </mat-form-field>
-        <table [dataSource]="goDatasource" class="mat-elevation-z8" mat-table>
-          <ng-container matColumnDef="symbol">
-            <th *matHeaderCellDef mat-header-cell>Link</th>
-            <td *matCellDef="let goTerm" mat-cell>
-              <a [href]="'https://amigo.geneontology.org/amigo/term/' + goTerm.gene_ontology_symbol" mat-flat-button
-                 target="_blank">{{ goTerm.gene_ontology_symbol }}</a>
-            </td>
-          </ng-container>
 
-          <ng-container matColumnDef="description">
-            <th *matHeaderCellDef mat-header-cell>Description</th>
-            <td *matCellDef="let goTerm" mat-cell>{{ goTerm.description }}</td>
-          </ng-container>
+    @if (!isBrowseRoute$() && (tcgaEffects$.isLoading() || module_IDs$.isLoading() || (customEffects$()) || ((tcgaEffects$.value() || []).length > 0))) {
+      <mat-tab label="SpongEffects scores">
+        <div style="padding: 16px;">
+          @let custom = customEffects$();
+          @if (custom) {
+            <mat-accordion style="margin-bottom: 16px;">
+              <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Custom SpongEffects scores</mat-panel-title>
+                </mat-expansion-panel-header>
+                <table>
+                  <tr>
+                    <th>Mean Enrichment Score</th>
+                    <td>{{ formatScore(custom.mean) }}</td>
+                  </tr>
+                  <tr>
+                    <th>Variance Enrichment Score</th>
+                    <td>{{ formatScore(custom.variance) }}</td>
+                  </tr>
+                </table>
+              </mat-expansion-panel>
+            </mat-accordion>
+          }
 
-          <tr *matHeaderRowDef="goColumns" mat-header-row></tr>
-          <tr *matRowDef="let row; columns: goColumns;" mat-row></tr>
-        </table>
-        <mat-paginator #goPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
-                       aria-label="Select page of users"></mat-paginator>
+          @if (tcgaEffects$.isLoading() || module_IDs$.isLoading()) {
+            <div style="padding: 24px 0; text-align: center;">
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+              <p style="color: #666; font-size: 12px; margin-top: 8px;">Loading TCGA SpongEffects scores...</p>
+            </div>
+          } @else if ((tcgaEffects$.value() || []).length > 0) {
+            @let tcga_scores = tcgaEffects$.value() || [];
+            <mat-accordion>
+              <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                  <mat-panel-title>TCGA SpongEffects scores</mat-panel-title>
+                </mat-expansion-panel-header>
+                <table>
+                  @for (score of tcga_scores; track score.spongEffects_gene_module_ID) {
+                    @if (tcga_scores.length > 1) {
+                      <tr style="background-color: rgba(0,0,0,0.03);">
+                        <th colspan="2" style="text-align: left; padding-top: 6px; font-weight: 600;">Module #{{ score.spongEffects_gene_module_ID }}</th>
+                      </tr>
+                    }
+                    <tr>
+                      <th>Mean Enrichment Score</th>
+                      <td>{{ formatScore(score.score_value) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Variance Enrichment Score</th>
+                      <td>{{ formatScore(score.variance_score) }}</td>
+                    </tr>
+                  }
+                </table>
+              </mat-expansion-panel>
+            </mat-accordion>
+          }
+        </div>
       </mat-tab>
     }
+    @if (goTerms$.value() && goTerms$.value()!.length > 0) {
+    <mat-tab label="Gene ontology">
+      <mat-form-field style="padding: 10px; width: 100%">
+        <mat-label>Search</mat-label>
+        <input [(ngModel)]="goFilter" matInput placeholder="Search for GO terms">
+        <mat-hint>Case insensitive</mat-hint>
+      </mat-form-field>
+      <table [dataSource]="goDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="symbol">
+          <th *matHeaderCellDef mat-header-cell>Link</th>
+          <td *matCellDef="let goTerm" mat-cell>
+            <a [href]="'https://amigo.geneontology.org/amigo/term/' + goTerm.gene_ontology_symbol" mat-flat-button
+              target="_blank">{{ goTerm.gene_ontology_symbol }}</a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th *matHeaderCellDef mat-header-cell>Description</th>
+          <td *matCellDef="let goTerm" mat-cell>{{ goTerm.description }}</td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="goColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: goColumns;" mat-row></tr>
+      </table>
+      <mat-paginator #goPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+        aria-label="Select page of users"></mat-paginator>
+    </mat-tab>
+    }
     @if (version$() > 1) {
-      <mat-tab label="Transcripts">
-        @if (transcripts$.isLoading()) {
-          <div class="card-container">
-            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-          </div>
-        }
-        <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
-          <ng-container matColumnDef="enst">
-            <th *matHeaderCellDef mat-header-cell>Transcript</th>
-            <td *matCellDef="let asEntry" mat-cell>
-              <button (click)="openTranscript(asEntry.enst)" [disabled]="isOpeningTranscript()"
-                      mat-button>{{ asEntry.enst }}
-              </button>
-            </td>
-          </ng-container>
+    <mat-tab label="Transcripts">
+      @if (transcripts$.isLoading()) {
+      <div class="card-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
+      }
+      <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
+        <ng-container matColumnDef="enst">
+          <th *matHeaderCellDef mat-header-cell>Transcript</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <button (click)="openTranscript(asEntry.enst)" [disabled]="isOpeningTranscript()" mat-button>{{ asEntry.enst
+              }}
+            </button>
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="events">
-            <th *matHeaderCellDef mat-header-cell>Alt. Splicing event types</th>
-            <td *matCellDef="let asEntry" mat-cell>
-              <mat-chip-set>
-                @for (event of asEntry.events; track event) {
-                  <mat-chip [matTooltip]="asDescriptions[event]">{{ event }}</mat-chip>
-                } @empty {
-                  None found.
-                }
-              </mat-chip-set>
-            </td>
-          </ng-container>
+        <ng-container matColumnDef="events">
+          <th *matHeaderCellDef mat-header-cell>Alt. Splicing event types</th>
+          <td *matCellDef="let asEntry" mat-cell>
+            <mat-chip-set>
+              @for (event of asEntry.events; track event) {
+              <mat-chip [matTooltip]="asDescriptions[event]">{{ event }}</mat-chip>
+              } @empty {
+              None found.
+              }
+            </mat-chip-set>
+          </td>
+        </ng-container>
 
-          <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
-          <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
-        </table>
-        <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
-                       aria-label="Select page of users"></mat-paginator>
+        <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
+      </table>
+      <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
+        aria-label="Select page of users"></mat-paginator>
 
-      </mat-tab>
+    </mat-tab>
     }
     <mat-tab label="Genome view">
       @if (miRNAtracks$.isLoading()) {
-        <div class="spinner-container">
-          <mat-spinner mode="indeterminate"></mat-spinner>
-        </div>
+      <div class="spinner-container">
+        <mat-spinner mode="indeterminate"></mat-spinner>
+      </div>
       } @else {
-        <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
-             [tracks]="miRNAtracks$.value() || []"></igv>
+      <igv [location]="this.location$()" [reference]="IGV_REFGENOME" [refresh]="activeTab$()"
+        [tracks]="miRNAtracks$.value() || []"></igv>
       }
     </mat-tab>
 
   </mat-tab-group>
 </mat-dialog-content>
-

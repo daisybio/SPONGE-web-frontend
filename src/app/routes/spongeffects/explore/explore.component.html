@@ -1,46 +1,54 @@
-<mat-drawer-container style="min-height: 100%">
+<mat-drawer-container style="min-height: calc(100vh - 64px);">
+
   <mat-drawer [opened]="true" mode="side">
-    <app-explore-form></app-explore-form>
-    <app-module-form [source]="'explore'"></app-module-form>
-    @if (selectedTabIndex() == 0 && selectedVis() === 'network') {
-    <!-- set a vertical line with linePos as vertical offset relative to the viewport  -->
-    <!-- <hr style="position: absolute; width: 100%;" [style.top.px]="lineTop()" /> -->
-    <hr style="margin: 257px 0 30px 0; width: 99%;" #sectionLine />
-    <app-form [browseService]="browseService" [fixedDataset]="exploreService.selectedDiseaseObject$()"
-      [fixedLevel]="exploreService.level$" [defaultMinBetweenness]="0" [defaultMinDegree]="0" [defaultMinEigen]="0"
-      [defaultMaxPValue]="1" [defaultMinMscor]="0" [defaultMaxNodes]="100" [defaultShowOrphans]="true"
-      [selectedTab]="'Network'">
-    </app-form>
-    }
+
+    <div style="margin: 5px;">
+      <mat-accordion multi="true">
+        <app-explore-form></app-explore-form>
+        <app-module-form [source]="'explore'"></app-module-form>
+        <app-network-filters [filters]="exploreService" [browseService]="browseService"
+          [disease]="exploreService.selectedDisease$()"></app-network-filters>
+      </mat-accordion>
+    </div>
   </mat-drawer>
   <mat-drawer-content>
     <mat-tab-group preserveContent [selectedIndex]="selectedTabIndex()" (selectedTabChange)="onTabChange($event)">
-      <!-- <mat-tab label="Model Performance">
-        <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
-      </mat-tab>
-      <mat-tab label="Class Performance">
-        <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
-      </mat-tab> -->
-      <mat-tab label="Top ceRNA Modules">
+      <mat-tab label="Reference Network ">
         @if (tabReady(0)) {
-          <app-importance-plot [refreshSignal$]="refreshSignal()"></app-importance-plot>
-        }
-      </mat-tab>
-      <mat-tab label="SpongEffects Score Distribution">
-        @if (tabReady(1)) {
-          <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
+        <div class="network-container" style="display: flex; flex-direction: row; position: relative;">
+          @if (isNetworkLoading()) {
+          <div
+            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; background: rgba(255,255,255,0.6);">
+            <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
+          </div>
+          }
+          <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
+            style="min-width: 500px; flex-grow: 3;"></app-network>
+          <app-active-entities [browseService]="browseService"
+            style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
+        </div>
         }
       </mat-tab>
       <mat-tab label="Sample Similarity (UMAP)">
+        @if (tabReady(1)) {
+        <app-umap-plot mode="explore"></app-umap-plot>
+        }
+      </mat-tab>
+      <mat-tab label="Top ceRNA Modules">
         @if (tabReady(2)) {
-          <app-umap-plot mode="explore"></app-umap-plot>
+        <app-importance-plot [refreshSignal$]="refreshSignal()"></app-importance-plot>
+        }
+      </mat-tab>
+      <mat-tab label="SpongEffects Score Distribution">
+        @if (tabReady(3)) {
+        <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
         }
       </mat-tab>
       <mat-tab label="Benchmarking">
-        @if (tabReady(3)) {
-          <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
-          <hr>
-          <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
+        @if (tabReady(4)) {
+        <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
+        <hr>
+        <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>
         }
       </mat-tab>
       <!-- This was moved to Top ceRNA modules tab -->
