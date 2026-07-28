@@ -8,6 +8,89 @@ html, body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f8fafc;
+}
+
+/* ─── Route-aware accent theming ───────────────────────────────────────────────
+   app.component sets body[data-accent] from the current section (Browse = blue,
+   Genes+Transcripts = green, SpongEffects Compute = pinkish purple, SpongEffects
+   Explore = dimmed purple) so the highlight color tells the user where they are.
+
+   We only remap Angular Material's M3 *system* color tokens (--mat-sys-*), which every
+   primary highlight derives from — buttons, button-toggles, tabs, checkboxes, sliders,
+   focus rings, the info icon (via --app-accent), etc. The azure preset's secondary/
+   tertiary are indigo (that's the "too purple"); we realign them to the accent hue.
+
+   Network-node colors and cancer-type colors are hardcoded / data-driven and never read
+   these tokens, so they are untouched. */
+body {
+  /* default = blue (Browse and anything unspecified) */
+  --app-accent: #1565c0;
+  --app-accent-container: #d3e3fd;
+  --app-accent-on-container: #0b4a91;
+}
+body[data-accent='blue'] {
+  --app-accent: #1565c0;
+  --app-accent-container: #d3e3fd;
+  --app-accent-on-container: #0b4a91;
+}
+body[data-accent='green'] {
+  --app-accent: #2e7d32;
+  --app-accent-container: #cdeccf;
+  --app-accent-on-container: #1b5e20;
+}
+body[data-accent='purple-compute'] {
+  --app-accent: #ab2f9a; /* pinkish purple */
+  --app-accent-container: #f8d9f0;
+  --app-accent-on-container: #7a1f6d;
+}
+body[data-accent='purple-explore'] {
+  --app-accent: #6a4c93; /* dimmed, deeper purple */
+  --app-accent-container: #e6ddf3;
+  --app-accent-on-container: #4a326e;
+}
+
+body {
+  --mat-sys-primary: var(--app-accent);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--app-accent-container);
+  --mat-sys-on-primary-container: var(--app-accent-on-container);
+  --mat-sys-inverse-primary: var(--app-accent-container);
+  /* Realign azure's indigo secondary/tertiary to the accent so nothing reads as purple
+     when it shouldn't (e.g. selected button-toggles use the secondary container). */
+  --mat-sys-secondary-container: var(--app-accent-container);
+  --mat-sys-on-secondary-container: var(--app-accent-on-container);
+  --mat-sys-tertiary: var(--app-accent);
+  --mat-sys-tertiary-container: var(--app-accent-container);
+  --mat-sys-on-tertiary-container: var(--app-accent-on-container);
+}
+
+/* Shared "example data" badge — used in the SpongEffects Compute tab header and the predict form.
+   A pill that follows the section accent (pinkish purple on Compute), clickable to preview the
+   example dataset. */
+.example-data-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--app-accent-container, #f8d9f0);
+  color: var(--app-accent-on-container, #7a1f6d);
+  border: 1px solid var(--app-accent, #ab2f9a);
+  border-radius: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 3px 9px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    filter: brightness(0.97);
+  }
+}
+/* Larger variant for the form (a bit more space + size). */
+.example-data-badge--lg {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  border-radius: 14px;
 }
 
 .route-container {
@@ -49,4 +132,76 @@ td {
 
 [hidden] {
   display: none !important;
+}
+
+/* Fixed-size dialogs (gene/transcript modals): keep the outer dialog a constant size and let
+   the tab content scroll inside, so switching tabs never resizes the modal. */
+.fixed-modal .mat-mdc-dialog-surface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.fixed-modal .mat-mdc-dialog-content {
+  flex: 1 1 auto;
+  max-height: none;
+  overflow: auto;
+}
+
+/* Unified accordion look across the whole app. Angular Material only gives the "connected" rounded
+   appearance to panels that are direct siblings under <mat-accordion>; when panels are split across
+   child components (e.g. app-module-form, app-network-filters) their host element sits between the
+   accordion and the panel and breaks that, so they render as separate floating cards. These rules
+   flatten every panel — whatever renders it — into one flush, rounded block, applied to all
+   accordions for a consistent look. */
+.mat-accordion {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+/* Child component hosts default to display:inline, which adds stray line-box gaps between panels. */
+.mat-accordion > * {
+  display: block;
+}
+.mat-accordion .mat-expansion-panel {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+/* Neutralize the expand-spacing margin so expanding a panel doesn't reintroduce gaps. */
+.mat-accordion .mat-expansion-panel.mat-expansion-panel-spacing {
+  margin: 0;
+}
+
+/* Prettier, unobtrusive scrollbars everywhere */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

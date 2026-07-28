@@ -19,6 +19,11 @@
           {{ node.identifier }}
         </button>
         <app-add-to-cart-button [entity]="node.obj"></app-add-to-cart-button>
+        @if (node.betweenness === null || node.betweenness === undefined || node.node_degree === null || node.node_degree === undefined) {
+          <app-info type="icon" title="Network Centrality Info">
+            This gene/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
+          </app-info>
+        }
       </span>
     </td>
   </ng-container>
@@ -30,7 +35,7 @@
         significant proportion of the shortest paths between two other nodes.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.betweenness }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.betweenness !== null && node.betweenness !== undefined) ? node.betweenness : 'N/A' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="eigenvector">
@@ -39,7 +44,7 @@
         node with high eigenvector centrality is pointed to by many nodes, which also have high eigenvector centrality.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.eigenvector }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.eigenvector !== null && node.eigenvector !== undefined) ? node.eigenvector : 'N/A' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="node_degree">
@@ -48,7 +53,7 @@
         emphasizes the significance of hub nodes, which are recognized as pivotal elements within biological systems.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.node_degree }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.node_degree !== null && node.node_degree !== undefined) ? node.node_degree : 'N/A' }}</td>
   </ng-container>
 
   <tr *matHeaderRowDef="columns" mat-header-row></tr>

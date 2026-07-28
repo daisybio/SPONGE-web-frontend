@@ -10,3 +10,15 @@
   [params]="heatmapParams()"
   [refreshSignal]="refreshSignal">
 </app-heatmap-plot>
+
+<app-info type="panel">
+  <p>
+    This heatmap shows the expression of the selected genes/transcripts (rows) across the samples (columns) of the
+    chosen dataset. Cell colour encodes normalized expression — warmer cells mark higher and cooler cells lower
+    expression than average.
+  </p>
+  <p>
+    When subtype information is available, the coloured bar above the map groups samples by disease subtype, making
+    subtype-specific expression patterns easier to spot. Click a row's cell to add that gene/transcript to the cart.
+  </p>
+</app-info>

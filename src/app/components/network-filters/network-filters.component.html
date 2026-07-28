@@ -1,0 +1,197 @@
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Nodes</mat-panel-title>
+  </mat-expansion-panel-header>
+
+  <div style="display: flex; align-items: center; margin-bottom: 20px;">
+    <mat-checkbox [checked]="filters().showOrphans$()" (change)="filters().showOrphans$.set($event.checked)">Show
+      orphans</mat-checkbox>
+    <app-info type="icon">
+      Orphan nodes are nodes that are not connected to any other node in the network. In this SPONGE network
+      this
+      means, that they are not involved in any interaction that pass the filter. They are often not considered
+      in
+      network analysis, but can be important for the understanding of the network structure.
+    </app-info>
+  </div>
+
+  <mat-card appearance="outlined" style="margin-bottom: 20px; padding: 12px 16px;">
+    <mat-card-content style="display: flex; flex-direction: column; gap: 8px; padding: 0;">
+      <span
+        style="font-weight: 500; font-size: 0.95em; color: #555; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">Sort
+        by
+        <app-info type="icon">
+          We computed three different node importance metrics on the SPONGE networks. You can choose by which
+          metric the nodes should be sorted for the visualization:
+          <br /><br />
+          <ul>
+            <li><b>Betweenness: </b>
+              <p [innerHTML]="infoService.betweennessText"></p>
+            </li>
+            <li><b>Degree:</b>
+              <p [innerHTML]="infoService.degreeText"></p>
+            </li>
+            <li><b>Eigenvector: </b>
+              <p [innerHTML]="infoService.eigenvectorText"></p>
+            </li>
+          </ul>
+          Note: All network analysis metrics are computed on a filtered network.
+        </app-info>
+      </span>
+      <mat-checkbox [checked]="filters().sortingBetweenness$()"
+        (change)="filters().sortingBetweenness$.set($event.checked)">Betweenness</mat-checkbox>
+      <mat-checkbox [checked]="filters().sortingEigenvector$()"
+        (change)="filters().sortingEigenvector$.set($event.checked)">Eigenvector</mat-checkbox>
+      <mat-checkbox [checked]="filters().sortingDegree$()"
+        (change)="filters().sortingDegree$.set($event.checked)">Degree</mat-checkbox>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Max. nodes</mat-label>
+    <input matInput type="number" [value]="filters().maxNodes$()" aria-label="Set max nodes"
+      (input)="updateNumberSignal(filters().maxNodes$, $any($event.target).valueAsNumber, 20)" min="0" max="100"
+      step="1">
+  </mat-form-field>
+  <app-info type="icon">
+    <p>
+      The visualization of the network can be limited to a certain number of nodes. This can be useful to reduce
+      the complexity of the network and to focus on the most important nodes. Set the maximum number of nodes to
+      be displayed in the network here.
+    </p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Min. degree</mat-label>
+    <input matInput type="number" [value]="filters().minDegree$()" aria-label="Set min degree"
+      (input)="updateNumberSignal(filters().minDegree$, $any($event.target).valueAsNumber, 0)" min="0" max="100"
+      step="1">
+  </mat-form-field>
+  <app-info type="icon">
+    <p>
+      The degree of a node is the number of edges connected to it. The degree of a node is a measure of its
+      importance in the network. Set the minimum degree of nodes to be displayed in the network here.
+    </p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Min. betweenness</mat-label>
+    <input matInput type="number" [value]="filters().minBetweenness$()" aria-label="Set min betweenness"
+      (input)="updateNumberSignal(filters().minBetweenness$, $any($event.target).valueAsNumber, 0)" min="0" max="1"
+      step="0.05">
+  </mat-form-field>
+  <app-info type="icon">
+    <p>
+      Betweenness centrality measures the number of shortest paths that pass through a node. It is a measure of
+      its importance in the network. Set the minimum betweenness centrality of nodes to be displayed in the
+      network here.
+    </p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Min. eigenvector</mat-label>
+    <input matInput type="number" [value]="filters().minEigen$()" aria-label="Set min eigenvector"
+      (input)="updateNumberSignal(filters().minEigen$, $any($event.target).valueAsNumber, 0)" min="0" max="1"
+      step="0.05">
+  </mat-form-field>
+  <app-info type="icon">
+    <p>
+      Eigenvector centrality measures the importance of a node in the network by considering the importance of
+      its neighbors. Set the minimum eigenvector centrality of nodes to be displayed in the network here.
+    </p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Gene type</mat-label>
+    <mat-select [value]="filters().geneType$()" (valueChange)="filters().geneType$.set($event)">
+      <mat-option value="all">All</mat-option>
+      @for (type of availableGeneTypes(); track type) {
+      <mat-option [value]="type">{{ formatGeneType(type) }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <app-info type="icon">
+    <p>Filter nodes to display only a specific gene/transcript type.</p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Support</mat-label>
+    <mat-select [value]="filters().supportFilter$()" (valueChange)="filters().supportFilter$.set($event)">
+      <mat-option value="all">All</mat-option>
+      <mat-option value="has_inverse">With cross-level support (Circles)</mat-option>
+      <mat-option value="no_inverse">Without cross-level support (Squares)</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <app-info type="icon">
+    <p>Filter nodes based on cross-level interaction support (whether matching interactions exist at the
+      opposite
+      level).</p>
+  </app-info>
+</mat-expansion-panel>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Interactions</mat-panel-title>
+  </mat-expansion-panel-header>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Sort by</mat-label>
+    <mat-select [value]="filters().interactionSorting$()" (valueChange)="filters().interactionSorting$.set($event)">
+      <mat-option value="pValue">Adj. p-value</mat-option>
+      <mat-option value="mscor">mscor</mat-option>
+      <mat-option value="correlation">Correlation</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <app-info type="icon">
+    We computed three different edge importance metrics on the SPONGE networks. You can choose by which metric
+    the edges should be sorted for the visualization:
+    <br /><br />
+    <ul>
+      <li><b>Adj. p-value: </b>
+        <p [innerHTML]="infoService.pValText"></p>
+      </li>
+      <li><b>mscor: </b>
+        <p [innerHTML]="infoService.mscorText"></p>
+        <span #mscorEquation class="katex"></span>
+      </li>
+      <li><b>Correlation: </b>
+        <p [innerHTML]="infoService.correlationText"></p>
+      </li>
+    </ul>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Max. interactions</mat-label>
+    <input matInput type="number" [value]="filters().maxInteractions$()" aria-label="Set max interactions"
+      (input)="updateNumberSignal(filters().maxInteractions$, $any($event.target).valueAsNumber, 500)" min="0"
+      max="1000" step="1">
+  </mat-form-field>
+  <app-info type="icon">
+    <p>The visualization of the network can be limited to a certain number of interactions. This can be useful
+      to
+      reduce the complexity of the network and to focus on the most important interactions. Set the maximum
+      number of interactions to be displayed in the network here.</p>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Max. adj. p-value</mat-label>
+    <input matInput type="number" [value]="filters().maxPValue$()" aria-label="Set max p-value"
+      (input)="updateNumberSignal(filters().maxPValue$, $any($event.target).valueAsNumber, 1)" min="0" max="1"
+      step="0.01">
+  </mat-form-field>
+  <app-info type="icon">
+    <p [innerHTML]="infoService.pValText"></p>
+    <span>Change the adjusted p-value threshold for the visualization here. </span>
+  </app-info>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Min. MScor</mat-label>
+    <input matInput type="number" [value]="filters().minMscor$()" aria-label="Set min mscor"
+      (input)="updateNumberSignal(filters().minMscor$, $any($event.target).valueAsNumber, 0)" min="0" max="2"
+      step="0.01">
+  </mat-form-field>
+  <app-info type="icon">
+    <p [innerHTML]="infoService.mscorText"></p>
+    <span>Change the minimum mscor threshold for the visualization here. </span>
+  </app-info>
+</mat-expansion-panel>

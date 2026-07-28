@@ -17,6 +17,7 @@ import {
 } from '@angular/material/button-toggle';
 import { InfoComponent } from '../../info/info.component';
 import { VersionsService } from '../../../services/versions.service';
+import { buildColorMap, getCancerTypeColor } from '../../../cancer-colors';
 
 declare const Plotly: any;
 
@@ -86,29 +87,36 @@ export class DiseaseSimilarityComponent implements OnDestroy {
 
       const activeLabel = isUnspecific ? disease?.disease_name : disease?.disease_subtype;
       const activeMask = labels.map(
-        (label) => activeLabel && label.toLowerCase() === activeLabel.toLowerCase()
+        (label) => !!(activeLabel && label.toLowerCase() === activeLabel.toLowerCase())
       );
+
+      // Global cancer-type colors: at type level each point takes its canonical type color;
+      // at subtype level points take the parent type's subtype color family.
+      const subtypeColorMap = isUnspecific
+        ? {}
+        : buildColorMap([...new Set(labels)], disease?.disease_name);
+      const pointColor = (label: string) =>
+        isUnspecific ? getCancerTypeColor(label) : (subtypeColorMap[label] ?? getCancerTypeColor(label));
 
       return [
         {
-          x: x.filter((_, i) => !activeMask[i]),
-          y: y.filter((_, i) => !activeMask[i]),
+          x,
+          y,
           type: 'scatter',
           mode: 'markers',
-          name: 'Inactive',
-          text: labels
-            .filter((_, i) => !activeMask[i])
-            .map(capitalize),
-        },
-        {
-          x: x.filter((_, i) => activeMask[i]),
-          y: y.filter((_, i) => activeMask[i]),
-          type: 'scatter',
-          mode: 'markers',
-          name: 'Active',
-          text: labels
-            .filter((_, i) => activeMask[i])
-            .map(capitalize),
+          showlegend: false,
+          text: labels.map(capitalize),
+          hoverinfo: 'text',
+          marker: {
+            color: labels.map(pointColor),
+            // The active (selected) disease is emphasized with a larger marker and a dark ring
+            // so it stands out regardless of its cancer-type fill color.
+            size: activeMask.map((a) => (a ? 16 : 9)),
+            line: {
+              color: activeMask.map((a) => (a ? '#000000' : 'rgba(0,0,0,0.35)')),
+              width: activeMask.map((a) => (a ? 2.5 : 0.5)),
+            },
+          },
         },
       ];
     } else {
@@ -164,15 +172,23 @@ export class DiseaseSimilarityComponent implements OnDestroy {
     const plotData = this.plotData$();
     if (!plotData) return;
     const div = this.plotDiv$().nativeElement;
+    const isHeatmap = this.mode$() === 'heatmap';
+
+    // On the heatmap, force a tick label for every category on both axes (Plotly otherwise
+    // auto-thins them). The scatter keeps its default continuous axes.
+    const forcedTicks = {
+      automargin: true,
+      type: 'category',
+      tickmode: 'linear',
+      tick0: 0,
+      dtick: 1,
+    };
 
     Plotly.newPlot(div, plotData, {
       height: 700,
-      yaxis: { automargin: true },
-      xaxis: { automargin: true },
-      title:
-        this.mode$() == 'scatter'
-          ? 'Euclidean Distances'
-          : 'Similarity Heatmap',
+      yaxis: isHeatmap ? forcedTicks : { automargin: true },
+      xaxis: isHeatmap ? forcedTicks : { automargin: true },
+      title: isHeatmap ? 'Similarity Heatmap' : 'Network Similarity (MDS)',
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
     });

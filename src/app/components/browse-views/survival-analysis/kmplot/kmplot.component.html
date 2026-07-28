@@ -14,6 +14,18 @@
       }
 
       <div #plot style="width: 700px"></div>
+
+      <app-info type="panel">
+        <p>
+          This Kaplan–Meier plot shows overall survival over time for patients split into groups by this gene's
+          expression (e.g. high vs. low). The x-axis is time and the y-axis is the estimated fraction of patients
+          still surviving; each downward step marks an event.
+        </p>
+        <p>
+          Clearly separated curves suggest that the gene's expression is associated with prognosis in this cancer
+          type.
+        </p>
+      </app-info>
     </mat-card-content>
   </mat-card>
 }

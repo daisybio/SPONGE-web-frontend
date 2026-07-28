@@ -185,10 +185,45 @@ export function hexToRgba(hex: string, alpha: number): string {
 
 /** 
  * Format a disease name or subtype for display. 
- * Converts snake_case to Title Case and preserves special acronyms.
+ * Converts snake_case to Title Case, preserves special acronyms, and formats subtype names nicely.
  */
 export function getDiseaseDisplayName(name: string): string {
   if (!name) return '';
+
+  const lowerName = name.toLowerCase().trim();
+
+  // Canonical subtype display names
+  const SUBTYPE_DISPLAY_NAMES: Record<string, string> = {
+    'luma': 'LumA',
+    'brca_luma': 'LumA',
+    'lumb': 'LumB',
+    'brca_lumb': 'LumB',
+    'her2': 'HER2',
+    'brca_her2': 'HER2',
+    'basal': 'Basal',
+    'brca_basal': 'Basal',
+    'normal': 'Normal-like',
+    'normal-like': 'Normal-like',
+    'brca_normal': 'Normal-like',
+    'cms1': 'CMS1',
+    'cms2': 'CMS2',
+    'cms3': 'CMS3',
+    'cms4': 'CMS4',
+    'cin': 'CIN',
+    'msi': 'MSI',
+    'gs': 'GS',
+    'hm-snv': 'HM-SNV',
+    'hm-indel': 'HM-indel',
+    'idhwt': 'IDHwt',
+    'idhmut-codel': 'IDHmut-codel',
+    'idhmut-non-codel': 'IDHmut-non-codel',
+    'unspecific': 'Unspecific'
+  };
+
+  if (SUBTYPE_DISPLAY_NAMES[lowerName]) {
+    return SUBTYPE_DISPLAY_NAMES[lowerName];
+  }
+
   // Manual overrides for specific TCGA labels or acronyms
   const ACRONYMS = ['tcga', 'brca', 'luad', 'lusc', 'ucec', 'coad', 'read', 'kirc', 'kirp', 'kich', 
                     'gbm', 'lgg', 'prad', 'blca', 'thca', 'skcm', 'lihc', 'stad', 'ov', 'cesc', 
@@ -200,9 +235,12 @@ export function getDiseaseDisplayName(name: string): string {
     .split(' ')
     .map(word => {
       const lower = word.toLowerCase();
+      if (SUBTYPE_DISPLAY_NAMES[lower]) return SUBTYPE_DISPLAY_NAMES[lower];
       if (ACRONYMS.includes(lower)) return word.toUpperCase();
       if (lower === 'pancancer') return 'Pan-cancer';
-      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      // If word already has mixed casing (e.g. LumA, LumB, Her2), preserve it
+      if (word !== lower && word !== word.toUpperCase()) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(' ');
 }

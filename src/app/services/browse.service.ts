@@ -335,6 +335,34 @@ export class BrowseService {
     let { nodes, edges } = await this.backend.getNetwork(version, config);
     const inverseNodes = await inverseNodes$;
 
+    if (config.geneType && config.geneType !== 'all') {
+      const targetType = config.geneType.toLowerCase();
+      nodes = nodes.filter((node) => {
+        let nType = '';
+        if ('gene' in node && node.gene?.gene_type) nType = node.gene.gene_type;
+        else if ('transcript' in node && node.transcript?.transcript_type) nType = node.transcript.transcript_type;
+        else if ('transcript' in node && node.transcript?.gene?.gene_type) nType = node.transcript.gene.gene_type;
+        return nType.toLowerCase() === targetType;
+      });
+    }
+
+    if (config.supportFilter && config.supportFilter !== 'all') {
+      const inverseNodeGeneNames = new Set(inverseNodes.map(BrowseService.getNodeGeneName));
+      nodes = nodes.filter((node) => {
+        const gene = BrowseService.getNodeGeneName(node);
+        const hasInverse = inverseNodes.length > 0
+          ? inverseNodeGeneNames.has(gene)
+          : (node.has_inverse ?? false);
+        return config.supportFilter === 'has_inverse' ? hasInverse : !hasInverse;
+      });
+    }
+
+    const keptNodeIDs = new Set(nodes.map((n) => BrowseService.getNodeID(n)));
+    edges = edges.filter((int) => {
+      const ids = BrowseService.getInteractionIDs(int);
+      return keptNodeIDs.has(ids[0]) && keptNodeIDs.has(ids[1]);
+    });
+
     if (!config.showOrphans) {
       const interactionNodes = edges
         .map((interaction) => BrowseService.getInteractionIDs(interaction))
@@ -490,21 +518,31 @@ export class BrowseService {
     // network-analysis metrics) so node sizes don't become NaN.
     const maxNodeDegree = Math.max(1, ...nodes.map((node) => node.node_degree || 0));
 
-    // Find max mscor for normalization
+    // Helper to safely parse mscor as numeric value (virtual edges have string '< 0.2', fallback to 0.1)
+    const getNumericMscor = (int: GeneInteraction | TranscriptInteraction): number => {
+      if (typeof int.mscor === 'number') return int.mscor;
+      const parsed = parseFloat(String(int.mscor).replace(/[^0-9.]/g, ''));
+      return isNaN(parsed) || parsed === 0 ? 0.1 : parsed;
+    };
+
+    // Find max mscor for normalization (guard against 0/NaN). Fallback (virtual) edges carry no
+    // real mscor, so they are excluded — they must not skew the real edges' thickness scale.
     const maxMscor = Math.max(
-      ...interactions.map((interaction) =>
-        'gene1' in interaction ? interaction.mscor : interaction.mscor
-      )
+      0.1,
+      ...interactions.filter((i) => !(i as any).isVirtual).map(getNumericMscor)
     );
 
     const inverseNodeGeneNames = new Set(inverseNodes.map(BrowseService.getNodeGeneName));
 
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
-      const hasInverse = inverseNodeGeneNames.has(gene);
+      const hasInverse = inverseNodes.length > 0
+        ? inverseNodeGeneNames.has(gene)
+        : (node.has_inverse ?? false);
 
       // Calculate normalized node size based on degree (range: 5-20)
-      const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);
+      const baseSize = 5 + 15 * ((node.node_degree || 0) / maxNodeDegree);
+      const normalizedSize = baseSize;
 
       let nodeType = 'unknown';
       if ('gene' in node && node.gene.gene_type) {
@@ -519,8 +557,10 @@ export class BrowseService {
         y: Math.random(),
         size: normalizedSize,
         forceLabel: true,
-        // Module centers get a green frame via the 'bordered' node program.
-        type: node.isCenter ? 'bordered' : hasInverse ? 'circle' : 'square',
+        // Module centers get a green frame (borderedCircle if hasInverse, borderedSquare if !hasInverse)
+        type: node.isCenter
+          ? (hasInverse ? 'borderedCircle' : 'borderedSquare')
+          : (hasInverse ? 'circle' : 'square'),
         nodeType: nodeType,
         isCenter: !!node.isCenter,
       });
@@ -532,10 +572,18 @@ export class BrowseService {
         return;
       }
 
-      // Calculate normalized edge size based on mscor (range: 1-5)
-      const mscor =
-        'gene1' in interaction ? interaction.mscor : interaction.mscor;
-      const normalizedSize = 1 + 6 * (mscor / maxMscor);
+      // Fallback (virtual) edges have no measured interaction — draw them very thin so they read
+      // as "module membership only".
+      if ((interaction as any).isVirtual) {
+        graph.addEdge(ids[0], ids[1], {
+          size: 0.4,
+        });
+        return;
+      }
+
+      // Calculate normalized edge size based on mscor (range: 1-6)
+      const numericMscor = getNumericMscor(interaction);
+      const normalizedSize = 1 + 5 * (numericMscor / maxMscor);
 
       graph.addEdge(ids[0], ids[1], {
         size: normalizedSize,

@@ -106,17 +106,19 @@ export class BackendService {
         ][i]
     );
 
+    const numOrUndefined = (val: any) => typeof val === 'number' && !isNaN(val) ? val : undefined;
+
     const _query: Query = {
       sponge_db_version: version,
       dataset_ID: query.dataset.dataset_ID,
-      minBetweenness: query.minBetweenness,
-      minNodeDegree: query.minDegree,
-      minEigenvector: query.minEigen,
-      maxPValue: query.maxPValue,
-      minMscor: query.minMscor,
+      minBetweenness: numOrUndefined(query.minBetweenness),
+      minNodeDegree: numOrUndefined(query.minDegree),
+      minEigenvector: numOrUndefined(query.minEigen),
+      maxPValue: numOrUndefined(query.maxPValue),
+      minMscor: numOrUndefined(query.minMscor),
       edgeSorting: query.interactionSorting,
-      maxNodes: query.maxNodes,
-      maxEdges: query.maxInteractions,
+      maxNodes: numOrUndefined(query.maxNodes),
+      maxEdges: numOrUndefined(query.maxInteractions),
     };
     // Only send a node sort when at least one is selected. With none selected the backend
     // skips the networkAnalysis-based node selection and derives nodes straight from the
@@ -125,7 +127,9 @@ export class BackendService {
       _query["nodeSorting"] = geneSorting;
     }
     if (query.ensemblID) {
-      _query["ensemblID"] = query.ensemblID;
+      _query["ensemblID"] = Array.isArray(query.ensemblID)
+        ? query.ensemblID.join(',')
+        : query.ensemblID;
     }
 
     return (await this.http.getRequest<Network>(this.getRequestURL(route, _query))) ?? { nodes: [], edges: [] } as Network;
@@ -523,6 +527,21 @@ export class BackendService {
     return res?.[0] ?? [];
   }
 
+  async checkDigger(
+    identifier: string,
+    level: 'gene' | 'transcript' = 'gene'
+  ): Promise<{ exists: boolean; url: string | null }> {
+    if (!identifier) {
+      return { exists: false, url: null };
+    }
+    const route = 'alternativeSplicing/checkDigger';
+    const query: Query = { identifier, level };
+    const res = await this.http.getRequest<{ exists: boolean; url: string | null }>(
+      this.getRequestURL(route, query)
+    );
+    return res ?? { exists: false, url: null };
+  }
+
   async getMiRNAs(
     version: number,
     disease: Dataset,
@@ -875,7 +894,8 @@ export class BackendService {
     diseaseName?: string,
     params?: { [key: string]: any },
     limit?: number,
-    ensg_number?: string
+    ensg_number?: string,
+    get_best?: boolean
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
@@ -890,6 +910,9 @@ export class BackendService {
     }
     if (ensg_number) {
       query['ensg_number'] = ensg_number;
+    }
+    if (get_best !== undefined) {
+      query['get_best'] = get_best;
     }
     if (params) {
       for (const [key, param] of Object.entries(params)) {

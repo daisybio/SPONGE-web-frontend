@@ -15,6 +15,7 @@ import { VersionsService } from '../../../services/versions.service';
 import { capitalize } from 'lodash';
 import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../components/heatmap-plot/heatmap-plot.component';
 import { CommonModule } from '@angular/common';
+import { InfoComponent } from '../../info/info.component';
 
 declare const Plotly: any;
 
@@ -23,7 +24,7 @@ declare const Plotly: any;
   selector: 'app-gene-expression-heatmap',
   templateUrl: './heatmap.component.html',
   styleUrl: './heatmap.component.scss',
-  imports: [CommonModule, ReusableHeatmapComponent]
+  imports: [CommonModule, ReusableHeatmapComponent, InfoComponent]
 })
 export class GeneExpressionHeatmapComponent {
   browseService = input.required<BrowseService>();
