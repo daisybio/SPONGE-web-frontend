@@ -35,9 +35,10 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
 import { InfoComponent } from '../../../components/info/info.component';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { InfoService } from '../../../services/info.service';
-import { MatCardModule } from '@angular/material/card';
+import { getGeneTypesForDisease, formatGeneType } from '../../../utils/gene-types';
 
 @Component({
   selector: 'app-form',
@@ -131,9 +132,26 @@ export class FormComponent implements OnInit {
       Validators.min(0),
       Validators.max(2),
     ]),
+    geneType: new FormControl<string>('all'),
+    supportFilter: new FormControl<'all' | 'has_inverse' | 'no_inverse'>('all'),
   });
 
   protected readonly capitalize = capitalize;
+  protected readonly formatGeneType = formatGeneType;
+
+  readonly availableGeneTypes$ = computed(() => {
+    const ds = this.activeDataset();
+    const disease = ds?.disease_name;
+    const version = ds?.sponge_db_version || this.versionsService.versionReadOnly()();
+    const nodes = this.browseService().nodes$() || [];
+    const nodeTypes = nodes.map((n: any) => {
+      if ('gene' in n && n.gene?.gene_type) return n.gene.gene_type;
+      if ('transcript' in n && n.transcript?.transcript_type) return n.transcript.transcript_type;
+      if ('transcript' in n && n.transcript?.gene?.gene_type) return n.transcript.gene.gene_type;
+      return '';
+    }).filter(Boolean);
+    return getGeneTypesForDisease(disease, version, nodeTypes);
+  });
 
   ngOnInit() {
     // if specific defaults are set (eg spongeffects) 
@@ -149,6 +167,14 @@ export class FormComponent implements OnInit {
   }
 
   constructor(private cdr: ChangeDetectorRef) {
+    effect(() => {
+      const types = this.availableGeneTypes$();
+      const current = this.formGroup.get('geneType')?.value;
+      if (current && current !== 'all' && !types.includes(current)) {
+        this.formGroup.get('geneType')?.setValue('all');
+      }
+    });
+
     effect(() => {
       const active = this.activeDataset();
       // Only sync if not fixed dataset (e.g. not embedded in SpongEffects Explore form)

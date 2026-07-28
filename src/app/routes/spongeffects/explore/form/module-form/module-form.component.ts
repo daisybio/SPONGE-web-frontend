@@ -14,6 +14,8 @@ import { MatAccordion } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { InfoComponent } from '../../../../../components/info/info.component';
+
 @Component({
   selector: 'app-module-form',
   standalone: true,
@@ -27,7 +29,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatCardModule,
     MatExpansionModule,
     MatButtonModule,
-    MatTooltipModule
+    MatTooltipModule,
+    InfoComponent,
   ],
   templateUrl: './module-form.component.html',
   styleUrl: './module-form.component.scss'
@@ -37,23 +40,33 @@ export class ModuleFormComponent implements OnInit {
   predictService = inject(PredictService);
   source = input<'explore' | 'predict'>('explore');
 
-  /** Disable "Show module members" when the Module Importance Plot is shown */
+  /** Disable "Show module members" when Module Importance Plot or Enrichment Scores Heatmap is shown */
   membersDisabled = computed(() => {
     if (this.source() === 'explore') {
-      return (
-        this.exploreService.selectedTabIndex$() === 0 &&
-        this.exploreService.selectedVis() === 'plot'
-      );
+      if (this.exploreService.selectedTabIndex$() === 2) {
+        const vis = this.exploreService.selectedVis();
+        if (vis === 'plot') return true;
+        if (vis === 'heatmap') {
+          return this.exploreService.selectedHeatmapType() === 'enrichment';
+        }
+      }
+      return false;
     }
-    return (
-      this.predictService.selectedTabIndex$() === 1 &&
-      (this.predictService.selectedVis$() === 'importance' ||
-        this.predictService.selectedVis$() === 'plot')
-    );
+    const vis = this.predictService.selectedVis$();
+    if (this.predictService.selectedTabIndex$() === 2) {
+      if (vis === 'importance' || vis === 'plot') return true;
+      if (vis === 'heatmap') {
+        return this.predictService.selectedHeatmapType$() === 'enrichment';
+      }
+    }
+    return false;
   });
 
-  /** Read the current value from the service */
+  /** Read the current value from the service, returning false (deactivated) if membersDisabled */
   includeModuleMembersValue = computed(() => {
+    if (this.membersDisabled()) {
+      return false;
+    }
     if (this.source() === 'explore') {
       return this.exploreService.includeModuleMembers() || false;
     }
@@ -78,7 +91,6 @@ export class ModuleFormComponent implements OnInit {
 
   formGroup = new FormGroup({
     topControl: new FormControl<number>(1, [Validators.min(1), Validators.max(100)]),
-    markControl: new FormControl<number>(5, [Validators.min(1), Validators.max(100)]),
     includeModuleMembers: new FormControl<boolean>(false),
     sortBy: new FormControl<string>(''),
     filterMinScore1: new FormControl<number | null>(null),
@@ -100,17 +112,6 @@ export class ModuleFormComponent implements OnInit {
         }
       }
     });
-
-    effect(() => {
-      if (this.source() === 'explore') {
-        const redNodes = this.exploreService.redNodes();
-        if (this.formGroup.get('markControl')?.value !== redNodes) {
-          this.formGroup.get('markControl')?.setValue(redNodes ?? null, { emitEvent: false });
-        }
-      }
-    });
-
-
 
     effect(() => {
       if (this.source() === 'explore') {
@@ -160,8 +161,7 @@ export class ModuleFormComponent implements OnInit {
 
     if (this.source() === 'explore') {
       this.formGroup.patchValue({
-        topControl: this.exploreService.topN() ?? 15,
-        markControl: this.exploreService.redNodes() ?? 5,
+        topControl: this.exploreService.topN() ?? 1,
         includeModuleMembers: this.exploreService.includeModuleMembers() || false,
         sortBy: this.exploreService.sortBy() || defaultSortBy,
         filterMinScore1: this.exploreService.minScore1(),
@@ -185,12 +185,6 @@ export class ModuleFormComponent implements OnInit {
         this.predictService.topNModules$.set(value ? value : 15);
       }
     });
-    this.formGroup.get('markControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      if (this.source() === 'explore') {
-        this.exploreService.redNodes.set(value ? value : undefined);
-      }
-    });
-
     this.formGroup.get('sortBy')?.valueChanges.pipe(debounceTime(100)).subscribe((value) => {
       if (this.source() === 'explore') {
         this.exploreService.sortBy.set(value || '');

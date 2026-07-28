@@ -1,25 +1,40 @@
-<form [formGroup]="formGroup()" style="margin: 10px">
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Disease</mat-label>
-    <mat-select [(value)]="disease$">
-      @for (disease of diseases$(); track disease) {
-      <mat-option [value]="disease">{{ capitalize(disease) }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+<form [formGroup]="formGroup()">
+  <div style="padding: 12px 12px 0;">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Disease</mat-label>
+      <mat-select [(value)]="disease$">
+        @let diseases = diseases$();
+        @for (disease of diseases; track disease; let index = $index) {
+          <mat-option [value]="disease">{{ getDiseaseDisplayName(disease) }}</mat-option>
+          @if (disease.toLowerCase() === 'pancancer' && index < diseases.length - 1) {
+            <mat-divider></mat-divider>
+          }
+        }
+      </mat-select>
+    </mat-form-field>
 
-  <div class="card-container">
-    <mat-button-toggle-group [(value)]="level$">
-      <mat-button-toggle value="gene">Gene</mat-button-toggle>
-      <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
-    </mat-button-toggle-group>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Subtype</mat-label>
+      @let subtypes = availableSubtypes();
+      <mat-select [(value)]="selectedSubtype$" [disabled]="subtypes.length < 2">
+        @for (dataset of subtypes; track dataset.dataset_ID) {
+          <mat-option [value]="dataset.disease_subtype ?? null">{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }} ({{ dataset.sample_count }})</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="card-container">
+      <mat-button-toggle-group [(value)]="level$">
+        <mat-button-toggle value="gene">Gene</mat-button-toggle>
+        <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
   </div>
 
-  <mat-accordion>
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>Model</mat-panel-title>
-      </mat-expansion-panel-header>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>Model</mat-panel-title>
+    </mat-expansion-panel-header>
 
       Select the model(s) to display based on the paramers.
       <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px; font-size: 14px">
@@ -63,7 +78,5 @@
       </div>
 
 
-    </mat-expansion-panel>
-  </mat-accordion>
-
+  </mat-expansion-panel>
 </form>

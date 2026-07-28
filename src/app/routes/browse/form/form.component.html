@@ -1,6 +1,6 @@
 <form [formGroup]="formGroup" style="margin: 10px">
   @if (!fixedDataset()) {
-  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
+  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()" [initialDiseaseName$]="versionsService.selectedDiseaseName$()"></app-disease-selector>
   } @else {
   <mat-form-field appearance="outline" style="width: 100%;">
     <mat-label>Disease</mat-label>
@@ -130,6 +130,30 @@
           Eigenvector centrality measures the importance of a node in the network by considering the importance of its
           neighbors. Set the minimum eigenvector centrality of nodes to be displayed in the network here.
         </p>
+      </app-info>
+      <mat-form-field appearance="outline">
+        <mat-label>Gene type</mat-label>
+        <mat-select formControlName="geneType">
+          <mat-option value="all">All</mat-option>
+          @for (type of availableGeneTypes$(); track type) {
+            <mat-option [value]="type">{{ formatGeneType(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>Filter nodes to display only a specific gene/transcript type.</p>
+      </app-info>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Support</mat-label>
+        <mat-select formControlName="supportFilter">
+          <mat-option value="all">All</mat-option>
+          <mat-option value="has_inverse">With cross-level support (Circles)</mat-option>
+          <mat-option value="no_inverse">Without cross-level support (Squares)</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>Filter nodes based on cross-level interaction support (whether matching interactions exist at the opposite level).</p>
       </app-info>
     </mat-expansion-panel>
     <mat-expansion-panel>
