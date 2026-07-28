@@ -7,6 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { BrowseService } from '../../../services/browse.service';
+import { exportToCSV } from '../../../utils/export';
 import {
   Gene,
   GeneNode,
@@ -21,6 +22,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTooltip } from '@angular/material/tooltip';
 import { InfoComponent } from '../../info/info.component';
 import { ModalsService } from '../../modals-service/modals.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { AddToCartButtonComponent } from '../../add-to-cart-button/add-to-cart-button.component';
 
 @Component({
   selector: 'app-nodes',
@@ -32,6 +37,10 @@ import { ModalsService } from '../../modals-service/modals.service';
     MatButton,
     MatTooltip,
     InfoComponent,
+    MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
+    AddToCartButtonComponent,
   ],
   templateUrl: './nodes.component.html',
   styleUrl: './nodes.component.scss',
@@ -71,5 +80,18 @@ export class NodesComponent implements AfterViewInit, OnInit {
 
   openDialog(entity: Gene | Transcript) {
     this.modalsService.openNodeDialog(entity);
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  downloadCSV() {
+    exportToCSV(this.dataSource.data, 'genes_transcripts_table');
   }
 }

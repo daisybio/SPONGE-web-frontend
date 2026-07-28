@@ -3,8 +3,11 @@
   @let diseaseNames = diseaseNames$();
   @let diseaseSampleCounts = diseaseSampleCounts$();
   <mat-select [(value)]="activeDisease$" [disabled]="diseaseNames.length < 2">
-    @for (disease of diseaseNames; track disease) {
-    <mat-option [value]="disease">{{ capitalize(disease) }} ({{ diseaseSampleCounts.get(disease) }})</mat-option>
+    @for (disease of diseaseNames; track disease; let index = $index) {
+    <mat-option [value]="disease">{{ getDiseaseDisplayName(disease) }} ({{ diseaseSampleCounts.get(disease) }})</mat-option>
+    @if (disease.toLowerCase() === 'pancancer' && index < diseaseNames.length - 1) {
+    <mat-divider></mat-divider>
+    }
     }
   </mat-select>
 </mat-form-field>
@@ -13,7 +16,7 @@
   @let possibleSubtypes = possibleSubtypes$();
   <mat-select [(value)]="activeSubtype" [disabled]="possibleSubtypes.length < 2">
     @for (dataset of possibleSubtypes; track dataset.dataset_ID) {
-    <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }} ({{ dataset.sample_count
+    <mat-option [value]="dataset">{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }} ({{ dataset.sample_count
       }})</mat-option>
     }
   </mat-select>

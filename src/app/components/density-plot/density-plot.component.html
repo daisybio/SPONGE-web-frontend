@@ -1,0 +1,33 @@
+<div class="plot-options" style="padding: 16px 16px 0 16px; display: flex; align-items: center; gap: 12px;">
+  <span style="font-weight: 500; font-size: 0.9em;">Plot Mode:</span>
+  <mat-button-toggle-group [value]="combined()" (change)="combined.set($event.value)" aria-label="Plot Mode">
+    <mat-button-toggle [value]="true">Combined</mat-button-toggle>
+    <mat-button-toggle [value]="false">Stacked</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
+@if (loading()) {
+<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+} @else if (!hasData()) {
+<p style="padding: 16px; color: #666;">No data available.</p>
+} @else {
+<div
+  style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+  <button mat-icon-button [matMenuTriggerFor]="densityDownloadMenu" matTooltip="Download Plot">
+    <mat-icon>download</mat-icon>
+  </button>
+  <mat-menu #densityDownloadMenu="matMenu">
+    <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+    <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+    <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+  </mat-menu>
+</div>
+}
+
+<div style="width: 100%; overflow-y: auto;">
+  <div #densityPlot style="width: 100%; height: auto; min-height: 400px;"></div>
+</div>
+
+<app-info type="panel">
+  <ng-content></ng-content>
+</app-info>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, effect, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, effect, inject, input, signal, ViewChild } from '@angular/core';
 import { PredictService } from '../../service/predict.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -7,6 +7,9 @@ import { CommonModule } from '@angular/common';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import {MatInputModule} from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { exportToCSV } from '../../../../../utils/export';
 
 @Component({
   selector: 'app-prediction-table',
@@ -16,7 +19,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     CommonModule,
     MatSortModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
   ],
   templateUrl: './prediction-table.component.html',
   styleUrl: './prediction-table.component.scss'
@@ -25,7 +30,7 @@ export class PredictionTableComponent implements AfterViewInit {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$;
   predictionResource = this.predictService._prediction$;
-
+  refreshSignal$ = input();
   dataSource = new MatTableDataSource<any>([]);
   
   // this.prediction$()?.data || [])
@@ -61,6 +66,20 @@ export class PredictionTableComponent implements AfterViewInit {
     });
   }
 
+  refreshEffect = effect(() => {
+    this.refreshSignal$();
+    this.refreshTable();
+  });
+
+  refreshTable() {
+    // Trigger table update
+    this.dataSource.data = this.prediction$()?.data || [];
+    if (this.dataSource.data.length > 0 ) {
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+    }
+  }
+
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
@@ -75,4 +94,7 @@ export class PredictionTableComponent implements AfterViewInit {
     }
   }
 
+  downloadCSV() {
+    exportToCSV(this.dataSource.data, 'predictions_table');
+  }
 }

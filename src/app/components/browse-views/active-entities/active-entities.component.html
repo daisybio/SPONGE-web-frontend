@@ -18,28 +18,40 @@
       @for (node of nodes$(); track node) {
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{ BrowseService.getNodeGeneName(node) }}</mat-card-title>
-          <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
+          <mat-card-title>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left; font-size: 20px; font-weight: 500;"
+                (click)="openModal(node)"
+                [matTooltip]="'Show details for ' + BrowseService.getNodeGeneName(node)">
+                {{ BrowseService.getNodeGeneName(node) }}
+              </button>
+              <app-add-to-cart-button [id]="BrowseService.getNodeID(node)" [symbol]="BrowseService.getNodeGeneName(node)"></app-add-to-cart-button>
+              @if (node.betweenness === null || node.betweenness === undefined || node.node_degree === null || node.node_degree === undefined) {
+                <app-info type="icon" title="Network Centrality Info">
+                  This gene/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
+                </app-info>
+              }
+            </div>
+          </mat-card-title>
+          <mat-card-subtitle style="padding-left: 4px;">{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <table>
             <tr>
               <th>Betweenness</th>
-              <td>{{ node.betweenness }}</td>
+              <td>{{ (node.betweenness !== null && node.betweenness !== undefined) ? node.betweenness : 'N/A' }}</td>
             </tr>
             <tr>
               <th>Eigenvector</th>
-              <td>{{ node.eigenvector }}</td>
+              <td>{{ (node.eigenvector !== null && node.eigenvector !== undefined) ? node.eigenvector : 'N/A' }}</td>
             </tr>
             <tr>
               <th>Degree</th>
-              <td>{{ node.node_degree }}</td>
+              <td>{{ (node.node_degree !== null && node.node_degree !== undefined) ? node.node_degree : 'N/A' }}</td>
             </tr>
           </table>
         </mat-card-content>
-        <mat-card-actions>
-          <button mat-button (click)="openModal(BrowseService.getNodeObject(node))">View Details</button>
-        </mat-card-actions>
+
       </mat-card>
       } @empty {
       <p>No selected {{ level$() }}s found.</p>
@@ -61,7 +73,13 @@
         <mat-card-header>
           @let names = BrowseService.getInteractionGeneNames(interaction);
           @let ids = BrowseService.getInteractionIDs(interaction);
-          <mat-card-title>{{ names[0] }} - {{ names[1] }}
+          <mat-card-title style="display: flex; align-items: center; gap: 8px;">
+            <span>{{ names[0] }} - {{ names[1] }}</span>
+            @if (isVirtualEdge(interaction)) {
+              <app-info type="icon" title="Virtual Star Edge Info">
+                This edge is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+              </app-info>
+            }
           </mat-card-title>
           <mat-card-subtitle>{{ ids[0] }} - {{ ids[1] }}
           </mat-card-subtitle>

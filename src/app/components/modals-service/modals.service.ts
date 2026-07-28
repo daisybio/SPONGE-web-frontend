@@ -19,19 +19,45 @@ export class ModalsService {
 
   constructor() {}
 
-  openNodeDialog(entity: Gene | Transcript) {
-    if ('ensg_number' in entity) {
-      this.dialog.open(GeneModalComponent, {
-        data: entity,
-        minWidth: '60vw',
-        minHeight: '60vh',
-      });
+  openNodeDialog(entity: any) {
+    let nodeData: any;
+    if (entity && typeof entity === 'object') {
+      if ('gene' in entity && entity.gene) {
+        nodeData = {
+          ...entity.gene,
+          disease_name: entity.disease_name ?? entity.dataset?.disease_name ?? entity.gene?.disease_name ?? null,
+          betweenness: entity.betweenness ?? null,
+          eigenvector: entity.eigenvector ?? null,
+          node_degree: entity.node_degree ?? null,
+        };
+      } else if ('transcript' in entity && entity.transcript) {
+        nodeData = {
+          ...entity.transcript,
+          disease_name: entity.disease_name ?? entity.dataset?.disease_name ?? entity.transcript?.disease_name ?? null,
+          betweenness: entity.betweenness ?? null,
+          eigenvector: entity.eigenvector ?? null,
+          node_degree: entity.node_degree ?? null,
+        };
+      } else {
+        nodeData = entity;
+      }
     } else {
-      this.dialog.open(TranscriptModalComponent, {
-        data: entity,
-        minWidth: '60vw',
-        minHeight: '60vh',
-      });
+      nodeData = entity;
+    }
+
+    // Fixed size (not min*) so the dialog does not resize when switching tabs; the tab content
+    // scrolls inside a constant-height surface (see the .fixed-modal rules in styles.scss).
+    const dialogConfig = {
+      data: nodeData,
+      width: '70vw',
+      height: '80vh',
+      maxWidth: '90vw',
+      panelClass: 'fixed-modal',
+    };
+    if (nodeData && 'ensg_number' in nodeData) {
+      this.dialog.open(GeneModalComponent, dialogConfig);
+    } else {
+      this.dialog.open(TranscriptModalComponent, dialogConfig);
     }
   }
 

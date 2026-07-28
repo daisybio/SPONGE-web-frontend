@@ -1,20 +1,45 @@
-<mat-toolbar>
-  <a mat-button routerLink="">SPONGE</a>
-  <mat-button-toggle-group [(ngModel)]="version" [disabled]="disableVersionToggle">
+<mat-toolbar class="app-toolbar">
+  <a class="brand" routerLink="">SPONGEdb</a>
+
+  <mat-button-toggle-group class="version-toggle" [(ngModel)]="version" [disabled]="disableVersionToggle" name="version">
     <mat-button-toggle [value]="1">v1</mat-button-toggle>
     <mat-button-toggle [value]="2">v2</mat-button-toggle>
   </mat-button-toggle-group>
-  <span class="spacer"></span>
-  @for (subpage of subpages$(); track subpage) {
-  <a mat-button routerLink="/{{getRoutePath(subpage)}}">{{ subpage }}</a>
-  }
-  <a href="https://exbio.wzw.tum.de/sponge-api/ui" mat-button target="_blank">API</a>
-  <a href="https://www.mls.ls.tum.de/en/daisybio/home/" mat-button target="_blank">Contact</a>
+
+  <nav class="app-nav">
+    @for (item of navItems$(); track item.path) {
+    <a class="nav-link" routerLink="/{{ item.path }}" routerLinkActive="active"
+      [style.--link-color]="item.color" [style.--link-bg]="item.light">{{ item.label }}</a>
+    }
+  </nav>
+
+  <div class="secondary-nav-group">
+    @for (item of secondaryNav; track item.path) {
+    <a class="ext-link" routerLink="/{{ item.path }}" routerLinkActive="ext-active">{{ item.label }}</a>
+    }
+    <a class="ext-link" href="https://exbio.wzw.tum.de/sponge-api/ui" target="_blank" rel="noopener">API</a>
+    <a class="ext-link" href="https://www.mls.ls.tum.de/en/daisybio/home/" target="_blank" rel="noopener">Contact</a>
+  </div>
 </mat-toolbar>
 <router-outlet></router-outlet>
+<app-cart></app-cart>
 <div class="footer">
-  <p>Copyright © SPONGE by</p>
-  <a href="https://www.mls.ls.tum.de/en/daisybio/home/" style="text-decoration: none;" target="_blank">Data Science in
-    Systems Biology, School of Life Sciences,
-    TUM</a>
+  <p>Copyright © SPONGEdb by</p>
+  <ul class="list-inline">
+    <li class="list-inline-item">
+      <a href="https://www.mls.ls.tum.de/en/daisybio/home/" style="text-decoration: none" target="_blank">Data Science
+        in Systems Biology, School of Life Sciences, TUM,
+      </a>
+    </li>
+    <li class="list-inline-item">
+      <a href="https://exbio.wzw.tum.de/impressum#de" target="_blank" style="text-decoration: none"
+        target="_blank">Impressum /
+      </a>
+    </li>
+    <li class="list-inline-item">
+      <a href="https://exbio.wzw.tum.de/legal-notice#en" target="_blank" style="text-decoration: none"
+        target="_blank">Datenschutz
+      </a>
+    </li>
+  </ul>
 </div>

@@ -1,6 +1,6 @@
-import {Injectable} from '@angular/core';
-import {firstValueFrom, lastValueFrom} from "rxjs";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import { Injectable } from '@angular/core';
+import { firstValueFrom, lastValueFrom } from "rxjs";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 
 
 @Injectable({
@@ -10,26 +10,26 @@ export class HttpService {
   constructor(private http: HttpClient) {
   }
 
-  async getRequest<T>(request: string): Promise<T> {
+  async getRequest<T>(request: string): Promise<T | undefined> {
     try {
-      return lastValueFrom(this.http.get<T>(request));
+      return await lastValueFrom(this.http.get<T>(request));
     } catch (error) {
-      console.log(error);
-      return {} as T;
+      console.error(`GET request failed for ${request}:`, error);
+      return undefined;
     }
   }
 
   getHtmlRequest(request: string): Promise<string> {
-    return lastValueFrom(this.http.get(request, {responseType: 'text'}));
+    return lastValueFrom(this.http.get(request, { responseType: 'text' }));
   }
 
   async postRequest(request: string, payload: {}): Promise<any> {
     const headers = payload instanceof FormData ? {} : new HttpHeaders({ 'Content-Type': 'application/json' });
     try {
-      return lastValueFrom(this.http.post<any>(request, payload, {headers: headers}));
-    } catch (error) {
-      console.log(error);
-      return;
+      return await lastValueFrom(this.http.post<any>(request, payload, { headers: headers }));
+    } catch (error: any) {
+      console.error(`POST request failed for ${request}:`, error);
+      throw error;
     }
   }
 
@@ -40,13 +40,13 @@ export class HttpService {
         payloadEncoded.set(key, value);
       }
     }
-    const headers = new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded'});
+    const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
 
     try {
-      return lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), {headers: headers}));
+      return await lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), { headers: headers }));
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(`POST (encoded) request failed for ${request}:`, error);
+      return undefined;
     }
   }
 
@@ -66,10 +66,10 @@ export class HttpService {
     }
 
     try {
-      return lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), options));
+      return await lastValueFrom(this.http.post<any>(request, payloadEncoded.toString(), options));
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(`POST (text/encoded) request failed for ${request}:`, error);
+      return undefined;
     }
   }
 

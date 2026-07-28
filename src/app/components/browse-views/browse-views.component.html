@@ -1,12 +1,12 @@
 @if (!isLoading$()) {
 @if (hasData$()) {
-<mat-tab-group [preserveContent]="false" (selectedTabChange)="refresh()">
+<mat-tab-group [preserveContent]="false" (selectedTabChange)="onTabChange($event)">
   <mat-tab label="Network">
     <div style="display: flex; flex-direction: row">
       <app-network [browseService]="browseService()" [refreshSignal]="refresh$()"
         style="min-width: 500px; flex-grow: 3"></app-network>
       <app-active-entities [browseService]="browseService()"
-        style="min-width: 200px; width: 25%; flex-grow: 1"></app-active-entities>
+        style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
     </div>
   </mat-tab>
   @if (level() == 'gene') {
@@ -15,7 +15,8 @@
   </mat-tab>
   }
   <mat-tab label="Expression heatmap">
-    <app-heatmap [browseService]="browseService()" [refreshSignal]="refresh$()"></app-heatmap>
+    <app-gene-expression-heatmap [browseService]="browseService()"
+      [refreshSignal]="refresh$()"></app-gene-expression-heatmap>
   </mat-tab>
   <mat-tab [label]="(capitalize(level() || '') || 'Gene') + 's'">
     <app-nodes [browseService]="browseService()"></app-nodes>

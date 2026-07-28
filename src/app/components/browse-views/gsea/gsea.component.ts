@@ -32,6 +32,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { GseaBarplotComponent } from './gsea-barplot/gsea-barplot.component';
 import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.component';
+import { InfoComponent } from '../../info/info.component';
 
 @Component({
   selector: 'app-gsea',
@@ -53,6 +54,7 @@ import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.co
     GSEAresultsComponent,
     GseaBarplotComponent,
     GseaVolcanoplotComponent,
+    InfoComponent,
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss',

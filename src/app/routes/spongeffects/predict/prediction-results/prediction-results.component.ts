@@ -6,6 +6,7 @@ import {
   inject,
   input,
   resource,
+  signal,
   viewChild,
 } from '@angular/core';
 import { PlotlyData } from '../../../../interfaces';
@@ -16,6 +17,10 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
 
@@ -30,6 +35,10 @@ declare var Plotly: any;
     CommonModule,
     MatTableModule,
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
     InfoComponent,
   ],
   templateUrl: './prediction-results.component.html',
@@ -43,12 +52,12 @@ export class PredictionResultsComponent {
     viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
 
-  predictionMeta$ = computed(() => this.prediction$()?.meta);
+  predictionMeta$ = computed(() => this.prediction$()?.meta[0]);
   predictionData$ = computed(() => this.prediction$()?.data);
   predictedType$ = computed(() => this.predictionMeta$()?.type_predict);
   predictedSubtype$ = computed(() => this.predictionMeta$()?.subtype_predict);
 
-  plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
+  // plotlyTraces$ = inject(ClassPerformancePlotComponent).plotlyTraces$;
 
   refreshEffect = effect(() => {
     this.refreshSignal$();
@@ -290,4 +299,16 @@ export class PredictionResultsComponent {
   //   // Additional content validation can be added here
   //   return true;
   // }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.typePredictPiePlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'prediction_results_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
+  }
 }

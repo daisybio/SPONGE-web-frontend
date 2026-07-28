@@ -1,11 +1,30 @@
+<div style="display: flex; gap: 16px; align-items: center; width: 100%; margin-bottom: 8px;">
+  <mat-form-field appearance="outline" style="flex-grow: 1;">
+    <mat-label>Filter table...</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="e.g. BRCA1">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+  <button mat-flat-button color="primary" (click)="downloadCSV()" style="height: 56px; margin-top: -18px;">
+    <mat-icon>download</mat-icon> Download CSV
+  </button>
+</div>
+
 <table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort>
   <ng-container matColumnDef="identifier">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>Gene</th>
     <td *matCellDef="let node" mat-cell>
-      <button (click)="openDialog(node.obj)" mat-button matTooltip="Show details about {{node.identifier}}"
-              matTooltipPosition="right">
-        {{ node.identifier }}
-      </button>
+      <span style="display: inline-flex; align-items: center; gap: 4px;">
+        <button (click)="openDialog(node.obj)" mat-button matTooltip="Show details about {{node.identifier}}"
+                matTooltipPosition="right">
+          {{ node.identifier }}
+        </button>
+        <app-add-to-cart-button [entity]="node.obj"></app-add-to-cart-button>
+        @if (node.betweenness === null || node.betweenness === undefined || node.node_degree === null || node.node_degree === undefined) {
+          <app-info type="icon" title="Network Centrality Info">
+            This gene/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
+          </app-info>
+        }
+      </span>
     </td>
   </ng-container>
 
@@ -16,7 +35,7 @@
         significant proportion of the shortest paths between two other nodes.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.betweenness }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.betweenness !== null && node.betweenness !== undefined) ? node.betweenness : 'N/A' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="eigenvector">
@@ -25,7 +44,7 @@
         node with high eigenvector centrality is pointed to by many nodes, which also have high eigenvector centrality.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.eigenvector }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.eigenvector !== null && node.eigenvector !== undefined) ? node.eigenvector : 'N/A' }}</td>
   </ng-container>
 
   <ng-container matColumnDef="node_degree">
@@ -34,7 +53,7 @@
         emphasizes the significance of hub nodes, which are recognized as pivotal elements within biological systems.
       </app-info>
     </th>
-    <td *matCellDef="let node" mat-cell>{{ node.node_degree }}</td>
+    <td *matCellDef="let node" mat-cell>{{ (node.node_degree !== null && node.node_degree !== undefined) ? node.node_degree : 'N/A' }}</td>
   </ng-container>
 
   <tr *matHeaderRowDef="columns" mat-header-row></tr>

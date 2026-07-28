@@ -17,6 +17,7 @@ import { compute } from '@fullstax/kaplan-meier-estimator';
 import { VersionsService } from '../../../../services/versions.service';
 import { ReplaySubject } from 'rxjs';
 import { MatProgressBar } from '@angular/material/progress-bar';
+import { InfoComponent } from '../../../info/info.component';
 
 declare const Plotly: any;
 
@@ -30,7 +31,7 @@ interface CombinedPlotData {
 
 @Component({
   selector: 'app-kmplot',
-  imports: [MatCardModule, MatProgressBar],
+  imports: [MatCardModule, MatProgressBar, InfoComponent],
   templateUrl: './kmplot.component.html',
   styleUrl: './kmplot.component.scss',
 })

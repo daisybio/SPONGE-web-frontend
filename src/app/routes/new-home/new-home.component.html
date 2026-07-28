@@ -1,0 +1,243 @@
+<div class="new-home-container">
+  <!-- Hero Section -->
+  <div class="hero-header-card">
+    <div class="hero-brand">
+      <h1 class="brand-title">SPONGEdb</h1>
+      <p class="brand-subtitle">A Resource for Competing Endogenous RNA Interaction Networks</p>
+    </div>
+
+    <!-- Search Input -->
+    <div class="hero-search-wrapper">
+      <mat-form-field appearance="outline" class="search-form-field">
+        <mat-label>Search gene symbol, Ensembl ID, or cancer type...</mat-label>
+        <input
+          matInput
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearchSubmit()"
+          placeholder="e.g. TP53, ENSG00000141510, BRCA"
+        />
+        <button mat-icon-button matSuffix (click)="onSearchSubmit()" aria-label="Search">
+          <mat-icon color="primary">search</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <div class="search-chips">
+        <span class="chip-label">Quick Search:</span>
+        <mat-chip-set>
+          <mat-chip (click)="searchQuery.set('TP53'); onSearchSubmit()">TP53</mat-chip>
+          <mat-chip (click)="searchQuery.set('BRCA'); onSearchSubmit()">BRCA</mat-chip>
+          <mat-chip (click)="searchQuery.set('EGFR'); onSearchSubmit()">EGFR</mat-chip>
+          <mat-chip (click)="searchQuery.set('MYC'); onSearchSubmit()">MYC</mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Bar aligned to the 3 Analysis Types (Computed from Real Data) -->
+  <div class="stats-bar">
+    <div class="stat-item purple-accent" (click)="navigateTo('spongeffects')">
+      <div class="stat-type">Patient Centric</div>
+      <span class="stat-num">{{ totalPatientSamples() }}</span>
+      <span class="stat-name">Patient Samples Across {{ totalCohorts() }} Cohorts</span>
+    </div>
+    <div class="stat-item blue-accent" (click)="navigateTo('browse')">
+      <div class="stat-type">Disease Centric</div>
+      <span class="stat-num">{{ totalCancerTypes() }} Cancers</span>
+      <span class="stat-name">{{ totalSignificantInteractions() }} Significant Interactions</span>
+    </div>
+    <div class="stat-item green-accent" (click)="navigateTo('genes-transcripts')">
+      <div class="stat-type">Gene & Isoform Centric</div>
+      <span class="stat-num">{{ totalGeneInteractions() }} / {{ totalTranscriptInteractions() }}</span>
+      <span class="stat-name">Gene & Transcript Interactions</span>
+    </div>
+  </div>
+
+  <!-- The 3 Core Analysis Modes -->
+  <div class="analysis-pillars-grid">
+    <!-- Patient Centric (SpongEffects) -->
+    <mat-card class="analysis-card card-purple" (click)="navigateTo('spongeffects')">
+      <div class="card-top-stripe stripe-purple"></div>
+      <mat-card-header>
+        <div class="card-avatar bg-purple">
+          <img src="./patient_icon.png" alt="Patient icon" />
+        </div>
+        <div>
+          <mat-card-title class="title-purple">Patient Centric Analysis</mat-card-title>
+          <mat-card-subtitle>SpongEffects • {{ totalPatientSamples() }} Patient Samples</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="card-description">
+          Investigate how ceRNA networks differ between patients. Compute single-sample enrichment scores (mES) to classify cancer subtypes and explore personalized module behavior.
+        </p>
+
+        <ul class="feature-bullets">
+          <li><mat-icon class="bullet-icon purple">check_circle</mat-icon> Single-Sample Enrichment Scores (mES)</li>
+          <li><mat-icon class="bullet-icon purple">check_circle</mat-icon> Subtype Classification & Performance</li>
+          <li><mat-icon class="bullet-icon purple">check_circle</mat-icon> Patient-Specific Network Rewiring (UMAP)</li>
+          <li><mat-icon class="bullet-icon purple">check_circle</mat-icon> Custom Expression Matrix Upload</li>
+        </ul>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-flat-button class="btn-action btn-purple" (click)="navigateTo('spongeffects'); $event.stopPropagation()">
+          <mat-icon>biotech</mat-icon>
+          Launch SpongEffects
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Disease Centric (Browse) -->
+    <mat-card class="analysis-card card-blue" (click)="navigateTo('browse')">
+      <div class="card-top-stripe stripe-blue"></div>
+      <mat-card-header>
+        <div class="card-avatar bg-blue">
+          <img src="./disease_icon.png" alt="Disease icon" />
+        </div>
+        <div>
+          <mat-card-title class="title-blue">Disease Centric Analysis</mat-card-title>
+          <mat-card-subtitle>{{ totalCancerTypes() }} TCGA Cancers • {{ totalCohorts() }} Cohorts</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="card-description">
+          Inspect disease-wide ceRNA interaction networks across TCGA cancer types. Filter by node degree, centrality metrics, and expression correlation.
+        </p>
+
+        <ul class="feature-bullets">
+          <li><mat-icon class="bullet-icon blue">check_circle</mat-icon> Interactive Vis.js & Cytoscape Networks</li>
+          <li><mat-icon class="bullet-icon blue">check_circle</mat-icon> Centrality Metrics (Betweenness & Eigenvector)</li>
+          <li><mat-icon class="bullet-icon blue">check_circle</mat-icon> Co-Expression Heatmaps</li>
+          <li><mat-icon class="bullet-icon blue">check_circle</mat-icon> Kaplan-Meier Survival Analysis</li>
+        </ul>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-flat-button class="btn-action btn-blue" (click)="navigateTo('browse'); $event.stopPropagation()">
+          <mat-icon>hub</mat-icon>
+          Browse Disease Networks
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Gene & Transcript Centric -->
+    <mat-card class="analysis-card card-green" (click)="navigateTo('genes-transcripts')">
+      <div class="card-top-stripe stripe-green"></div>
+      <mat-card-header>
+        <div class="card-avatar bg-green">
+          <img src="./gene_icon.png" alt="Gene icon" />
+        </div>
+        <div>
+          <mat-card-title class="title-green">Gene/Transcript Centric Analysis</mat-card-title>
+          <mat-card-subtitle>{{ totalGeneInteractions() }} Gene / {{ totalTranscriptInteractions() }} Isoform</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="card-description">
+          Investigate specific genes or transcript isoforms. Uncover alternative splicing events, GO functional enrichments, WikiPathways, and IGV genomic tracks.
+        </p>
+
+        <ul class="feature-bullets">
+          <li><mat-icon class="bullet-icon green">check_circle</mat-icon> Ensembl Gene & Transcript Isoform Lookup</li>
+          <li><mat-icon class="bullet-icon green">check_circle</mat-icon> Alternative Splicing Annotations (DIGGER)</li>
+          <li><mat-icon class="bullet-icon green">check_circle</mat-icon> Gene Ontology & WikiPathways</li>
+          <li><mat-icon class="bullet-icon green">check_circle</mat-icon> IGV Genomic Track Viewer</li>
+        </ul>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-flat-button class="btn-action btn-green" (click)="navigateTo('genes-transcripts'); $event.stopPropagation()">
+          <mat-icon>dns</mat-icon>
+          Search Genes & Transcripts
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Featured Cancer Quick Access -->
+  <mat-card class="info-section-card">
+    <mat-card-header>
+      <mat-card-title>Quick Access Cancer Cohorts</mat-card-title>
+      <mat-card-subtitle>Select a TCGA cancer type to open its network in Browse</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="card-content-padding">
+      <div class="cohort-chips-grid">
+        @for (d of featuredDiseases; track d.code) {
+          <button mat-stroked-button class="cohort-btn" (click)="selectDisease(d.name)">
+            <span class="cohort-badge">{{ d.code }}</span>
+            <span class="cohort-title">{{ d.label }}</span>
+            <mat-icon class="cohort-arrow">chevron_right</mat-icon>
+          </button>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Interactive Explorer Section -->
+  <mat-card class="info-section-card margin-top">
+    <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="150ms">
+      <mat-tab label="About ceRNA Sponging">
+        <div class="tab-inner">
+          <div class="tab-text">
+            <h3>Competing Endogenous RNA (ceRNA) Sponging</h3>
+            <p>
+              MicroRNAs (miRNAs) repress gene expression by binding to target mRNAs. When multiple RNA molecules (mRNAs, lncRNAs, or pseudogenes) share miRNA binding sites, they compete for the available miRNA pool.
+            </p>
+            <p>
+              An increase in sponge RNA expression sequesters miRNAs, leading to an indirect positive correlation in expression among the competing target RNAs.
+            </p>
+          </div>
+          <div class="tab-img-box">
+            <img src="./1.svg" alt="ceRNA Mechanism" />
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="SPONGE Null Model">
+        <div class="tab-inner">
+          <div class="tab-text">
+            <h3>Multiple Sensitivity Correlation (mscor)</h3>
+            <p>
+              SPONGE calculates <code>mscor</code> to quantify indirect co-expression driven by shared miRNAs while removing background noise.
+            </p>
+            <p>
+              Empirical null-model sampling yields exact FDR-adjusted p-values, ensuring rigorous statistical confidence across pancancer datasets.
+            </p>
+          </div>
+          <div class="tab-img-box">
+            <img src="./3.svg" alt="SPONGE Pipeline" />
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Interaction Volume Chart">
+        <div class="tab-plot-box">
+          @if (!plotData$()) {
+            <div class="loading-center">
+              <mat-progress-spinner mode="indeterminate" diameter="44"></mat-progress-spinner>
+            </div>
+          }
+          <div #plot class="plotly-chart-view"></div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+
+  <!-- Footer -->
+  <footer class="clean-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <strong>SPONGEdb</strong> • Data Science in Systems Biology, School of Life Sciences, TUM
+      </div>
+      <div class="footer-right">
+        <a href="https://bioconductor.org/packages/SPONGE" target="_blank" rel="noopener">R Package</a>
+        <a href="https://exbio.wzw.tum.de/sponge-api/ui" target="_blank" rel="noopener">API</a>
+        <a href="https://www.mls.ls.tum.de/en/daisybio/home/" target="_blank" rel="noopener">DaisyBio Team</a>
+      </div>
+    </div>
+  </footer>
+</div>

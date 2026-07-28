@@ -10,21 +10,30 @@ import {
 import { Dataset } from '../../interfaces';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDividerModule } from '@angular/material/divider';
 import { capitalize } from 'lodash';
+import { getDiseaseDisplayName } from '../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../constants';
 
 @Component({
   selector: 'app-disease-selector',
-  imports: [MatFormFieldModule, MatSelectModule],
+  imports: [MatFormFieldModule, MatSelectModule, MatDividerModule],
   templateUrl: './disease-selector.component.html',
   styleUrl: './disease-selector.component.scss',
 })
 export class DiseaseSelectorComponent implements OnDestroy {
   readonly diseases$ = input.required<Dataset[]>();
+  readonly initialDiseaseName$ = input<string | undefined>(undefined);
   selected = output<Dataset>();
   readonly activeDisease$ = linkedSignal(
-    () =>
-      this.diseaseNames$().filter((d) => d === 'breast invasive carcinoma')[0]
+    () => {
+      const names = this.diseaseNames$();
+      const initial = this.initialDiseaseName$();
+      if (initial && names.some((n) => n.toLowerCase() === initial.toLowerCase())) {
+        return names.find((n) => n.toLowerCase() === initial.toLowerCase())!;
+      }
+      return names.find((d) => d.toLowerCase() === 'pancancer') ?? names[0];
+    }
   );
   readonly activeSubtype = linkedSignal(
     () =>
@@ -33,6 +42,7 @@ export class DiseaseSelectorComponent implements OnDestroy {
       ) ?? this.possibleSubtypes$()[0]
   );
   protected readonly capitalize = capitalize;
+  protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
   protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
   private readonly _diseaseSubtypeMap$ = computed(() => {
     const diseaseSubtypes = new Map<string, Dataset[]>();
@@ -45,22 +55,23 @@ export class DiseaseSelectorComponent implements OnDestroy {
     });
     return diseaseSubtypes;
   });
-  readonly diseaseNames$ = computed(() =>
-    Array.from(this._diseaseSubtypeMap$().keys()).sort()
-  );
+  readonly diseaseNames$ = computed(() => {
+    const keys = Array.from(this._diseaseSubtypeMap$().keys());
+    const pan = keys.filter((k) => k.toLowerCase() === 'pancancer');
+    const others = keys.filter((k) => k.toLowerCase() !== 'pancancer').sort();
+    return [...pan, ...others];
+  });
   readonly possibleSubtypes$ = computed(
     () => this._diseaseSubtypeMap$().get(this.activeDisease$()) ?? []
   );
 
-  // Calculate sample counts for each disease by summing up all subtypes
+  // Calculate sample counts for each disease using the 'unspecific' (disease_subtype == null) dataset count
   readonly diseaseSampleCounts$ = computed(() => {
     const counts = new Map<string, number>();
     this._diseaseSubtypeMap$().forEach((subtypes, diseaseName) => {
-      const totalCount = subtypes.reduce(
-        (sum, dataset) => sum + dataset.sample_count,
-        0
-      );
-      counts.set(diseaseName, totalCount);
+      const unspecific = subtypes.find((d) => d.disease_subtype == null || d.disease_subtype === '');
+      const count = unspecific ? unspecific.sample_count : (subtypes[0]?.sample_count || 0);
+      counts.set(diseaseName, count);
     });
     return counts;
   });

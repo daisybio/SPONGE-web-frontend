@@ -1,10 +1,21 @@
 @if (plotOverallAccResource.isLoading()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-} @else {
-  @if (!plotOverallAccResource.value()) {
-    <p>No data available</p>
-  }
 }
+
+@if (!plotOverallAccResource.value() && !plotOverallAccResource.isLoading() && !plotOverallAccResource.error()) {
+  <p>No data available</p>
+}
+
+<div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+  <button mat-icon-button [matMenuTriggerFor]="overallDownloadMenu" matTooltip="Download Plot">
+    <mat-icon>download</mat-icon>
+  </button>
+  <mat-menu #overallDownloadMenu="matMenu">
+    <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+    <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+    <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+  </mat-menu>
+</div>
 <div class="overall-acc-plot-div">
   <div #overallAccuracyPlot class="overall-acc-plot" style="width: 100%; height: auto"></div>
 </div>

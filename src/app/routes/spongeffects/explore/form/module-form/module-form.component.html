@@ -1,0 +1,139 @@
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Module Filtering</mat-panel-title>
+  </mat-expansion-panel-header>
+  <form [formGroup]="formGroup">
+
+    @if (source() === 'predict') {
+    <div style="display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 16px;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Patients to Consider</mat-label>
+        <mat-select [value]="predictService.selectedSamples$()"
+          (valueChange)="predictService.selectedSamples$.set($event)" multiple>
+          <div
+            style="display: flex; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10;"
+            (click)="$event.stopPropagation(); $event.preventDefault()">
+            <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
+              (click)="selectAllPatients(); $event.stopPropagation()">
+              Select All
+            </button>
+            <button mat-stroked-button type="button" style="flex: 1; font-size: 0.8em; height: 28px; line-height: 28px;"
+              (click)="clearAllPatients(); $event.stopPropagation()">
+              Clear
+            </button>
+          </div>
+          @for (sample of predictService.allSamples$(); track sample) {
+          <mat-option [value]="sample">{{sample}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>Select which uploaded patient samples are used when aggregating module enrichment scores. By default all
+          patients are considered.</p>
+      </app-info>
+    </div>
+    }
+
+    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Max module centers</mat-label>
+        <input formControlName="topControl" type="number" matInput max="100" min="1" step="1"
+          aria-label="Max module centers">
+        <mat-error>Must be between 1 and 100</mat-error>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>The maximum number of top-ranked module centers (by the selected sorting) to include in the visualization.
+        </p>
+      </app-info>
+    </div>
+
+    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+      <mat-checkbox [checked]="includeModuleMembersValue()" [disabled]="membersDisabled()"
+        (change)="onIncludeMembersChange($event.checked)"
+        [matTooltip]="membersDisabled() ? 'Not available for current visualization' : ''">
+        Show module members
+      </mat-checkbox>
+      <app-info type="icon">
+        <p>In addition to each module's center gene/transcript, also show its member genes/transcripts in the network.
+        </p>
+      </app-info>
+    </div>
+
+
+
+    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Sort by</mat-label>
+        <mat-select formControlName="sortBy">
+          @if (source() === 'explore') {
+          <mat-option value="meanAccuracyDecrease">Mean Accuracy Decrease</mat-option>
+          <mat-option value="meanGiniDecrease">Mean Gini Decrease</mat-option>
+          <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
+          <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
+          <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
+          } @else {
+          <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
+          <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
+          <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" title="Module Sorting Options">
+        @if (source() === 'explore') {
+        <p>Options for ranking reference TCGA modules:</p>
+        <ul style="padding-left: 20px; margin: 4px 0;">
+          <li><b>Mean Accuracy Decrease:</b> Ranks modules by the average loss in prediction accuracy when the module
+            features are permuted in the Random Forest model.</li>
+          <li><b>Mean Gini Decrease:</b> Ranks modules by how much node purity (Gini impurity reduction) is gained by
+            splits using the module across trees.</li>
+          <li><b>Abs. Mean Enrichment Score:</b> Ranks modules by highest magnitude of mean enrichment score across
+            the reference TCGA samples (prioritizing strong positive or negative regulation).</li>
+          <li><b>Mean Enrichment Score:</b> Ranks modules by signed mean enrichment score across the reference TCGA
+            samples (highest positive score first).</li>
+          <li><b>Enrichment Score Variance:</b> Ranks modules by score variance across the reference TCGA samples
+            (prioritizing modules with high sample-to-sample variability).</li>
+        </ul>
+        } @else {
+        <p>Options for ranking patient enrichment scores:</p>
+        <ul style="padding-left: 20px; margin: 4px 0;">
+          <li><b>Abs. Mean Enrichment Score:</b> Ranks modules by highest magnitude of mean enrichment score across
+            selected patient samples (prioritizing strong positive or negative regulation).</li>
+          <li><b>Mean Enrichment Score:</b> Ranks modules by signed mean enrichment score across selected patient
+            samples (highest positive score first).</li>
+          <li><b>Enrichment Score Variance:</b> Ranks modules by score variance across selected patient samples
+            (prioritizing modules with high patient-to-patient variability).</li>
+        </ul>
+        }
+      </app-info>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>{{ source() === 'explore' ? 'Min. Accuracy Decrease' : 'Min. Abs. Enrichment' }}</mat-label>
+        <input formControlName="filterMinScore1" type="number" matInput step="0.01" aria-label="Min Accuracy Decrease">
+      </mat-form-field>
+      <app-info type="icon">
+        @if (source() === 'explore') {
+        <p>Only keep modules whose mean accuracy decrease is at least this value.</p>
+        } @else {
+        <p>Only keep modules whose absolute mean enrichment score is at least this value.</p>
+        }
+      </app-info>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>{{ source() === 'explore' ? 'Min. Gini Decrease' : 'Min. Enrichment Variance' }}</mat-label>
+        <input formControlName="filterMinScore2" type="number" matInput step="0.01" aria-label="Min Gini Decrease">
+      </mat-form-field>
+      <app-info type="icon">
+        @if (source() === 'explore') {
+        <p>Only keep modules whose mean Gini decrease is at least this value.</p>
+        } @else {
+        <p>Only keep modules whose enrichment score variance is at least this value.</p>
+        }
+      </app-info>
+    </div>
+
+  </form>
+</mat-expansion-panel>

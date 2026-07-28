@@ -1,5 +1,44 @@
-<div class="predict-results">
-  <app-prediction-results>[refreshSignal$]="refreshSignal()"</app-prediction-results>
-  <app-prediction-table>[refreshSignal$]="refreshSignal()"</app-prediction-table>
+<mat-drawer-container style="min-height: 100%">
+  <mat-drawer [opened]="true" mode="side">
+    <app-predict-form></app-predict-form>
+  </mat-drawer>
+  <mat-drawer-content>
 
-</div>
+    @if (predictService.example_used()) {
+    <div style="text-align: center; padding: 20px;">
+      <p>Here you can see SpongEffects results for an
+        <a href="https://exbio.wzw.tum.de/sponge-files/GSE123845_exp_tpm_matrix_processed.csv"
+          download='GSE123845_exp_tpm_matrix_processed.csv'>example dataset</a>
+        (<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE123845">GSE123845</a>).
+        You can upload your own expression data on the left.
+      </p>
+    </div>
+    }
+
+    <div class="predict-results">
+      <mat-tab-group preserveContent (selectedTabChange)="onTabChange($event)">
+        <!-- This was moved to Compute SpongEffects Scores -->
+        <mat-tab label="Top ceRNA Centralities">
+          <ng-template matTabContent>
+            <app-scatterplot [dataSource]="scatterplotDataSource()" [params]="scatterplotParams()"
+              [refreshSignal$]="refreshSignal()"></app-scatterplot>
+            <app-module-table [refreshSignal$]="refreshSignal()"></app-module-table>
+            <app-module-heatmap [refreshSignal$]="refreshSignal()"></app-module-heatmap>
+          </ng-template>
+        </mat-tab>
+        <mat-tab label="SpongEffects Score Distribution">
+          <ng-template matTabContent>
+            <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
+          </ng-template>
+        </mat-tab>
+        <mat-tab label="Prediction Results">
+          <ng-template matTabContent>
+            <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
+            <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+  </mat-drawer-content>
+</mat-drawer-container>

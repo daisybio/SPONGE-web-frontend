@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+
+mat-dialog-content {
+  padding: 16px 24px;
+}
+
+mat-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+
+  tr {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  th, td {
+    padding: 10px 16px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  th {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.7);
+    width: 220px;
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  td {
+    color: rgba(0, 0, 0, 0.87);
+  }
+}

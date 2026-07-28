@@ -1,29 +1,80 @@
-<div class="route-container">
-  <h1>SPONGE</h1>
+<div class="route-container" style="width: 100%; align-self: center; padding: 3%; background-color: #dae2f9;">
+  <h1>SPONGEdb</h1>
   <h4>A resource for competing endogenous RNA interaction networks</h4>
   <p>Free to use for everyone, including commercial users.</p>
-  <carousel [isAnimated]="true" class="carousel-dark">
-    <slide>
-      <div class="carousel-image-container">
-        <img alt="image slide" class="carousel-image" src="./1.svg">
+  <div style="display: flex; gap: 30px; height: 100%; width: 100%">
+    <mat-card
+      style="width: 50%; height: 600px; align-self: center; background-color: white; padding: 30px; overflow: hidden">
+      <mat-card-header>
+        <h2>About SPONGE</h2>
+      </mat-card-header>
+      <div style="overflow-y: auto;">
+        <carousel [isAnimated]="true" class="carousel-dark">
+          <slide>
+            <div class="carousel-image-container">
+              <img alt="image slide" class="carousel-image" src="./1.svg">
+            </div>
+          </slide>
+          <slide>
+            <div class="carousel-image-container">
+              <img alt="image slide" class="carousel-image" src="./2.png">
+            </div>
+          </slide>
+          <slide>
+            <div class="carousel-image-container">
+              <img alt="image slide" class="carousel-image" src="./3.svg">
+            </div>
+          </slide>
+          <slide>
+            <!-- <h2>SPONGE results for each pair of genes</h2> -->
+            @if (plotData$() === undefined) {
+            <div class="spinner-container">
+              <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+            </div>
+            }
+            <div #plot style="height: 1500px"></div>
+          </slide>
+        </carousel>
       </div>
-    </slide>
-    <slide>
-      <div class="carousel-image-container">
-        <img alt="image slide" class="carousel-image" src="./2.png">
-      </div>
-    </slide>
-    <slide>
-      <div class="carousel-image-container">
-        <img alt="image slide" class="carousel-image" src="./3.svg">
-      </div>
-    </slide>
-  </carousel>
-  <h2>SPONGE results for each pair of genes</h2>
-  @if (plotData$() === undefined) {
-    <div class="spinner-container">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </mat-card>
+
+    <div style="display: flex; flex-direction: column; gap: 30px; width: 50%; height: 600px; box-sizing: border-box">
+      <mat-card style="background-color: white; height: 33%; padding: 20px; box-sizing: border-box; cursor: pointer"
+        (click)="navigateTo('spongeffects')">
+        <mat-card-header>
+          <h2>Patient Centric Analysis</h2>
+        </mat-card-header>
+        <mat-card-content>
+          <img src="./patient_icon.png" alt="patient icon"
+            style="width: 50px; height: 50px; float: left; margin-right: 30px;">
+          <p>Investigate how the ceRNA networks differ between patients.</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card style="background-color: white; height: 33%; padding: 20px; box-sizing: border-box; cursor: pointer"
+        (click)="navigateTo('browse')">
+        <mat-card-header>
+          <h2>Disease Centric Analysis</h2>
+        </mat-card-header>
+        <mat-card-content>
+          <img src="./disease_icon.png" alt="disease icon"
+            style="width: 50px; height: 50px; float: left; margin-right: 30px;">
+          <p>Inspect the ceRNA networks of different cancer types.</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card style="background-color: white; height: 33%; padding: 20px; box-sizing: border-box; cursor: pointer"
+        (click)="navigateTo('genes-transcripts')">
+        <mat-card-header>
+          <h2>Gene/Transcript Centric Analysis</h2>
+        </mat-card-header>
+        <mat-card-content>
+          <img src="./gene_icon.png" alt="gene icon"
+            style="width: 50px; height: 50px; float: left; margin-right: 30px;">
+          <p>Investigate the role of specific genes or transcripts in the ceRNA networks.</p>
+        </mat-card-content>
+      </mat-card>
+
     </div>
-  }
-  <div #plot style="height: 700px"></div>
+  </div>
 </div>

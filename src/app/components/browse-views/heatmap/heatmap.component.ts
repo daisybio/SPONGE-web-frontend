@@ -12,117 +12,90 @@ import {
 import { BrowseService } from '../../../services/browse.service';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { capitalize } from 'lodash';
+import { ReusableHeatmapComponent, HeatmapDataSource } from '../../../components/heatmap-plot/heatmap-plot.component';
+import { CommonModule } from '@angular/common';
+import { InfoComponent } from '../../info/info.component';
 
 declare const Plotly: any;
 
+
 @Component({
-  selector: 'app-heatmap',
-  imports: [MatProgressSpinner],
+  selector: 'app-gene-expression-heatmap',
   templateUrl: './heatmap.component.html',
   styleUrl: './heatmap.component.scss',
+  imports: [CommonModule, ReusableHeatmapComponent, InfoComponent]
 })
-export class HeatmapComponent implements OnDestroy {
+export class GeneExpressionHeatmapComponent {
   browseService = input.required<BrowseService>();
   backend = inject(BackendService);
   versions = inject(VersionsService);
 
-  level$ = computed(() => this.browseService().level$());
+  // Inputs
   refreshSignal = input.required<any>();
-  heatmap = viewChild.required<ElementRef<HTMLDivElement>>('heatmap');
 
-  plotData = resource({
-    request: computed(() => {
-      return {
-        nodes: this.browseService().nodes$(),
-        disease: this.browseService().disease$(),
-        level: this.browseService().level$(),
-        version: this.versions.versionReadOnly()(),
-      };
-    }),
-    loader: async (param) => {
-      const nodes = param.request.nodes;
-      const disease = param.request.disease;
-      const version = param.request.version;
-      const level = param.request.level;
-      if (nodes === undefined || disease === undefined || level === undefined)
-        return;
+  // State
+  level$ = computed(() => this.browseService().level$());
+  
+  // Parameters derived from services
+  heatmapParams = computed(() => ({
+    nodes: this.browseService().nodes$(),
+    disease: this.browseService().disease$(),
+    level: this.browseService().level$(),
+    version: this.versions.versionReadOnly()(),
+  }));
 
-      const identifiers = nodes.map((node) => BrowseService.getNodeID(node));
-
-      const expression = await this.backend.getExpression(
-        version,
-        identifiers,
-        disease,
-        level
-      );
-
-      const expressionMap = new Map<string, Map<string, number>>();
-      const samples = new Set<string>();
-      for (const expr of expression) {
-        const identifier =
-          'gene' in expr
-            ? expr.gene.gene_symbol || expr.gene.ensg_number
-            : expr.transcript.enst_number;
-        if (!expressionMap.has(identifier)) {
-          expressionMap.set(identifier, new Map<string, number>());
-        }
-        samples.add(expr.sample_ID);
-        expressionMap.get(identifier)!.set(expr.sample_ID, expr.expr_value);
+  // Create data source for the heatmap
+  heatmapDataSource: HeatmapDataSource = {
+    getData: async (params) => {
+      const { nodes, disease, version, level } = params;
+      
+      if (!nodes || !disease || !level) {
+        return [];
       }
 
-      const geneSymbols = Array.from(expressionMap.keys());
-      const sampleIDs = Array.from(samples);
-      const values = geneSymbols.map((gene) =>
-        sampleIDs.map((sample) => expressionMap.get(gene)!.get(sample))
-      );
+      const identifiers = nodes.map((node: any) => BrowseService.getNodeID(node));
 
-      return {
-        x: sampleIDs,
-        y: geneSymbols,
-        z: values,
-        type: 'heatmap',
-      };
+      // Fetch expression data with pagination
+      const expressionData = await this.backend.fetchExpressionData(version, identifiers, disease.dataset_ID, disease.disease_name, level);
+      
+      // Handle disease subtypes
+      if (disease.disease_name === 'pancancer') {
+        await this.handlePancancerSubtypes(expressionData);
+      } else {
+        await ReusableHeatmapComponent.handleDiseaseSubtypes(expressionData, disease.disease_name, this.backend);
+      }
+
+      return expressionData;
     },
-  });
+    
+    getTitle: (params) => {
+      return `${capitalize(params.level)} Expression Heatmap - ${capitalize(params.disease?.disease_name || 'Unknown')}`;
+    },
+    
+    getYAxisTitle: () => {
+      return capitalize(this.level$());
+    },
+    
+    getZAxisTitle: () => {
+      return 'Normalized<br>expression';
+    },
+    
+    getZMid: () => 0,
+    
+    getColorScale: () => 'RdBu'
+  };
 
-  refreshEffect = effect(() => {
-    this.refreshSignal();
-    this.refresh();
-  });
-
-  plotUpdateEffect = effect(() => {
-    const data = this.plotData.value();
-    if (!data) return;
-
-    const heatmap = this.heatmap().nativeElement;
-
-    Plotly.newPlot(heatmap, [data], {
-      title: `${capitalize(this.level$())} Expression Heatmap - ${capitalize(
-        this.browseService().disease$()?.disease_name
-      )}`,
-      xaxis: {
-        title: 'Sample ID',
-        automargin: true,
-      },
-      yaxis: {
-        title: capitalize(this.level$()),
-        automargin: true,
-      },
-    });
-  });
-
-  refresh() {
-    const heatmap = this.heatmap().nativeElement;
-    if (heatmap.checkVisibility()) {
-      Plotly.Plots.resize(heatmap);
+  private async handlePancancerSubtypes(expressionData: any[]): Promise<void> {
+    // Fetch the mapping from TSS codes to disease names
+    const mapping = await this.backend.getDiseaseFromSample();
+    
+    // Add the disease name to the expression data
+    for (const e of expressionData) {
+      const sampleId = e.sample_ID;
+      // mapSampleToDisease from ReusableHeatmapComponent
+      const diseaseName = await ReusableHeatmapComponent.mapSampleToDisease(sampleId, mapping);
+      e.disease_subtype = diseaseName;
     }
-  }
-
-  ngOnDestroy(): void {
-    Plotly.purge(this.heatmap().nativeElement);
-    this.refreshEffect.destroy();
-    this.plotUpdateEffect.destroy();
   }
 }

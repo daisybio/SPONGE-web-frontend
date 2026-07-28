@@ -1,4 +1,12 @@
-<h1 mat-dialog-title>{{ BrowseService.getFullName(transcript) }}</h1>
+<h1 mat-dialog-title style="display: flex; align-items: center; gap: 8px;">
+  <span>{{ BrowseService.getFullName(transcript) }}</span>
+  <app-add-to-cart-button [id]="transcript.enst_number" [symbol]="BrowseService.getFullName(transcript)"></app-add-to-cart-button>
+  @if (isFallback()) {
+    <app-info type="icon" title="Network Centrality Info">
+      This transcript/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
+    </app-info>
+  }
+</h1>
 <mat-dialog-content>
   <mat-tab-group [(selectedIndex)]="activeTab$" preserveContent>
     <mat-tab label="General information">
@@ -31,9 +39,100 @@
           <th>Canonical</th>
           <td>{{ isCanonical$() }}</td>
         </tr>
+        @let c = effectiveCentralities$();
+        @if (c.betweenness !== undefined && c.betweenness !== null) {
+        <tr>
+          <th>Betweenness</th>
+          <td>{{ c.betweenness }}</td>
+        </tr>
+        }
+        @if (c.eigenvector !== undefined && c.eigenvector !== null) {
+        <tr>
+          <th>Eigenvector</th>
+          <td>{{ c.eigenvector }}</td>
+        </tr>
+        }
+        @if (c.node_degree !== undefined && c.node_degree !== null) {
+        <tr>
+          <th>Degree</th>
+          <td>{{ c.node_degree }}</td>
+        </tr>
+        }
+        @if (diggerInfo$.value()?.exists) {
+        <tr>
+          <th>DIGGER</th>
+          <td>
+            <a [href]="diggerInfo$.value()?.url" target="_blank" mat-flat-button>
+              Go to {{ transcript.enst_number }} in DIGGER
+            </a>
+          </td>
+        </tr>
+        }
       </table>
       }
     </mat-tab>
+
+    @if (!isBrowseRoute$() && (tcgaEffects$.isLoading() || module_IDs$.isLoading() || customEffects$() || ((tcgaEffects$.value() || []).length > 0))) {
+    <mat-tab label="SpongEffects scores">
+      <div style="padding: 16px;">
+        @let custom = customEffects$();
+        @if (custom) {
+        <mat-accordion style="margin-bottom: 16px;">
+          <mat-expansion-panel expanded>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Custom SpongEffects scores</mat-panel-title>
+            </mat-expansion-panel-header>
+            <table>
+              <tr>
+                <th>Mean Enrichment Score</th>
+                <td>{{ formatScore(custom.mean) }}</td>
+              </tr>
+              <tr>
+                <th>Variance Enrichment Score</th>
+                <td>{{ formatScore(custom.variance) }}</td>
+              </tr>
+            </table>
+          </mat-expansion-panel>
+        </mat-accordion>
+        }
+
+        @if (tcgaEffects$.isLoading() || module_IDs$.isLoading()) {
+        <div style="padding: 24px 0; text-align: center;">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p style="color: #666; font-size: 12px; margin-top: 8px;">Loading TCGA SpongEffects scores...</p>
+        </div>
+        } @else if ((tcgaEffects$.value() || []).length > 0) {
+        @let tcga_scores = tcgaEffects$.value() || [];
+        <mat-accordion>
+          <mat-expansion-panel expanded>
+            <mat-expansion-panel-header>
+              <mat-panel-title>TCGA SpongEffects scores</mat-panel-title>
+            </mat-expansion-panel-header>
+            <table>
+              @for (score of tcga_scores; track score.spongEffects_transcript_module_ID) {
+              @if (tcga_scores.length > 1) {
+              <tr style="background-color: rgba(0,0,0,0.03);">
+                <th colspan="2" style="text-align: left; padding-top: 6px; font-weight: 600;">Module #{{
+                  score.spongEffects_transcript_module_ID }}</th>
+              </tr>
+              }
+              <tr>
+                <th>Mean Enrichment Score</th>
+                <td>{{ formatScore(score.score_value) }}</td>
+              </tr>
+              <tr>
+                <th>Variance Enrichment Score</th>
+                <td>{{ formatScore(score.variance_score) }}</td>
+              </tr>
+              }
+            </table>
+          </mat-expansion-panel>
+        </mat-accordion>
+        }
+      </div>
+    </mat-tab>
+    }
+
     <mat-tab label="Alternative splicing" [disabled]="!hasAsEvents$()">
       <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
         <ng-container matColumnDef="event_type">
