@@ -11,7 +11,7 @@ import { capitalize } from "lodash";
 import { MatChipsModule } from '@angular/material/chips';
 import { BrowseService } from "../../../../services/browse.service";
 import { MatInputModule } from "@angular/material/input";
-import { MatAccordion, MatExpansionModule } from "@angular/material/expansion";
+import { MatExpansionModule } from "@angular/material/expansion";
 import { getDiseaseDisplayName } from '../../../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../../../constants';
 
@@ -28,7 +28,6 @@ import { SUBTYPE_DEFAULT } from '../../../../constants';
     MatCardModule,
     MatChipsModule,
     MatInputModule,
-    MatAccordion,
     MatExpansionModule
   ],
   templateUrl: './explore-form.component.html',
