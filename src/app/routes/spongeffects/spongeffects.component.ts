@@ -1,6 +1,5 @@
 import { Component, ElementRef, inject, model, resource, ViewChild, AfterViewInit, effect } from '@angular/core';
 import { ExploreComponent } from "./explore/explore.component";
-import { PredictComponent } from "./predict/predict.component";
 import { SpongeffectsScoresComponent } from "./spongeffects-scores/spongeffects-scores.component";
 import { VersionsService } from "../../services/versions.service";
 import { BackendService } from "../../services/backend.service";
@@ -17,11 +16,9 @@ import { debounceTime, fromEvent } from 'rxjs';
   templateUrl: './spongeffects.component.html',
   imports: [
     ExploreComponent,
-    PredictComponent,
     SpongeffectsScoresComponent,
     MatButtonToggleModule,
     InfoComponent,
-    PredictComponent
   ],
   styleUrls: ['./spongeffects.component.scss']
 })
