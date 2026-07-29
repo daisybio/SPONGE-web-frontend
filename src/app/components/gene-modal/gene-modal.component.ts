@@ -58,7 +58,7 @@ interface ASEntry {
     MatChip,
     MatProgressSpinner,
     MatProgressBar,
-    MatTooltipModule,
+    MatTooltip,
     Igv,
   ],
   templateUrl: './gene-modal.component.html',

@@ -1,15 +1,16 @@
 <mat-toolbar class="app-toolbar">
   <a class="brand" routerLink="">SPONGEdb</a>
 
-  <mat-button-toggle-group class="version-toggle" [(ngModel)]="version" [disabled]="disableVersionToggle" name="version">
+  <mat-button-toggle-group class="version-toggle" [(ngModel)]="version" [disabled]="disableVersionToggle"
+    name="version">
     <mat-button-toggle [value]="1">v1</mat-button-toggle>
     <mat-button-toggle [value]="2">v2</mat-button-toggle>
   </mat-button-toggle-group>
 
   <nav class="app-nav">
     @for (item of navItems$(); track item.path) {
-    <a class="nav-link" routerLink="/{{ item.path }}" routerLinkActive="active"
-      [style.--link-color]="item.color" [style.--link-bg]="item.light">{{ item.label }}</a>
+    <a class="nav-link" routerLink="/{{ item.path }}" routerLinkActive="active" [style.--link-color]="item.color"
+      [style.--link-bg]="item.light">{{ item.label }}</a>
     }
   </nav>
 

@@ -19,6 +19,7 @@ import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { capitalize } from 'lodash';
 import { Router } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
 
 declare const Plotly: any;
 
