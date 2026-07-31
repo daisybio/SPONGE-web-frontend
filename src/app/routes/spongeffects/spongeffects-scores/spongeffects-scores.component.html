@@ -32,7 +32,7 @@
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <div style="display: flex; align-items: center; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <mat-form-field appearance="outline" style="flex: 1;">
               <mat-label>Disease</mat-label>
               <mat-select [value]="predictService.selectedScope$()"
@@ -56,7 +56,7 @@
                 }
               </mat-select>
             </mat-form-field>
-            <app-info type="icon" title="Disease & Subtype Datasets" style="margin-top: -16px;">
+            <app-info type="icon" title="Disease & Subtype Datasets">
               <p>
                 The disease datasets in SPONGE originate from
                 <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.

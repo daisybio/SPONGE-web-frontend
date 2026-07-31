@@ -66,7 +66,7 @@
 
   <!-- Disease selector for network -->
   <div class="disease-section" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 2px; flex: 1; min-width: 180px;">
+    <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px;">
       <mat-form-field appearance="outline" class="disease-field" style="flex: 1;">
         <mat-label>Disease (for network)</mat-label>
         <mat-select [value]="selectedDisease()" (selectionChange)="selectedDisease.set($event.value)" id="cart-disease-select">
@@ -88,7 +88,7 @@
           }
         </mat-select>
       </mat-form-field>
-      <app-info type="icon" title="Disease & Subtype Datasets" style="margin-top: -16px;">
+      <app-info type="icon" title="Disease & Subtype Datasets">
         <p>
           The disease datasets in SPONGE originate from
           <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
