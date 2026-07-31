@@ -92,13 +92,13 @@ export class HomeComponent implements OnDestroy {
     this.diseases = versionsService.diseases$();
 
     this.overallCountsGenes = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'gene'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'gene'),
     });
 
     this.overallCountsTranscripts = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'transcript'),
     });
 
     fromEvent(window, 'resize')

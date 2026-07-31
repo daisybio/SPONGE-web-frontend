@@ -76,8 +76,8 @@ export class CartComponent {
 
   // Dataset loading via resource
   private datasetsResource = resource({
-    request: () => this.versionsService.versionReadOnly()(),
-    loader: async ({ request: version }) => {
+    params: () => this.versionsService.versionReadOnly()(),
+    loader: async ({ params: version }) => {
       if (!version) return [];
       return await this.backend.getDatasets(version);
     }

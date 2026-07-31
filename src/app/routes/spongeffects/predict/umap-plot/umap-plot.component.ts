@@ -118,12 +118,12 @@ export class UmapPlotComponent implements OnDestroy {
   mode = input<'predict' | 'explore'>('predict');
 
   exploreUmapResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       if (this.mode() !== 'explore') return undefined;
       const level = this.exploreService?.level$();
       return level;
     }),
-    loader: async ({ request: level }) => {
+    loader: async ({ params: level }) => {
       if (!level) return undefined;
       try {
         const data = await this.backend.getUmapProjection(level, { values: [], samples: [], genes: [] });

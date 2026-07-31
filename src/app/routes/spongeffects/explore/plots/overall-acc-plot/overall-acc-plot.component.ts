@@ -51,7 +51,7 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
   defaultMarkerSize: number = 10;
 
   plotOverallAccResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
@@ -60,10 +60,10 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
       }
     }),
     loader: async (param) => {
-      const version = param.request.version;
-      const cancer = param.request.cancer;
-      const level = param.request.level;
-      const params = param.request.params;
+      const version = param.params.version;
+      const cancer = param.params.cancer;
+      const level = param.params.level;
+      const params = param.params.params;
       if (version === undefined || cancer === undefined || level === undefined || params === undefined ) return;
       const data = this.getOverallAccuracyData(version, cancer, level, params);
       return await this.plotOverallAccuracyPlot(data);

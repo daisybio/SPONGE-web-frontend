@@ -54,11 +54,11 @@ export class BrowseService {
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _comparisons$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return this._version$();
     }),
     loader: (param) => {
-      return this.backend.getComparisons(param.request);
+      return this.backend.getComparisons(param.params);
     },
   });
   private readonly _currentData$: ResourceRef<NetworkData | undefined>;
@@ -106,7 +106,7 @@ export class BrowseService {
       .filter((interaction) => interaction !== undefined);
   });
   private readonly _networkResults$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this._version$(),
         level: this.level$(),
@@ -114,8 +114,8 @@ export class BrowseService {
     }),
     loader: (param) => {
       return this.backend.getNetworkResults(
-        param.request.version,
-        param.request.level
+        param.params.version,
+        param.params.level
       );
     },
   });
@@ -128,14 +128,14 @@ export class BrowseService {
     const destroyRef = inject(DestroyRef);
 
     this._currentData$ = resource({
-      request: computed(() => {
+      params: computed(() => {
         return {
           version: this._version$(),
           config: this._query$(),
         };
       }),
       loader: (param) =>
-        this.fetchData(param.request.version, param.request.config),
+        this.fetchData(param.params.version, param.params.config),
     });
 
     effect(() => {
@@ -444,7 +444,7 @@ export class BrowseService {
     const level = 'ensg_number' in node ? 'gene' : 'transcript';
 
     return resource({
-      request: computed(() => {
+      params: computed(() => {
         return {
           interactions: this.interactions$(),
           disease: this.disease$(),
@@ -452,12 +452,12 @@ export class BrowseService {
         };
       }),
       loader: async (param) => {
-        const disease = param.request.disease;
+        const disease = param.params.disease;
         if (!disease) {
           return [];
         }
 
-        const interactions = param.request.interactions.filter(
+        const interactions = param.params.interactions.filter(
           (interaction) => {
             return BrowseService.getInteractionIDs(interaction).some(
               (interactionID) => interactionID == nodeId
@@ -468,7 +468,7 @@ export class BrowseService {
         const miRNAs$ = interactions.map((edge) =>
           this.backend
             .getMiRNAs(
-              param.request.version,
+              param.params.version,
               disease,
               BrowseService.getInteractionIDs(edge),
               level

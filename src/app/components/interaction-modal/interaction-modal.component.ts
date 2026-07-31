@@ -48,7 +48,7 @@ export class InteractionModalComponent implements AfterViewInit {
     );
   });
   miRNAs$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this.version$(),
         level: 'gene1' in this.data.interaction ? 'gene' : 'transcript',
@@ -56,10 +56,10 @@ export class InteractionModalComponent implements AfterViewInit {
       }
     }),
     loader: async (param) => {
-      const disease = param.request.disease;
+      const disease = param.params.disease;
       if (disease === undefined) return;
       const identifiers = BrowseService.getInteractionIDs(this.data.interaction);
-      return await this.backend.getMiRNAs(param.request.version, disease, identifiers, param.request.level as 'gene' | 'transcript');
+      return await this.backend.getMiRNAs(param.params.version, disease, identifiers, param.params.level as 'gene' | 'transcript');
     }
   })
   tableData$ = computed(() => {

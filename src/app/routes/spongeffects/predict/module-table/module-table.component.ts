@@ -129,13 +129,13 @@ export class ModuleTableComponent {
 
   // this is the top mscores from the user uploaded custom data: blue
   topEnrichScores = resource({
-    request: () => ({
+    params: () => ({
       prediction_scores: this.enrichmentScores$(),
       blueNodes: this.blueNodes(),
       selectedSamples: this.predictService.selectedSamples$()
     }),
-    loader: async ({ request }) => {
-      const { prediction_scores, blueNodes, selectedSamples } = request;
+    loader: async ({ params }) => {
+      const { prediction_scores, blueNodes, selectedSamples } = params;
       if (!prediction_scores || !blueNodes) {
         return [];
       }
@@ -165,13 +165,13 @@ export class ModuleTableComponent {
 
   // the grey modules: this is similar to the explore tab, but we show all modules from the TCGA data in grey. BUT ONLY FROM THE ACTUALLY USED MODEL, WHICH IS THE BEST MODEL
   lolipopPlotData = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.selectedDisease(),
       level: this.predictService.level() || this.exploreService.level$(),
     }),
-    loader: ({ request }) => {
-      const { version, cancer, level } = request;
+    loader: ({ params }) => {
+      const { version, cancer, level } = params;
       if (!version || !cancer || !level) {
         return Promise.resolve([]);
       }
@@ -185,7 +185,7 @@ export class ModuleTableComponent {
 
   // the blue modules (custom data): this is the modules that correspond to the top enrichment scores from the user uploaded custom data
   tableDataResource = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionService.versionReadOnly()(),
       level: this.predictService.level(),
       prediction: this.topEnrichScores.value(),
@@ -193,8 +193,8 @@ export class ModuleTableComponent {
       blueNodes: this.blueNodes(),
       disease: this.selectedDisease(),
     }),
-    loader: async ({ request }) => {
-      const { version, level, prediction, includeMembers, disease } = request;
+    loader: async ({ params }) => {
+      const { version, level, prediction, includeMembers, disease } = params;
       if (!version || !level || !prediction || prediction.length === 0 || !disease) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }

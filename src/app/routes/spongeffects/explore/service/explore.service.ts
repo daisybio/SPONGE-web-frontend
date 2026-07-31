@@ -27,7 +27,7 @@ export class ExploreService {
   spongEffectsService = inject(SpongEffectsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  level$ = signal<'gene' | 'transcript'>('gene');
+  level$ = signal<'gene' | 'transcript'>('transcript');
   selectedTabIndex$ = signal<number>(0);
   lineTop = signal<number | undefined>(undefined); // height of the separator to the network -> align the form in the side panel
   diseaseNames$ = this.spongEffectsService.diseaseNames$;
@@ -184,7 +184,7 @@ export class ExploreService {
 
   // For the class performance tab
   readonly runClassPerformance$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this.versionsService.versionReadOnly()(),
         cancer: this.selectedDisease$(),
@@ -193,10 +193,10 @@ export class ExploreService {
       };
     }),
     loader: async (param) => {
-      const version = param.request.version;
-      const cancer = param.request.cancer;
-      const level = param.request.level;
-      const params = param.request.params;
+      const version = param.params.version;
+      const cancer = param.params.cancer;
+      const level = param.params.level;
+      const params = param.params.params;
       if (version === undefined || cancer === undefined || level === undefined || params === undefined)
         return [];
       const modelPerformances: RunClassPerformance[] = [];
@@ -218,15 +218,15 @@ export class ExploreService {
   minScore2 = signal<number | null>(null);
 
   selectedModules = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionsService.versionReadOnly()(),
       disease: this.selectedDisease$(),
       level: this.level$(),
       selectedParamSets: this.selectedParamSets$(),
       topN: this.topN(),
     }),
-    loader: async ({ request }) => {
-      const { version, disease, level, selectedParamSets, topN } = request;
+    loader: async ({ params }) => {
+      const { version, disease, level, selectedParamSets, topN } = params;
       if (!version || !disease || !level || !selectedParamSets) {
         return [];
       }

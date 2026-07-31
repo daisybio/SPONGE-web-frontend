@@ -12,10 +12,10 @@ export class VersionsService {
 
   constructor(backendService: BackendService) {
     this._diseases$ = resource({
-      request: this.version$,
+      params: this.version$,
       loader: async (version) =>
-        (await backendService.getDatasets(version.request)).filter(
-          (dataset) => dataset.sponge_db_version === version.request,
+        (await backendService.getDatasets(version.params)).filter(
+          (dataset) => dataset.sponge_db_version === version.params,
         ),
     });
 

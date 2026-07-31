@@ -14,9 +14,9 @@ export class SpongEffectsService {
   readonly selectedMode$ = signal<'explore' | 'predict' | 'enrichment'>('enrichment');
 
   spongEffectsRuns$ = resource({
-    request: this._version$,
+    params: this._version$,
     loader: async (version) => {
-      return await this.backend.getSpongEffectsRuns(version.request);
+      return await this.backend.getSpongEffectsRuns(version.params);
     }
   });
 

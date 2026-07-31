@@ -99,7 +99,7 @@ export class ClassificationPlotComponent {
   isCombinedMode = signal(true);
 
   plotResource = resource({
-    request: computed(() => ({
+    params: computed(() => ({
       prediction: this.predictService.prediction$(),
       version: this.versionsService.versionReadOnly()(),
       level: this.predictService.level(),
@@ -108,7 +108,7 @@ export class ClassificationPlotComponent {
       selectedScope: this.predictService.selectedScope$(),
     })),
     loader: async (param) => {
-      const { prediction, version, level, isSubtype, isCombinedMode } = param.request;
+      const { prediction, version, level, isSubtype, isCombinedMode } = param.params;
       if (!prediction || !version) return null;
       return await this.buildRows(prediction, version, level, isSubtype, isCombinedMode);
     },

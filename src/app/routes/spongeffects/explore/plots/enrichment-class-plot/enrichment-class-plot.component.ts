@@ -68,7 +68,7 @@ export class EnrichmentClassPlotComponent {
   selectedParamSets$ = computed(() => this.paramSetsInput() ?? this.exploreService?.selectedParamSets$() ?? {});
 
   plotResource = resource({
-    request: computed(() => ({
+    params: computed(() => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.selectedDisease(),
       level: this.level$(),
@@ -79,7 +79,7 @@ export class EnrichmentClassPlotComponent {
       isCombinedMode: this.isCombinedMode(),
     })),
     loader: async (param) => {
-      const { version, cancer, level, selectedParamSets, customScores, customLabel } = param.request;
+      const { version, cancer, level, selectedParamSets, customScores, customLabel } = param.params;
       if (version === undefined || cancer === undefined || level === undefined || selectedParamSets === undefined) {
         return null;
       }

@@ -61,7 +61,7 @@ export class GenesComponent {
   readonly version = this.versionsService.versionReadOnly();
   readonly tabChange = signal<number>(0);
 
-  readonly level = signal<'gene' | 'transcript'>('gene');
+  readonly level = signal<'gene' | 'transcript'>('transcript');
   readonly currentInput = model<string | Gene>('');
   readonly currentTranscriptInput = model<string | Transcript>('');
   readonly onlySignificant = model(true);
@@ -71,7 +71,7 @@ export class GenesComponent {
   readonly activeDisease = signal<Dataset | undefined>(undefined);
 
   readonly possibleGenes = resource({
-    request: computed(() => {
+    params: computed(() => {
       const currentInput = this.currentInput();
 
       let query = '';
@@ -88,14 +88,14 @@ export class GenesComponent {
     }),
     loader: async (param) => {
       return this.backend.getAutocomplete(
-        param.request.version,
-        param.request.query
+        param.params.version,
+        param.params.query
       );
     },
   });
 
   readonly possibleTranscripts = resource({
-    request: computed(() => {
+    params: computed(() => {
       const currentInput = this.currentTranscriptInput();
 
       let query = '';
@@ -108,12 +108,12 @@ export class GenesComponent {
       return { query };
     }),
     loader: async (param) => {
-      return this.backend.stringSearchTranscript(param.request.query);
+      return this.backend.stringSearchTranscript(param.params.query);
     },
   });
 
   readonly results = resource({
-    request: computed(() => {
+    params: computed(() => {
       const currentLevel = this.level();
 
       if (currentLevel === 'gene') {
@@ -133,24 +133,24 @@ export class GenesComponent {
       }
     }),
     loader: async (param) => {
-      if (param.request.level === 'gene') {
+      if (param.params.level === 'gene') {
         return this.backend.getGeneCount(
-          param.request.version,
-          param.request.ensgs,
-          param.request.onlySignificant
+          param.params.version,
+          param.params.ensgs,
+          param.params.onlySignificant
         );
       } else {
         return this.backend.getTranscriptCount(
-          param.request.version,
-          param.request.ensts,
-          param.request.onlySignificant
+          param.params.version,
+          param.params.ensts,
+          param.params.onlySignificant
         );
       }
     },
   });
 
   readonly interactions$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       const currentLevel = this.level();
 
       if (currentLevel === 'gene') {
@@ -172,19 +172,19 @@ export class GenesComponent {
       }
     }),
     loader: async (param) => {
-      if (param.request.level === 'gene') {
+      if (param.params.level === 'gene') {
         return this.backend.getGeneInteractionsAll(
-          param.request.version,
-          param.request.disease,
-          param.request.onlySignificant ? 0.05 : 1,
-          param.request.ensgs
+          param.params.version,
+          param.params.disease,
+          param.params.onlySignificant ? 0.05 : 1,
+          param.params.ensgs
         );
       } else {
         return this.backend.getTranscriptInteractionsAll(
-          param.request.version,
-          param.request.disease,
-          param.request.onlySignificant ? 0.05 : 1,
-          param.request.ensts
+          param.params.version,
+          param.params.disease,
+          param.params.onlySignificant ? 0.05 : 1,
+          param.params.ensts
         );
       }
     },

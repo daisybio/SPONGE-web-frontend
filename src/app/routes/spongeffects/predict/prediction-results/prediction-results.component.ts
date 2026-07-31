@@ -65,13 +65,13 @@ export class PredictionResultsComponent {
   });
 
   plotTypePredictPieResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         data: this.prediction$(),
       };
     }),
     loader: async (param) => {
-      const data = param.request.data;
+      const data = param.params.data;
       if (data === undefined) return;
       const plot_data = this.extractPredictions(data);
       return await this.plotPredictions(plot_data);

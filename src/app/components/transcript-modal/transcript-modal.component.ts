@@ -98,9 +98,9 @@ export class TranscriptModalComponent implements AfterViewInit {
   // SpongEffects module for this transcript (best model run). Not filtered by disease: runs are
   // pancancer (disease is null on the runs), so a disease_name filter returns zero modules.
   readonly module_IDs$ = resource({
-    request: computed(() => ({ version: this.version$(), enst: this.enstNumber })),
+    params: computed(() => ({ version: this.version$(), enst: this.enstNumber })),
     loader: async (params) => {
-      const { version, enst } = params.request;
+      const { version, enst } = params.params;
       if (!enst) return [];
       return await this.backend.getSpongEffectsTranscriptModules(version, undefined, {}, undefined, enst);
     },
@@ -108,12 +108,12 @@ export class TranscriptModalComponent implements AfterViewInit {
 
   // Averaged TCGA enrichment scores (mean + variance) for the transcript's module(s).
   readonly tcgaEffects$ = resource({
-    request: computed(() => ({
+    params: computed(() => ({
       version: this.version$(),
       module_ids: this.module_IDs$.value()?.map((m) => m.spongEffects_transcript_module_ID),
     })),
     loader: async (params) => {
-      const { version, module_ids } = params.request;
+      const { version, module_ids } = params.params;
       if (!module_ids || module_ids.length === 0) return [];
       return await this.backend.fetchSpongEffectsEnrichScores(version, 'transcript', module_ids, false, true);
     },
@@ -184,14 +184,14 @@ export class TranscriptModalComponent implements AfterViewInit {
 
   miRNAtracks$ = this.browseService.getMiRNATracksForNode(this.transcript);
   readonly transcriptInfo$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) => {
       const transcriptInfoPromise = this.backend
-        .getTranscriptInfo(version.request, this.transcript.enst_number)
+        .getTranscriptInfo(version.params, this.transcript.enst_number)
         .then((info) => info[0]);
 
       const geneInfoPromise = this.backend
-        .getGeneInfo(version.request, this.transcript.gene.ensg_number)
+        .getGeneInfo(version.params, this.transcript.gene.ensg_number)
         .then((info) => info[0]);
 
       const [transcriptInfo, geneInfo] = await Promise.all([
@@ -218,9 +218,9 @@ export class TranscriptModalComponent implements AfterViewInit {
   });
 
   readonly diggerInfo$ = resource({
-    request: () => this.transcript.enst_number,
+    params: () => this.transcript.enst_number,
     loader: async (param) =>
-      this.backend.checkDigger(param.request, 'transcript'),
+      this.backend.checkDigger(param.params, 'transcript'),
   });
 
   alternativeSplicingEvents = resource({

@@ -96,7 +96,7 @@ export class FormComponent implements OnInit {
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   formGroup = new FormGroup({
-    level: new FormControl<'gene' | 'transcript'>('gene'),
+    level: new FormControl<'gene' | 'transcript'>('transcript'),
     showOrphans: new FormControl<boolean>(false),
     sortingBetweenness: new FormControl<boolean>(true),
     sortingDegree: new FormControl<boolean>(false),

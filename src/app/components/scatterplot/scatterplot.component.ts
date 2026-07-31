@@ -80,7 +80,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
 
   // Resource-based data fetching
   scatterplotResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       // Include refreshSignal$ and showRemaining to trigger reloads
       this.refreshSignal$();
       this.showRemaining();
@@ -91,7 +91,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
       };
     }),
     loader: async (param) => {
-      const { dataSource, params } = param.request;
+      const { dataSource, params } = param.params;
 
       try {
         // Fetch data using the data source. Pass showRemaining so the source can decide

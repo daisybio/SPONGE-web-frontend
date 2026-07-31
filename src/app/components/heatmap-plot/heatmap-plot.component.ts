@@ -68,7 +68,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   
   // Resource-based data fetching
   heatmapResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         dataSource: this.dataSource(),
         params: this.params(),
@@ -76,7 +76,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       };
     }),
     loader: async (param) => {
-      const { dataSource, params, showSubtypes } = param.request;
+      const { dataSource, params, showSubtypes } = param.params;
       
       // Fetch data using the data source
       const data = await dataSource.getData(params);

@@ -67,13 +67,13 @@ export class NewHomeComponent implements OnDestroy {
   diseases = this.versionsService.diseases$();
 
   overallCountsGenes = resource({
-    request: this.version,
-    loader: (param) => this.backend.getOverallCounts(param.request, 'gene'),
+    params: this.version,
+    loader: (param) => this.backend.getOverallCounts(param.params, 'gene'),
   });
 
   overallCountsTranscripts = resource({
-    request: this.version,
-    loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
+    params: this.version,
+    loader: (param) => this.backend.getOverallCounts(param.params, 'transcript'),
   });
 
   // Computed real numbers derived directly from backend API responses

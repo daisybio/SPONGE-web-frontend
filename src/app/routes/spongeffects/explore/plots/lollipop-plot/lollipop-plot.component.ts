@@ -270,7 +270,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
   // Caching and symbol resolution for predict mode
   predictionModulesResource = resource({
-    request: () => ({
+    params: () => ({
       pred: this.prediction(),
       version: this.versionService.versionReadOnly()(),
       source: this.source(),
@@ -278,8 +278,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       sortBy: this.predictService?.sortBy$(),
       topNModules: this.predictService?.topNModules$() || 15
     }),
-    loader: async ({ request }) => {
-      const { pred, version, source, selectedSamples, sortBy, topNModules } = request;
+    loader: async ({ params }) => {
+      const { pred, version, source, selectedSamples, sortBy, topNModules } = params;
       if (source !== 'predict' || !pred || !pred.scores || !pred.scores.genes || !pred.scores.values || !version) {
         return [];
       }
@@ -452,7 +452,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
   // the grey modules
   lolipopPlotData = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.exploreService?.selectedDisease$(),
       level: this.exploreService?.level$(),
@@ -460,8 +460,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       selectedParamSets: this.exploreService?.selectedParamSets$(),
       source: this.source()
     }),
-    loader: ({ request }) => {
-      const { version, cancer, level, topN, selectedParamSets, source } = request;
+    loader: ({ params }) => {
+      const { version, cancer, level, topN, selectedParamSets, source } = params;
       if (source === 'predict') return Promise.resolve([]);
       if (!version || !cancer || !level || !selectedParamSets) {
         return Promise.resolve([]);
@@ -908,7 +908,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   tableMembersResource = resource({
-    request: () => ({
+    params: () => ({
       modules: this.selectedModules$(),
       source: this.source(),
       version: this.versionService.versionReadOnly()(),
@@ -920,8 +920,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       networkNodes: this.source() === 'predict' ? this.stableNetworkNodes$() : [],
       networkEdges: this.source() === 'predict' ? this.stableNetworkEdges$() : [],
     }),
-    loader: async ({ request }) => {
-      const { modules, source, version, disease, level, networkNodes, networkEdges } = request;
+    loader: async ({ params }) => {
+      const { modules, source, version, disease, level, networkNodes, networkEdges } = params;
 
       if (source === 'predict') {
         // Show exactly the network's displayed members (non-center nodes), so the table and the

@@ -75,7 +75,7 @@ export class PredictService {
   private readonly _query$ = signal<Query | undefined>(undefined);
   _subtypes$ = signal<boolean>(false);
   example_used = signal<boolean>(false);
-  level = signal<'gene' | 'transcript'>('gene');
+  level = signal<'gene' | 'transcript'>('transcript');
 
   readonly selectedSamples$ = signal<string[]>([]);
   readonly includeModuleMembers$ = signal<boolean>(true);
@@ -258,14 +258,14 @@ export class PredictService {
   });
 
   readonly _prediction$: ResourceRef<PredictCancerType | undefined> = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         query: this._query$(),
         example: this.examplePrediction(),
       };
     }),
     loader: async (param) => {
-      const query = param.request.query;
+      const query = param.params.query;
       let prediction: PredictCancerType | undefined;
       if (!query) {
         const example = await this.examplePrediction();

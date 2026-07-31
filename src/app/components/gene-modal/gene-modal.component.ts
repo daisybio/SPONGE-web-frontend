@@ -104,13 +104,13 @@ export class GeneModalComponent implements AfterViewInit {
   private predictService = inject(PredictService, { optional: true });
 
   readonly module_IDs$: ResourceRef<SpongEffectsGeneModules[] | undefined> = resource({
-    request: computed(() => {
+    params: computed(() => {
       const version = this.version$();
       const ensg = this.ensgNumber;
       return { version, ensg };
     }),
     loader: async (params) => {
-      const { version, ensg } = params.request;
+      const { version, ensg } = params.params;
       if (!ensg) return [];
       // Do NOT filter by disease: SpongEffects runs are pancancer (disease is null on the runs),
       // so any disease_name filter returns zero modules. get_best returns the gene's best module.
@@ -126,14 +126,14 @@ export class GeneModalComponent implements AfterViewInit {
   });
 
   readonly tcgaEffects$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       const version = this.version$();
       const module_ids = this.module_IDs$.value()?.map((module) => module.spongEffects_gene_module_ID);
       return { version, module_ids };
     }),
     loader: async (params) => {
-      if (!params.request.module_ids || params.request.module_ids.length === 0) return [];
-      return await this.backend.fetchSpongEffectsEnrichScores(params.request.version, "gene", params.request.module_ids, false, true);
+      if (!params.params.module_ids || params.params.module_ids.length === 0) return [];
+      return await this.backend.fetchSpongEffectsEnrichScores(params.params.version, "gene", params.params.module_ids, false, true);
     }
   });
 
@@ -184,31 +184,31 @@ export class GeneModalComponent implements AfterViewInit {
   }
 
   readonly geneInfo$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
       this.geneEnsgNumber
         ? this.backend
-            .getGeneInfo(version.request, this.geneEnsgNumber)
+            .getGeneInfo(version.params, this.geneEnsgNumber)
             .then((info) => info[0])
         : undefined,
   });
 
   readonly goTerms$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getGOterms(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getGOterms(version.params, this.geneSymbol) : [],
   });
 
   readonly hallmarks$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getHallmark(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getHallmark(version.params, this.geneSymbol) : [],
   });
 
   readonly wikipathways$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getWikiPathways(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getWikiPathways(version.params, this.geneSymbol) : [],
   });
 
   get geneEnsgNumber(): string | undefined {
@@ -216,10 +216,10 @@ export class GeneModalComponent implements AfterViewInit {
   }
 
   readonly transcripts$: ResourceRef<ASEntry[] | undefined> = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) => {
       const transcripts = await this.backend.getGeneTranscripts(
-        version.request,
+        version.params,
         this.gene.ensg_number,
       );
       const asEvents =
