@@ -1,116 +1,112 @@
-<form [formGroup]="formGroup()">
-  <div style="padding: 12px 12px 0;">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <mat-form-field appearance="outline" style="flex: 1;">
-        <mat-label>Disease</mat-label>
-        <mat-select [(value)]="disease$">
-          @let diseases = diseases$();
-          @let sampleCounts = diseaseSampleCounts$();
-          @for (disease of diseases; track disease; let index = $index) {
-            <mat-option [value]="disease">
-              <div class="option-content-row">
-                <span>{{ getDiseaseDisplayName(disease) }}</span>
-                @if (sampleCounts.get(disease); as count) {
-                  <span class="sample-count" [class.pancancer-count]="disease.toLowerCase() === 'pancancer'">
-                    ({{ count }})
-                  </span>
-                }
-              </div>
-            </mat-option>
-            @if (disease.toLowerCase() === 'pancancer' && index < diseases.length - 1) {
-              <mat-divider></mat-divider>
-            }
-          }
-        </mat-select>
-      </mat-form-field>
-      <app-info type="icon" title="Disease & Subtype Datasets">
-        <p>
-          The disease datasets in SPONGE originate from
-          <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
-        </p>
-        <ul>
-          <li>
-            <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
-          </li>
-          <li>
-            <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
-          </li>
-          <li>
-            <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
-          </li>
-        </ul>
-      </app-info>
-    </div>
-
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Subtype</mat-label>
-      @let subtypes = availableSubtypes();
-      <mat-select [(value)]="selectedSubtype$" [disabled]="subtypes.length < 2">
-        @for (dataset of subtypes; track dataset.dataset_ID) {
-          <mat-option [value]="dataset.disease_subtype ?? null">
+<div style="padding: 12px 12px 0;">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <mat-form-field appearance="outline" style="flex: 1;">
+      <mat-label>Disease</mat-label>
+      <mat-select [(value)]="disease$">
+        @let diseases = diseases$();
+        @let sampleCounts = diseaseSampleCounts$();
+        @for (disease of diseases; track disease; let index = $index) {
+          <mat-option [value]="disease">
             <div class="option-content-row">
-              <span>{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</span>
-              <span class="sample-count">({{ dataset.sample_count }})</span>
+              <span>{{ getDiseaseDisplayName(disease) }}</span>
+              @if (sampleCounts.get(disease); as count) {
+                <span class="sample-count" [class.pancancer-count]="disease.toLowerCase() === 'pancancer'">
+                  ({{ count }})
+                </span>
+              }
             </div>
           </mat-option>
+          @if (disease.toLowerCase() === 'pancancer' && index < diseases.length - 1) {
+            <mat-divider></mat-divider>
+          }
         }
       </mat-select>
     </mat-form-field>
-
-    <div class="card-container">
-      <mat-button-toggle-group [(value)]="level$">
-        <mat-button-toggle value="gene">Gene</mat-button-toggle>
-        <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
+    <app-info type="icon" title="Disease & Subtype Datasets">
+      <p>
+        The disease datasets in SPONGE originate from
+        <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
+      </p>
+      <ul>
+        <li>
+          <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
+        </li>
+        <li>
+          <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
+        </li>
+        <li>
+          <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
+        </li>
+      </ul>
+    </app-info>
   </div>
 
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>Model</mat-panel-title>
-    </mat-expansion-panel-header>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Subtype</mat-label>
+    @let subtypes = availableSubtypes();
+    <mat-select [(value)]="selectedSubtype$" [disabled]="subtypes.length < 2">
+      @for (dataset of subtypes; track dataset.dataset_ID) {
+        <mat-option [value]="dataset.disease_subtype ?? null">
+          <div class="option-content-row">
+            <span>{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</span>
+            <span class="sample-count">({{ dataset.sample_count }})</span>
+          </div>
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
 
-      Select the model(s) to display based on the paramers.
-      <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px; font-size: 14px">
-        <!-- First column with parameter names (not clickable) -->
-        <div style="width: 130px;">
-          <div style="margin-top: 11px; height: 25px;">Min. MScor</div>
-          <div style="margin-top: 15px; height: 25px;">Max. Adj. P-Value</div>
-          <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">Modules Cutoff</div>
-        </div>
+  <div class="card-container">
+    <mat-button-toggle-group [(value)]="level$">
+      <mat-button-toggle value="gene">Gene</mat-button-toggle>
+      <mat-button-toggle value="transcript">Transcript</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+</div>
 
-        <!-- Parameter set columns as clickable chips -->
-        <div style="display: flex; flex: 1; width: 80px;">
-          <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true"
-            style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
-            @for (paramSet of paramSets(); track paramSet; let i = $index) {
-            <mat-chip-option disableRipple="true" [selected]="formGroup().get('paramSet_' + (i + 1))?.value"
-              (selectionChange)="formGroup().get('paramSet_' + (i + 1))?.setValue($event.selected)"
-              style="flex: 1; height: auto;">
-              <div style="width: 80%; align-items: center; display: flex; flex-direction: column;">
-                <div style="margin-top: 10px; height: 25px;">
-                  {{ paramSet.m_scor_threshold }}
-                </div>
-                <div style="margin-top: 15px; height: 25px;">
-                  {{ paramSet.p_adj_threshold }}
-                </div>
-                <div style="margin-top: 15px; margin-bottom: 0px; height: 25px;">
-                  {{ paramSet.modules_cutoff }}
-                </div>
-                <div style="margin-top: 0px; margin-bottom: 15px; height: 5px;">
-                  {{ highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}
-                  <!-- <span style="margin-left: 2px;">*</span> -->
-                </div>
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Model</mat-panel-title>
+  </mat-expansion-panel-header>
+  <form [formGroup]="formGroup">
+    Select the model(s) to display based on the parameters.
+    <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px; font-size: 14px">
+      <!-- First column with parameter names (not clickable) -->
+      <div style="width: 130px;">
+        <div style="margin-top: 11px; height: 25px;">Min. MScor</div>
+        <div style="margin-top: 15px; height: 25px;">Max. Adj. P-Value</div>
+        <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">Modules Cutoff</div>
+      </div>
+
+      <!-- Parameter set columns as clickable chips -->
+      <div style="display: flex; flex: 1; width: 80px;">
+        <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true"
+          style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
+          @for (paramSet of paramSets(); track paramSet; let i = $index) {
+          <mat-chip-option disableRipple="true" [selected]="formGroup.get('paramSet_' + (i + 1))?.value"
+            (selectionChange)="formGroup.get('paramSet_' + (i + 1))?.setValue($event.selected)"
+            style="flex: 1; height: auto;">
+            <div style="width: 80%; align-items: center; display: flex; flex-direction: column;">
+              <div style="margin-top: 10px; height: 25px;">
+                {{ paramSet.m_scor_threshold }}
               </div>
-            </mat-chip-option>
-            }
-          </mat-chip-listbox>
-        </div>
+              <div style="margin-top: 15px; height: 25px;">
+                {{ paramSet.p_adj_threshold }}
+              </div>
+              <div style="margin-top: 15px; margin-bottom: 0px; height: 25px;">
+                {{ paramSet.modules_cutoff }}
+              </div>
+              <div style="margin-top: 0px; margin-bottom: 15px; height: 5px;">
+                {{ highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}
+              </div>
+            </div>
+          </mat-chip-option>
+          }
+        </mat-chip-listbox>
       </div>
-      <div style="font-size: 12px; margin-top: 5px;">
-        {{ highestKey().length > 0 ? '*Best model regarding to accuracy.' : '' }}
-      </div>
-
-
-  </mat-expansion-panel>
-</form>
+    </div>
+    <div style="font-size: 12px; margin-top: 5px;">
+      {{ highestKey().length > 0 ? '*Best model regarding to accuracy.' : '' }}
+    </div>
+  </form>
+</mat-expansion-panel>

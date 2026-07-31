@@ -94,7 +94,10 @@ export class NetworkFiltersComponent {
 
     // Render the KaTeX mscor equation once the info dialog projects the target span.
     effect(() => {
-      this.infoService.renderMscorEquation(this.mscorEquation$()!);
+      const eq = this.mscorEquation$();
+      if (eq?.nativeElement) {
+        this.infoService.renderMscorEquation(eq);
+      }
     });
   }
 

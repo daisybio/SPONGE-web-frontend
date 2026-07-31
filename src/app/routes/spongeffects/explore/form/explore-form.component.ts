@@ -44,7 +44,7 @@ export class ExploreFormComponent {
   selectedSubtype$ = this.exploreService.selectedSubtype$;
   availableSubtypes = this.exploreService.availableSubtypes$;
   spongeEffectsRuns = this.exploreService.spongeEffectsRuns$;
-  formGroup = this.exploreService.formGroup$;
+  formGroup = this.exploreService.formGroup;
   paramSets = this.exploreService.paramSets$;
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;

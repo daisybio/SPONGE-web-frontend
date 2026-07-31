@@ -129,19 +129,11 @@ export class ExploreService {
     );
   });
 
-  formGroup$ = computed(() => {
-    const paramSets = this.paramSets$();
-    const controls: { [key: string]: any } = {};
-    paramSets.forEach((_paramSet, index) => {
-      const key = `paramSet_${index + 1}`;
-      controls[key] = new FormControl<boolean>(true);
-    });
-    return new FormGroup(controls);
-  });
+  readonly formGroup = new FormGroup<any>({});
 
   /**
    * Writable signal containing the currently selected param sets (as an object map).
-   * Updated reactively from formGroup$ changes.
+   * Updated reactively from formGroup changes.
    */
   readonly selectedParamSets$: WritableSignal<{ [key: string]: any }> = signal({});
 
@@ -162,31 +154,43 @@ export class ExploreService {
       }
     });
 
-    // Whenever formGroup$ changes (i.e., disease changes), re-initialize selectedParamSets$
-    // and subscribe to form value changes — using takeUntilDestroyed to avoid leaks.
+    // Dynamically update formGroup controls whenever paramSets$ changes (e.g. disease changes)
     effect(() => {
-      const formGroup = this.formGroup$();
+      const paramSets = this.paramSets$();
+      const currentControlKeys = Object.keys(this.formGroup.controls);
 
-      // Initialize with current form values (all checked by default)
-      this._syncSelectedParamSets(formGroup);
+      // Remove controls that no longer exist
+      currentControlKeys.forEach((key) => {
+        this.formGroup.removeControl(key, { emitEvent: false });
+      });
 
-      // Subscribe to future changes; takeUntilDestroyed handles unsubscribe
-      formGroup.valueChanges
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => {
-          this._syncSelectedParamSets(formGroup);
-        });
+      // Add controls for current paramSets (checked by default)
+      paramSets.forEach((_paramSet, index) => {
+        const key = `paramSet_${index + 1}`;
+        this.formGroup.addControl(key, new FormControl<boolean>(true), { emitEvent: false });
+      });
+
+      this._syncSelectedParamSets();
     });
+
+    // Subscribe to form value changes
+    this.formGroup.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this._syncSelectedParamSets();
+      });
   }
 
-  private _syncSelectedParamSets(formGroup: FormGroup): void {
+  private _syncSelectedParamSets(): void {
     const selectedParamSets: { [key: string]: any } = {};
-    const controls = formGroup.controls;
+    const controls = this.formGroup.controls;
     Object.keys(controls).forEach((key) => {
-      if (controls[key].value) {
+      if (controls[key]?.value) {
         const paramSetIndex = parseInt(key.split('_')[1], 10) - 1;
         const paramSet = this.paramSets$()[paramSetIndex];
-        selectedParamSets[key] = paramSet;
+        if (paramSet) {
+          selectedParamSets[key] = paramSet;
+        }
       }
     });
     this.selectedParamSets$.set(selectedParamSets);
