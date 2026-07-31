@@ -14,10 +14,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { capitalize } from 'lodash';
 import { getDiseaseDisplayName, sortDiseaseNames } from '../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../constants';
+import { InfoComponent } from '../info/info.component';
 
 @Component({
   selector: 'app-disease-selector',
-  imports: [MatFormFieldModule, MatSelectModule, MatDividerModule],
+  imports: [MatFormFieldModule, MatSelectModule, MatDividerModule, InfoComponent],
   templateUrl: './disease-selector.component.html',
   styleUrl: './disease-selector.component.scss',
 })

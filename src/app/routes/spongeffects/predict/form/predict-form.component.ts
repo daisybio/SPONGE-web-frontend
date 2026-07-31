@@ -34,7 +34,7 @@ import { ExploreFormComponent } from '../../explore/form/explore-form.component'
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { Dataset } from '../../../../interfaces';
 import { MatCardModule } from '@angular/material/card';
-import { sortDiseaseObjects } from '../../../../cancer-colors';
+import { getDiseaseDisplayName, sortDiseaseObjects } from '../../../../cancer-colors';
 
 @Component({
   selector: 'app-predict-form',
@@ -79,6 +79,7 @@ export class PredictFormComponent {
     return sortDiseaseObjects(this.models$() || []);
   });
   protected readonly capitalize = capitalize;
+  protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
 
   // Real subtype names for the currently selected type, sourced from the full SPONGE dataset
   // catalog (not spongEffectsService.datasets$, which has no subtype-level entries yet — no

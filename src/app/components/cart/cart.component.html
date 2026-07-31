@@ -71,13 +71,19 @@
       <mat-select [value]="selectedDisease()" (selectionChange)="selectedDisease.set($event.value)" id="cart-disease-select">
         @let dsList = sortedDatasets();
         @for (ds of dsList; track ds.dataset_ID; let index = $index) {
-          <mat-option [value]="ds">{{ ds.disease_name }}{{ ds.disease_subtype ? ' – ' + ds.disease_subtype : '' }}</mat-option>
+          <mat-option [value]="ds">
+            {{ getDiseaseDisplayName(ds.disease_name) }}{{ ds.disease_subtype ? ' – ' + getDiseaseDisplayName(ds.disease_subtype) : '' }}
+            @if (ds.sample_count) { ({{ ds.sample_count }}) }
+          </mat-option>
           @if (ds.disease_name.toLowerCase() === 'pancancer' && index < dsList.length - 1) {
             <mat-divider></mat-divider>
           }
         }
       </mat-select>
     </mat-form-field>
+    <app-info type="icon">
+      Numbers in parentheses indicate the number of samples available for each disease/subtype.
+    </app-info>
     <button mat-stroked-button color="primary" class="network-btn"
       [disabled]="count() === 0 || !selectedDisease()"
       (click)="visualizeNetwork()"

@@ -14,6 +14,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatExpansionModule } from "@angular/material/expansion";
 import { getDiseaseDisplayName } from '../../../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../../../constants';
+import { InfoComponent } from '../../../../components/info/info.component';
 
 @Component({
   selector: 'app-explore-form',
@@ -28,7 +29,8 @@ import { SUBTYPE_DEFAULT } from '../../../../constants';
     MatCardModule,
     MatChipsModule,
     MatInputModule,
-    MatExpansionModule
+    MatExpansionModule,
+    InfoComponent,
   ],
   templateUrl: './explore-form.component.html',
   styleUrl: './explore-form.component.scss'
@@ -37,6 +39,7 @@ export class ExploreFormComponent {
   exploreService = inject(ExploreService)
   level$ = this.exploreService.level$;
   diseases$ = this.exploreService.diseaseNames$;
+  diseaseSampleCounts$ = this.exploreService.diseaseSampleCounts$;
   disease$ = this.exploreService.selectedDisease$;
   selectedSubtype$ = this.exploreService.selectedSubtype$;
   availableSubtypes = this.exploreService.availableSubtypes$;

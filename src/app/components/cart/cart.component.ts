@@ -23,6 +23,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CartService, CartItem } from '../../services/cart.service';
 import { getDiseaseDisplayName, sortDiseaseObjects } from '../../cancer-colors';
+import { InfoComponent } from '../info/info.component';
 import { ModalsService } from '../modals-service/modals.service';
 import { Gene, Transcript, Dataset } from '../../interfaces';
 import { BackendService } from '../../services/backend.service';
@@ -49,6 +50,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     MatSelectModule,
     MatAutocompleteModule,
     MatDialogModule,
+    InfoComponent,
   ],
   animations: [
     trigger('slideInOut', [
@@ -87,6 +89,7 @@ export class CartComponent {
   datasets = computed(() => this.datasetsResource.value() ?? []);
   sortedDatasets = computed(() => sortDiseaseObjects(this.datasets()));
   selectedDisease = signal<Dataset | null>(null);
+  protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
 
   items = this.cartService.items;
   count = this.cartService.count;

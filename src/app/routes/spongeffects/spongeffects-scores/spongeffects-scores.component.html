@@ -37,12 +37,16 @@
             <mat-select [value]="predictService.selectedScope$()"
               (valueChange)="predictService.selectedScope$.set($event)">
               @let scopes = predictService.availableScopes$();
+              @let scopeCounts = scopeSampleCounts$();
               @for (scope of scopes; track scope; let index = $index) {
-              <mat-option [value]="scope">{{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope)
-                }}</mat-option>
-              @if (scope.toLowerCase() === 'pancancer' && index < scopes.length - 1) { <mat-divider></mat-divider>
-                }
-                }
+              <mat-option [value]="scope">
+                {{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope) }}
+                @if (scopeCounts.get(scope)) { ({{ scopeCounts.get(scope) }}) }
+              </mat-option>
+              @if (scope.toLowerCase() === 'pancancer' && index < scopes.length - 1) {
+                <mat-divider></mat-divider>
+              }
+              }
             </mat-select>
           </mat-form-field>
 
@@ -52,12 +56,20 @@
             <mat-select [value]="selectedSubtype()" (valueChange)="selectedSubtype.set($event)"
               [disabled]="!hasSubtypeScores$()"
               [matTooltip]="!hasSubtypeScores$() ? 'Subtype-level SpongEffects scores are not available for this prediction.' : ''">
+              @let subCounts = subtypeSampleCounts$();
               @for (subtype of availableSubtypes$(); track subtype) {
-              <mat-option [value]="subtype">{{ getDiseaseDisplayName(subtype) }}</mat-option>
+              <mat-option [value]="subtype">
+                {{ getDiseaseDisplayName(subtype) }}
+                @if (subCounts.get(subtype)) { ({{ subCounts.get(subtype) }}) }
+              </mat-option>
               }
             </mat-select>
           </mat-form-field>
           }
+
+          <app-info type="icon">
+            Numbers in parentheses indicate the number of samples available for each disease/subtype.
+          </app-info>
 
           @if (predictService.prediction$()?.meta?.[0]?.subtype_predict; as subtype) {
           @if (subtype !== 'NA') {

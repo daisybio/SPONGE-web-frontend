@@ -78,11 +78,14 @@
       <mat-select formControlName="model">
         @let models = sortedModels$();
         @for (model of models; track model.dataset_ID; let index = $index) {
-        <mat-option [value]="model.disease_name">{{ capitalize(model.disease_name) }}</mat-option>
-        @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) { <mat-divider>
-          </mat-divider>
-          }
-          }
+        <mat-option [value]="model.disease_name">
+          {{ getDiseaseDisplayName(model.disease_name) }}
+          @if (model.sample_count) { ({{ model.sample_count }}) }
+        </mat-option>
+        @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) {
+          <mat-divider></mat-divider>
+        }
+        }
       </mat-select>
     </mat-form-field>
 
@@ -91,7 +94,10 @@
       <mat-label>Subtype (coming soon)</mat-label>
       <mat-select disabled [value]="null" placeholder="Type-level model will be used for now">
         @for (subtype of subtypesForSelectedType$(); track subtype.disease_subtype) {
-        <mat-option [value]="subtype.disease_subtype">{{ subtype.disease_subtype }}</mat-option>
+        <mat-option [value]="subtype.disease_subtype">
+          {{ getDiseaseDisplayName(subtype.disease_subtype || '') }}
+          @if (subtype.sample_count) { ({{ subtype.sample_count }}) }
+        </mat-option>
         }
       </mat-select>
       <mat-hint>
@@ -101,6 +107,9 @@
     </mat-form-field>
     }
 
+    <app-info type="icon">
+      Numbers in parentheses indicate the number of samples available for each disease/subtype.
+    </app-info>
   </mat-expansion-panel>
 
   <mat-expansion-panel>

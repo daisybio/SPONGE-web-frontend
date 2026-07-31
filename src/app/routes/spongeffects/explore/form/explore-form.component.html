@@ -4,8 +4,12 @@
       <mat-label>Disease</mat-label>
       <mat-select [(value)]="disease$">
         @let diseases = diseases$();
+        @let sampleCounts = diseaseSampleCounts$();
         @for (disease of diseases; track disease; let index = $index) {
-          <mat-option [value]="disease">{{ getDiseaseDisplayName(disease) }}</mat-option>
+          <mat-option [value]="disease">
+            {{ getDiseaseDisplayName(disease) }}
+            @if (sampleCounts.get(disease)) { ({{ sampleCounts.get(disease) }}) }
+          </mat-option>
           @if (disease.toLowerCase() === 'pancancer' && index < diseases.length - 1) {
             <mat-divider></mat-divider>
           }
@@ -22,6 +26,10 @@
         }
       </mat-select>
     </mat-form-field>
+
+    <app-info type="icon">
+      Numbers in parentheses indicate the number of samples available for each disease/subtype.
+    </app-info>
 
     <div class="card-container">
       <mat-button-toggle-group [(value)]="level$">

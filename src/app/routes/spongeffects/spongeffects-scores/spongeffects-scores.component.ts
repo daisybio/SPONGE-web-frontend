@@ -114,6 +114,27 @@ export class SpongeffectsScoresComponent {
       .filter((value, index, self) => self.indexOf(value) === index);
   });
 
+  scopeSampleCounts$ = computed(() => {
+    const counts = new Map<string, number>();
+    (this.predictService.referenceDatasets$() || []).forEach((d: Dataset) => {
+      if (!counts.has(d.disease_name) || d.disease_subtype == null || d.disease_subtype === '') {
+        counts.set(d.disease_name, d.sample_count);
+      }
+    });
+    return counts;
+  });
+
+  subtypeSampleCounts$ = computed(() => {
+    const counts = new Map<string, number>();
+    const scope = this.predictService.selectedScope$();
+    (this.predictService.referenceDatasets$() || []).forEach((d: Dataset) => {
+      if (d.disease_name === scope && d.disease_subtype) {
+        counts.set(d.disease_subtype, d.sample_count);
+      }
+    });
+    return counts;
+  });
+
   error$ = computed(() => {
     const error = this.predictService._prediction$.error();
     if (!error) return undefined;

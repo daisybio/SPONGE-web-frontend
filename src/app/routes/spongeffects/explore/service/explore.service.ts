@@ -60,6 +60,16 @@ export class ExploreService {
     return this.diseases$().filter((d) => d.disease_name === disease);
   });
 
+  readonly diseaseSampleCounts$ = computed(() => {
+    const counts = new Map<string, number>();
+    (this.diseases$() || []).forEach((d) => {
+      if (!counts.has(d.disease_name) || d.disease_subtype == null || d.disease_subtype === '') {
+        counts.set(d.disease_name, d.sample_count);
+      }
+    });
+    return counts;
+  });
+
   selectedDiseaseObject$: WritableSignal<Dataset> = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
     const subtype = this.selectedSubtype$();
