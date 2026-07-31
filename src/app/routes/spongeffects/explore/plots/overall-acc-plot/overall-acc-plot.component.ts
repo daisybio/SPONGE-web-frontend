@@ -78,7 +78,10 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       if (this.plotOverallAccResource.isLoading()) {
-        Plotly.purge(this.overallAccPlot().nativeElement);
+        const el = this.overallAccPlot()?.nativeElement;
+        if (el) {
+          Plotly.purge(el);
+        }
       }
     });
 
@@ -110,15 +113,17 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
     for (const [key, value] of Object.entries(params)) {
       const paramSet = value;
       const tmp = await this.backend.getRunPerformance(version, cancer, level, paramSet);
-      tmp.map((entry: RunPerformance) => {
-        modelPerformances.push(entry);
-        if (entry.model_type == "modules" && entry.split_type == "test") {
-          if (entry.accuracy > highest_accuracy) {
-            highest_accuracy = entry.accuracy;
-            highest_key = key;
+      if (Array.isArray(tmp)) {
+        tmp.forEach((entry: RunPerformance) => {
+          modelPerformances.push(entry);
+          if (entry.model_type == "modules" && entry.split_type == "test") {
+            if (entry.accuracy > highest_accuracy) {
+              highest_accuracy = entry.accuracy;
+              highest_key = key;
+            }
           }
-        }
-      });
+        });
+      }
     }
     this.exploreService.highestKey.set(highest_key);
     // rename key of the highest accuracy to "*old_key"

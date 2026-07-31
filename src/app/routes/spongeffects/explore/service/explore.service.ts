@@ -216,9 +216,11 @@ export class ExploreService {
       const modelPerformances: RunClassPerformance[] = [];
       for (const [_key, paramSet] of Object.entries(params)) {
         const tmp = await this.backend.getRunClassPerformance(version, cancer, level, paramSet);
-        tmp.map((entry: RunClassPerformance) => {
-          modelPerformances.push(entry);
-        });
+        if (Array.isArray(tmp)) {
+          tmp.forEach((entry: RunClassPerformance) => {
+            modelPerformances.push(entry);
+          });
+        }
       }
       return modelPerformances;
     },

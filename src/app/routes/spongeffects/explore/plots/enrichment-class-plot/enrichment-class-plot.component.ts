@@ -100,9 +100,11 @@ export class EnrichmentClassPlotComponent {
     customLabel?: string,
   ): Promise<Map<string, PlotData>> {
     const datas: EnrichmentScoreDistributions[] = [];
-    for (const _ of Object.entries(selectedParamSets)) {
-      const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level, selectedParamSets);
-      data.forEach((entry: EnrichmentScoreDistributions) => datas.push(entry));
+    for (const [_key, paramSet] of Object.entries(selectedParamSets)) {
+      const data = await this.backend.getEnrichmentScoreDistributions(version, cancer, level, paramSet);
+      if (Array.isArray(data)) {
+        data.forEach((entry: EnrichmentScoreDistributions) => datas.push(entry));
+      }
     }
     const classDensities = new Map<string, PlotData>();
     datas.forEach(entry => {
