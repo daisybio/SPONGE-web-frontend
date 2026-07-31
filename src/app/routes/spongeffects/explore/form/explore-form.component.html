@@ -83,21 +83,13 @@
         style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
         @for (paramSet of paramSets(); track paramSet; let i = $index) {
         <mat-chip-option disableRipple="true" [selected]="isParamSetSelected(i)"
-          (click)="toggleParamSet(i); $event.stopPropagation()"
+          (selectionChange)="setParamSetSelected(i, $event.selected)"
           style="flex: 1; height: auto;">
-          <div style="width: 80%; align-items: center; display: flex; flex-direction: column;">
-            <div style="margin-top: 10px; height: 25px;">
-              {{ paramSet.m_scor_threshold }}
-            </div>
-            <div style="margin-top: 15px; height: 25px;">
-              {{ paramSet.p_adj_threshold }}
-            </div>
-            <div style="margin-top: 15px; margin-bottom: 0px; height: 25px;">
-              {{ paramSet.modules_cutoff }}
-            </div>
-            <div style="margin-top: 0px; margin-bottom: 15px; height: 5px;">
-              {{ highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}
-            </div>
+          <div class="model-chip-content">
+            <div class="model-chip-cell">{{ paramSet.m_scor_threshold }}</div>
+            <div class="model-chip-cell">{{ paramSet.p_adj_threshold }}</div>
+            <div class="model-chip-cell">{{ paramSet.modules_cutoff }}</div>
+            <div class="model-chip-star">{{ highestKey() === 'paramSet_' + (i + 1) ? '*' : '' }}</div>
           </div>
         </mat-chip-option>
         }

@@ -185,6 +185,18 @@ export class ExploreService {
     this.selectedParamSetIndices.set(current);
   }
 
+  setParamSetIndexSelected(index: number, selected: boolean): void {
+    const current = new Set(this.selectedParamSetIndices());
+    if (selected) {
+      current.add(index);
+    } else {
+      if (current.size > 1) {
+        current.delete(index);
+      }
+    }
+    this.selectedParamSetIndices.set(current);
+  }
+
   isParamSetIndexSelected(index: number): boolean {
     return this.selectedParamSetIndices().has(index);
   }
@@ -239,38 +251,58 @@ export class ExploreService {
       if (!version || !disease || !level || !selectedParamSets) {
         return [];
       }
-      let modules: SpongEffectsModule[] = [];
+      let rawModules: SpongEffectsModule[] = [];
       const paramSetValues = Object.values(selectedParamSets);
       if (level === 'gene') {
         const results = await Promise.all(paramSetValues.map(paramSet =>
           this.backend.getSpongEffectsGeneModules(version, disease, paramSet, topN)
         ));
         results.forEach(tmp => {
-          modules.push(...tmp.map(entry => ({
-            ensemblID: entry.gene.ensg_number,
-            symbol: entry.gene.gene_symbol,
-            meanGiniDecrease: entry.mean_gini_decrease,
-            meanAccuracyDecrease: entry.mean_accuracy_decrease,
-            spongEffects_run_ID: entry.spongEffects_run_ID,
-            spongEffects_module_ID: entry.spongEffects_gene_module_ID,
-          })));
+          if (Array.isArray(tmp)) {
+            rawModules.push(...tmp.map(entry => ({
+              ensemblID: entry.gene.ensg_number,
+              symbol: entry.gene.gene_symbol,
+              meanGiniDecrease: entry.mean_gini_decrease,
+              meanAccuracyDecrease: entry.mean_accuracy_decrease,
+              spongEffects_run_ID: entry.spongEffects_run_ID,
+              spongEffects_module_ID: entry.spongEffects_gene_module_ID,
+            })));
+          }
         });
       } else {
         const results = await Promise.all(paramSetValues.map(paramSet =>
           this.backend.getSpongEffectsTranscriptModules(version, disease, paramSet, topN)
         ));
         results.forEach(tmp => {
-          modules.push(...tmp.map(entry => ({
-            ensemblID: entry.transcript.enst_number,
-            symbol: entry.transcript.gene.gene_symbol,
-            meanGiniDecrease: entry.mean_gini_decrease,
-            meanAccuracyDecrease: entry.mean_accuracy_decrease,
-            spongEffects_run_ID: entry.spongEffects_run_ID,
-            spongEffects_module_ID: entry.spongEffects_transcript_module_ID,
-          })));
+          if (Array.isArray(tmp)) {
+            rawModules.push(...tmp.map(entry => ({
+              ensemblID: entry.transcript.enst_number,
+              symbol: entry.transcript.gene.gene_symbol,
+              meanGiniDecrease: entry.mean_gini_decrease,
+              meanAccuracyDecrease: entry.mean_accuracy_decrease,
+              spongEffects_run_ID: entry.spongEffects_run_ID,
+              spongEffects_module_ID: entry.spongEffects_transcript_module_ID,
+            })));
+          }
         });
       }
-      return modules.slice(0, topN);
+
+      // Deduplicate modules by ensemblID
+      const uniqueMap = new Map<string, SpongEffectsModule>();
+      for (const mod of rawModules) {
+        const existing = uniqueMap.get(mod.ensemblID);
+        if (!existing) {
+          uniqueMap.set(mod.ensemblID, mod);
+        } else {
+          uniqueMap.set(mod.ensemblID, {
+            ...existing,
+            meanGiniDecrease: Math.max(existing.meanGiniDecrease, mod.meanGiniDecrease),
+            meanAccuracyDecrease: Math.max(existing.meanAccuracyDecrease, mod.meanAccuracyDecrease),
+          });
+        }
+      }
+
+      return Array.from(uniqueMap.values()).slice(0, topN);
     }
   });
 
@@ -287,9 +319,15 @@ export class ExploreService {
     let members: ModuleMember[] = [];
     const key = this.getModuleKey(module);
 
+    // Fetch members for THIS module by its ID (not by center ensg_number, which would resolve to
+    // the best-accuracy run's module and could mismatch the selected param-set's center).
+    const memberOpts = module.spongEffects_module_ID != null
+      ? { moduleId: module.spongEffects_module_ID }
+      : { ensemblID: module.ensemblID };
+
     if (level === 'gene') {
       const response = await this.spongEffectsService.getGeneModuleMembers(
-        version, disease, { ensemblID: module.ensemblID }
+        version, disease, memberOpts
       );
 
       members = response.map(r => ({
@@ -303,7 +341,7 @@ export class ExploreService {
       }));
     } else {
       const response = await this.spongEffectsService.getTranscriptModuleMembers(
-        version, disease, { ensemblID: module.ensemblID }
+        version, disease, memberOpts
       );
 
       members = response.map(r => ({

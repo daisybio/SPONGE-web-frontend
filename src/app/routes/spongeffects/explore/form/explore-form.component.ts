@@ -57,4 +57,8 @@ export class ExploreFormComponent {
   toggleParamSet(index: number): void {
     this.exploreService.toggleParamSetIndex(index);
   }
+
+  setParamSetSelected(index: number, selected: boolean): void {
+    this.exploreService.setParamSetIndexSelected(index, selected);
+  }
 }

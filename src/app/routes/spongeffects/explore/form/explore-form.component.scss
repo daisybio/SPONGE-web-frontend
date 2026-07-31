@@ -1,6 +1,9 @@
 // Center chip content and prevent shifting
 ::ng-deep .mat-mdc-chip-option {
   justify-content: center !important;
+  padding: 8px 4px !important;
+  height: auto !important;
+  min-height: 120px !important;
 }
 
 // Remove the checkmark graphic
@@ -8,30 +11,47 @@
   display: none !important;
 }
 
-// Ensure content stays centered by fixing width and alignment
+// Ensure content stays centered and visible
 ::ng-deep .mat-mdc-chip-action-label {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-// Ensure the chip content doesn't shift when selected
-::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__action-container {
-  justify-content: center;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  color: inherit !important;
   padding: 0 !important;
 }
 
-::ng-deep .mdc-evolution-chip__cell--primary {
-  /* align-items: center; */
-  flex-basis: 0% !important;
+::ng-deep .mdc-evolution-chip__action-container,
+::ng-deep .mdc-evolution-chip__cell--primary,
+::ng-deep .mdc-evolution-chip__action--primary {
+  width: 100% !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
-::ng-deep .mat-mdc-standard-chip.mdc-evolution-chip--with-primary-graphic .mdc-evolution-chip__action--primary {
-  padding-left: 0 !important;
-  padding-right: 0px !important;
+.model-chip-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
 }
 
-::ng-deep .mdc-evolution-chip--selectable:not(.mdc-evolution-chip--selected):not(.mdc-evolution-chip--with-primary-icon) .mdc-evolution-chip__graphic {
-  width: 0;
-  padding: 0;
+.model-chip-cell {
+  height: 25px;
+  line-height: 25px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 10px;
+
+  &:first-child {
+    margin-top: 6px;
+  }
+}
+
+.model-chip-star {
+  height: 16px;
+  line-height: 16px;
+  font-weight: bold;
+  font-size: 14px;
 }
