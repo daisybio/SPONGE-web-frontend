@@ -44,10 +44,17 @@ export class ExploreFormComponent {
   selectedSubtype$ = this.exploreService.selectedSubtype$;
   availableSubtypes = this.exploreService.availableSubtypes$;
   spongeEffectsRuns = this.exploreService.spongeEffectsRuns$;
-  formGroup = this.exploreService.formGroup;
   paramSets = this.exploreService.paramSets$;
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
   protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
   highestKey = this.exploreService.highestKey;
+
+  isParamSetSelected(index: number): boolean {
+    return this.exploreService.isParamSetIndexSelected(index);
+  }
+
+  toggleParamSet(index: number): void {
+    this.exploreService.toggleParamSetIndex(index);
+  }
 }

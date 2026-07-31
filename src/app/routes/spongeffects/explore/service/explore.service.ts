@@ -129,13 +129,22 @@ export class ExploreService {
     );
   });
 
-  readonly formGroup = new FormGroup<any>({});
+  readonly selectedParamSetIndices = signal<Set<number>>(new Set());
 
   /**
-   * Writable signal containing the currently selected param sets (as an object map).
-   * Updated reactively from formGroup changes.
+   * Computed signal containing the currently selected param sets (as an object map).
    */
-  readonly selectedParamSets$: WritableSignal<{ [key: string]: any }> = signal({});
+  readonly selectedParamSets$ = computed<{ [key: string]: any }>(() => {
+    const paramSets = this.paramSets$();
+    const selectedIndices = this.selectedParamSetIndices();
+    const result: { [key: string]: any } = {};
+    paramSets.forEach((paramSet, index) => {
+      if (selectedIndices.has(index)) {
+        result[`paramSet_${index + 1}`] = paramSet;
+      }
+    });
+    return result;
+  });
 
   constructor() {
     // Sync local selected disease back to global VersionsService state. Only write when the
@@ -154,46 +163,30 @@ export class ExploreService {
       }
     });
 
-    // Dynamically update formGroup controls whenever paramSets$ changes (e.g. disease changes)
+    // Reset selection to select all models whenever paramSets$ changes (e.g. disease changes)
     effect(() => {
       const paramSets = this.paramSets$();
-      const currentControlKeys = Object.keys(this.formGroup.controls);
-
-      // Remove controls that no longer exist
-      currentControlKeys.forEach((key) => {
-        this.formGroup.removeControl(key, { emitEvent: false });
+      const allIndices = new Set(paramSets.map((_, i) => i));
+      untracked(() => {
+        this.selectedParamSetIndices.set(allIndices);
       });
-
-      // Add controls for current paramSets (checked by default)
-      paramSets.forEach((_paramSet, index) => {
-        const key = `paramSet_${index + 1}`;
-        this.formGroup.addControl(key, new FormControl<boolean>(true), { emitEvent: false });
-      });
-
-      this._syncSelectedParamSets();
     });
-
-    // Subscribe to form value changes
-    this.formGroup.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this._syncSelectedParamSets();
-      });
   }
 
-  private _syncSelectedParamSets(): void {
-    const selectedParamSets: { [key: string]: any } = {};
-    const controls = this.formGroup.controls;
-    Object.keys(controls).forEach((key) => {
-      if (controls[key]?.value) {
-        const paramSetIndex = parseInt(key.split('_')[1], 10) - 1;
-        const paramSet = this.paramSets$()[paramSetIndex];
-        if (paramSet) {
-          selectedParamSets[key] = paramSet;
-        }
+  toggleParamSetIndex(index: number): void {
+    const current = new Set(this.selectedParamSetIndices());
+    if (current.has(index)) {
+      if (current.size > 1) {
+        current.delete(index);
       }
-    });
-    this.selectedParamSets$.set(selectedParamSets);
+    } else {
+      current.add(index);
+    }
+    this.selectedParamSetIndices.set(current);
+  }
+
+  isParamSetIndexSelected(index: number): boolean {
+    return this.selectedParamSetIndices().has(index);
   }
 
   // For the class performance tab
