@@ -103,12 +103,11 @@ export class ExploreService {
   readonly geneType$ = signal<string>('all');
   readonly supportFilter$ = signal<'all' | 'has_inverse' | 'no_inverse'>('all');
 
-  // For each disease and level, filter to get runs for selected disease and active level
+  // For each disease, there are multiple spongeffects runs — filter to get runs for selected disease
   spongeEffectsRuns$ = linkedSignal(() => {
     const selectedDisease = this.selectedDisease$();
-    const level = this.level$();
     let runs = this.spongEffectsService.spongEffectsRuns$.value() || [];
-    runs = runs.filter((run) => run.disease_name === selectedDisease && (!run.level || run.level === level));
+    runs = runs.filter((run) => run.disease_name === selectedDisease);
     return runs;
   });
 

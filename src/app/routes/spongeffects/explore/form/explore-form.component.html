@@ -80,11 +80,11 @@
     <!-- Parameter set columns as clickable chips -->
     <div style="display: flex; flex: 1; min-width: 0;">
       <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true"
-        style="display: flex; flex-wrap: nowrap; gap: 8px; width: 100%;">
+        style="display: flex; flex: 1; flex-wrap: nowrap; gap: 4px; width: 100%;">
         @for (paramSet of paramSets(); track paramSet; let i = $index) {
         <mat-chip-option disableRipple="true" [selected]="isParamSetSelected(i)"
           (selectionChange)="setParamSetSelected(i, $event.selected)"
-          style="flex: 0 0 75px; min-width: 75px; height: auto;">
+          style="flex: 1; min-width: 55px; height: auto;">
           <div class="model-chip-content">
             <div class="model-chip-cell">{{ paramSet.m_scor_threshold }}</div>
             <div class="model-chip-cell">{{ paramSet.p_adj_threshold }}</div>
