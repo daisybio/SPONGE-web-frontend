@@ -69,22 +69,22 @@
     <mat-panel-title>Model</mat-panel-title>
   </mat-expansion-panel-header>
   Select the model(s) to display based on the parameters.
-  <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px; font-size: 14px">
+  <div class="parameter-table-container" style="display: flex; width: 100%; margin-top: 10px; font-size: 14px; overflow-x: auto; max-width: 100%;">
     <!-- First column with parameter names (not clickable) -->
-    <div style="width: 130px;">
+    <div style="width: 130px; flex-shrink: 0;">
       <div style="margin-top: 11px; height: 25px;">Min. MScor</div>
       <div style="margin-top: 15px; height: 25px;">Max. Adj. P-Value</div>
       <div style="margin-top: 15px; margin-bottom: 5px; height: 25px;">Modules Cutoff</div>
     </div>
 
     <!-- Parameter set columns as clickable chips -->
-    <div style="display: flex; flex: 1; width: 80px;">
+    <div style="display: flex; flex: 1; min-width: 0;">
       <mat-chip-listbox hideSingleSelectionIndicator="true" multiple="true"
-        style="display: flex; flex: 1; align-items: center; justify-content: center; text-align: center;">
+        style="display: flex; flex-wrap: nowrap; gap: 8px; width: 100%;">
         @for (paramSet of paramSets(); track paramSet; let i = $index) {
         <mat-chip-option disableRipple="true" [selected]="isParamSetSelected(i)"
           (selectionChange)="setParamSetSelected(i, $event.selected)"
-          style="flex: 1; height: auto;">
+          style="flex: 0 0 75px; min-width: 75px; height: auto;">
           <div class="model-chip-content">
             <div class="model-chip-cell">{{ paramSet.m_scor_threshold }}</div>
             <div class="model-chip-cell">{{ paramSet.p_adj_threshold }}</div>
