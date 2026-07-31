@@ -44,7 +44,7 @@
                   <div class="option-content-row">
                     <span>{{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope) }}</span>
                     @if (scopeCounts.get(scope); as count) {
-                      <span class="sample-badge" [class.pancancer-badge]="scope.toLowerCase() === 'pancancer'">
+                      <span class="sample-count" [class.pancancer-count]="scope.toLowerCase() === 'pancancer'">
                         ({{ count }})
                       </span>
                     }
@@ -63,7 +63,7 @@
               </p>
               <ul>
                 <li>
-                  <b>Sample numbers in badges:</b> Indicate the number of patient samples available for each disease or subtype.
+                  <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
                 </li>
                 <li>
                   <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
@@ -87,7 +87,7 @@
                 <div class="option-content-row">
                   <span>{{ getDiseaseDisplayName(subtype) }}</span>
                   @if (subCounts.get(subtype); as count) {
-                    <span class="sample-badge">({{ count }})</span>
+                    <span class="sample-count">({{ count }})</span>
                   }
                 </div>
               </mat-option>

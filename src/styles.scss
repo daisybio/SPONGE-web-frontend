@@ -242,24 +242,17 @@ td {
   gap: 12px;
 }
 
-/* Sample count badge in dropdown options */
-.sample-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 6px;
-  border-radius: 8px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  background-color: #f1f5f9;
+/* Sample count text in brackets */
+.sample-count {
   color: #64748b;
-  border: 1px solid #e2e8f0;
+  font-size: 0.85em;
+  font-weight: 400;
   white-space: nowrap;
 }
 
-/* Highlight badge for Pan-cancer */
-.pancancer-badge {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border-color: #bae6fd;
+/* Highlight count text for Pan-cancer */
+.pancancer-count {
+  color: #0284c7;
+  font-weight: 500;
 }
 
