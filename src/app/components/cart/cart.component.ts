@@ -22,6 +22,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CartService, CartItem } from '../../services/cart.service';
+import { getDiseaseDisplayName, sortDiseaseObjects } from '../../cancer-colors';
 import { ModalsService } from '../modals-service/modals.service';
 import { Gene, Transcript, Dataset } from '../../interfaces';
 import { BackendService } from '../../services/backend.service';
@@ -84,13 +85,7 @@ export class CartComponent {
   });
 
   datasets = computed(() => this.datasetsResource.value() ?? []);
-  sortedDatasets = computed(() => {
-    const ds = this.datasets();
-    const pan = ds.filter((d) => d.disease_name.toLowerCase() === 'pancancer');
-    const others = ds.filter((d) => d.disease_name.toLowerCase() !== 'pancancer')
-      .sort((a, b) => a.disease_name.localeCompare(b.disease_name));
-    return [...pan, ...others];
-  });
+  sortedDatasets = computed(() => sortDiseaseObjects(this.datasets()));
   selectedDisease = signal<Dataset | null>(null);
 
   items = this.cartService.items;

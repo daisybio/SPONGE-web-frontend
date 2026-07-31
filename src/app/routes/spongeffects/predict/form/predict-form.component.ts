@@ -34,33 +34,35 @@ import { ExploreFormComponent } from '../../explore/form/explore-form.component'
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { Dataset } from '../../../../interfaces';
 import { MatCardModule } from '@angular/material/card';
+import { sortDiseaseObjects } from '../../../../cancer-colors';
 
 @Component({
   selector: 'app-predict-form',
   imports: [
-    MatError,
+    CommonModule,
     MatFormField,
-    MatHint,
-    MatInput,
     MatLabel,
+    MatInput,
+    MatHint,
+    MatError,
     ReactiveFormsModule,
+    FormsModule,
     MatExpansionModule,
     MatCheckbox,
-    MatOption,
     MatSelect,
-    CommonModule,
+    MatOption,
+    NgIf,
+    NgForOf,
     MatButtonModule,
-    FormsModule,
     MatDropzone,
     FileInputDirective,
-    CommonModule,
     MatTableModule,
+    MatDividerModule,
     MatChipsModule,
     MatIconModule,
     MatTooltipModule,
     InfoComponent,
     MatCardModule,
-    MatDividerModule,
   ],
   templateUrl: './predict-form.component.html',
   styleUrl: './predict-form.component.scss',
@@ -74,11 +76,7 @@ export class PredictFormComponent {
   allPredictedTypes$ = this.predictService.allPredictedTypes$;
   models$ = this.spongEffectsService.datasets$;
   sortedModels$ = computed(() => {
-    const models = this.models$() || [];
-    const pan = models.filter((m) => m.disease_name.toLowerCase() === 'pancancer');
-    const others = models.filter((m) => m.disease_name.toLowerCase() !== 'pancancer')
-      .sort((a, b) => a.disease_name.localeCompare(b.disease_name));
-    return [...pan, ...others];
+    return sortDiseaseObjects(this.models$() || []);
   });
   protected readonly capitalize = capitalize;
 

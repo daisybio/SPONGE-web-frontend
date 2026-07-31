@@ -244,3 +244,24 @@ export function getDiseaseDisplayName(name: string): string {
     })
     .join(' ');
 }
+
+/**
+ * Sort disease names placing 'pancancer' at the top and sorting remaining names alphabetically.
+ */
+export function sortDiseaseNames(names: string[]): string[] {
+  const pan = names.filter((d) => d.toLowerCase() === 'pancancer');
+  const others = names.filter((d) => d.toLowerCase() !== 'pancancer').sort((a, b) => a.localeCompare(b));
+  return [...pan, ...others];
+}
+
+/**
+ * Sort objects with a disease_name property (e.g. Dataset, SpongEffectsRun)
+ * placing 'pancancer' at the top and sorting remaining items alphabetically by disease_name.
+ */
+export function sortDiseaseObjects<T extends { disease_name: string }>(items: T[]): T[] {
+  const pan = items.filter((d) => d.disease_name.toLowerCase() === 'pancancer');
+  const others = items.filter((d) => d.disease_name.toLowerCase() !== 'pancancer')
+    .sort((a, b) => a.disease_name.localeCompare(b.disease_name));
+  return [...pan, ...others];
+}
+

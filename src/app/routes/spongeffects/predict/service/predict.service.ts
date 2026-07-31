@@ -19,6 +19,7 @@ import {
 import { EXAMPLE_PREDICTION_URL, EXAMPLE_SUBTYPE_PREDICTION_URL, SPONGE_EXAMPLE_URL } from '../../../../constants';
 import { VersionsService } from '../../../../services/versions.service';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
+import { sortDiseaseNames } from '../../../../cancer-colors';
 
 export interface Query {
   useExampleExpression: boolean;
@@ -152,7 +153,7 @@ export class PredictService {
     const prediction = this._prediction$.value();
     const scopes = new Set<string>(['pancancer']);
     Object.keys(prediction?.type_scores ?? {}).forEach((k) => scopes.add(k));
-    return Array.from(scopes);
+    return sortDiseaseNames(Array.from(scopes));
   });
 
   // Writable scope selection driving both the module/network lookups and which score set

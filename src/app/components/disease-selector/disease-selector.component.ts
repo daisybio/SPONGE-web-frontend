@@ -12,7 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
 import { capitalize } from 'lodash';
-import { getDiseaseDisplayName } from '../../cancer-colors';
+import { getDiseaseDisplayName, sortDiseaseNames } from '../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../constants';
 
 @Component({
@@ -56,10 +56,7 @@ export class DiseaseSelectorComponent implements OnDestroy {
     return diseaseSubtypes;
   });
   readonly diseaseNames$ = computed(() => {
-    const keys = Array.from(this._diseaseSubtypeMap$().keys());
-    const pan = keys.filter((k) => k.toLowerCase() === 'pancancer');
-    const others = keys.filter((k) => k.toLowerCase() !== 'pancancer').sort();
-    return [...pan, ...others];
+    return sortDiseaseNames(Array.from(this._diseaseSubtypeMap$().keys()));
   });
   readonly possibleSubtypes$ = computed(
     () => this._diseaseSubtypeMap$().get(this.activeDisease$()) ?? []

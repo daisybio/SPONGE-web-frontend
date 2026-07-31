@@ -2,6 +2,7 @@ import { computed, inject, Injectable, resource, signal } from '@angular/core';
 import { BackendService } from "./backend.service";
 import { VersionsService } from "./versions.service";
 import { SpongEffectsRun, Dataset, SpongEffectsGeneModuleMembers, SpongEffectsTranscriptModuleMembers } from "../interfaces";
+import { sortDiseaseNames } from '../cancer-colors';
 
 @Injectable({
   providedIn: 'root'
@@ -44,8 +45,9 @@ export class SpongEffectsService {
   // diseaseNames$ = linkedSignal(() => this.datasets$().map(d => d.disease_name));
   diseaseNames$ = computed(() => {
     const runs = this.spongEffectsRuns$.value() || [];
-    return runs.map((run: SpongEffectsRun) => run.disease_name)
+    const unique = runs.map((run: SpongEffectsRun) => run.disease_name)
       .filter((value: string, index: number, self: Array<string>) => self.indexOf(value) === index);
+    return sortDiseaseNames(unique);
   });
 
   // ---- Shared, cached module-member access ----------------------------------------------
