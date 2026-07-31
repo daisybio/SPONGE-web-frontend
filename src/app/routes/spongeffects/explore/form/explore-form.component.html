@@ -8,8 +8,14 @@
           @let sampleCounts = diseaseSampleCounts$();
           @for (disease of diseases; track disease; let index = $index) {
             <mat-option [value]="disease">
-              {{ getDiseaseDisplayName(disease) }}
-              @if (sampleCounts.get(disease)) { ({{ sampleCounts.get(disease) }}) }
+              <div class="option-content-row">
+                <span>{{ getDiseaseDisplayName(disease) }}</span>
+                @if (sampleCounts.get(disease); as count) {
+                  <span class="sample-badge" [class.pancancer-badge]="disease.toLowerCase() === 'pancancer'">
+                    ({{ count }})
+                  </span>
+                }
+              </div>
             </mat-option>
             @if (disease.toLowerCase() === 'pancancer' && index < diseases.length - 1) {
               <mat-divider></mat-divider>
@@ -17,8 +23,22 @@
           }
         </mat-select>
       </mat-form-field>
-      <app-info type="icon" style="margin-top: -16px;">
-        <p>Numbers in parentheses indicate the number of samples available for each disease/subtype.</p>
+      <app-info type="icon" title="Disease & Subtype Datasets" style="margin-top: -16px;">
+        <p>
+          The disease datasets in SPONGE originate from
+          <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
+        </p>
+        <ul>
+          <li>
+            <b>Sample numbers in badges:</b> Indicate the number of patient samples available for each disease or subtype.
+          </li>
+          <li>
+            <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
+          </li>
+          <li>
+            <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
+          </li>
+        </ul>
       </app-info>
     </div>
 
@@ -27,7 +47,12 @@
       @let subtypes = availableSubtypes();
       <mat-select [(value)]="selectedSubtype$" [disabled]="subtypes.length < 2">
         @for (dataset of subtypes; track dataset.dataset_ID) {
-          <mat-option [value]="dataset.disease_subtype ?? null">{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }} ({{ dataset.sample_count }})</mat-option>
+          <mat-option [value]="dataset.disease_subtype ?? null">
+            <div class="option-content-row">
+              <span>{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</span>
+              <span class="sample-badge">({{ dataset.sample_count }})</span>
+            </div>
+          </mat-option>
         }
       </mat-select>
     </mat-form-field>
