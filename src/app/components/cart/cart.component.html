@@ -65,25 +65,27 @@
   </div>
 
   <!-- Disease selector for network -->
-  <div class="disease-section">
-    <mat-form-field appearance="outline" class="disease-field">
-      <mat-label>Disease (for network)</mat-label>
-      <mat-select [value]="selectedDisease()" (selectionChange)="selectedDisease.set($event.value)" id="cart-disease-select">
-        @let dsList = sortedDatasets();
-        @for (ds of dsList; track ds.dataset_ID; let index = $index) {
-          <mat-option [value]="ds">
-            {{ getDiseaseDisplayName(ds.disease_name) }}{{ ds.disease_subtype ? ' – ' + getDiseaseDisplayName(ds.disease_subtype) : '' }}
-            @if (ds.sample_count) { ({{ ds.sample_count }}) }
-          </mat-option>
-          @if (ds.disease_name.toLowerCase() === 'pancancer' && index < dsList.length - 1) {
-            <mat-divider></mat-divider>
+  <div class="disease-section" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 2px; flex: 1; min-width: 180px;">
+      <mat-form-field appearance="outline" class="disease-field" style="flex: 1;">
+        <mat-label>Disease (for network)</mat-label>
+        <mat-select [value]="selectedDisease()" (selectionChange)="selectedDisease.set($event.value)" id="cart-disease-select">
+          @let dsList = sortedDatasets();
+          @for (ds of dsList; track ds.dataset_ID; let index = $index) {
+            <mat-option [value]="ds">
+              {{ getDiseaseDisplayName(ds.disease_name) }}{{ ds.disease_subtype ? ' – ' + getDiseaseDisplayName(ds.disease_subtype) : '' }}
+              @if (ds.sample_count) { ({{ ds.sample_count }}) }
+            </mat-option>
+            @if (ds.disease_name.toLowerCase() === 'pancancer' && index < dsList.length - 1) {
+              <mat-divider></mat-divider>
+            }
           }
-        }
-      </mat-select>
-    </mat-form-field>
-    <app-info type="icon">
-      Numbers in parentheses indicate the number of samples available for each disease/subtype.
-    </app-info>
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" style="margin-top: -16px;">
+        <p>Numbers in parentheses indicate the number of samples available for each disease/subtype.</p>
+      </app-info>
+    </div>
     <button mat-stroked-button color="primary" class="network-btn"
       [disabled]="count() === 0 || !selectedDisease()"
       (click)="visualizeNetwork()"

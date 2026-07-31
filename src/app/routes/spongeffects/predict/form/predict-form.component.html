@@ -73,7 +73,7 @@
         </app-info>
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Disease</mat-label>
       <mat-select formControlName="model">
         @let models = sortedModels$();
@@ -88,6 +88,9 @@
         }
       </mat-select>
     </mat-form-field>
+    <app-info type="icon">
+      <p>Numbers in parentheses indicate the number of samples available for each disease/subtype.</p>
+    </app-info>
 
     @if (subtypesForSelectedType$().length > 0) {
     <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
@@ -106,10 +109,6 @@
       </mat-hint>
     </mat-form-field>
     }
-
-    <app-info type="icon">
-      Numbers in parentheses indicate the number of samples available for each disease/subtype.
-    </app-info>
   </mat-expansion-panel>
 
   <mat-expansion-panel>

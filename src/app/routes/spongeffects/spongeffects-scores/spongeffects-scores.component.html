@@ -32,23 +32,28 @@
             </mat-panel-title>
           </mat-expansion-panel-header>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Disease</mat-label>
-            <mat-select [value]="predictService.selectedScope$()"
-              (valueChange)="predictService.selectedScope$.set($event)">
-              @let scopes = predictService.availableScopes$();
-              @let scopeCounts = scopeSampleCounts$();
-              @for (scope of scopes; track scope; let index = $index) {
-              <mat-option [value]="scope">
-                {{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope) }}
-                @if (scopeCounts.get(scope)) { ({{ scopeCounts.get(scope) }}) }
-              </mat-option>
-              @if (scope.toLowerCase() === 'pancancer' && index < scopes.length - 1) {
-                <mat-divider></mat-divider>
-              }
-              }
-            </mat-select>
-          </mat-form-field>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <mat-form-field appearance="outline" style="flex: 1;">
+              <mat-label>Disease</mat-label>
+              <mat-select [value]="predictService.selectedScope$()"
+                (valueChange)="predictService.selectedScope$.set($event)">
+                @let scopes = predictService.availableScopes$();
+                @let scopeCounts = scopeSampleCounts$();
+                @for (scope of scopes; track scope; let index = $index) {
+                <mat-option [value]="scope">
+                  {{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope) }}
+                  @if (scopeCounts.get(scope)) { ({{ scopeCounts.get(scope) }}) }
+                </mat-option>
+                @if (scope.toLowerCase() === 'pancancer' && index < scopes.length - 1) {
+                  <mat-divider></mat-divider>
+                }
+                }
+              </mat-select>
+            </mat-form-field>
+            <app-info type="icon" style="margin-top: -16px;">
+              <p>Numbers in parentheses indicate the number of samples available for each disease/subtype.</p>
+            </app-info>
+          </div>
 
           @if (availableSubtypes$().length > 0) {
           <mat-form-field appearance="outline" class="full-width">
@@ -66,10 +71,6 @@
             </mat-select>
           </mat-form-field>
           }
-
-          <app-info type="icon">
-            Numbers in parentheses indicate the number of samples available for each disease/subtype.
-          </app-info>
 
           @if (predictService.prediction$()?.meta?.[0]?.subtype_predict; as subtype) {
           @if (subtype !== 'NA') {
