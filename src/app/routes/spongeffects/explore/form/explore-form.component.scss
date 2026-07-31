@@ -1,7 +1,14 @@
+// Prevent MDC chip listbox from wrapping chips onto a second row
+::ng-deep .mat-mdc-chip-set .mdc-evolution-chip-set__chips {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+}
+
 // Center chip content and prevent shifting
 ::ng-deep .mat-mdc-chip-option {
   justify-content: center !important;
-  padding: 8px 4px !important;
+  padding: 8px 2px !important;
   height: auto !important;
   min-height: 120px !important;
 }
