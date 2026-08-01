@@ -108,31 +108,16 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
   
   async getOverallAccuracyData(version: number, cancer: string, level: string, params: {[key: string]: any}): Promise<Metric[]> {
     const modelPerformances: RunPerformance[] = [];
-    let highest_accuracy: number = 0;
-    let highest_key: string = "";
-    for (const [key, value] of Object.entries(params)) {
-      const paramSet = value;
+    for (const paramSet of Object.values(params)) {
       const tmp = await this.backend.getRunPerformance(version, cancer, level, paramSet);
       if (Array.isArray(tmp)) {
         tmp.forEach((entry: RunPerformance) => {
           modelPerformances.push(entry);
-          if (entry.model_type == "modules" && entry.split_type == "test") {
-            if (entry.accuracy > highest_accuracy) {
-              highest_accuracy = entry.accuracy;
-              highest_key = key;
-            }
-          }
         });
       }
     }
-    this.exploreService.highestKey.set(highest_key);
-    // rename key of the highest accuracy to "*old_key"
-    // params["*" + highest_key] = params[highest_key];
-    // delete params[highest_key];
-    // update this.exploreService.paramSets$
-    // this.exploreService.paramSets$()()[highest_key] = params["*" + highest_key];
 
-    // this is messy but still thinking about a cleaner way. 
+    // this is messy but still thinking about a cleaner way.
     // the first time this is executed, all available params are wanted to all models are fetched
     // we create model Names (Model 1, Model 2, ...) and add them to the y-axis labels only if all models are fetched
 

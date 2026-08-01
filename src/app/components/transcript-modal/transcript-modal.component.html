@@ -72,7 +72,67 @@
       }
     </mat-tab>
 
-    @if (!isBrowseRoute$() && (tcgaEffects$.isLoading() || module_IDs$.isLoading() || customEffects$() || ((tcgaEffects$.value() || []).length > 0))) {
+    @if (ceRNAStats$(); as stats) {
+    <mat-tab label="ceRNA interactions">
+      <div style="padding: 16px;">
+        @let c = effectiveCentralities$();
+        <table>
+          <tr>
+            <th>signif. ceRNA interactions</th>
+            <td>{{ stats.count }}</td>
+          </tr>
+          <tr>
+            <th>Mean mscor</th>
+            <td>{{ formatScore(stats.meanMscor) }}</td>
+          </tr>
+          <tr>
+            <th>Median mscor</th>
+            <td>{{ formatScore(stats.medianMscor) }}</td>
+          </tr>
+          <tr>
+            <th>mscor range</th>
+            <td>{{ formatScore(stats.minMscor) }} – {{ formatScore(stats.maxMscor) }}</td>
+          </tr>
+          <tr>
+            <th>Best (lowest) adj. p-value</th>
+            <td>{{ formatScore(stats.bestPValue) }}</td>
+          </tr>
+          @if (c.betweenness !== undefined && c.betweenness !== null) {
+          <tr>
+            <th>Betweenness</th>
+            <td>{{ formatScore(c.betweenness) }}</td>
+          </tr>
+          }
+          @if (c.eigenvector !== undefined && c.eigenvector !== null) {
+          <tr>
+            <th>Eigenvector</th>
+            <td>{{ formatScore(c.eigenvector) }}</td>
+          </tr>
+          }
+          @if (c.node_degree !== undefined && c.node_degree !== null) {
+          <tr>
+            <th>Degree</th>
+            <td>{{ c.node_degree }}</td>
+          </tr>
+          }
+        </table>
+        <app-info type="panel">
+          <p>
+            Summary of the ceRNA interactions this transcript takes part in, within the network
+            currently loaded in the Browse view (edges filtered by mscor and adj. p-value).
+          </p>
+          <p>
+            <b>mscor</b> is the multiple sensitivity correlation of each ceRNA interaction — higher
+            values indicate stronger competing-endogenous-RNA coupling. The <b>adj. p-value</b> is
+            the multiple-testing-corrected significance of the interaction (lower is more
+            significant). Virtual/fallback edges are excluded.
+          </p>
+        </app-info>
+      </div>
+    </mat-tab>
+    }
+
+    @if (tcgaEffects$.isLoading() || module_IDs$.isLoading() || customEffects$() || ((tcgaEffects$.value() || []).length > 0)) {
     <mat-tab label="SpongEffects scores">
       <div style="padding: 16px;">
         @let custom = customEffects$();
@@ -138,9 +198,8 @@
         <ng-container matColumnDef="event_type">
           <th *matHeaderCellDef mat-header-cell>Type</th>
           <td *matCellDef="let asEntry" mat-cell>
-            <mat-chip [matTooltip]="asDescriptions[asEntry.event_type]" matTooltipPosition="right">
-              {{ asEntry.event_type }}
-            </mat-chip>
+            <span class="as-badge" [matTooltip]="asDescriptions[asEntry.event_type]"
+              matTooltipPosition="right">{{ asEntry.event_type }}</span>
           </td>
         </ng-container>
 

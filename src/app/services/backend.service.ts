@@ -311,13 +311,19 @@ export class BackendService {
       return Promise.resolve([]);
     }
 
+    // Clustering needs at least two identifiers to build a distance matrix; the backend returns a
+    // 400 ("empty distance matrix") for a single one. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-gene/-transcript expression heatmaps still return their
+    // values instead of erroring into a false "No data available".
+    const effectiveCluster = cluster && identifiers.length > 1;
+
     const query: Query = {
       sponge_db_version: version,
       dataset_ID: dataset_ID,
       disease_name: disease_name,
       limit: limit,
       offset: offset,
-      cluster: cluster,
+      cluster: effectiveCluster,
     };
 
     // drop query params that are undefined
@@ -718,9 +724,14 @@ export class BackendService {
     cluster: boolean = true,
     average: boolean = false
   ): Promise<any[]> {
+    // Clustering needs at least two modules to build a distance matrix; the backend returns a 400
+    // ("empty distance matrix") for a single module. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-module heatmaps still return their scores instead of
+    // erroring out and rendering a false "No data available".
+    const effectiveCluster = cluster && (!module_IDs || module_IDs.length > 1);
     const query: Record<string, any> = {
       sponge_db_version: version,
-      cluster,
+      cluster: effectiveCluster,
       average,
     };
     if (module_IDs && module_IDs.length > 0) {
@@ -823,7 +834,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -850,7 +861,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -877,7 +888,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -916,7 +927,7 @@ export class BackendService {
     }
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }
@@ -980,7 +991,7 @@ export class BackendService {
     }
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }

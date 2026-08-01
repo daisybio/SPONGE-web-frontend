@@ -19,6 +19,7 @@ import { capitalize } from 'lodash';
 import { BackendService } from '../../services/backend.service';
 import { CartService } from '../../services/cart.service';
 import { Gene, Transcript } from '../../interfaces';
+import { buildColorMap } from '../../cancer-colors';
 
 declare const Plotly: any;
 
@@ -33,6 +34,11 @@ export type HeatmapDataSource = {
   getYAxisTitle?: () => string;
   getZMid?: () => number;
   getClusterLegendTitle?: () => string;
+  // Parent cancer type for the categorical (subtype) bar. When it names a single disease
+  // (non-pancancer), the bar values are that disease's subtypes and get a lightness family derived
+  // from the parent hue; when undefined or 'pancancer', the values are cancer types themselves and
+  // each gets its canonical color. Either way coloring goes through the global cancer-color system.
+  subtypeParentType?: () => string | undefined;
 };
 
 @Component({
@@ -236,21 +242,28 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   }
 
   private createSubtypeElements(samples: { sample_ID: string, disease_subtype: string }[]) {
-    // Extract unique subtypes and map them to colors
+    // Extract unique subtypes and map them to colors. Sorted so the derived subtype-family
+    // lightness order is deterministic across renders.
     const subtypes = [...new Set(samples.map(s => s.disease_subtype)
-      .filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA'))];
-    
+      .filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA'))]
+      .sort();
+
     if (subtypes.length === 0) {
       subtypes.push('NA');
     }
-    
-    // Create color mapping
-    const subtypeColors: { [key: string]: string } = {};
-    subtypes.forEach((subtype, index) => {
-      subtypeColors[subtype!] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`;
-    });
-    
-    // Add default colors
+
+    // Color through the global cancer-color system so the bar matches the rest of the app. With a
+    // single-disease parent (non-pancancer) the values are that disease's subtypes → derive a
+    // lightness family from the parent hue; otherwise they are cancer types → canonical per-type
+    // colors.
+    const parent = this.dataSource().subtypeParentType?.();
+    const useSubtypeFamily = !!parent && parent.toLowerCase() !== 'pancancer';
+    const subtypeColors: { [key: string]: string } = buildColorMap(
+      subtypes as string[],
+      useSubtypeFamily ? parent : undefined
+    );
+
+    // Neutral grey for the "no subtype" buckets.
     subtypeColors['Unspecific'] = 'grey';
     subtypeColors['None'] = 'grey';
     subtypeColors['null'] = 'grey';

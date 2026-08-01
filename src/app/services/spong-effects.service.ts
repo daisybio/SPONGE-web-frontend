@@ -89,4 +89,27 @@ export class SpongEffectsService {
     }
     return cached;
   }
+
+  // Enrichment scores are fetched by BOTH the Explore mean-vs-variance scatter and the predict
+  // TCGA-vs-patient scatter. Cache keyed by the SORTED module-ID set so that re-deriving a plot
+  // (e.g. after changing "max modules" while all modules are already shown) is a cache hit — it
+  // only re-colours top-N vs remaining and never re-hits `getSpongEffectsGeneModuleScores`.
+  private readonly enrichScoresCache = new Map<string, any[]>();
+
+  async getEnrichScores(
+    version: number,
+    level: 'gene' | 'transcript',
+    moduleIDs: number[],
+    cluster = false,
+    average = false
+  ): Promise<any[]> {
+    const ids = [...(moduleIDs ?? [])].filter((x) => x != null).sort((a, b) => a - b);
+    const key = `${version}|${level}|${cluster}|${average}|${ids.join(',')}`;
+    let cached = this.enrichScoresCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, cluster, average)) ?? [];
+      this.enrichScoresCache.set(key, cached);
+    }
+    return cached;
+  }
 }

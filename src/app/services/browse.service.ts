@@ -246,6 +246,43 @@ export class BrowseService {
     return objects.map(BrowseService.getGeneName) as [string, string];
   }
 
+  /**
+   * Build a synthetic "fallback" edge between a module center and a member the DB has no real
+   * ceRNA edge for. SpongEffects module members are first-neighbours of the center in the
+   * analysis/training network, but the DB `GeneInteraction` table may lack the edge — so the
+   * network still shows a center<->member edge. These carry no real metrics and render thin
+   * (see createGraph's `isVirtual` handling). Shared by the patient-specific and Explore networks.
+   */
+  protected createVirtualEdge(center: string, member: string, level: 'gene' | 'transcript', dataset: Dataset, centerSymbol?: string, memberSymbol?: string): any {
+    const spongeRun = {
+      dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' },
+      sponge_run_ID: 0,
+    };
+    const cSym = centerSymbol || center;
+    const mSym = memberSymbol || member;
+    if (level === 'gene') {
+      return {
+        correlation: '(abs) > 0.1',
+        mscor: '< 0.2',
+        p_value: '> 0.2',
+        isVirtual: true,
+        gene1: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' },
+        gene2: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' },
+        sponge_run: spongeRun
+      } as any;
+    } else {
+      return {
+        correlation: '(abs) > 0.1',
+        mscor: '< 0.2',
+        p_value: '> 0.2',
+        isVirtual: true,
+        transcript_1: { enst_number: center, gene: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
+        transcript_2: { enst_number: member, gene: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
+        sponge_run: spongeRun
+      } as any;
+    }
+  }
+
   public static getInteractionObjects(
     interaction: GeneInteraction | TranscriptInteraction
   ): [Gene, Gene] | [Transcript, Transcript] {

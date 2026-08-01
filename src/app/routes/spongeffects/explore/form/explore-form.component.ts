@@ -8,7 +8,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ExploreService } from "../service/explore.service";
 import { MatCardModule } from "@angular/material/card";
 import { capitalize } from "lodash";
-import { MatChipsModule } from '@angular/material/chips';
+import { MatChipSelectionChange, MatChipsModule } from '@angular/material/chips';
 import { BrowseService } from "../../../../services/browse.service";
 import { MatInputModule } from "@angular/material/input";
 import { MatExpansionModule } from "@angular/material/expansion";
@@ -43,7 +43,6 @@ export class ExploreFormComponent {
   disease$ = this.exploreService.selectedDisease$;
   selectedSubtype$ = this.exploreService.selectedSubtype$;
   availableSubtypes = this.exploreService.availableSubtypes$;
-  spongeEffectsRuns = this.exploreService.spongeEffectsRuns$;
   paramSets = this.exploreService.paramSets$;
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
@@ -54,11 +53,16 @@ export class ExploreFormComponent {
     return this.exploreService.isParamSetIndexSelected(index);
   }
 
-  toggleParamSet(index: number): void {
-    this.exploreService.toggleParamSetIndex(index);
-  }
-
-  setParamSetSelected(index: number, selected: boolean): void {
-    this.exploreService.setParamSetIndexSelected(index, selected);
+  onParamSetSelectionChange(index: number, event: MatChipSelectionChange): void {
+    // MatChipOption also emits when we push the state back into [selected]; only user clicks are
+    // a real request to change the selection.
+    if (!event.isUserInput) {
+      return;
+    }
+    if (!this.exploreService.setParamSetIndexSelected(index, event.selected)) {
+      // The chip already flipped itself before asking. The service kept the last model selected,
+      // so the binding value is unchanged and Angular won't repaint it — undo the flip by hand.
+      event.source.selected = true;
+    }
   }
 }

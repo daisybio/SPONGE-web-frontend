@@ -21,7 +21,7 @@ import { ExploreService } from '../../explore/service/explore.service';
 import { BackendService } from '../../../../services/backend.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
-import { buildColorMap, getDiseaseDisplayName } from '../../../../cancer-colors';
+import { buildColorMap, getDiseaseDisplayName, PATIENT_HIGHLIGHT_COLOR } from '../../../../cancer-colors';
 
 declare var Plotly: any;
 
@@ -297,7 +297,8 @@ export class UmapPlotComponent implements OnDestroy {
           name: 'Your Samples',
           marker: {
             size: 8,
-            color: '#e74c3c',
+            // Uploaded-samples highlight — shared with the classification plot / rug overlays.
+            color: PATIENT_HIGHLIGHT_COLOR,
             symbol: 'diamond',
             line: {
               color: '#2c3e50',

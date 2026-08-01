@@ -50,6 +50,7 @@ import {
   Transcript
 } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
+import { SpongEffectsService } from '../../../../../services/spong-effects.service';
 import { VersionsService } from '../../../../../services/versions.service';
 import { ExploreService } from '../../service/explore.service';
 import { PredictService } from '../../../predict/service/predict.service';
@@ -118,6 +119,7 @@ export async function ensureGeneSymbols(backend: BackendService, version: number
 })
 export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy {
   private backend = inject(BackendService);
+  private spongEffectsService = inject(SpongEffectsService);
   private versionService = inject(VersionsService);
   exploreService = inject(ExploreService, { optional: true });
   predictService = inject(PredictService, { optional: true });
@@ -341,12 +343,24 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     }
   });
 
+  // Loading state for the importance / mean-vs-variance PLOT view. It is fed only by the module
+  // list, so it must NOT reflect the members table or the network (findAll) — those load
+  // independently and would otherwise keep the plot's progress bar spinning long after it has
+  // rendered.
   isPlotLoading = computed(() => {
+    if (this.source() === 'predict') {
+      return this.predictionModulesResource.isLoading();
+    }
+    return this.lolipopPlotData.isLoading();
+  });
+
+  // Loading state for the centers/members tables, which mirror the network's nodes (findAll) and
+  // the members resource in addition to the module list.
+  isTableLoading = computed(() => {
     if (this.source() === 'predict') {
       return (
         this.predictionModulesResource.isLoading() ||
         this.tableMembersResource.isLoading() ||
-        // The centers/members tables mirror the network's nodes, so reflect its load state.
         (this.predictBrowseService?.isLoading$() ?? false)
       );
     }
@@ -585,7 +599,11 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
     getZMid: () => 0,
 
-    getColorScale: () => ''
+    getColorScale: () => '',
+
+    // Explore: colour the subtype bar within the selected disease's hue family. Predict: the bar
+    // encodes the predicted cancer type, so leave the parent undefined for canonical type colours.
+    subtypeParentType: () => this.source() === 'predict' ? undefined : this.exploreService?.selectedDisease$(),
   });
 
   // Data source for reusable heatmap component
@@ -717,7 +735,11 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
     getZMid: () => 0,
 
-    getColorScale: () => 'RdBu'
+    getColorScale: () => 'RdBu',
+
+    // Explore: colour the subtype bar within the selected disease's hue family. Predict: the bar
+    // encodes the predicted cancer type, so leave the parent undefined for canonical type colours.
+    subtypeParentType: () => this.source() === 'predict' ? undefined : this.exploreService?.selectedDisease$(),
   });
 
   // Parameters for the heatmaps
@@ -751,26 +773,37 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
   // point is a module: x = mean enrichment score, y = variance of that score across samples.
   enrichmentMeanVarDataSource: ScatterplotDataScource = {
     getData: async (params: any) => {
-      const { version, level, modules } = params;
-      if (!version || !level || !modules || modules.length === 0) return [];
-      const moduleIDs = modules.map((m: SpongEffectsModule) => m.spongEffects_module_ID);
-      // average=false so we get per-sample scores and can compute the variance ourselves.
-      const enrichData = await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, false, false);
-      const byModule = new Map<string, { symbol: string; scores: number[] }>();
-      for (const e of enrichData as any[]) {
-        const id = level === 'gene' ? e.gene?.ensg_number : e.transcript?.enst_number;
-        if (!id) continue;
-        const symbol = (level === 'gene' ? e.gene?.gene_symbol : e.transcript?.enst_number) ?? id;
-        if (!byModule.has(id)) byModule.set(id, { symbol, scores: [] });
-        byModule.get(id)!.scores.push(e.score_value ?? 0);
+      const { version, disease, level, topModules, selectedParamSets, showRemaining } = params;
+      if (!version || !level) return [];
+      const topList: SpongEffectsModule[] = topModules ?? [];
+      const topIDs = new Set(topList.map((m) => m.ensemblID));
+
+      // "Add remaining modules" (the scatterplot's own toggle) — fetch the FULL module list so the
+      // non-top-N modules can be plotted as grey points; otherwise plot just the top-N.
+      let modules: SpongEffectsModule[] = topList;
+      if (showRemaining && disease && selectedParamSets) {
+        try {
+          modules = await this.getLollipopData(version, disease, level, 10000, selectedParamSets);
+        } catch { modules = topList; }
       }
+      if (modules.length === 0) return [];
+
+      const moduleIDs = modules.map((m) => m.spongEffects_module_ID);
+      // average=true → the backend returns ONE row per module with the mean (score_value) and
+      // variance (variance_score) computed in SQL. average=false returns EVERY per-sample score
+      // (millions of rows / hundreds of MB for the full module set) that we'd only aggregate here.
+      // Cached (by sorted module-ID set) so changing "max modules" while all modules are already
+      // shown re-colours top-N vs remaining WITHOUT re-hitting getSpongEffectsGeneModuleScores.
+      const enrichData = await this.spongEffectsService.getEnrichScores(version, level, moduleIDs, false, true);
       const points: any[] = [];
-      for (const [ensemblID, { symbol, scores }] of byModule) {
-        const n = scores.length;
-        if (n === 0) continue;
-        const mean = scores.reduce((s, v) => s + v, 0) / n;
-        const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
-        points.push({ id: symbol, ensemblID, x: mean, y: variance, isTop: true });
+      for (const e of enrichData as any[]) {
+        const ensemblID = level === 'gene' ? e.gene?.ensg_number : e.transcript?.enst_number;
+        if (!ensemblID) continue;
+        const symbol = (level === 'gene'
+          ? e.gene?.gene_symbol
+          : (e.transcript?.gene?.gene_symbol ?? e.transcript?.enst_number)) ?? ensemblID;
+        // isTop drives the scatterplot's red (top-N) vs grey (remaining) split.
+        points.push({ id: symbol, ensemblID, x: e.score_value ?? 0, y: e.variance_score ?? 0, isTop: topIDs.has(ensemblID) });
       }
       return points;
     },
@@ -784,7 +817,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     version: this.versionService.versionReadOnly()(),
     disease: this.exploreService?.selectedDisease$(),
     level: this.exploreService?.level$(),
-    modules: this.selectedModules$(),
+    topModules: this.selectedModules$(),
+    selectedParamSets: this.exploreService?.selectedParamSets$(),
   }));
 
   heatmapParamsExpr = computed(() => {
@@ -1007,7 +1041,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     effect(() => {
       if (this.source() !== 'predict' || !this.predictService) return;
       const prediction = this.predictService.prediction$();
-      const stillLoading = this.isPlotLoading();
+      const stillLoading = this.isTableLoading();
       if (!prediction || stillLoading) return;
       if (this._expressionPreloadedFor === prediction) return;
       this._expressionPreloadedFor = prediction;
@@ -1154,7 +1188,16 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  private lollipopDataCache = new Map<string, SpongEffectsModule[]>();
+
   private async getLollipopData(version: number, cancer: string, level: string, topN: number, selectedParamSets: { [key: string]: any }): Promise<SpongEffectsModule[]> {
+    // Cache the resolved module list (with enrichment metrics) so re-deriving a plot after a
+    // "max modules" change — while all modules are already shown — is a pure cache hit: no
+    // getSpongEffectsGeneModules AND no getSpongEffectsGeneModuleScores request, just a re-colour.
+    const cacheKey = `${version}|${cancer}|${level}|${topN}|${JSON.stringify(selectedParamSets)}`;
+    const cachedData = this.lollipopDataCache.get(cacheKey);
+    if (cachedData) return cachedData;
+
     const data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
@@ -1186,28 +1229,25 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
     }
-    // Attach enrichment metrics (mean / abs-mean / variance across the reference TCGA samples)
-    // so the drawer can sort modules by them, mirroring the predict view. Best-effort: on failure
-    // the modules simply lack these fields and enrichment sorting falls back to 0.
+    // Attach enrichment metrics (mean / abs-mean / variance across the reference TCGA samples) so
+    // the drawer can sort modules by them, mirroring the predict view. Uses average=true (mean +
+    // variance computed in SQL, cached) — NOT average=false, which returns every per-sample score
+    // (millions of rows / hundreds of MB). Best-effort: on failure the modules lack these fields.
     try {
       const moduleIDs = data.map(m => m.spongEffects_module_ID).filter((id): id is number => id != null);
       if (moduleIDs.length > 0) {
-        const enrich = await this.backend.fetchSpongEffectsEnrichScores(version, level as 'gene' | 'transcript', moduleIDs, false, false);
-        const scoresById = new Map<string, number[]>();
+        const enrich = await this.spongEffectsService.getEnrichScores(version, level as 'gene' | 'transcript', moduleIDs, false, true);
+        const byId = new Map<string, { mean: number; variance: number }>();
         for (const e of enrich as any[]) {
           const id = level === 'gene' ? e.gene?.ensg_number : e.transcript?.enst_number;
-          if (!id) continue;
-          if (!scoresById.has(id)) scoresById.set(id, []);
-          scoresById.get(id)!.push(e.score_value ?? 0);
+          if (id) byId.set(id, { mean: e.score_value ?? 0, variance: e.variance_score ?? 0 });
         }
         for (const m of data) {
-          const scores = scoresById.get(m.ensemblID);
-          if (scores && scores.length > 0) {
-            const mean = scores.reduce((s, v) => s + v, 0) / scores.length;
-            const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / scores.length;
-            m.meanEnrichmentScore = mean;
-            m.absMeanEnrichmentScore = Math.abs(mean);
-            m.varianceEnrichmentScore = variance;
+          const s = byId.get(m.ensemblID);
+          if (s) {
+            m.meanEnrichmentScore = s.mean;
+            m.absMeanEnrichmentScore = Math.abs(s.mean);
+            m.varianceEnrichmentScore = s.variance;
           }
         }
       }
@@ -1215,6 +1255,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       console.error('Failed to attach enrichment metrics to explore modules:', e);
     }
 
+    this.lollipopDataCache.set(cacheKey, data);
     return data;
   }
 

@@ -11,6 +11,7 @@
           <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
           }
           @if (geneInfo$.value(); as geneInfo) {
+          @let c = effectiveCentralities$();
           <table>
             <tr>
               <th>Ensembl ID</th>
@@ -32,6 +33,24 @@
               <th>Cytoband</th>
               <td>{{ geneInfo.cytoband }}</td>
             </tr>
+            @if (c.betweenness !== undefined && c.betweenness !== null) {
+            <tr>
+              <th>Betweenness</th>
+              <td>{{ formatScore(c.betweenness) }}</td>
+            </tr>
+            }
+            @if (c.eigenvector !== undefined && c.eigenvector !== null) {
+            <tr>
+              <th>Eigenvector</th>
+              <td>{{ formatScore(c.eigenvector) }}</td>
+            </tr>
+            }
+            @if (c.node_degree !== undefined && c.node_degree !== null) {
+            <tr>
+              <th>Degree</th>
+              <td>{{ c.node_degree }}</td>
+            </tr>
+            }
           </table>
           }
         </mat-expansion-panel>
@@ -49,80 +68,142 @@
         }
         }
         @if (hallmarks$.value(); as hallmarks) {
-          @if (hallmarks.length > 0) {
-            <mat-expansion-panel>
-              <mat-expansion-panel-header>
-                <mat-panel-title>Hallmarks</mat-panel-title>
-              </mat-expansion-panel-header>
-              <mat-chip-set>
-                @for (hallmark of hallmarks; track hallmark) {
-                  <mat-chip>{{ hallmark.hallmark }}</mat-chip>
-                }
-              </mat-chip-set>
-            </mat-expansion-panel>
-          }
+        @if (hallmarks.length > 0) {
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>Hallmarks</mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-chip-set>
+            @for (hallmark of hallmarks; track hallmark) {
+            <mat-chip>{{ hallmark.hallmark }}</mat-chip>
+            }
+          </mat-chip-set>
+        </mat-expansion-panel>
+        }
         }
       </mat-accordion>
     </mat-tab>
 
-    @if (!isBrowseRoute$() && (tcgaEffects$.isLoading() || module_IDs$.isLoading() || (customEffects$()) || ((tcgaEffects$.value() || []).length > 0))) {
-      <mat-tab label="SpongEffects scores">
-        <div style="padding: 16px;">
-          @let custom = customEffects$();
-          @if (custom) {
-            <mat-accordion style="margin-bottom: 16px;">
-              <mat-expansion-panel expanded>
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Custom SpongEffects scores</mat-panel-title>
-                </mat-expansion-panel-header>
-                <table>
-                  <tr>
-                    <th>Mean Enrichment Score</th>
-                    <td>{{ formatScore(custom.mean) }}</td>
-                  </tr>
-                  <tr>
-                    <th>Variance Enrichment Score</th>
-                    <td>{{ formatScore(custom.variance) }}</td>
-                  </tr>
-                </table>
-              </mat-expansion-panel>
-            </mat-accordion>
+    @if (ceRNAStats$(); as stats) {
+    <mat-tab label="ceRNA interactions">
+      <div style="padding: 16px;">
+        @let c = effectiveCentralities$();
+        <table>
+          <tr>
+            <th>signif. ceRNA interactions</th>
+            <td>{{ stats.count }}</td>
+          </tr>
+          <tr>
+            <th>Mean mscor</th>
+            <td>{{ formatScore(stats.meanMscor) }}</td>
+          </tr>
+          <tr>
+            <th>Median mscor</th>
+            <td>{{ formatScore(stats.medianMscor) }}</td>
+          </tr>
+          <tr>
+            <th>mscor range</th>
+            <td>{{ formatScore(stats.minMscor) }} – {{ formatScore(stats.maxMscor) }}</td>
+          </tr>
+          <tr>
+            <th>Best (lowest) adj. p-value</th>
+            <td>{{ formatScore(stats.bestPValue) }}</td>
+          </tr>
+          @if (c.betweenness !== undefined && c.betweenness !== null) {
+          <tr>
+            <th>Betweenness</th>
+            <td>{{ formatScore(c.betweenness) }}</td>
+          </tr>
           }
+          @if (c.eigenvector !== undefined && c.eigenvector !== null) {
+          <tr>
+            <th>Eigenvector</th>
+            <td>{{ formatScore(c.eigenvector) }}</td>
+          </tr>
+          }
+          @if (c.node_degree !== undefined && c.node_degree !== null) {
+          <tr>
+            <th>Degree</th>
+            <td>{{ c.node_degree }}</td>
+          </tr>
+          }
+        </table>
+        <app-info type="panel">
+          <p>
+            Summary of the ceRNA interactions this gene takes part in, within the network currently
+            loaded in the Browse view (edges filtered by mscor and adj. p-value).
+          </p>
+          <p>
+            <b>mscor</b> is the multiple sensitivity correlation of each ceRNA interaction — higher
+            values indicate stronger competing-endogenous-RNA coupling. The <b>adj. p-value</b> is
+            the multiple-testing-corrected significance of the interaction (lower is more
+            significant). Virtual/fallback edges are excluded.
+          </p>
+        </app-info>
+      </div>
+    </mat-tab>
+    }
 
-          @if (tcgaEffects$.isLoading() || module_IDs$.isLoading()) {
-            <div style="padding: 24px 0; text-align: center;">
-              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-              <p style="color: #666; font-size: 12px; margin-top: 8px;">Loading TCGA SpongEffects scores...</p>
-            </div>
-          } @else if ((tcgaEffects$.value() || []).length > 0) {
-            @let tcga_scores = tcgaEffects$.value() || [];
-            <mat-accordion>
-              <mat-expansion-panel expanded>
-                <mat-expansion-panel-header>
-                  <mat-panel-title>TCGA SpongEffects scores</mat-panel-title>
-                </mat-expansion-panel-header>
-                <table>
-                  @for (score of tcga_scores; track score.spongEffects_gene_module_ID) {
-                    @if (tcga_scores.length > 1) {
-                      <tr style="background-color: rgba(0,0,0,0.03);">
-                        <th colspan="2" style="text-align: left; padding-top: 6px; font-weight: 600;">Module #{{ score.spongEffects_gene_module_ID }}</th>
-                      </tr>
-                    }
-                    <tr>
-                      <th>Mean Enrichment Score</th>
-                      <td>{{ formatScore(score.score_value) }}</td>
-                    </tr>
-                    <tr>
-                      <th>Variance Enrichment Score</th>
-                      <td>{{ formatScore(score.variance_score) }}</td>
-                    </tr>
-                  }
-                </table>
-              </mat-expansion-panel>
-            </mat-accordion>
-          }
+    @if (tcgaEffects$.isLoading() || module_IDs$.isLoading() || (customEffects$()) || ((tcgaEffects$.value() ||
+    []).length > 0)) {
+    <mat-tab label="SpongEffects scores">
+      <div style="padding: 16px;">
+        @let custom = customEffects$();
+        @if (custom) {
+        <mat-accordion style="margin-bottom: 16px;">
+          <mat-expansion-panel expanded>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Custom SpongEffects scores</mat-panel-title>
+            </mat-expansion-panel-header>
+            <table>
+              <tr>
+                <th>Mean Enrichment Score</th>
+                <td>{{ formatScore(custom.mean) }}</td>
+              </tr>
+              <tr>
+                <th>Variance Enrichment Score</th>
+                <td>{{ formatScore(custom.variance) }}</td>
+              </tr>
+            </table>
+          </mat-expansion-panel>
+        </mat-accordion>
+        }
+
+        @if (tcgaEffects$.isLoading() || module_IDs$.isLoading()) {
+        <div style="padding: 24px 0; text-align: center;">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p style="color: #666; font-size: 12px; margin-top: 8px;">Loading TCGA SpongEffects scores...</p>
         </div>
-      </mat-tab>
+        } @else if ((tcgaEffects$.value() || []).length > 0) {
+        @let tcga_scores = tcgaEffects$.value() || [];
+        <mat-accordion>
+          <mat-expansion-panel expanded>
+            <mat-expansion-panel-header>
+              <mat-panel-title>TCGA SpongEffects scores</mat-panel-title>
+            </mat-expansion-panel-header>
+            <table>
+              @for (score of tcga_scores; track score.spongEffects_gene_module_ID) {
+              @if (tcga_scores.length > 1) {
+              <tr style="background-color: rgba(0,0,0,0.03);">
+                <th colspan="2" style="text-align: left; padding-top: 6px; font-weight: 600;">Module #{{
+                  score.spongEffects_gene_module_ID }}</th>
+              </tr>
+              }
+              <tr>
+                <th>Mean Enrichment Score</th>
+                <td>{{ formatScore(score.score_value) }}</td>
+              </tr>
+              <tr>
+                <th>Variance Enrichment Score</th>
+                <td>{{ formatScore(score.variance_score) }}</td>
+              </tr>
+              }
+            </table>
+          </mat-expansion-panel>
+        </mat-accordion>
+        }
+      </div>
+    </mat-tab>
     }
     @if (goTerms$.value() && goTerms$.value()!.length > 0) {
     <mat-tab label="Gene ontology">

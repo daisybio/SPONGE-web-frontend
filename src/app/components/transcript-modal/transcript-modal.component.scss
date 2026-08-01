@@ -44,3 +44,19 @@ table {
     color: rgba(0, 0, 0, 0.87);
   }
 }
+
+// Alternative-splicing event-type badge. A plain pill (not a mat-chip): the MDC chip renders as an
+// empty box inside a table cell, so a span guarantees the short code (e.g. "SE") stays visible.
+.as-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.82);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  cursor: default;
+}

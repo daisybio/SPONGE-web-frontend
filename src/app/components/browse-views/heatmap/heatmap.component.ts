@@ -82,8 +82,12 @@ export class GeneExpressionHeatmapComponent {
     },
     
     getZMid: () => 0,
-    
-    getColorScale: () => 'RdBu'
+
+    getColorScale: () => 'RdBu',
+
+    // Subtype bar: for a single disease its values are that disease's subtypes (hue family); for
+    // pancancer they are cancer types (canonical per-type colors). Both handled by the global system.
+    subtypeParentType: () => this.browseService().disease$()?.disease_name,
   };
 
   private async handlePancancerSubtypes(expressionData: any[]): Promise<void> {

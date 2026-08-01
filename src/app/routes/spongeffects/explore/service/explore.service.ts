@@ -13,10 +13,30 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
-import { Dataset, ModuleMember, RunClassPerformance, SpongEffectsModule } from '../../../../interfaces';
+import {
+  Dataset,
+  ModuleMember,
+  RunClassPerformance,
+  SpongEffectsModule,
+  SpongEffectsParamSet,
+  SpongEffectsRun,
+} from '../../../../interfaces';
 import { VersionsService } from '../../../../services/versions.service';
 import { BackendService } from '../../../../services/backend.service';
 import { FormControl, FormGroup } from '@angular/forms';
+
+/** Identity of a param set, used to match the same model across disease/level switches. */
+function paramSetKey(paramSet: SpongEffectsParamSet): string {
+  return `${paramSet.m_scor_threshold}|${paramSet.p_adj_threshold}|${paramSet.modules_cutoff}`;
+}
+
+function runMatchesParamSet(run: SpongEffectsRun, paramSet: SpongEffectsParamSet): boolean {
+  return (
+    run.m_scor_threshold === paramSet.m_scor_threshold &&
+    run.p_adj_threshold === paramSet.p_adj_threshold &&
+    run.modules_cutoff === paramSet.modules_cutoff
+  );
+}
 
 @Injectable({
   providedIn: 'root',
@@ -77,11 +97,6 @@ export class ExploreService {
     const bySubtype = matches.find((d) => (d.disease_subtype ?? null) === (subtype ?? null));
     return bySubtype ?? matches.find((d) => d.disease_subtype == null) ?? matches[0] ?? ({} as Dataset);
   });
-  highestKey: WritableSignal<string> = signal<string>(''); // best model for the selected disease and level, e.g. 'paramSet_1'
-  highestParamSet = computed(() => {
-    const index = this.highestKey().split('_')[1];
-    return this.paramSets$()[parseInt(index, 10) - 1];
-  });
   selectedVis = signal<string>('plot');
   selectedHeatmapType = signal<'enrichment' | 'expression'>('enrichment');
 
@@ -103,33 +118,56 @@ export class ExploreService {
   readonly geneType$ = signal<string>('all');
   readonly supportFilter$ = signal<'all' | 'has_inverse' | 'no_inverse'>('all');
 
-  // For each disease, there are multiple spongeffects runs — filter to get runs for selected disease
-  spongeEffectsRuns$ = linkedSignal(() => {
+  // For each disease there are multiple spongEffects runs, at BOTH gene and transcript level. The
+  // model/param-set list and benchmarking are level-specific (a disease can have a different number
+  // of models per level — e.g. BRCA: 3 gene, 2 transcript), so filter by disease AND level.
+  // Otherwise the Model panel shows the union across levels while benchmarking only has data for
+  // the current level's subset (Model panel says 3, benchmarking shows 2).
+  readonly spongeEffectsRuns$ = computed(() => {
     const selectedDisease = this.selectedDisease$();
-    let runs = this.spongEffectsService.spongEffectsRuns$.value() || [];
-    runs = runs.filter((run) => run.disease_name === selectedDisease);
-    return runs;
+    const level = this.level$();
+    const runs = this.spongEffectsService.spongEffectsRuns$.value() || [];
+    return runs.filter((run) => run.disease_name === selectedDisease && run.level === level);
   });
 
   // Unique param sets (m_scor_threshold, p_adj_threshold, modules_cutoff)
-  paramSets$ = computed(() => {
-    const runs = this.spongeEffectsRuns$();
-    const paramSets = runs.map((run) => ({
+  readonly paramSets$ = computed<SpongEffectsParamSet[]>(() => {
+    const paramSets = this.spongeEffectsRuns$().map((run) => ({
       m_scor_threshold: run.m_scor_threshold,
       p_adj_threshold: run.p_adj_threshold,
       modules_cutoff: run.modules_cutoff,
     }));
     // remove duplicates
     return paramSets.filter((paramSet, index, self) =>
-      index === self.findIndex((d) =>
-        d.m_scor_threshold === paramSet.m_scor_threshold &&
-        d.p_adj_threshold === paramSet.p_adj_threshold &&
-        d.modules_cutoff === paramSet.modules_cutoff
-      )
+      index === self.findIndex((d) => paramSetKey(d) === paramSetKey(paramSet))
     );
   });
 
-  readonly selectedParamSetIndices = signal<Set<number>>(new Set());
+  // Carry the user's selection across disease/level switches by matching the threshold values
+  // instead of the positional index — the same model can sit at a different index elsewhere, and
+  // a level may expose fewer models. Falls back to "all selected" when nothing carries over.
+  readonly selectedParamSetIndices = linkedSignal<SpongEffectsParamSet[], Set<number>>({
+    source: () => this.paramSets$(),
+    computation: (paramSets, previous) => {
+      const all = new Set(paramSets.map((_, index) => index));
+      if (previous === undefined) {
+        return all;
+      }
+      const previousKeys = new Set(
+        previous.source.filter((_, index) => previous.value.has(index)).map(paramSetKey)
+      );
+      if (previousKeys.size === previous.source.length) {
+        return all; // everything was selected — keep it that way for the new list
+      }
+      const carried = new Set<number>();
+      paramSets.forEach((paramSet, index) => {
+        if (previousKeys.has(paramSetKey(paramSet))) {
+          carried.add(index);
+        }
+      });
+      return carried.size > 0 ? carried : all;
+    },
+  });
 
   /**
    * Computed signal containing the currently selected param sets (as an object map).
@@ -144,6 +182,47 @@ export class ExploreService {
       }
     });
     return result;
+  });
+
+  // Accuracy of every model of the selected disease + level. Passing no param set returns all runs
+  // in one request, so the "best model" marker is available without opening the Benchmarking tab
+  // and stays put when models are deselected.
+  private readonly runPerformance$ = resource({
+    params: () => ({
+      version: this.versionsService.versionReadOnly()(),
+      disease: this.selectedDisease$(),
+      level: this.level$(),
+    }),
+    loader: async ({ params }) => {
+      const { version, disease, level } = params;
+      if (version === undefined || disease === undefined || level === undefined) {
+        return [];
+      }
+      // The API answers with a "no content" object instead of an array when nothing matches.
+      const performances = await this.backend.getRunPerformance(version, disease, level, {});
+      return Array.isArray(performances) ? performances : [];
+    },
+  });
+
+  /** Best model for the selected disease and level, as a paramSets$ key, e.g. 'paramSet_1'. */
+  readonly highestKey: Signal<string> = computed(() => {
+    const paramSets = this.paramSets$();
+    let highestAccuracy = -Infinity;
+    let highestKey = '';
+    for (const entry of this.runPerformance$.value() ?? []) {
+      if (entry.model_type !== 'modules' || entry.split_type !== 'test') continue;
+      if (entry.accuracy <= highestAccuracy) continue;
+      const index = paramSets.findIndex((paramSet) => runMatchesParamSet(entry.spongEffects_run, paramSet));
+      if (index === -1) continue;
+      highestAccuracy = entry.accuracy;
+      highestKey = `paramSet_${index + 1}`;
+    }
+    return highestKey;
+  });
+
+  readonly highestParamSet = computed(() => {
+    const index = this.highestKey().split('_')[1];
+    return this.paramSets$()[parseInt(index, 10) - 1];
   });
 
   constructor() {
@@ -162,39 +241,28 @@ export class ExploreService {
         });
       }
     });
-
-    // Reset selection to select all models whenever paramSets$ changes (e.g. disease changes)
-    effect(() => {
-      const paramSets = this.paramSets$();
-      const allIndices = new Set(paramSets.map((_, i) => i));
-      untracked(() => {
-        this.selectedParamSetIndices.set(allIndices);
-      });
-    });
   }
 
-  toggleParamSetIndex(index: number): void {
-    const current = new Set(this.selectedParamSetIndices());
-    if (current.has(index)) {
-      if (current.size > 1) {
-        current.delete(index);
-      }
-    } else {
-      current.add(index);
+  /**
+   * Select/deselect one model. Returns false when the change was rejected because at least one
+   * model has to stay selected — the caller is then responsible for undoing its optimistic UI.
+   */
+  setParamSetIndexSelected(index: number, selected: boolean): boolean {
+    const current = this.selectedParamSetIndices();
+    if (current.has(index) === selected) {
+      return true;
     }
-    this.selectedParamSetIndices.set(current);
-  }
-
-  setParamSetIndexSelected(index: number, selected: boolean): void {
-    const current = new Set(this.selectedParamSetIndices());
+    if (!selected && current.size <= 1) {
+      return false;
+    }
+    const next = new Set(current);
     if (selected) {
-      current.add(index);
+      next.add(index);
     } else {
-      if (current.size > 1) {
-        current.delete(index);
-      }
+      next.delete(index);
     }
-    this.selectedParamSetIndices.set(current);
+    this.selectedParamSetIndices.set(next);
+    return true;
   }
 
   isParamSetIndexSelected(index: number): boolean {

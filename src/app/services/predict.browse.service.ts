@@ -568,36 +568,6 @@ export class PredictBrowseService extends BrowseService {
     } as TranscriptNode;
   }
 
-  protected createVirtualEdge(center: string, member: string, level: 'gene' | 'transcript', dataset: Dataset, centerSymbol?: string, memberSymbol?: string): any {
-    const spongeRun = {
-      dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' },
-      sponge_run_ID: 0,
-    };
-    const cSym = centerSymbol || center;
-    const mSym = memberSymbol || member;
-    if (level === 'gene') {
-      return {
-        correlation: '(abs) > 0.1',
-        mscor: '< 0.2',
-        p_value: '> 0.2',
-        isVirtual: true,
-        gene1: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' },
-        gene2: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' },
-        sponge_run: spongeRun
-      } as any;
-    } else {
-      return {
-        correlation: '(abs) > 0.1',
-        mscor: '< 0.2',
-        p_value: '> 0.2',
-        isVirtual: true,
-        transcript_1: { enst_number: center, gene: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
-        transcript_2: { enst_number: member, gene: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
-        sponge_run: spongeRun
-      } as any;
-    }
-  }
-
   private async resolveModuleId(
     gene: string, version: number, scope: string, level: 'gene' | 'transcript',
   ): Promise<number | undefined> {

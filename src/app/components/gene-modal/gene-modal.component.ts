@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { Gene, GOTerm, SpongEffectsGeneModules } from '../../interfaces';
+import { Gene, GeneInteraction, GOTerm, SpongEffectsGeneModules } from '../../interfaces';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { VersionsService } from '../../services/versions.service';
@@ -60,6 +60,7 @@ interface ASEntry {
     MatProgressBar,
     MatTooltip,
     Igv,
+    InfoComponent,
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss',
@@ -182,6 +183,68 @@ export class GeneModalComponent implements AfterViewInit {
     }
     return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
   }
+
+  // Aggregate stats over the ceRNA interactions this gene takes part in, read from the network
+  // already loaded in BrowseService — the browse view filters edges by mscor / adj. p-value, so
+  // the data is present without any extra request. Virtual/fallback edges (string mscor like
+  // "< 0.2") are excluded so the summary reflects only real, measured interactions. Undefined when
+  // no interactions for this gene are loaded (i.e. the modal was opened outside the browse network).
+  readonly ceRNAStats$ = computed(() => {
+    const ensg = this.ensgNumber;
+    if (!ensg) return undefined;
+    const edges = this.browseService.interactions$() as GeneInteraction[];
+    const real = edges.filter(
+      (e) =>
+        (e?.gene1?.ensg_number === ensg || e?.gene2?.ensg_number === ensg) &&
+        typeof e.mscor === 'number' &&
+        typeof e.p_value === 'number'
+    );
+    if (real.length === 0) return undefined;
+    const mscors = real.map((e) => e.mscor).sort((a, b) => a - b);
+    const pValues = real.map((e) => e.p_value);
+    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+    const median = (sorted: number[]) => {
+      const n = sorted.length;
+      const mid = Math.floor(n / 2);
+      return n % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+    return {
+      count: real.length,
+      meanMscor: sum(mscors) / mscors.length,
+      medianMscor: median(mscors),
+      minMscor: mscors[0],
+      maxMscor: mscors[mscors.length - 1],
+      bestPValue: Math.min(...pValues),
+    };
+  });
+
+  readonly effectiveCentralities$ = computed(() => {
+    const g = this.gene as any;
+    if (g.betweenness !== undefined && g.betweenness !== null) {
+      return {
+        betweenness: g.betweenness,
+        eigenvector: g.eigenvector ?? null,
+        node_degree: g.node_degree ?? null,
+      };
+    }
+
+    const ensg = this.ensgNumber;
+    const activeNodes = this.browseService.nodes$() || [];
+    const match = activeNodes.find((n) => BrowseService.getNodeID(n) === ensg);
+    if (match) {
+      return {
+        betweenness: match.betweenness ?? null,
+        eigenvector: match.eigenvector ?? null,
+        node_degree: match.node_degree ?? null,
+      };
+    }
+
+    return {
+      betweenness: g.betweenness ?? null,
+      eigenvector: g.eigenvector ?? null,
+      node_degree: g.node_degree ?? null,
+    };
+  });
 
   readonly geneInfo$ = resource({
     params: this.version$,

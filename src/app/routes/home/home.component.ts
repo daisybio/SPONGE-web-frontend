@@ -176,20 +176,6 @@ export class HomeComponent implements OnDestroy {
     return data
   }
 
-  private getSubtypeColor(subtype: string, type: 'gene' | 'transcript'): string {
-    // Generate color based on subtype name hash
-    let hash = 0;
-    for (let i = 0; i < subtype.length; i++) {
-      hash = subtype.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const hue = Math.abs(hash) % 360;
-    const saturation = type === 'gene' ? 70 : 50;
-    const lightness = type === 'gene' ? 50 : 65;
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-  }
-
   navigateTo(route: string) {
     this.router.navigate([route]);
   }
