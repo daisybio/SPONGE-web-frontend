@@ -406,7 +406,8 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  static async mapSampleToDisease(sampleId: string, mapping: { [key: string]: string }): Promise<string> {
+  static mapSampleToDisease(sampleId: string, mapping: { [key: string]: string }): string {
+    if (!sampleId) return 'Unknown';
     // Extract the TSS code from the sample ID (format: TCGA-K1-A6RT-01___pancancer)
     const tssCode = sampleId.split('-')[1];
     

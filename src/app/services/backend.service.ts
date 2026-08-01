@@ -684,11 +684,12 @@ export class BackendService {
   ): Promise<any[]> {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
+    const MAX_TOTAL_RECORDS = 15000;
     const expressionData: any[] = [];
     let hasMoreData = true;
     let offset = 0;
 
-    while (hasMoreData) {
+    while (hasMoreData && expressionData.length < MAX_TOTAL_RECORDS) {
       // Fetch multiple pages in parallel
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
@@ -702,8 +703,8 @@ export class BackendService {
         if (page.length > 0) {
           expressionData.push(...page);
         }
-        // If a page has fewer rows than CHUNK_SIZE, we've reached the end
-        if (page.length < CHUNK_SIZE) {
+        // If a page has fewer rows than CHUNK_SIZE or max cap reached, stop
+        if (page.length < CHUNK_SIZE || expressionData.length >= MAX_TOTAL_RECORDS) {
           hasMoreData = false;
           break; // Stop processing further pages in this batch
         }

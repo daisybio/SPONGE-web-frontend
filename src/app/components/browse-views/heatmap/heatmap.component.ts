@@ -94,12 +94,10 @@ export class GeneExpressionHeatmapComponent {
     // Fetch the mapping from TSS codes to disease names
     const mapping = await this.backend.getDiseaseFromSample();
     
-    // Add the disease name to the expression data
-    for (const e of expressionData) {
-      const sampleId = e.sample_ID;
-      // mapSampleToDisease from ReusableHeatmapComponent
-      const diseaseName = await ReusableHeatmapComponent.mapSampleToDisease(sampleId, mapping);
-      e.disease_subtype = diseaseName;
+    // Add the disease name to the expression data synchronously
+    for (let i = 0; i < expressionData.length; i++) {
+      const e = expressionData[i];
+      e.disease_subtype = ReusableHeatmapComponent.mapSampleToDisease(e.sample_ID, mapping);
     }
   }
 }
