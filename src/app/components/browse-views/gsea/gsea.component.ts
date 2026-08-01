@@ -32,6 +32,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { GseaBarplotComponent } from './gsea-barplot/gsea-barplot.component';
 import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.component';
+import { InfoComponent } from '../../info/info.component';
 
 @Component({
   selector: 'app-gsea',
@@ -53,6 +54,7 @@ import { GseaVolcanoplotComponent } from './gsea-volcanoplot/gsea-volcanoplot.co
     GSEAresultsComponent,
     GseaBarplotComponent,
     GseaVolcanoplotComponent,
+    InfoComponent,
   ],
   templateUrl: './gsea.component.html',
   styleUrl: './gsea.component.scss',
@@ -131,7 +133,7 @@ export class GSEAComponent {
   });
   activeLocalCondition$ = linkedSignal(() => this.allowedLocalConditions$()[0]);
   geneSets$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         global: this.globalDisease$(),
         local: this.localDisease$(),
@@ -142,11 +144,11 @@ export class GSEAComponent {
     }),
     loader: (request) => {
       return this.backend.getGeneSets(
-        request.request.version,
-        request.request.global,
-        request.request.globalCondition,
-        request.request.local,
-        request.request.localCondition
+        request.params.version,
+        request.params.global,
+        request.params.globalCondition,
+        request.params.local,
+        request.params.localCondition
       );
     },
   });
@@ -170,7 +172,7 @@ export class GSEAComponent {
   });
 
   gseaResults$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         global: this.globalDisease$(),
         local: this.localDisease$(),
@@ -182,12 +184,12 @@ export class GSEAComponent {
     }),
     loader: (params) => {
       return this.backend.getGSEAresults(
-        params.request.version,
-        params.request.global,
-        params.request.globalCondition,
-        params.request.local,
-        params.request.localCondition,
-        params.request.geneSet
+        params.params.version,
+        params.params.global,
+        params.params.globalCondition,
+        params.params.local,
+        params.params.localCondition,
+        params.params.geneSet
       );
     },
   });

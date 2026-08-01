@@ -11,6 +11,8 @@ import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatAnchor} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
 
+import { InfoComponent } from '../info/info.component';
+
 interface TableData {
   node1_coefficient: number;
   node2_coefficient: number;
@@ -20,7 +22,7 @@ interface TableData {
 
 @Component({
   selector: 'app-interaction-modal',
-  imports: [MatDialogModule, MatProgressSpinner, MatTableModule, MatPaginator, MatSortModule, MatAnchor, MatTooltip],
+  imports: [MatDialogModule, MatProgressSpinner, MatTableModule, MatPaginator, MatSortModule, MatAnchor, MatTooltip, InfoComponent],
   templateUrl: './interaction-modal.component.html',
   styleUrl: './interaction-modal.component.scss'
 })
@@ -34,8 +36,19 @@ export class InteractionModalComponent implements AfterViewInit {
   private readonly backend = inject(BackendService);
   private readonly versionsService = inject(VersionsService);
   version$ = this.versionsService.versionReadOnly();
+
+  readonly isVirtual = computed(() => {
+    const int = this.data.interaction as any;
+    return !!(
+      int?.isVirtual ||
+      int?.mscor === '< 0.2' ||
+      int?.mscor === '<0.1' ||
+      int?.p_value === '> 0.2' ||
+      int?.sponge_run?.sponge_run_ID === 0
+    );
+  });
   miRNAs$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this.version$(),
         level: 'gene1' in this.data.interaction ? 'gene' : 'transcript',
@@ -43,10 +56,10 @@ export class InteractionModalComponent implements AfterViewInit {
       }
     }),
     loader: async (param) => {
-      const disease = param.request.disease;
+      const disease = param.params.disease;
       if (disease === undefined) return;
       const identifiers = BrowseService.getInteractionIDs(this.data.interaction);
-      return await this.backend.getMiRNAs(param.request.version, disease, identifiers, param.request.level as 'gene' | 'transcript');
+      return await this.backend.getMiRNAs(param.params.version, disease, identifiers, param.params.level as 'gene' | 'transcript');
     }
   })
   tableData$ = computed(() => {

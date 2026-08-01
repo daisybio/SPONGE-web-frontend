@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LollipopPlotComponent } from './lollipop-plot.component';
+import { ImportancePlotComponent } from './lollipop-plot.component';
 
-describe('LollipopPlotComponent', () => {
-  let component: LollipopPlotComponent;
-  let fixture: ComponentFixture<LollipopPlotComponent>;
+describe('ImportancePlotComponent', () => {
+  let component: ImportancePlotComponent;
+  let fixture: ComponentFixture<ImportancePlotComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LollipopPlotComponent]
+      imports: [ImportancePlotComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LollipopPlotComponent);
+    fixture = TestBed.createComponent(ImportancePlotComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

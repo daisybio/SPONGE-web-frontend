@@ -17,6 +17,9 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 import { CommonModule } from '@angular/common';
 import { capitalize } from 'lodash';
 import { BackendService } from '../../services/backend.service';
+import { CartService } from '../../services/cart.service';
+import { Gene, Transcript } from '../../interfaces';
+import { buildColorMap } from '../../cancer-colors';
 
 declare const Plotly: any;
 
@@ -31,6 +34,11 @@ export type HeatmapDataSource = {
   getYAxisTitle?: () => string;
   getZMid?: () => number;
   getClusterLegendTitle?: () => string;
+  // Parent cancer type for the categorical (subtype) bar. When it names a single disease
+  // (non-pancancer), the bar values are that disease's subtypes and get a lightness family derived
+  // from the parent hue; when undefined or 'pancancer', the values are cancer types themselves and
+  // each gets its canonical color. Either way coloring goes through the global cancer-color system.
+  subtypeParentType?: () => string | undefined;
 };
 
 @Component({
@@ -42,6 +50,7 @@ export type HeatmapDataSource = {
 })
 export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   backend = inject(BackendService);
+  cartService = inject(CartService);
 
   // Inputs
   dataSource = input.required<HeatmapDataSource>();
@@ -59,9 +68,13 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   
   private resizeObserver: ResizeObserver | null = null;
   
+  isLoading = computed(() => {
+    return this.heatmapResource.isLoading() || !!this.params()?.isLoading;
+  });
+  
   // Resource-based data fetching
   heatmapResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         dataSource: this.dataSource(),
         params: this.params(),
@@ -69,7 +82,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       };
     }),
     loader: async (param) => {
-      const { dataSource, params, showSubtypes } = param.request;
+      const { dataSource, params, showSubtypes } = param.params;
       
       // Fetch data using the data source
       const data = await dataSource.getData(params);
@@ -139,7 +152,19 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
 
     // Create layout
     const layout = this.createLayout(samples, dataSource, params);
-    
+
+    // Grow the plot vertically with the number of gene rows so every y label fits (see the
+    // forced per-category ticks in createLayout). Falls back to the configured height for small
+    // heatmaps; taller plots simply make the page scroll.
+    const geneCount = new Set(
+      data.map(e => ('gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)))
+    ).size;
+    const baseHeight = parseInt(this.height(), 10) || 600;
+    const ROW_PX = 22;
+    const plotHeight = Math.max(baseHeight, geneCount * ROW_PX + 200);
+    layout.height = plotHeight;
+    heatmapEl.style.height = `${plotHeight}px`;
+
     // Create config
     const config = {
       responsive: true,
@@ -147,6 +172,29 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
 
     // Render plot
     Plotly.newPlot(heatmapEl, plotData, layout, config);
+
+    if (heatmapEl) {
+      (heatmapEl as any).removeAllListeners?.('plotly_click');
+      (heatmapEl as any).on('plotly_click', (clickData: any) => {
+        if (clickData?.points?.[0]) {
+          const pt = clickData.points[0];
+          const info = pt.customdata;
+          if (info && info.ensemblID) {
+            if (info.ensemblID.startsWith('ENSG')) {
+              this.cartService.add({
+                ensg_number: info.ensemblID,
+                gene_symbol: info.symbol
+              });
+            } else {
+              this.cartService.add({
+                enst_number: info.ensemblID,
+                gene: { ensg_number: '', gene_symbol: info.symbol || info.ensemblID }
+              } as Transcript);
+            }
+          }
+        }
+      });
+    }
   }
 
   private extractSamples(data: any[]): { sample_ID: string, disease_subtype: string }[] {
@@ -160,18 +208,29 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       x: data.map(e => e.sample_ID),
       y: data.map(e => 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)),
       type: 'heatmap',
+      customdata: data.map(e => ({
+        ensemblID: 'gene' in e ? e.gene.ensg_number : (e.transcript ? e.transcript.enst_number : e.id),
+        symbol: 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)
+      })),
+      text: data.map(e => {
+        const symbol = 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id);
+        return `${symbol} (${e.sample_ID})<br>Click cell to add gene/transcript to cart`;
+      }),
+      hoverinfo: 'text+z',
       zmid: dataSource.getZMid ? dataSource.getZMid() : 0,
       showscale: true,
       showlegend: false,
       colorscale: dataSource.getColorScale ? dataSource.getColorScale() : "RdBu",
       colorbar: {
-        len: 0.5,
-        lenmode: 'fraction',
+        // Fixed pixel length (not a fraction of height) so it stays a sensible size on tall
+        // plots, and top-aligned to sit alongside the legend rather than stretching the height.
+        len: 300,
+        lenmode: 'pixels',
         title: dataSource.getZAxisTitle ? dataSource.getZAxisTitle() : 'Normalized<br>expression',
         xanchor: 'left',
-        yanchor: 'bottom',
+        yanchor: 'top',
         x: 1.01,
-        y: 0,
+        y: 1,
         ypad: 0,
       },
     };
@@ -183,21 +242,28 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   }
 
   private createSubtypeElements(samples: { sample_ID: string, disease_subtype: string }[]) {
-    // Extract unique subtypes and map them to colors
+    // Extract unique subtypes and map them to colors. Sorted so the derived subtype-family
+    // lightness order is deterministic across renders.
     const subtypes = [...new Set(samples.map(s => s.disease_subtype)
-      .filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA'))];
-    
+      .filter(subtype => subtype !== 'None' && subtype !== 'null' && subtype && subtype !== 'NA'))]
+      .sort();
+
     if (subtypes.length === 0) {
       subtypes.push('NA');
     }
-    
-    // Create color mapping
-    const subtypeColors: { [key: string]: string } = {};
-    subtypes.forEach((subtype, index) => {
-      subtypeColors[subtype!] = `hsl(${(index * 360) / subtypes.length}, 70%, 50%)`;
-    });
-    
-    // Add default colors
+
+    // Color through the global cancer-color system so the bar matches the rest of the app. With a
+    // single-disease parent (non-pancancer) the values are that disease's subtypes → derive a
+    // lightness family from the parent hue; otherwise they are cancer types → canonical per-type
+    // colors.
+    const parent = this.dataSource().subtypeParentType?.();
+    const useSubtypeFamily = !!parent && parent.toLowerCase() !== 'pancancer';
+    const subtypeColors: { [key: string]: string } = buildColorMap(
+      subtypes as string[],
+      useSubtypeFamily ? parent : undefined
+    );
+
+    // Neutral grey for the "no subtype" buckets.
     subtypeColors['Unspecific'] = 'grey';
     subtypeColors['None'] = 'grey';
     subtypeColors['null'] = 'grey';
@@ -265,6 +331,12 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         automargin: true,
         domain: [0, showSubtypes ? 0.9 : 1],
         showticklabels: true,
+        // Show a label for every gene, not Plotly's auto-thinned subset. Paired with the
+        // row-count-driven plot height below so the labels have room and don't overlap.
+        type: 'category',
+        tickmode: 'linear',
+        tick0: 0,
+        dtick: 1,
       },
       yaxis2: {
         automargin: true,
@@ -278,8 +350,10 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
+      // Placed in its own column to the right of the colorbar (which sits at x: 1.01). Sharing
+      // that column made a tall legend (many subtypes / short plot) overlap the colorbar.
       legend: {
-        x: 1.01,
+        x: 1.15,
         y: 1,
         xanchor: 'left',
         yanchor: 'top',
@@ -288,11 +362,6 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         },
       },
     };
-
-    // Special case for pancancer
-    if (params.disease && params.disease.disease_name === 'pancancer') {
-      layout.legend.x = 1.15;
-    }
 
     return layout;
   }
@@ -337,7 +406,8 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  static async mapSampleToDisease(sampleId: string, mapping: { [key: string]: string }): Promise<string> {
+  static mapSampleToDisease(sampleId: string, mapping: { [key: string]: string }): string {
+    if (!sampleId) return 'Unknown';
     // Extract the TSS code from the sample ID (format: TCGA-K1-A6RT-01___pancancer)
     const tssCode = sampleId.split('-')[1];
     

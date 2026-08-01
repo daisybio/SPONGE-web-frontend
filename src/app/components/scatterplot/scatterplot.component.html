@@ -1,11 +1,27 @@
-@if (scatterplotResource.isLoading()) {
+@if (isLoading()) {
   <div style="width: 100%; display: flex; flex-direction: row; justify-content: center; align-items: center;">
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 } @else {
   @if (!scatterplotResource.value()) {
     <p>No data available</p>
+  } @else {
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 20px;">
+        <button mat-stroked-button color="primary" (click)="toggleRemaining()">
+          {{ showRemaining() ? 'Remove remaining modules' : 'Add remaining modules' }}
+        </button>
+      </div>
+      <button mat-icon-button [matMenuTriggerFor]="scatterDownloadMenu" matTooltip="Download Plot">
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #scatterDownloadMenu="matMenu">
+        <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+        <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+        <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+      </mat-menu>
+    </div>
   }
 }
-<div #scatterplot style="width:100%;height:280px;"></div>
+<div #scatterplot style="width:100%;height:450px;"></div>
 

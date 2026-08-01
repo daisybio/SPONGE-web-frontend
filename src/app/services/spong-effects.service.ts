@@ -1,7 +1,8 @@
-import {computed, inject, Injectable, resource} from '@angular/core';
-import {BackendService} from "./backend.service";
-import {VersionsService} from "./versions.service";
-import {SpongEffectsRun, Dataset} from "../interfaces";
+import { computed, inject, Injectable, resource, signal } from '@angular/core';
+import { BackendService } from "./backend.service";
+import { VersionsService } from "./versions.service";
+import { SpongEffectsRun, Dataset, SpongEffectsGeneModuleMembers, SpongEffectsTranscriptModuleMembers } from "../interfaces";
+import { sortDiseaseNames } from '../cancer-colors';
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +11,13 @@ export class SpongEffectsService {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   private readonly _version$ = this.versionsService.versionReadOnly();
-  
+
+  readonly selectedMode$ = signal<'explore' | 'predict' | 'enrichment'>('enrichment');
+
   spongEffectsRuns$ = resource({
-    request: this._version$,
+    params: this._version$,
     loader: async (version) => {
-      return await this.backend.getSpongEffectsRuns(version.request);
+      return await this.backend.getSpongEffectsRuns(version.params);
     }
   });
 
@@ -42,8 +45,71 @@ export class SpongEffectsService {
   // diseaseNames$ = linkedSignal(() => this.datasets$().map(d => d.disease_name));
   diseaseNames$ = computed(() => {
     const runs = this.spongEffectsRuns$.value() || [];
-    return runs.map((run: SpongEffectsRun) => run.disease_name)
+    const unique = runs.map((run: SpongEffectsRun) => run.disease_name)
       .filter((value: string, index: number, self: Array<string>) => self.indexOf(value) === index);
+    return sortDiseaseNames(unique);
   });
 
+  // ---- Shared, cached module-member access ----------------------------------------------
+  // Module members for a given (disease, module) are needed by several tabs/components — the
+  // network, the module tables, the importance plot, the cart. Route them all through these
+  // cached accessors so the same module is fetched from the backend at most once per
+  // (version, disease, identifier, limit), deduplicating across components and tab switches.
+  private readonly geneMembersCache = new Map<string, SpongEffectsGeneModuleMembers[]>();
+  private readonly transcriptMembersCache = new Map<string, SpongEffectsTranscriptModuleMembers[]>();
+
+  async getGeneModuleMembers(
+    version: number,
+    disease: string,
+    opts: { ensemblID?: string; moduleId?: number; limit?: number } = {}
+  ): Promise<SpongEffectsGeneModuleMembers[]> {
+    const key = `${version}|${disease}|${opts.ensemblID ?? ''}|${opts.moduleId ?? ''}|${opts.limit ?? ''}`;
+    let cached = this.geneMembersCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.getSpongEffectsGeneModuleMembers(
+        version, disease, opts.ensemblID, undefined, opts.limit, opts.moduleId
+      )) ?? [];
+      this.geneMembersCache.set(key, cached);
+    }
+    return cached;
+  }
+
+  async getTranscriptModuleMembers(
+    version: number,
+    disease: string,
+    opts: { ensemblID?: string; moduleId?: number; limit?: number } = {}
+  ): Promise<SpongEffectsTranscriptModuleMembers[]> {
+    const key = `${version}|${disease}|${opts.ensemblID ?? ''}|${opts.moduleId ?? ''}|${opts.limit ?? ''}`;
+    let cached = this.transcriptMembersCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.getSpongEffectsTranscriptModuleMembers(
+        version, disease, opts.ensemblID, undefined, opts.limit, opts.moduleId
+      )) ?? [];
+      this.transcriptMembersCache.set(key, cached);
+    }
+    return cached;
+  }
+
+  // Enrichment scores are fetched by BOTH the Explore mean-vs-variance scatter and the predict
+  // TCGA-vs-patient scatter. Cache keyed by the SORTED module-ID set so that re-deriving a plot
+  // (e.g. after changing "max modules" while all modules are already shown) is a cache hit — it
+  // only re-colours top-N vs remaining and never re-hits `getSpongEffectsGeneModuleScores`.
+  private readonly enrichScoresCache = new Map<string, any[]>();
+
+  async getEnrichScores(
+    version: number,
+    level: 'gene' | 'transcript',
+    moduleIDs: number[],
+    cluster = false,
+    average = false
+  ): Promise<any[]> {
+    const ids = [...(moduleIDs ?? [])].filter((x) => x != null).sort((a, b) => a - b);
+    const key = `${version}|${level}|${cluster}|${average}|${ids.join(',')}`;
+    let cached = this.enrichScoresCache.get(key);
+    if (!cached) {
+      cached = (await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, cluster, average)) ?? [];
+      this.enrichScoresCache.set(key, cached);
+    }
+    return cached;
+  }
 }

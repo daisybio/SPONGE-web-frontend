@@ -53,7 +53,7 @@ interface Query {
   providedIn: 'root',
 })
 export class BackendService {
-  constructor(private http: HttpService) {}
+  constructor(private http: HttpService) { }
 
   async getDatasets(version: number, diseaseName?: string): Promise<Dataset[]> {
     const route = 'datasets';
@@ -106,21 +106,30 @@ export class BackendService {
         ][i]
     );
 
+    const numOrUndefined = (val: any) => typeof val === 'number' && !isNaN(val) ? val : undefined;
+
     const _query: Query = {
       sponge_db_version: version,
       dataset_ID: query.dataset.dataset_ID,
-      minBetweenness: query.minBetweenness,
-      minNodeDegree: query.minDegree,
-      minEigenvector: query.minEigen,
-      maxPValue: query.maxPValue,
-      minMscor: query.minMscor,
+      minBetweenness: numOrUndefined(query.minBetweenness),
+      minNodeDegree: numOrUndefined(query.minDegree),
+      minEigenvector: numOrUndefined(query.minEigen),
+      maxPValue: numOrUndefined(query.maxPValue),
+      minMscor: numOrUndefined(query.minMscor),
       edgeSorting: query.interactionSorting,
-      nodeSorting: geneSorting,
-      maxNodes: query.maxNodes,
-      maxEdges: query.maxInteractions,
+      maxNodes: numOrUndefined(query.maxNodes),
+      maxEdges: numOrUndefined(query.maxInteractions),
     };
+    // Only send a node sort when at least one is selected. With none selected the backend
+    // skips the networkAnalysis-based node selection and derives nodes straight from the
+    // edges, so no nodes are lost.
+    if (geneSorting.length > 0) {
+      _query["nodeSorting"] = geneSorting;
+    }
     if (query.ensemblID) {
-      _query["ensemblID"] = query.ensemblID;
+      _query["ensemblID"] = Array.isArray(query.ensemblID)
+        ? query.ensemblID.join(',')
+        : query.ensemblID;
     }
 
     return (await this.http.getRequest<Network>(this.getRequestURL(route, _query))) ?? { nodes: [], edges: [] } as Network;
@@ -248,7 +257,8 @@ export class BackendService {
     disease: Dataset,
     maxPValue: number,
     identifiers: string[],
-    level: 'gene' | 'transcript'
+    level: 'gene' | 'transcript',
+    limit?: number
   ): Promise<(GeneInteraction | TranscriptInteraction)[]> {
     const route =
       level == 'gene'
@@ -265,6 +275,9 @@ export class BackendService {
       dataset_ID: disease.dataset_ID,
       pValue: maxPValue,
     };
+    if (limit !== undefined) {
+      query['limit'] = limit;
+    }
 
     if (level == 'gene') {
       query['ensg_number'] = identifiers.join(',');
@@ -272,9 +285,13 @@ export class BackendService {
       query['enst_number'] = identifiers.join(',');
     }
 
-    return (await this.http.getRequest<(GeneInteraction | TranscriptInteraction)[]>(
+    const res = await this.http.getRequest<any>(
       this.getRequestURL(route, query)
-    )) ?? [];
+    );
+    if (res && !Array.isArray(res) && res.data) {
+      return res.data;
+    }
+    return (Array.isArray(res) ? res : []) as (GeneInteraction | TranscriptInteraction)[];
   }
 
   async getExpression(
@@ -294,13 +311,19 @@ export class BackendService {
       return Promise.resolve([]);
     }
 
+    // Clustering needs at least two identifiers to build a distance matrix; the backend returns a
+    // 400 ("empty distance matrix") for a single one. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-gene/-transcript expression heatmaps still return their
+    // values instead of erroring into a false "No data available".
+    const effectiveCluster = cluster && identifiers.length > 1;
+
     const query: Query = {
       sponge_db_version: version,
       dataset_ID: dataset_ID,
       disease_name: disease_name,
       limit: limit,
       offset: offset,
-      cluster: cluster,
+      cluster: effectiveCluster,
     };
 
     // drop query params that are undefined
@@ -510,6 +533,21 @@ export class BackendService {
     return res?.[0] ?? [];
   }
 
+  async checkDigger(
+    identifier: string,
+    level: 'gene' | 'transcript' = 'gene'
+  ): Promise<{ exists: boolean; url: string | null }> {
+    if (!identifier) {
+      return { exists: false, url: null };
+    }
+    const route = 'alternativeSplicing/checkDigger';
+    const query: Query = { identifier, level };
+    const res = await this.http.getRequest<{ exists: boolean; url: string | null }>(
+      this.getRequestURL(route, query)
+    );
+    return res ?? { exists: false, url: null };
+  }
+
   async getMiRNAs(
     version: number,
     disease: Dataset,
@@ -588,7 +626,13 @@ export class BackendService {
       pValue: maxPValue,
     };
 
-    return (await this.http.getRequest<CeRNAInteraction[]>(this.getRequestURL(route, query))) ?? [];
+    const res = await this.http.getRequest<any>(
+      this.getRequestURL(route, query)
+    );
+    if (res && !Array.isArray(res) && res.data) {
+      return res.data;
+    }
+    return (Array.isArray(res) ? res : []) as CeRNAInteraction[];
   }
 
   // getCeRNA(query: CeRNAQuery): Promise<CeRNA[]> {
@@ -632,62 +676,78 @@ export class BackendService {
   }
 
   async fetchExpressionData(
-    version: number, 
-    identifiers: string[], 
-    datasetId: number | undefined, 
-    disease_name: string | undefined, 
+    version: number,
+    identifiers: string[],
+    datasetId: number | undefined,
+    disease_name: string | undefined,
     level: "gene" | "transcript"
   ): Promise<any[]> {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
+    const MAX_TOTAL_RECORDS = 15000;
     const expressionData: any[] = [];
     let hasMoreData = true;
     let offset = 0;
-    
-    while (hasMoreData) {
+
+    while (hasMoreData && expressionData.length < MAX_TOTAL_RECORDS) {
       // Fetch multiple pages in parallel
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
         return this.getExpression(version, identifiers, disease_name, datasetId, level, CHUNK_SIZE, currentOffset, true);
       });
-  
+
       const pageResults = await Promise.all(pagePromises);
-  
+
       // Flatten and add results
       for (const page of pageResults) {
         if (page.length > 0) {
           expressionData.push(...page);
         }
-        // If a page has fewer rows than CHUNK_SIZE, we've reached the end
-        if (page.length < CHUNK_SIZE) {
+        // If a page has fewer rows than CHUNK_SIZE or max cap reached, stop
+        if (page.length < CHUNK_SIZE || expressionData.length >= MAX_TOTAL_RECORDS) {
           hasMoreData = false;
           break; // Stop processing further pages in this batch
         }
       }
-  
+
       if (hasMoreData) {
         offset += CHUNK_SIZE * N_PARALLEL_REQUESTS;
       }
     }
-    
+
     return expressionData;
   }
 
   async fetchSpongEffectsEnrichScores(
-    version: number, 
+    version: number,
     level: "gene" | "transcript",
-    module_IDs: any[],
-    cluster: boolean = true
+    module_IDs?: any[],
+    cluster: boolean = true,
+    average: boolean = false
   ): Promise<any[]> {
-
-    if (level === "gene") {
-      const route = 'spongEffects/getSpongEffectsGeneModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_gene_module_ID: module_IDs.join(','), cluster }))) ?? [];
-
-    } else {
-      const route = 'spongEffects/getSpongEffectsTranscriptModuleScores';
-      return (await this.http.getRequest<any[]>(this.getRequestURL(route, { sponge_db_version: version, spongEffects_transcript_module_ID: module_IDs.join(','), cluster }))) ?? [];
+    // Clustering needs at least two modules to build a distance matrix; the backend returns a 400
+    // ("empty distance matrix") for a single module. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-module heatmaps still return their scores instead of
+    // erroring out and rendering a false "No data available".
+    const effectiveCluster = cluster && (!module_IDs || module_IDs.length > 1);
+    const query: Record<string, any> = {
+      sponge_db_version: version,
+      cluster: effectiveCluster,
+      average,
+    };
+    if (module_IDs && module_IDs.length > 0) {
+      if (level === "gene") {
+        query['spongEffects_gene_module_ID'] = module_IDs.join(',');
+      } else {
+        query['spongEffects_transcript_module_ID'] = module_IDs.join(',');
+      }
     }
+
+    const route = level === "gene"
+      ? 'spongEffects/getSpongEffectsGeneModuleScores'
+      : 'spongEffects/getSpongEffectsTranscriptModuleScores';
+
+    return (await this.http.getRequest<any[]>(this.getRequestURL(route, query))) ?? [];
   }
 
 
@@ -739,7 +799,7 @@ export class BackendService {
     );
   }
 
-    // spongEffects services:
+  // spongEffects services:
 
 
   async getSpongEffectsRuns(
@@ -764,7 +824,7 @@ export class BackendService {
     version: number,
     diseaseName: string,
     level: string,
-    params: {[key: string]: any}
+    params: { [key: string]: any }
   ): Promise<RunPerformance[]> {
 
     const route = 'spongEffects/getRunPerformance';
@@ -775,7 +835,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -791,18 +851,18 @@ export class BackendService {
     version: number,
     diseaseName: string,
     level: string,
-    params: {[key: string]: any}
+    params: { [key: string]: any }
   ): Promise<RunClassPerformance[]> {
     const route = 'spongEffects/getRunClassPerformance';
 
     const query: Query = {
-        sponge_db_version: version,
-        disease_name: diseaseName,
-        level: level
-      };
+      sponge_db_version: version,
+      disease_name: diseaseName,
+      level: level
+    };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -818,10 +878,10 @@ export class BackendService {
     version: number,
     diseaseName: string,
     level: string,
-    params: {[key: string]: any}
+    params: { [key: string]: any }
   ): Promise<EnrichmentScoreDistributions[]> {
     const route = 'spongEffects/enrichmentScoreDistributions';
-  
+
     const query: Query = {
       sponge_db_version: version,
       disease_name: diseaseName,
@@ -829,7 +889,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -838,15 +898,16 @@ export class BackendService {
       (await this.http.getRequest<EnrichmentScoreDistributions[]>(
         this.getRequestURL(route, query)
       )) ?? []
-    );    
+    );
   }
 
   async getSpongEffectsGeneModules(
     version: number,
     diseaseName?: string,
-    params?: {[key: string]: any},
+    params?: { [key: string]: any },
     limit?: number,
-    ensg_number?: string
+    ensg_number?: string,
+    get_best?: boolean
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
@@ -862,9 +923,12 @@ export class BackendService {
     if (ensg_number) {
       query['ensg_number'] = ensg_number;
     }
+    if (get_best !== undefined) {
+      query['get_best'] = get_best;
+    }
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }
@@ -874,7 +938,7 @@ export class BackendService {
       (await this.http.getRequest<SpongEffectsGeneModules[]>(
         this.getRequestURL(route, query)
       )) ?? []
-    );    
+    );
   }
 
   async getSpongEffectsGeneModuleMembers(
@@ -907,8 +971,8 @@ export class BackendService {
 
   async getSpongEffectsTranscriptModules(
     version: number,
-    diseaseName?: string, 
-    params?: {[key: string]: any},
+    diseaseName?: string,
+    params?: { [key: string]: any },
     limit?: number,
     enst_number?: string
   ): Promise<SpongEffectsTranscriptModules[]> {
@@ -928,7 +992,7 @@ export class BackendService {
     }
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }
@@ -938,7 +1002,7 @@ export class BackendService {
       (await this.http.getRequest<SpongEffectsTranscriptModules[]>(
         this.getRequestURL(route, query)
       )) ?? []
-    );  
+    );
   }
 
   async getSpongEffectsTranscriptModuleMembers(
@@ -979,7 +1043,8 @@ export class BackendService {
     minSize: number,
     maxSize: number,
     minExpr: number,
-    method: string
+    method: string,
+    model: string | null,
   ): Promise<PredictCancerType> {
     const formData = new FormData();
     formData.append('file', file);
@@ -991,8 +1056,19 @@ export class BackendService {
     formData.append('max_size', maxSize.toString());
     formData.append('min_expr', minExpr.toString());
     formData.append('method', method);
+    if (model) {
+      formData.append('model', model);
+    }
     const request = `${API_BASE}/spongEffects/predictCancerType?sponge_db_version=${version}`;
     return this.http.postRequest(request, formData);
+  }
+
+  getUmapProjection(
+    level: string,
+    scores: any
+  ): Promise<{ user_umap: any; tcga_umap: any }> {
+    const request = `${API_BASE}/spongEffects/getUmapProjection`;
+    return this.http.postRequest(request, { level, scores });
   }
 
   getComparisons(version: number) {
@@ -1155,7 +1231,7 @@ export class BackendService {
     return this.http.getRequest<string>(this.getRequestURL(route, query));
   }
 
-  getDiseaseFromSample(sample_ID?: string): any{
+  getDiseaseFromSample(sample_ID?: string): any {
     const route = 'get_disease_from_sample';
     const query: Query = {
     };
@@ -1183,5 +1259,5 @@ export class BackendService {
   private getRequestURL(route: string, query: Query): string {
     return `${API_BASE}/${route}?${this.stringify(query)}`;
   }
-  
+
 }

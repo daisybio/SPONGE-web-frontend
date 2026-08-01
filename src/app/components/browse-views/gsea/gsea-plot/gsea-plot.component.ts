@@ -40,11 +40,11 @@ export class GseaPlotComponent {
     @Inject(MAT_DIALOG_DATA) public data: GseaPlotData,
     private sanitizer: DomSanitizer,
     private backend: BackendService
-  ) {}
+  ) { }
 
   // Using resource API to fetch the image
   imageResource = resource({
-    request: () => ({
+    params: () => ({
       version: this.data.version,
       globalDisease: this.data.globalDisease,
       globalCondition: this.data.globalCondition,
@@ -55,13 +55,13 @@ export class GseaPlotComponent {
     }),
     loader: async (params) => {
       const imageBase64 = await this.backend.getGseaPlot(
-        params.request.version,
-        params.request.globalDisease,
-        params.request.globalCondition,
-        params.request.localDisease,
-        params.request.localCondition,
-        params.request.geneSet,
-        params.request.term
+        params.params.version,
+        params.params.globalDisease,
+        params.params.globalCondition,
+        params.params.localDisease,
+        params.params.localCondition,
+        params.params.geneSet,
+        params.params.term
       );
 
       if (imageBase64) {

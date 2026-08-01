@@ -17,8 +17,13 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
+import { getCancerTypeColor, getCancerSubtypeColor } from '../../../../cancer-colors';
 
 declare var Plotly: any;
 
@@ -31,6 +36,10 @@ declare var Plotly: any;
     CommonModule,
     MatTableModule,
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
     InfoComponent,
   ],
   templateUrl: './prediction-results.component.html',
@@ -57,13 +66,13 @@ export class PredictionResultsComponent {
   });
 
   plotTypePredictPieResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         data: this.prediction$(),
       };
     }),
     loader: async (param) => {
-      const data = param.request.data;
+      const data = param.params.data;
       if (data === undefined) return;
       const plot_data = this.extractPredictions(data);
       return await this.plotPredictions(plot_data);
@@ -121,76 +130,20 @@ export class PredictionResultsComponent {
     );
 
     const data: any[] = [];
-    let colorIndex = 0;
-
-    const subtypeColors = [
-      '#1f77b4',
-      '#ff7f0e',
-      '#2ca02c',
-      '#d62728',
-      '#9467bd',
-      '#8c564b',
-      '#e377c2',
-      '#7f7f7f',
-      '#bcbd22',
-      '#17becf',
-      '#aec7e8',
-      '#ffbb78',
-      '#98df8a',
-      '#ff9896',
-      '#c5b0d5',
-      '#c49c94',
-      '#f7b6d2',
-      '#c7c7c7',
-      '#dbdb8d',
-      '#9edae5',
-      '#393b79',
-      '#5254a3',
-      '#6b6ecf',
-      '#9c9ede',
-      '#637939',
-      '#8ca252',
-      '#b5cf6b',
-      '#cedb9c',
-      '#8c6d31',
-      '#bd9e39',
-      '#17becf',
-      '#bcbd22',
-      '#7f7f7f',
-      '#e377c2',
-      '#8c564b',
-      '#9467bd',
-      '#d62728',
-      '#2ca02c',
-      '#ff7f0e',
-      '#1f77b4',
-      '#9edae5',
-      '#dbdb8d',
-      '#c7c7c7',
-      '#f7b6d2',
-      '#c49c94',
-      '#c5b0d5',
-      '#ff9896',
-      '#98df8a',
-      '#ffbb78',
-      '#aec7e8',
-      '#bd9e39',
-      '#8c6d31',
-      '#cedb9c',
-      '#b5cf6b',
-      '#8ca252',
-      '#637939',
-      '#9c9ede',
-      '#6b6ecf',
-      '#5254a3',
-      '#393b79',
-    ];
 
     // Convert to array to reverse the order so most frequent appears at top
     const typeCountsArray = Array.from(sortedTypeCounts.entries()).reverse();
 
+    // Color from the global cancer-type palette: each type keeps its canonical hue, and its
+    // subtypes are lightness variants of that same hue family (getCancerSubtypeColor). A type with
+    // a single subtype segment just uses the plain type color.
     typeCountsArray.forEach(([type, subtypeMap]) => {
-      subtypeMap.forEach((count, subtype) => {
+      const subtypes = [...subtypeMap.keys()];
+      subtypes.forEach((subtype, subtypeIndex) => {
+        const count = subtypeMap.get(subtype)!;
+        const color = subtypes.length > 1
+          ? getCancerSubtypeColor(type, subtypeIndex, subtypes.length)
+          : getCancerTypeColor(type);
         data.push({
           x: [count],
           y: [capitalize(type)], // Capitalize using lodash
@@ -199,10 +152,9 @@ export class PredictionResultsComponent {
           orientation: 'h',
           type: 'bar',
           marker: {
-            color: subtypeColors[colorIndex % subtypeColors.length],
+            color,
           },
         });
-        colorIndex++;
       });
     });
 
@@ -291,4 +243,16 @@ export class PredictionResultsComponent {
   //   // Additional content validation can be added here
   //   return true;
   // }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.typePredictPiePlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'prediction_results_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
+  }
 }

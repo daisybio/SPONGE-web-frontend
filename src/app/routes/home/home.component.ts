@@ -9,6 +9,7 @@ import {
   ResourceRef,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { CarouselComponent, SlideComponent } from 'ngx-bootstrap/carousel';
 import { BackendService } from '../../services/backend.service';
@@ -16,10 +17,9 @@ import { Dataset, OverallCounts } from '../../interfaces';
 import { VersionsService } from '../../services/versions.service';
 import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { over, zip, capitalize } from 'lodash';
-import { tick } from '@angular/core/testing';
+import { capitalize } from 'lodash';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { Router, RouterLink } from '@angular/router';
 
 declare const Plotly: any;
 
@@ -92,21 +92,23 @@ export class HomeComponent implements OnDestroy {
     this.diseases = versionsService.diseases$();
 
     this.overallCountsGenes = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'gene'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'gene'),
     });
 
     this.overallCountsTranscripts = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'transcript'),
     });
 
-    fromEvent(window, 'resize').subscribe(() => {
-      const div = this.plotDiv$().nativeElement;
-      if (div.checkVisibility()) {
-        Plotly.Plots.resize(div);
-      }
-    });
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        const div = this.plotDiv$().nativeElement;
+        if (div.checkVisibility()) {
+          Plotly.Plots.resize(div);
+        }
+      });
   }
 
   ngOnDestroy() {
@@ -172,20 +174,6 @@ export class HomeComponent implements OnDestroy {
     ];
 
     return data
-  }
-
-  private getSubtypeColor(subtype: string, type: 'gene' | 'transcript'): string {
-    // Generate color based on subtype name hash
-    let hash = 0;
-    for (let i = 0; i < subtype.length; i++) {
-      hash = subtype.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const hue = Math.abs(hash) % 360;
-    const saturation = type === 'gene' ? 70 : 50;
-    const lightness = type === 'gene' ? 50 : 65;
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
   navigateTo(route: string) {

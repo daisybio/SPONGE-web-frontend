@@ -21,6 +21,16 @@
 <!-- @if (!predictionResource.isLoading()) { -->
   <div class="predict-results-plots">
     <div class="type-prediction-div">
+      <div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+        <button mat-icon-button [matMenuTriggerFor]="predDownloadMenu" matTooltip="Download Plot">
+          <mat-icon>download</mat-icon>
+        </button>
+        <mat-menu #predDownloadMenu="matMenu">
+          <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+          <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+          <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+        </mat-menu>
+      </div>
       <div #typePredictPiePlot class="type-prediction" style="width: 100%; height: auto"></div>
       <div class="type-legend">
         <!-- <div class="legend">

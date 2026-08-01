@@ -8,7 +8,7 @@ export interface Dataset {
   disease_type: string;
   download_url: string;
   sponge_db_version: number;
-  sample_count: number; 
+  sample_count: number;
 }
 
 export interface SpongeRun {
@@ -78,25 +78,37 @@ export enum InteractionSorting {
 export interface Gene {
   ensg_number: string;
   gene_symbol?: string;
+  gene_type?: string;
+  betweenness?: number | null;
+  eigenvector?: number | null;
+  node_degree?: number | null;
 }
 
 export interface Transcript {
   enst_number: string;
   gene: Gene;
+  transcript_type?: string;
+  betweenness?: number | null;
+  eigenvector?: number | null;
+  node_degree?: number | null;
 }
 
 export interface GeneNode extends SpongeRun {
-  betweenness: number;
-  eigenvector: number;
+  betweenness: number | null;
+  eigenvector: number | null;
   gene: Gene;
-  node_degree: number;
+  node_degree: number | null;
+  isCenter?: boolean;
+  has_inverse?: boolean;
 }
 
 export interface TranscriptNode extends SpongeRun {
-  betweenness: number;
-  eigenvector: number;
+  betweenness: number | null;
+  eigenvector: number | null;
   transcript: Transcript;
-  node_degree: number;
+  node_degree: number | null;
+  isCenter?: boolean;
+  has_inverse?: boolean;
 }
 
 export interface GeneInteraction extends SpongeRun {
@@ -131,6 +143,8 @@ export interface BrowseQuery {
   maxInteractions: number;
   maxPValue: number;
   minMscor: number;
+  geneType?: string;
+  supportFilter?: 'all' | 'has_inverse' | 'no_inverse';
 }
 
 export interface CeRNA {
@@ -303,6 +317,13 @@ export interface SpongEffectsRun {
   disease_subtype: string;
 }
 
+// The tunable thresholds that identify one spongEffects model within a disease + level.
+export interface SpongEffectsParamSet {
+  m_scor_threshold: number;
+  p_adj_threshold: number;
+  modules_cutoff: number;
+}
+
 export interface RunPerformance {
   model_type: string;
   split_type: string;
@@ -347,6 +368,7 @@ export interface SpongEffectsGeneModules {
   gene: {
     ensg_number: string;
     gene_symbol: string;
+    gene_type?: string;
   };
   mean_gini_decrease: number;
   mean_accuracy_decrease: number;
@@ -357,6 +379,7 @@ export interface SpongEffectsGeneModuleMembers {
   gene: {
     ensg_number: string;
     gene_symbol: string;
+    gene_type?: string;
   };
   spongEffects_gene_module_ID: number;
   spongEffects_gene_module_members_ID: number;
@@ -366,9 +389,11 @@ export interface SpongEffectsTranscriptModules {
   spongEffects_transcript_module_ID: number;
   transcript: {
     enst_number: string;
+    transcript_type?: string;
     gene: {
       ensg_number: string;
       gene_symbol: string;
+      gene_type?: string;
     };
   };
   mean_gini_decrease: number;
@@ -380,9 +405,11 @@ export interface SpongEffectsTranscriptModules {
 export interface SpongEffectsTranscriptModuleMembers {
   transcript: {
     enst_number: string;
+    transcript_type?: string;
     gene: {
       ensg_number: string;
       gene_symbol: string;
+      gene_type?: string;
     };
   };
   spongEffects_transcript_module_ID: number;
@@ -397,12 +424,16 @@ export interface SpongEffectsModule {
   spongEffects_run_ID: number;
   spongEffects_module_ID: number;
   enrichment_score?: number;
+  meanEnrichmentScore?: number;
+  absMeanEnrichmentScore?: number;
+  varianceEnrichmentScore?: number;
 }
 
 export interface ModuleMember {
   ensemblID: string;
   symbol: string;
   moduleCenter: string;
+  moduleCenterID?: string;
   spongEffects_run_ID: number;
 }
 
@@ -411,19 +442,35 @@ export interface PredictCancerType {
     runtime: number;
     level: string;
     n_samples: number;
+    /** Dominant predicted type across samples, or "NA" if a specific model was given (no type prediction was run). */
     type_predict: string;
+    /** Dominant predicted subtype across samples, or "NA" if subtype prediction wasn't run. */
     subtype_predict: string;
+    /** The disease name passed as --model, or "None" if the pancancer/auto model was used. */
+    specified_type?: string;
   }];
   data: {
     sampleID: string;
-    typePrediction: string;
-    subtypePrediction: string;
+    typePrediction?: string;
+    subtypePrediction?: string;
   }[];
   scores: {
     genes: string[];
     values: number[][];
     samples: string[];
   };
+  /** Keyed by cancer type disease_name (e.g. "breast invasive carcinoma"). Each entry
+   *  contains that type's module scores, scoped to the samples predicted/specified as that type.
+   *  Only present when subtype prediction was requested. */
+  type_scores?: Record<string, {
+    genes: string[];
+    values: number[][];
+    samples: string[];
+  }>;
+  user_umap?: Record<string, { x: number; y: number }>;
+  tcga_umap?: Record<string, { x: number; y: number; class: string }>;
+  umap_projection?: Map<string, { x: number; y: number }>;
+  module_members?: Record<string, Record<string, string[]>>;
 }
 
 export interface ExploreQuery {
@@ -515,19 +562,23 @@ export interface GeneMiRNA extends SpongeRun {
   coefficient: number;
 }
 
-export interface NetworkResult {
-  subtype: {};
-  type: {
-    euclidean_distances: {
-      labels: string[];
-      x: number[];
-      y: number[];
-    };
-    scores: {
-      labels: string[];
-      values: number[][];
-    };
+export interface DiseaseSimilarityBlock {
+  euclidean_distances: {
+    labels: string[];
+    x: number[];
+    y: number[];
   };
+  scores: {
+    labels: string[];
+    values: number[][];
+  };
+}
+
+export interface NetworkResult {
+  // Empty ({}) when the selected cancer type has no subtypes with their own runs;
+  // otherwise holds the similarity among that type's subtypes.
+  subtype: Partial<DiseaseSimilarityBlock>;
+  type: DiseaseSimilarityBlock;
 }
 
 export interface Comparison {

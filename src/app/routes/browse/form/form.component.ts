@@ -11,6 +11,7 @@ import {
   signal,
   viewChild,
   WritableSignal,
+  untracked,
 } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -34,9 +35,10 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
 import { InfoComponent } from '../../../components/info/info.component';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { InfoService } from '../../../services/info.service';
-import { MatCardModule } from '@angular/material/card';
+import { getGeneTypesForDisease, formatGeneType } from '../../../utils/gene-types';
 
 @Component({
   selector: 'app-form',
@@ -67,19 +69,34 @@ export class FormComponent implements OnInit {
   diseases$ = computed(() => this.versionsService.diseases$().value() ?? []);
   fixedDataset = input<Dataset | undefined>();
   fixedLevel = input<(() => 'gene' | 'transcript') | undefined>();
-  activeDataset: WritableSignal<Dataset | undefined> = this.fixedDataset ? linkedSignal(() => this.fixedDataset()) : linkedSignal(() => this.diseases$()[0]);
+  activeDataset: WritableSignal<Dataset | undefined> = linkedSignal({
+    source: () => {
+      const fixed = this.fixedDataset();
+      if (fixed) return fixed;
+      const globalName = this.versionsService.selectedDiseaseName$();
+      const diseases = this.diseases$();
+      if (globalName && diseases.length > 0) {
+        const match = diseases.find((d) => d.disease_name === globalName);
+        if (match) return match;
+      }
+      return diseases[0];
+    },
+    computation: (source) => source,
+  });
   // default thresholds should be different in spongeffects form
   defaultMinDegree = input<number | undefined>();
   defaultMinBetweenness = input<number | undefined>();
   defaultMinEigen = input<number | undefined>();
   defaultMaxPValue = input<number | undefined>();
   defaultMinMscor = input<number | undefined>();
+  defaultMaxNodes = input<number | undefined>();
+  defaultShowOrphans = input<boolean | undefined>();
   geneSortings: String[] = [];
   interactionSortings = InteractionSorting;
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   formGroup = new FormGroup({
-    level: new FormControl<'gene' | 'transcript'>('gene'),
+    level: new FormControl<'gene' | 'transcript'>('transcript'),
     showOrphans: new FormControl<boolean>(false),
     sortingBetweenness: new FormControl<boolean>(true),
     sortingDegree: new FormControl<boolean>(false),
@@ -115,9 +132,26 @@ export class FormComponent implements OnInit {
       Validators.min(0),
       Validators.max(2),
     ]),
+    geneType: new FormControl<string>('all'),
+    supportFilter: new FormControl<'all' | 'has_inverse' | 'no_inverse'>('all'),
   });
 
   protected readonly capitalize = capitalize;
+  protected readonly formatGeneType = formatGeneType;
+
+  readonly availableGeneTypes$ = computed(() => {
+    const ds = this.activeDataset();
+    const disease = ds?.disease_name;
+    const version = ds?.sponge_db_version || this.versionsService.versionReadOnly()();
+    const nodes = this.browseService().nodes$() || [];
+    const nodeTypes = nodes.map((n: any) => {
+      if ('gene' in n && n.gene?.gene_type) return n.gene.gene_type;
+      if ('transcript' in n && n.transcript?.transcript_type) return n.transcript.transcript_type;
+      if ('transcript' in n && n.transcript?.gene?.gene_type) return n.transcript.gene.gene_type;
+      return '';
+    }).filter(Boolean);
+    return getGeneTypesForDisease(disease, version, nodeTypes);
+  });
 
   ngOnInit() {
     // if specific defaults are set (eg spongeffects) 
@@ -127,10 +161,32 @@ export class FormComponent implements OnInit {
       minEigen: this.defaultMinEigen() ?? 0.1,
       maxPValue: this.defaultMaxPValue() ?? 0.05,
       minMscor: this.defaultMinMscor() ?? 0.1,
+      maxNodes: this.defaultMaxNodes() ?? 10,
+      showOrphans: this.defaultShowOrphans() ?? false,
     });
   }
 
   constructor(private cdr: ChangeDetectorRef) {
+    effect(() => {
+      const types = this.availableGeneTypes$();
+      const current = this.formGroup.get('geneType')?.value;
+      if (current && current !== 'all' && !types.includes(current)) {
+        this.formGroup.get('geneType')?.setValue('all');
+      }
+    });
+
+    effect(() => {
+      const active = this.activeDataset();
+      // Only sync if not fixed dataset (e.g. not embedded in SpongEffects Explore form)
+      if (active?.disease_name && !this.fixedDataset()) {
+        untracked(() => {
+          if (this.versionsService.selectedDiseaseName$() !== active.disease_name) {
+            this.versionsService.selectedDiseaseName$.set(active.disease_name);
+          }
+        });
+      }
+    });
+
     const formSignal = signal(this.formGroup.value);
     this.formGroup.valueChanges.subscribe((val) => {
       formSignal.set(val);
@@ -138,20 +194,6 @@ export class FormComponent implements OnInit {
       Object.keys(this.formGroup.controls).forEach((key) => {
         this.formGroup.get(key)?.markAsTouched();
       });
-    });
-
-    this.formGroup.valueChanges.subscribe((config) => {
-      if (
-        !config.sortingDegree &&
-        !config.sortingBetweenness &&
-        !config.sortingEigenvector
-      ) {
-        this.formGroup
-          .get('sortingBetweenness')
-          ?.setValue(true, { emitEvent: false });
-        this.cdr.detectChanges();
-        config.sortingBetweenness = true;
-      }
     });
 
     effect(() => {

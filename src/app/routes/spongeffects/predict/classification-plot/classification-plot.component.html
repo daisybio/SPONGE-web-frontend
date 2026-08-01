@@ -1,0 +1,9 @@
+<app-density-plot [rows]="rows()" [config]="config()" [loading]="plotResource.isLoading()"
+  [combined]="isCombinedMode()" (combinedChange)="isCombinedMode.set($event)" [refreshSignal$]="refreshSignal$()">
+  <p>
+    Each shaded area is the distribution of SpongEffects enrichment scores across the TCGA reference cohort for one
+    cancer class. The <strong [style.color]="highlightColor">red overlay</strong> is the same distribution for your
+    uploaded samples (pooled in Combined mode, one curve per sample in Stacked); the red ticks beneath it mark the
+    individual module scores &mdash; hover a tick to see its module center gene.
+  </p>
+</app-density-plot>

@@ -16,6 +16,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SelectElement } from '../../../../../interfaces';
 import { BackendService } from '../../../../../services/backend.service';
 import { sum, groupBy, uniq } from 'lodash';
@@ -38,6 +41,9 @@ interface PerformanceEntry {
   selector: 'app-class-performance-plot',
   imports: [
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -45,7 +51,7 @@ interface PerformanceEntry {
     ReactiveFormsModule,
     MatProgressBarModule,
     InfoComponent,
-],
+  ],
   standalone: true,
   templateUrl: './class-performance-plot.component.html',
   styleUrl: './class-performance-plot.component.scss',
@@ -60,7 +66,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   classPerformPlot = viewChild<ElementRef<HTMLDivElement>>(
     'classPerformancePlot',
   );
-  
+
   private resizeObserver: ResizeObserver | null = null;
 
   runClassPerformance$ = this.exploreService.runClassPerformance$;
@@ -120,7 +126,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       const { traces, layout } = this.plotlyData$();
-      
+
       if (!traces.length) {
         return;
       }
@@ -181,14 +187,14 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
   ): any[] {
     const traces: any[] = [];
     const subplotTitles = Object.keys(splitGroups);
-    
+
     subplotTitles.forEach((splitKey, splitIndex) => {
       const splitData = splitGroups[splitKey];
       const modelGroups = groupBy(splitData, entry => entry.spongEffects_run.model_type);
 
       modelTypes.forEach((modelType, modelIndex) => {
         const modelData = modelGroups[modelType] || [];
-        
+
         if (modelData.length === 0) return;
 
         const trace = {
@@ -226,7 +232,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
     const cols = 1;
     const rows = 2;
 
-    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype' 
+    const type_or_subtype = this.selectedDisease() === 'pancancer' ? 'Type' : 'Subtype'
     const layout: any = {
       height: 500,
       showlegend: true,
@@ -257,39 +263,40 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
       yaxis2: {
         domain: this.selectedDisease() === 'pancancer' ? [0.85, 1] : [0.65, 1],
       },
-      xaxis1:  {
+      xaxis1: {
         title: `Predictive Class (${type_or_subtype})`
       },
       // Add subplot titles
-      annotations: [{
-        text: `Classification Performance per Cancer ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
-        x: 0.5,
-        y: 1,
-        xref: 'paper',
-        yref: 'paper',
-        xanchor: 'center',
-        yanchor: 'bottom',
-        showarrow: false,
-        font: {
-          size: 16,
-        },
-      },
-      {
-        text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[1]}`,  // Test
-        x: 0.5,
-        y: this.selectedDisease() === 'pancancer' ? 0.15 : 0.35,
-        xref: 'paper',
-        yref: 'paper',
-        xanchor: 'center',
-        yanchor: 'bottom',
-        showarrow: false,
-        font: {
-          size: 16,
-        },
-      },
+      annotations: [
+        ...(subplotTitles[0] ? [{
+          text: `Classification Performance per Cancer ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
+          x: 0.5,
+          y: 1,
+          xref: 'paper',
+          yref: 'paper',
+          xanchor: 'center',
+          yanchor: 'bottom',
+          showarrow: false,
+          font: {
+            size: 16,
+          },
+        }] : []),
+        ...(subplotTitles[1] ? [{
+          text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[1]}`,  // Test
+          x: 0.5,
+          y: this.selectedDisease() === 'pancancer' ? 0.15 : 0.35,
+          xref: 'paper',
+          yref: 'paper',
+          xanchor: 'center',
+          yanchor: 'bottom',
+          showarrow: false,
+          font: {
+            size: 16,
+          },
+        }] : []),
       // yaxis label
       {
-        text: Object.keys(this.selectedModels()()).length > 1
+        text: Object.keys(this.selectedModels()).length > 1
           ? `${measureLabel}<br>(Mean over models selected on the left)<br> <br> ` // newlines added for spacing
           : `${measureLabel}<br>(Of model selected on the left)<br> <br> `,
         x: 0,
@@ -304,7 +311,7 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
         },
         textangle: -90,
       }
-    ]
+      ]
     };
 
     return layout;
@@ -325,5 +332,17 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
 
   compareSelectElements(a: SelectElement, b: SelectElement): boolean {
     return a && b && a.value === b.value;
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.classPerformPlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'class_performance_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
+    }
   }
 }

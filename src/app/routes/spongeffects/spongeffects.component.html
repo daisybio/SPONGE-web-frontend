@@ -1,8 +1,8 @@
-<h3 style="margin-left: 16px;">
-  SpongEffects: ceRNA modules offer patient-specific insights into the miRNA regulatory landscape
-</h3>
-<mat-drawer-container style="min-height: 100%">
+<div style="min-height: 100%">
   <div class="card-container" style="align-items: left;">
+    <!-- <h3 style="margin-left: 16px;">
+      SpongEffects: ceRNA modules offer patient-specific insights into the miRNA regulatory landscape
+    </h3> -->
 
     <app-info title="What is SpongEffects?">
       <p><a href="https://pubmed.ncbi.nlm.nih.gov/37084275/">SpongEffects</a> can be used for downstream analysis of
@@ -26,20 +26,18 @@
       <p>The model will predict a tumor type for every sample in the uploaded expression file individually.</p>
     </app-info>
 
-    <mat-button-toggle-group [(value)]="mode">
-      <mat-button-toggle value="explore">Explore TCGA</mat-button-toggle>
-      <mat-button-toggle value="predict">Custom SpongEffects</mat-button-toggle>
+    <mat-button-toggle-group [value]="mode()" (change)="mode.set($event.value)">
+      <mat-button-toggle value="enrichment">Compute SpongEffects Scores</mat-button-toggle>
+      <!-- <mat-button-toggle value="predict">Predict Cancer Types</mat-button-toggle> -->
+      <mat-button-toggle value="explore">Explore Reference (TCGA)</mat-button-toggle>
     </mat-button-toggle-group>
 
     <hr #sectionLine style="margin: 0px 0 0px 0; width: 100%;" />
 
   </div>
 
+  <app-explore [hidden]="mode() !== 'explore'"></app-explore>
+  <!-- <app-predict [hidden]="mode() !== 'predict'"></app-predict> -->
+  <app-spongeffects-scores [hidden]="mode() !== 'enrichment'"></app-spongeffects-scores>
 
-  @if (mode() == 'explore') {
-  <app-explore></app-explore>
-  }@else {
-  <app-predict></app-predict>
-  }
-
-</mat-drawer-container>
+</div>

@@ -65,6 +65,31 @@
   </mat-button-toggle-group>
 </div>
 
+<app-info type="panel">
+  @switch (currentView()) {
+  @case ('table') {
+  <p>
+    Each row is a gene set tested for enrichment between the two selected conditions. Key columns are
+    <b>ES/NES</b> (enrichment score, normalized for gene-set size), and <b>p-value</b> / <b>FDR</b> for significance.
+    Click "Show" on a row to open its enrichment plot.
+  </p>
+  }
+  @case ('barplot') {
+  <p>
+    The bar plot ranks gene sets by their normalized enrichment score (NES). Bars in opposite directions are enriched
+    in opposite conditions, and longer bars indicate stronger enrichment.
+  </p>
+  }
+  @case ('volcanoplot') {
+  <p>
+    The volcano plot shows each gene set's enrichment score (x-axis) against its statistical significance
+    (y-axis, −log<sub>10</sub> of the p-value). Points toward the upper corners are the most strongly and most
+    significantly enriched gene sets.
+  </p>
+  }
+  }
+</app-info>
+
 <!-- Conditional display based on currentView -->
 @switch (currentView()) {
 @case ('table') {

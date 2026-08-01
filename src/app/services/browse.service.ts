@@ -1,6 +1,8 @@
 import {
   computed,
+  DestroyRef,
   effect,
+  inject,
   Injectable,
   resource,
   ResourceRef,
@@ -45,25 +47,18 @@ export class BrowseService {
     this.createGraph(this.nodes$(), this.interactions$(), this.inverseNodes$())
   );
 
-  layout = computed(
-    () =>
-      new ForceSupervisor(this.graph$(), {
-        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
-        settings: {
-          repulsion: 0.001,
-          attraction: 0.01,
-          gravity: 0.001,
-        },
-      })
-  );
+  // Use a plain class field (not a signal) to avoid a circular reactive dependency:
+  // reading + writing the same signal inside an effect() causes an infinite loop.
+  private _supervisor: ForceSupervisor | null = null;
+
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
   private readonly _comparisons$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return this._version$();
     }),
     loader: (param) => {
-      return this.backend.getComparisons(param.request);
+      return this.backend.getComparisons(param.params);
     },
   });
   private readonly _currentData$: ResourceRef<NetworkData | undefined>;
@@ -111,7 +106,7 @@ export class BrowseService {
       .filter((interaction) => interaction !== undefined);
   });
   private readonly _networkResults$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this._version$(),
         level: this.level$(),
@@ -119,27 +114,28 @@ export class BrowseService {
     }),
     loader: (param) => {
       return this.backend.getNetworkResults(
-        param.request.version,
-        param.request.level
+        param.params.version,
+        param.params.level
       );
     },
   });
 
   constructor(
-    private backend: BackendService,
+    protected backend: BackendService,
     versionsService: VersionsService
   ) {
     this._version$ = versionsService.versionReadOnly();
+    const destroyRef = inject(DestroyRef);
 
     this._currentData$ = resource({
-      request: computed(() => {
+      params: computed(() => {
         return {
           version: this._version$(),
           config: this._query$(),
         };
       }),
       loader: (param) =>
-        this.fetchData(param.request.version, param.request.config),
+        this.fetchData(param.params.version, param.params.config),
     });
 
     effect(() => {
@@ -156,13 +152,38 @@ export class BrowseService {
       );
     });
 
+    // Manage ForceSupervisor lifecycle: stop old supervisor, create new one, start if physics enabled
     effect(() => {
-      const layout = this.layout();
+      const graph = this.graph$();
       const physicsEnabled = this.physicsEnabled$();
+
+      // Stop and clean up old supervisor (plain field — no reactive dependency)
+      if (this._supervisor) {
+        this._supervisor.stop();
+        this._supervisor.kill();
+      }
+
+      const newSupervisor = new ForceSupervisor(graph, {
+        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
+        settings: {
+          repulsion: 0.001,
+          attraction: 0.01,
+          gravity: 0.001,
+        },
+      });
+
+      this._supervisor = newSupervisor;
+
       if (physicsEnabled) {
-        layout.start();
-      } else {
-        layout.stop();
+        newSupervisor.start();
+      }
+    });
+
+    // Kill supervisor when service is destroyed
+    destroyRef.onDestroy(() => {
+      if (this._supervisor) {
+        this._supervisor.stop();
+        this._supervisor.kill();
       }
     });
   }
@@ -223,6 +244,43 @@ export class BrowseService {
   ): [string, string] {
     const objects = BrowseService.getInteractionObjects(interaction);
     return objects.map(BrowseService.getGeneName) as [string, string];
+  }
+
+  /**
+   * Build a synthetic "fallback" edge between a module center and a member the DB has no real
+   * ceRNA edge for. SpongEffects module members are first-neighbours of the center in the
+   * analysis/training network, but the DB `GeneInteraction` table may lack the edge — so the
+   * network still shows a center<->member edge. These carry no real metrics and render thin
+   * (see createGraph's `isVirtual` handling). Shared by the patient-specific and Explore networks.
+   */
+  protected createVirtualEdge(center: string, member: string, level: 'gene' | 'transcript', dataset: Dataset, centerSymbol?: string, memberSymbol?: string): any {
+    const spongeRun = {
+      dataset: { data_origin: '', dataset_ID: dataset.dataset_ID, disease_name: dataset.disease_name, disease_subtype: '' },
+      sponge_run_ID: 0,
+    };
+    const cSym = centerSymbol || center;
+    const mSym = memberSymbol || member;
+    if (level === 'gene') {
+      return {
+        correlation: '(abs) > 0.1',
+        mscor: '< 0.2',
+        p_value: '> 0.2',
+        isVirtual: true,
+        gene1: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' },
+        gene2: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' },
+        sponge_run: spongeRun
+      } as any;
+    } else {
+      return {
+        correlation: '(abs) > 0.1',
+        mscor: '< 0.2',
+        p_value: '> 0.2',
+        isVirtual: true,
+        transcript_1: { enst_number: center, gene: { ensg_number: center, gene_symbol: cSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
+        transcript_2: { enst_number: member, gene: { ensg_number: member, gene_symbol: mSym, gene_type: 'unknown' }, transcript_type: 'unknown' },
+        sponge_run: spongeRun
+      } as any;
+    }
   }
 
   public static getInteractionObjects(
@@ -314,6 +372,34 @@ export class BrowseService {
     let { nodes, edges } = await this.backend.getNetwork(version, config);
     const inverseNodes = await inverseNodes$;
 
+    if (config.geneType && config.geneType !== 'all') {
+      const targetType = config.geneType.toLowerCase();
+      nodes = nodes.filter((node) => {
+        let nType = '';
+        if ('gene' in node && node.gene?.gene_type) nType = node.gene.gene_type;
+        else if ('transcript' in node && node.transcript?.transcript_type) nType = node.transcript.transcript_type;
+        else if ('transcript' in node && node.transcript?.gene?.gene_type) nType = node.transcript.gene.gene_type;
+        return nType.toLowerCase() === targetType;
+      });
+    }
+
+    if (config.supportFilter && config.supportFilter !== 'all') {
+      const inverseNodeGeneNames = new Set(inverseNodes.map(BrowseService.getNodeGeneName));
+      nodes = nodes.filter((node) => {
+        const gene = BrowseService.getNodeGeneName(node);
+        const hasInverse = inverseNodes.length > 0
+          ? inverseNodeGeneNames.has(gene)
+          : (node.has_inverse ?? false);
+        return config.supportFilter === 'has_inverse' ? hasInverse : !hasInverse;
+      });
+    }
+
+    const keptNodeIDs = new Set(nodes.map((n) => BrowseService.getNodeID(n)));
+    edges = edges.filter((int) => {
+      const ids = BrowseService.getInteractionIDs(int);
+      return keptNodeIDs.has(ids[0]) && keptNodeIDs.has(ids[1]);
+    });
+
     if (!config.showOrphans) {
       const interactionNodes = edges
         .map((interaction) => BrowseService.getInteractionIDs(interaction))
@@ -395,7 +481,7 @@ export class BrowseService {
     const level = 'ensg_number' in node ? 'gene' : 'transcript';
 
     return resource({
-      request: computed(() => {
+      params: computed(() => {
         return {
           interactions: this.interactions$(),
           disease: this.disease$(),
@@ -403,12 +489,12 @@ export class BrowseService {
         };
       }),
       loader: async (param) => {
-        const disease = param.request.disease;
+        const disease = param.params.disease;
         if (!disease) {
           return [];
         }
 
-        const interactions = param.request.interactions.filter(
+        const interactions = param.params.interactions.filter(
           (interaction) => {
             return BrowseService.getInteractionIDs(interaction).some(
               (interactionID) => interactionID == nodeId
@@ -419,7 +505,7 @@ export class BrowseService {
         const miRNAs$ = interactions.map((edge) =>
           this.backend
             .getMiRNAs(
-              param.request.version,
+              param.params.version,
               disease,
               BrowseService.getInteractionIDs(edge),
               level
@@ -429,7 +515,7 @@ export class BrowseService {
         const uniqueMiRNAs = (await Promise.all(miRNAs$))
           .flat()
           .filter((miRNA, i, arr) => arr.indexOf(miRNA) === i);
-        return uniqueMiRNAs.map((miRNA): Track => {
+        const tracks = uniqueMiRNAs.map((miRNA): Track => {
           return {
             name: miRNA,
             url: `https://exbio.wzw.tum.de/sponge-files/miRNA_bed_files/${miRNA}.bed.gz`,
@@ -441,6 +527,19 @@ export class BrowseService {
             indexed: false,
           };
         });
+
+        const refSeqTrack: any = {
+          name: 'RefSeq Transcripts',
+          format: 'refgene',
+          url: 'https://s3.amazonaws.com/igv.org.genomes/hg38/refGene.txt.gz',
+          indexed: false,
+          nameField: 'name',
+          displayMode: 'EXPANDED',
+          height: 100,
+        };
+        tracks.push(refSeqTrack as Track);
+
+        return tracks;
       },
     });
   }
@@ -452,24 +551,42 @@ export class BrowseService {
   ): Graph {
     const graph = new Graph();
 
-    // Find max node degree for normalization
-    const maxNodeDegree = Math.max(...nodes.map((node) => node.node_degree));
+    // Find max node degree for normalization. Guard against 0/NaN (e.g. nodes fetched without
+    // network-analysis metrics) so node sizes don't become NaN.
+    const maxNodeDegree = Math.max(1, ...nodes.map((node) => node.node_degree || 0));
 
-    // Find max mscor for normalization
+    // Helper to safely parse mscor as numeric value (virtual edges have string '< 0.2', fallback to 0.1)
+    const getNumericMscor = (int: GeneInteraction | TranscriptInteraction): number => {
+      if (typeof int.mscor === 'number') return int.mscor;
+      const parsed = parseFloat(String(int.mscor).replace(/[^0-9.]/g, ''));
+      return isNaN(parsed) || parsed === 0 ? 0.1 : parsed;
+    };
+
+    // Find max mscor for normalization (guard against 0/NaN). Fallback (virtual) edges carry no
+    // real mscor, so they are excluded — they must not skew the real edges' thickness scale.
     const maxMscor = Math.max(
-      ...interactions.map((interaction) =>
-        'gene1' in interaction ? interaction.mscor : interaction.mscor
-      )
+      0.1,
+      ...interactions.filter((i) => !(i as any).isVirtual).map(getNumericMscor)
     );
 
     const inverseNodeGeneNames = new Set(inverseNodes.map(BrowseService.getNodeGeneName));
 
     nodes.forEach((node) => {
       const gene = BrowseService.getNodeGeneName(node);
-      const hasInverse = inverseNodeGeneNames.has(gene);
+      const hasInverse = inverseNodes.length > 0
+        ? inverseNodeGeneNames.has(gene)
+        : (node.has_inverse ?? false);
 
       // Calculate normalized node size based on degree (range: 5-20)
-      const normalizedSize = 5 + 15 * (node.node_degree / maxNodeDegree);
+      const baseSize = 5 + 15 * ((node.node_degree || 0) / maxNodeDegree);
+      const normalizedSize = baseSize;
+
+      let nodeType = 'unknown';
+      if ('gene' in node && node.gene.gene_type) {
+        nodeType = node.gene.gene_type;
+      } else if ('transcript' in node && node.transcript.transcript_type) {
+        nodeType = node.transcript.transcript_type;
+      }
 
       graph.addNode(BrowseService.getNodeID(node), {
         label: BrowseService.getNodeFullName(node),
@@ -477,7 +594,12 @@ export class BrowseService {
         y: Math.random(),
         size: normalizedSize,
         forceLabel: true,
-        type: hasInverse ? 'circle' : 'square',
+        // Module centers get a green frame (borderedCircle if hasInverse, borderedSquare if !hasInverse)
+        type: node.isCenter
+          ? (hasInverse ? 'borderedCircle' : 'borderedSquare')
+          : (hasInverse ? 'circle' : 'square'),
+        nodeType: nodeType,
+        isCenter: !!node.isCenter,
       });
     });
 
@@ -487,10 +609,18 @@ export class BrowseService {
         return;
       }
 
-      // Calculate normalized edge size based on mscor (range: 1-5)
-      const mscor =
-        'gene1' in interaction ? interaction.mscor : interaction.mscor;
-      const normalizedSize = 1 + 6 * (mscor / maxMscor);
+      // Fallback (virtual) edges have no measured interaction — draw them very thin so they read
+      // as "module membership only".
+      if ((interaction as any).isVirtual) {
+        graph.addEdge(ids[0], ids[1], {
+          size: 0.4,
+        });
+        return;
+      }
+
+      // Calculate normalized edge size based on mscor (range: 1-6)
+      const numericMscor = getNumericMscor(interaction);
+      const normalizedSize = 1 + 5 * (numericMscor / maxMscor);
 
       graph.addEdge(ids[0], ids[1], {
         size: normalizedSize,

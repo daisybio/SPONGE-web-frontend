@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ModuleImportanceScatterplotComponent } from './module-table.component';
+import { ModuleTableComponent } from './module-table.component';
 
-describe('ModuleImportanceScatterplotComponent', () => {
-  let component: ModuleImportanceScatterplotComponent;
-  let fixture: ComponentFixture<ModuleImportanceScatterplotComponent>;
+describe('ModuleTableComponent', () => {
+  let component: ModuleTableComponent;
+  let fixture: ComponentFixture<ModuleTableComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModuleImportanceScatterplotComponent]
+      imports: [ModuleTableComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ModuleImportanceScatterplotComponent);
+    fixture = TestBed.createComponent(ModuleTableComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

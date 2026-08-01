@@ -1,4 +1,5 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { PredictionResultsComponent } from './prediction-results/prediction-results.component';
 import { PredictionTableComponent } from "./prediction-results/prediction-table/prediction-table.component";
@@ -8,19 +9,10 @@ import { ModuleTableComponent } from "./module-table/module-table.component";
 import { PredictFormComponent } from './form/predict-form.component';
 import { MatDrawer, MatDrawerContainer, MatDrawerContent } from '@angular/material/sidenav';
 import { ScatterplotComponent, ScatterplotDataScource } from "../../../components/scatterplot/scatterplot.component";
+import { ClassificationPlotComponent } from './classification-plot/classification-plot.component';
 import { PredictService } from './service/predict.service';
 import { BackendService } from '../../../services/backend.service';
 import { VersionsService } from '../../../services/versions.service';
-import { NetworkComponent } from '../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
-import { BrowseService } from '../../../services/browse.service';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { DiseaseSelectorComponent } from '../../../components/disease-selector/disease-selector.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 declare var Plotly: any;
 
@@ -37,17 +29,8 @@ declare var Plotly: any;
     MatDrawerContainer,
     MatDrawerContent,
     ScatterplotComponent,
-    NetworkComponent,
-    ActiveEntitiesComponent,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatExpansionModule,
-    DiseaseSelectorComponent,
-    ReactiveFormsModule,
-    CommonModule
+    ClassificationPlotComponent,
   ],
-  providers: [BrowseService],
   templateUrl: './predict.component.html',
   styleUrl: './predict.component.scss',
 })
@@ -56,7 +39,6 @@ export class PredictComponent {
   backend = inject(BackendService);
   versionsService = inject(VersionsService);
   refreshSignal = signal<number>(0);
-  browseService = inject(BrowseService);
 
   // Move data loading state to the data source
   private transformedData = signal<any[]>([]);
@@ -85,33 +67,25 @@ export class PredictComponent {
   });
 
   constructor() {
-    fromEvent(window, 'resize').subscribe(() => {
-      this.refresh();
-    });
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.refresh();
+      });
 
-    // Sync predict network data to local browse service
-    effect(() => {
-      const networkData = this.predictService.moduleNetworkData$.value();
-      this.browseService.setManualData(networkData);
-    });
-
-    // Single effect to handle prediction changes
     effect(() => {
       const prediction = this.predictService.prediction$();
       const selectedType = this.predictService.selectedPredictedType$();
 
       if (prediction && selectedType) {
-        // Update params to trigger scatterplot refresh
         this.scatterplotParams.set({
           disease: selectedType,
           prediction: prediction,
-          timestamp: Date.now()
         });
 
-        // Update data asynchronously
-        this.updateScatterplotData().then(() => {
-          this.refresh();
-        });
+        if (this.transformedData().length === 0) {
+          this.updateScatterplotData();
+        }
       }
     });
   }
@@ -144,18 +118,29 @@ export class PredictComponent {
         return;
       }
 
+      const level = this.predictService.level();
+
+      // Build Map of Gene/Transcript ID -> { score: number, symbol: string }
+      const tcgaMap = new Map<string, { score: number; symbol: string }>();
+      for (const item of tcga_scores) {
+        const id = level === 'gene' ? item.gene?.ensg_number : item.transcript?.enst_number;
+        const symbol = level === 'gene' ? item.gene?.gene_symbol : item.transcript?.gene?.gene_symbol;
+        if (id) {
+          tcgaMap.set(id, { score: item.score_value || 0, symbol: symbol || id });
+        }
+      }
+
       // Transform scores to scatterplot data format
       const scatterData = scores.genes.map((gene: string, index: number) => {
-        const tcgaScore = tcga_scores[index]?.score_value || 0;
-        const gene_symbol = tcga_scores[index]?.gene?.gene_symbol || gene;
+        const tcgaInfo = tcgaMap.get(gene);
         const customScore = scores.values[index]?.[0] || 0;
 
         return {
-          id: gene_symbol,
-          x: tcgaScore,
+          id: tcgaInfo?.symbol || gene,
+          x: tcgaInfo?.score ?? 0,
           y: customScore,
         };
-      }).filter((item: any) => item.x !== undefined && item.y !== undefined);
+      });
 
       this.transformedData.set(scatterData);
 
@@ -169,52 +154,50 @@ export class PredictComponent {
   }
 
   async getTcgaSpongEffectsScores(genes: string[]): Promise<any[]> {
-    const level = this.predictService.level;
+    const level = this.predictService.level();
     const version = this.versionsService.versionReadOnly()();
-    const disease = this.predictService.selectedPredictedType$();
+    const disease = this.predictService.selectedPredictedType$() || 'pancancer';
 
     if (!disease || !version || !genes || genes.length === 0) {
       return [];
     }
 
     try {
-      let moduleIDs: number[];
-
-      const BATCH_SIZE = 10; // Concurrency limit for module lookup
-      const fetchModules = async (gene: string) => {
-        if (level === 'gene') {
-          const modules = await this.backend.getSpongEffectsGeneModules(version, disease, undefined, undefined, gene);
-          return modules.map(m => m.spongEffects_gene_module_ID);
-        } else {
-          const modules = await this.backend.getSpongEffectsTranscriptModules(version, disease, undefined, undefined, gene);
-          return modules.map(m => m.spongEffects_transcript_module_ID);
-        }
-      };
-
-      const results: number[][] = [];
-      for (let i = 0; i < genes.length; i += BATCH_SIZE) {
-        const batch = genes.slice(i, i + BATCH_SIZE);
-        results.push(...await Promise.all(batch.map(fetchModules)));
+      let allModules: any[] = [];
+      if (level === 'gene') {
+        allModules = await this.backend.getSpongEffectsGeneModules(version, disease, undefined, 10000);
+      } else {
+        allModules = await this.backend.getSpongEffectsTranscriptModules(version, disease, undefined, 10000);
       }
-      moduleIDs = results.flat();
+
+      const moduleMap = new Map<string, number>();
+      for (const m of allModules) {
+        const id = level === 'gene' ? m.gene?.ensg_number : m.transcript?.enst_number;
+        const moduleId = level === 'gene' ? m.spongEffects_gene_module_ID : m.spongEffects_transcript_module_ID;
+        if (id && moduleId !== undefined) {
+          moduleMap.set(id, moduleId);
+        }
+      }
+
+      const moduleIDs = genes
+        .map(gene => moduleMap.get(gene))
+        .filter((id): id is number => id !== undefined);
 
       if (moduleIDs.length === 0) {
         return [];
       }
 
-      // Batch the final enrichment scores fetch if needed, but the backend fetchSpongEffectsEnrichScores seems to handle an array of IDs.
-      const enrichScores = await this.backend.fetchSpongEffectsEnrichScores(
-        version,
-        this.predictService.level,
-        moduleIDs,
-        false
-      );
 
-      return enrichScores || [];
-
+      return await this.backend.fetchSpongEffectsEnrichScores(version, level, moduleIDs, false, true) || [];
     } catch (error) {
       console.error('Error in getTcgaSpongEffectsScores:', error);
       return [];
     }
+  }
+
+  onTabChange(event: any) {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
   }
 }

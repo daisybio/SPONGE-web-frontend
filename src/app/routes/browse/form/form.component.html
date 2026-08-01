@@ -1,29 +1,30 @@
 <form [formGroup]="formGroup" style="margin: 10px">
-@if (!fixedDataset()) {
-  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"></app-disease-selector>
+  @if (!fixedDataset()) {
+  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"
+    [initialDiseaseName$]="versionsService.selectedDiseaseName$()"></app-disease-selector>
   } @else {
   <mat-form-field appearance="outline" style="width: 100%;">
     <mat-label>Disease</mat-label>
-    <input matInput [value]="capitalize(fixedDataset()?.disease_name)" readonly>
+    <input matInput [value]="capitalize(fixedDataset()?.disease_name)" readonly aria-label="Disease">
   </mat-form-field>
-}
+  }
   @if (version() > 1) {
-    @if (!fixedLevel()) {
-      <div class="card-container">
-        <mat-button-toggle-group formControlName="level">
-          <mat-button-toggle value="gene">Genes</mat-button-toggle>
-          <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
-    } @else {
-      <div class="card-container">
-        <!-- show a button toggle form group just like when no level is fixed but without functionality just to show which level is fixed -->
-        <mat-button-toggle-group formControlName="level" [disabled]="!!fixedLevel">
-          <mat-button-toggle value="gene" disabled>Genes</mat-button-toggle>
-          <mat-button-toggle value="transcript" disabled>Transcripts</mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
-    }
+  @if (!fixedLevel()) {
+  <div class="card-container">
+    <mat-button-toggle-group formControlName="level">
+      <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
+      <mat-button-toggle value="gene">Genes</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  } @else {
+  <div class="card-container">
+    <!-- show a button toggle form group just like when no level is fixed but without functionality just to show which level is fixed -->
+    <mat-button-toggle-group formControlName="level" [disabled]="!!fixedLevel">
+      <mat-button-toggle value="transcript" disabled>Transcripts</mat-button-toggle>
+      <mat-button-toggle value="gene" disabled>Genes</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  }
   }
 
   <mat-accordion>
@@ -49,13 +50,14 @@
               <li><b>Betweenness: </b>
                 <p [innerHTML]="infoService.betweennessText"></p>
               </li>
-              <li><b>Degree:</b>`
+              <li><b>Degree:</b>
                 <p [innerHTML]="infoService.degreeText"></p>
               </li>
               <li><b>Eigenvector: </b>
                 <p [innerHTML]="infoService.eigenvectorText"></p>
               </li>
             </ul>
+            Note: All network analysis metrics are computed on a filtered network: Thus, when applying sorting
           </app-info><br>
           <mat-checkbox formControlName="sortingBetweenness">Betweenness</mat-checkbox>
           <mat-checkbox formControlName="sortingEigenvector">Eigenvector</mat-checkbox>
@@ -64,7 +66,7 @@
       </mat-card>
       <mat-form-field appearance="outline">
         <mat-label>Max. nodes</mat-label>
-        <input formControlName="maxNodes" matInput max="100" min="0" step="1" type="number" />
+        <input formControlName="maxNodes" matInput max="100" min="0" step="1" type="number" aria-label="Max. nodes" />
         @if (formGroup.get('maxNodes')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -81,7 +83,7 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. degree</mat-label>
-        <input formControlName="minDegree" matInput max="100" min="0" step="1" type="number" />
+        <input formControlName="minDegree" matInput max="100" min="0" step="1" type="number" aria-label="Min. degree" />
         @if (formGroup.get('minDegree')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -97,7 +99,8 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. betweenness</mat-label>
-        <input formControlName="minBetweenness" matInput max="1" min="0" step="0.05" type="number" />
+        <input formControlName="minBetweenness" matInput max="1" min="0" step="0.05" type="number"
+          aria-label="Min. betweenness" />
         @if (formGroup.get('minBetweenness')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -114,7 +117,8 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. eigenvector</mat-label>
-        <input formControlName="minEigen" matInput max="1" min="0" step="0.05" type="number" />
+        <input formControlName="minEigen" matInput max="1" min="0" step="0.05" type="number"
+          aria-label="Min. eigenvector" />
         @if (formGroup.get('minEigen')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -127,6 +131,31 @@
           Eigenvector centrality measures the importance of a node in the network by considering the importance of its
           neighbors. Set the minimum eigenvector centrality of nodes to be displayed in the network here.
         </p>
+      </app-info>
+      <mat-form-field appearance="outline">
+        <mat-label>Gene type</mat-label>
+        <mat-select formControlName="geneType">
+          <mat-option value="all">All</mat-option>
+          @for (type of availableGeneTypes$(); track type) {
+          <mat-option [value]="type">{{ formatGeneType(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>Filter nodes to display only a specific gene/transcript type.</p>
+      </app-info>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Support</mat-label>
+        <mat-select formControlName="supportFilter">
+          <mat-option value="all">All</mat-option>
+          <mat-option value="has_inverse">With cross-level support (Circles)</mat-option>
+          <mat-option value="no_inverse">Without cross-level support (Squares)</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon">
+        <p>Filter nodes based on cross-level interaction support (whether matching interactions exist at the opposite
+          level).</p>
       </app-info>
     </mat-expansion-panel>
     <mat-expansion-panel>
@@ -161,7 +190,8 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. interactions</mat-label>
-        <input formControlName="maxInteractions" matInput max="1000" min="0" step="1" type="number" />
+        <input formControlName="maxInteractions" matInput max="1000" min="0" step="1" type="number"
+          aria-label="Max. interactions" />
         @if (formGroup.get('maxInteractions')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -176,7 +206,8 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Max. adj. p-value</mat-label>
-        <input formControlName="maxPValue" matInput max="1" min="0" step="0.025" type="number" />
+        <input formControlName="maxPValue" matInput max="1" min="0" step="0.025" type="number"
+          aria-label="Max. adj. p-value" />
         @if (formGroup.get('maxPValue')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -190,7 +221,7 @@
       </app-info>
       <mat-form-field appearance="outline">
         <mat-label>Min. MScor</mat-label>
-        <input formControlName="minMscor" matInput max="2" min="0" step="0.05" type="number" />
+        <input formControlName="minMscor" matInput max="2" min="0" step="0.05" type="number" aria-label="Min. MScor" />
         @if (formGroup.get('minMscor')?.hasError('min')) {
         <mat-error>Value must be at least 0</mat-error>
         }
@@ -202,5 +233,5 @@
         <p [innerHTML]="infoService.mscorText"></p>
         <span>Change the minimum mscor threshold for the visualization here. </span>
       </app-info>
-    </mat-expansion-panel>    }  </mat-accordion>
+    </mat-expansion-panel> } </mat-accordion>
 </form>

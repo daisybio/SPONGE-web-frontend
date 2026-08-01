@@ -1,5 +1,10 @@
-<div class="filter-container">
-  <div class="sliders-row">
+<div class="filter-container" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+  <mat-form-field appearance="outline" class="search-field" style="flex: 1 1 100%;">
+    <mat-label>Search table...</mat-label>
+    <input matInput [(ngModel)]="searchText" placeholder="e.g. BRCA1">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+  <div class="sliders-row" style="flex-grow: 1;">
     <div class="slider-group">
       <div class="slider-header">
         <label>P-value Range: <span class="value-display">{{ minPValue() | number:'1.2-4' }} - {{ maxPValue() |
@@ -22,26 +27,40 @@
       </mat-slider>
     </div>
   </div>
+  <button mat-flat-button color="primary" (click)="downloadCSV()" style="height: 48px; margin-bottom: 8px;">
+    <mat-icon>download</mat-icon> Download CSV
+  </button>
 </div>
 
-<table [dataSource]="dataSource$()" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
+<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj1)" mat-button matTooltip="Show details about {{interaction.name_1}}"
-        matTooltipPosition="right">
-        {{ interaction.name_1 }}
-      </button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button (click)="openDialog(interaction.obj1)" mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+          matTooltip="Show details about {{interaction.name_1}}" matTooltipPosition="right">
+          {{ interaction.name_1 }}
+        </button>
+        <app-add-to-cart-button [entity]="interaction.obj1"></app-add-to-cart-button>
+      </div>
     </td>
   </ng-container>
 
   <ng-container matColumnDef="name_2">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$() || 'Node') }} 2</th>
     <td *matCellDef="let interaction" mat-cell>
-      <button (click)="openDialog(interaction.obj2)" mat-button matTooltip="Show details about {{interaction.name_2}}"
-        matTooltipPosition="right">
-        {{ interaction.name_2 }}
-      </button>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <button (click)="openDialog(interaction.obj2)" mat-button color="primary" style="padding: 0 4px; min-width: 0; text-align: left;"
+          matTooltip="Show details about {{interaction.name_2}}" matTooltipPosition="right">
+          {{ interaction.name_2 }}
+        </button>
+        <app-add-to-cart-button [entity]="interaction.obj2"></app-add-to-cart-button>
+        @if (interaction.isVirtual) {
+          <app-info type="icon" title="Virtual Star Edge Info">
+            This interaction is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+          </app-info>
+        }
+      </div>
     </td>
   </ng-container>
 

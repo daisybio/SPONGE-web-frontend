@@ -1,0 +1,180 @@
+<!-- FAB Button (always visible) -->
+<button
+  mat-fab
+  class="cart-fab"
+  [matBadge]="count() > 0 ? count().toString() : ''"
+  matBadgeColor="accent"
+  matBadgeSize="small"
+  [matBadgeHidden]="count() === 0"
+  matTooltip="Gene Cart ({{ count() }} items)"
+  matTooltipPosition="left"
+  (click)="toggle()"
+  id="cart-fab-btn"
+>
+  <mat-icon>shopping_cart</mat-icon>
+</button>
+
+<!-- Drawer Panel -->
+<div class="cart-drawer" [@slideInOut]="isOpen() ? 'open' : 'closed'" role="complementary" aria-label="Gene Cart">
+  <div class="cart-header">
+    <div class="cart-title">
+      <mat-icon class="cart-icon">shopping_cart</mat-icon>
+      <h2>Gene Cart</h2>
+      <span class="cart-count-badge" *ngIf="count() > 0">{{ count() }}</span>
+    </div>
+    <div class="cart-actions">
+      <button mat-icon-button matTooltip="Clear all" (click)="clearAll()" [disabled]="count() === 0" id="cart-clear-btn">
+        <mat-icon>delete_sweep</mat-icon>
+      </button>
+      <button mat-icon-button (click)="close()" id="cart-close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Search & Add -->
+  <div class="cart-search-section">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search & add gene</mat-label>
+      <input matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event); searchGene($event)"
+        placeholder="e.g. BRCA1 or ENSG..."
+        [matAutocomplete]="auto"
+        id="cart-search-input">
+      <mat-icon matSuffix>search</mat-icon>
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addFromSearch($event.option.value)">
+        @for (gene of searchResults(); track gene.ensg_number) {
+          <mat-option [value]="gene">
+            <span class="gene-option">
+              <strong>{{ gene.gene_symbol }}</strong>
+              <small>{{ gene.ensg_number }}</small>
+            </span>
+          </mat-option>
+        }
+        @if (isSearching()) {
+          <mat-option disabled>
+            <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+            Searching...
+          </mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+
+  <!-- Disease selector for network -->
+  <div class="disease-section" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px;">
+      <mat-form-field appearance="outline" class="disease-field" style="flex: 1;">
+        <mat-label>Disease (for network)</mat-label>
+        <mat-select [value]="selectedDisease()" (selectionChange)="selectedDisease.set($event.value)" id="cart-disease-select">
+          @let dsList = sortedDatasets();
+          @for (ds of dsList; track ds.dataset_ID; let index = $index) {
+            <mat-option [value]="ds">
+              <div class="option-content-row">
+                <span>{{ getDiseaseDisplayName(ds.disease_name) }}{{ ds.disease_subtype ? ' – ' + getDiseaseDisplayName(ds.disease_subtype) : '' }}</span>
+                @if (ds.sample_count; as count) {
+                  <span class="sample-count" [class.pancancer-count]="ds.disease_name.toLowerCase() === 'pancancer'">
+                    ({{ count }})
+                  </span>
+                }
+              </div>
+            </mat-option>
+            @if (ds.disease_name.toLowerCase() === 'pancancer' && index < dsList.length - 1) {
+              <mat-divider></mat-divider>
+            }
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" title="Disease & Subtype Datasets">
+        <p>
+          The disease datasets in SPONGE originate from
+          <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
+        </p>
+        <ul>
+          <li>
+            <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
+          </li>
+          <li>
+            <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
+          </li>
+          <li>
+            <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
+          </li>
+        </ul>
+      </app-info>
+    </div>
+    <button mat-stroked-button color="primary" class="network-btn"
+      [disabled]="count() === 0 || !selectedDisease()"
+      (click)="visualizeNetwork()"
+      id="cart-network-btn"
+      matTooltip="Visualize interactions between cart genes as a network">
+      <mat-icon>hub</mat-icon>
+      Visualize Network
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Empty state -->
+  @if (count() === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">inbox</mat-icon>
+      <p>Your cart is empty.</p>
+      <p class="empty-hint">Click <mat-icon style="font-size: 14px; vertical-align: middle;">add_shopping_cart</mat-icon> next to any gene or transcript to add it here.</p>
+    </div>
+  }
+
+  <!-- Items List -->
+  <div class="cart-items">
+    @for (item of items(); track item.id) {
+      <div class="cart-item">
+        <div class="item-main">
+          <mat-icon class="item-type-icon" [class.gene-icon]="item.type === 'gene'" [class.transcript-icon]="item.type === 'transcript'">
+            {{ item.type === 'gene' ? 'biotech' : 'account_tree' }}
+          </mat-icon>
+          <button mat-button class="item-label-btn" (click)="openEntity(item)" [matTooltip]="'Open info for ' + item.label">
+            {{ item.label }}
+          </button>
+          <span class="item-id">{{ item.id }}</span>
+        </div>
+        <div class="item-actions">
+          @if (item.type === 'gene') {
+            <button mat-icon-button
+              [matTooltip]="'Add module members to cart'"
+              [disabled]="!selectedDisease() || loadingModuleMembers() === item.id"
+              (click)="addModuleMembers(item)"
+              class="action-btn">
+              @if (loadingModuleMembers() === item.id) {
+                <mat-spinner diameter="16"></mat-spinner>
+              } @else {
+                <mat-icon style="font-size: 18px;">group_add</mat-icon>
+              }
+            </button>
+            <button mat-icon-button
+              [matTooltip]="'Add transcripts to cart'"
+              [disabled]="loadingTranscripts() === item.id"
+              (click)="addTranscripts(item)"
+              class="action-btn">
+              @if (loadingTranscripts() === item.id) {
+                <mat-spinner diameter="16"></mat-spinner>
+              } @else {
+                <mat-icon style="font-size: 18px;">account_tree</mat-icon>
+              }
+            </button>
+          }
+          <button mat-icon-button color="warn" (click)="removeItem(item)" [matTooltip]="'Remove from cart'" class="remove-btn">
+            <mat-icon style="font-size: 18px;">remove_circle_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Overlay backdrop -->
+@if (isOpen()) {
+  <div class="cart-backdrop" (click)="close()"></div>
+}

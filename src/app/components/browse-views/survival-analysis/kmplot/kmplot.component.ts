@@ -17,6 +17,7 @@ import { compute } from '@fullstax/kaplan-meier-estimator';
 import { VersionsService } from '../../../../services/versions.service';
 import { ReplaySubject } from 'rxjs';
 import { MatProgressBar } from '@angular/material/progress-bar';
+import { InfoComponent } from '../../../info/info.component';
 
 declare const Plotly: any;
 
@@ -30,7 +31,7 @@ interface CombinedPlotData {
 
 @Component({
   selector: 'app-kmplot',
-  imports: [MatCardModule, MatProgressBar],
+  imports: [MatCardModule, MatProgressBar, InfoComponent],
   templateUrl: './kmplot.component.html',
   styleUrl: './kmplot.component.scss',
 })
@@ -47,7 +48,7 @@ export class KMPlotComponent {
     versionsService: VersionsService
   ) {
     this.plotDataResource = resource({
-      request: computed(() => {
+      params: computed(() => {
         return {
           gene: this.gene().gene,
           disease: this.disease(),
@@ -56,14 +57,14 @@ export class KMPlotComponent {
       }),
       loader: async (param) => {
         const pVals$ = this.backend.getSurvivalPValues(
-          param.request.version,
-          [param.request.gene.ensg_number],
-          param.request.disease
+          param.params.version,
+          [param.params.gene.ensg_number],
+          param.params.disease
         );
         const surivialRates$ = this.backend.getSurvivalRates(
-          param.request.version,
-          [param.request.gene.ensg_number],
-          param.request.disease
+          param.params.version,
+          [param.params.gene.ensg_number],
+          param.params.disease
         );
 
         const [pVals, survivalRates] = await Promise.all([
@@ -88,8 +89,8 @@ export class KMPlotComponent {
           overexpressed: this.getPlotData(overExpressed, 'Overexpressed'),
           underexpressed: this.getPlotData(underExpressed, 'Underexpressed'),
           pValue,
-          gene: param.request.gene,
-          disease: param.request.disease,
+          gene: param.params.gene,
+          disease: param.params.disease,
         };
       },
     });

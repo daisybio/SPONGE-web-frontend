@@ -24,7 +24,7 @@ export class DocumentationComponent {
     constructor(private router: Router) {}
     
     version_change = resource({
-        request: this.version$,
+        params: this.version$,
         loader: async () => {
             this.router.navigate(["/documentation/"]);
         }

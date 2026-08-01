@@ -1,21 +1,55 @@
-<mat-form-field appearance="outline" class="full-width" style="margin-top: 10px">
-  <mat-label>Disease</mat-label>
-  @let diseaseNames = diseaseNames$();
-  @let diseaseSampleCounts = diseaseSampleCounts$();
-  <mat-select [(value)]="activeDisease$" [disabled]="diseaseNames.length < 2">
-    @for (disease of diseaseNames; track disease) {
-    <mat-option [value]="disease">{{ capitalize(disease) }} ({{ diseaseSampleCounts.get(disease) }})</mat-option>
-    }
-  </mat-select>
-</mat-form-field>
+<div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+  <mat-form-field appearance="outline" style="flex: 1;">
+    <mat-label>Disease</mat-label>
+    @let diseaseNames = diseaseNames$();
+    @let diseaseSampleCounts = diseaseSampleCounts$();
+    <mat-select [(value)]="activeDisease$" [disabled]="diseaseNames.length < 2">
+      @for (disease of diseaseNames; track disease; let index = $index) {
+      <mat-option [value]="disease">
+        <div class="option-content-row">
+          <span>{{ getDiseaseDisplayName(disease) }}</span>
+          @if (diseaseSampleCounts.get(disease); as count) {
+            <span class="sample-count" [class.pancancer-count]="disease.toLowerCase() === 'pancancer'">
+              ({{ count }})
+            </span>
+          }
+        </div>
+      </mat-option>
+      @if (disease.toLowerCase() === 'pancancer' && index < diseaseNames.length - 1) {
+      <mat-divider></mat-divider>
+      }
+      }
+    </mat-select>
+  </mat-form-field>
+  <app-info type="icon" title="Disease & Subtype Datasets">
+    <p>
+      The disease datasets in SPONGE originate from
+      <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
+    </p>
+    <ul>
+      <li>
+        <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
+      </li>
+      <li>
+        <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
+      </li>
+      <li>
+        <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
+      </li>
+    </ul>
+  </app-info>
+</div>
 <mat-form-field appearance="outline" class="full-width">
   <mat-label>Subtype</mat-label>
   @let possibleSubtypes = possibleSubtypes$();
   <mat-select [(value)]="activeSubtype" [disabled]="possibleSubtypes.length < 2">
     @for (dataset of possibleSubtypes; track dataset.dataset_ID) {
-    <mat-option [value]="dataset">{{ capitalize(dataset.disease_subtype || SUBTYPE_DEFAULT) }} ({{ dataset.sample_count
-      }})</mat-option>
+    <mat-option [value]="dataset">
+      <div class="option-content-row">
+        <span>{{ getDiseaseDisplayName(dataset.disease_subtype || SUBTYPE_DEFAULT) }}</span>
+        <span class="sample-count">({{ dataset.sample_count }})</span>
+      </div>
+    </mat-option>
     }
   </mat-select>
 </mat-form-field>
-<div class="note">Numbers in parentheses indicate the number of samples available for each disease/subtype.</div>

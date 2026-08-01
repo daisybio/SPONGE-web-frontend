@@ -1,15 +1,18 @@
 import { Component, computed, effect, ElementRef, inject, input, resource, signal, viewChild, ViewChild } from '@angular/core';
 import { BackendService } from '../../../../services/backend.service';
+import { exportToCSV } from '../../../../utils/export';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { debounceTime } from 'rxjs';
 import { HeatmapDataSource } from '../../../../components/heatmap-plot/heatmap-plot.component';
-import { ModuleMember, SpongEffectsRun, SpongEffectsModule } from '../../../../interfaces';
+import { ModuleMember, SpongEffectsRun, SpongEffectsModule, Gene, Transcript } from '../../../../interfaces';
 import { InfoService } from '../../../../services/info.service';
 import { VersionsService } from '../../../../services/versions.service';
 import { ExploreService } from '../../explore/service/explore.service';
+import { SpongEffectsService } from '../../../../services/spong-effects.service';
+import { ModalsService } from '../../../../components/modals-service/modals.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -23,7 +26,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { PredictService } from '../service/predict.service';
+import { CartService } from '../../../../services/cart.service';
 import { capitalize } from "lodash";
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AddToCartButtonComponent } from '../../../../components/add-to-cart-button/add-to-cart-button.component';
 
 declare var Plotly: any;
 
@@ -46,6 +52,8 @@ declare var Plotly: any;
     ReactiveFormsModule,
     FormsModule,
     InfoComponent,
+    MatTooltipModule,
+    AddToCartButtonComponent
   ],
   templateUrl: './module-table.component.html',
   styleUrl: './module-table.component.scss',
@@ -54,32 +62,42 @@ export class ModuleTableComponent {
   private backend = inject(BackendService);
   private versionService = inject(VersionsService);
   private exploreService = inject(ExploreService);
+  private spongEffectsService = inject(SpongEffectsService);
+  private cartService = inject(CartService);
   infoService = inject(InfoService);
+  modalsService = inject(ModalsService);
   highestParamSet = this.exploreService.highestParamSet;
   protected readonly capitalize = capitalize;
+
+  openEntityDialog(ensemblID: string, symbol?: string) {
+    if (ensemblID.startsWith('ENSG')) {
+      this.modalsService.openNodeDialog({
+        ensg_number: ensemblID,
+        gene_symbol: symbol
+      } as Gene);
+    } else {
+      this.modalsService.openNodeDialog({
+        enst_number: ensemblID,
+        gene: { gene_symbol: symbol || ensemblID, ensg_number: '' }
+      } as Transcript);
+    }
+  }
 
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$
   predictionResource = this.predictService._prediction$;
   enrichmentScores$ = computed(() => this.prediction$()?.scores);
-  predictSubtypes$ = this.predictService._subtypes$;
 
   refreshSignal$ = input();
 
-  lollipopPlot = viewChild.required<ElementRef>('lollipopPlot');
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  paginator = viewChild(MatPaginator);
+  sort = viewChild(MatSort);
 
-  formGroup = new FormGroup({
-    redControl: new FormControl<number>(15, [Validators.min(3), Validators.max(100)]),
-    blueControl: new FormControl<number>(15, [Validators.min(1), Validators.max(20)]),
-    includeModuleMembers: new FormControl<boolean>(false),
-    selectedDisease: new FormControl<string>(this.predictSubtypes$() ? (this.predictService.allPredictedTypes$()?.[0] ?? '') : 'Pancancer'),
-  });
-  blueNodes = signal(this.formGroup.get('blueControl')?.value);
-  redNodes = signal(this.formGroup.get('redControl')?.value);
-  includeModuleMembers = signal(this.formGroup.get('includeModuleMembers')?.value);
-  selectedDisease = signal(this.formGroup.get('selectedDisease')?.value);
+  blueNodes = computed(() => this.predictService.topNModules$());
+  redNodes = computed(() => this.predictService.topNModules$());
+  includeModuleMembers = computed(() => this.predictService.includeModuleMembers$());
+  // Synchronized with the shared "Score Scope" selector for the whole predict route.
+  selectedDisease = this.predictService.selectedScope$;
 
   defaultMarkerSize = 8;
   MAX_ELEMENTS = undefined;
@@ -111,24 +129,33 @@ export class ModuleTableComponent {
 
   // this is the top mscores from the user uploaded custom data: blue
   topEnrichScores = resource({
-    request: () => ({
+    params: () => ({
       prediction_scores: this.enrichmentScores$(),
-      blueNodes: this.blueNodes()
+      blueNodes: this.blueNodes(),
+      selectedSamples: this.predictService.selectedSamples$()
     }),
-    loader: async ({ request }) => {
-      const prediction_scores = request.prediction_scores;
-      const blueNodes = request.blueNodes;
+    loader: async ({ params }) => {
+      const { prediction_scores, blueNodes, selectedSamples } = params;
       if (!prediction_scores || !blueNodes) {
         return [];
       }
       const scores: number[][] = prediction_scores.values;
       const genes: string[] = prediction_scores.genes;
+      const samples: string[] = prediction_scores.samples || [];
       const topScores: { gene: string, score: number }[] = [];
-      // mean over samples, then sort by mean score
+
+      // Map selected samples to indices
+      const sampleIndices = selectedSamples.length > 0
+        ? selectedSamples.map(s => samples.indexOf(s)).filter(idx => idx !== -1)
+        : samples.map((_, idx) => idx);
+
+      // mean over selected samples, then sort by mean score
       for (let i = 0; i < genes.length; i++) {
         const gene = genes[i];
-        const geneScores = scores[i];
-        const meanScore = geneScores.reduce((a, b) => a + b, 0) / geneScores.length;
+        const geneScores = scores[i] || [];
+        const selectedScores = sampleIndices.map(idx => geneScores[idx] ?? 0);
+        const count = selectedScores.length;
+        const meanScore = count > 0 ? selectedScores.reduce((a, b) => a + b, 0) / count : 0;
         topScores.push({ gene, score: meanScore });
       }
       topScores.sort((a, b) => b.score - a.score);
@@ -138,13 +165,13 @@ export class ModuleTableComponent {
 
   // the grey modules: this is similar to the explore tab, but we show all modules from the TCGA data in grey. BUT ONLY FROM THE ACTUALLY USED MODEL, WHICH IS THE BEST MODEL
   lolipopPlotData = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionService.versionReadOnly()(),
       cancer: this.selectedDisease(),
-      level: this.exploreService.level$(),
+      level: this.predictService.level() || this.exploreService.level$(),
     }),
-    loader: ({ request }) => {
-      const { version, cancer, level } = request;
+    loader: ({ params }) => {
+      const { version, cancer, level } = params;
       if (!version || !cancer || !level) {
         return Promise.resolve([]);
       }
@@ -158,16 +185,16 @@ export class ModuleTableComponent {
 
   // the blue modules (custom data): this is the modules that correspond to the top enrichment scores from the user uploaded custom data
   tableDataResource = resource({
-    request: () => ({
+    params: () => ({
       version: this.versionService.versionReadOnly()(),
-      level: this.predictService.level,
+      level: this.predictService.level(),
       prediction: this.topEnrichScores.value(),
       includeMembers: this.includeModuleMembers(),
       blueNodes: this.blueNodes(),
       disease: this.selectedDisease(),
     }),
-    loader: async ({ request }) => {
-      const { version, level, prediction, includeMembers, disease } = request;
+    loader: async ({ params }) => {
+      const { version, level, prediction, includeMembers, disease } = params;
       if (!version || !level || !prediction || prediction.length === 0 || !disease) {
         return new MatTableDataSource<SpongEffectsModule | ModuleMember>([]);
       }
@@ -195,51 +222,18 @@ export class ModuleTableComponent {
 
     this.topEnrichScores.reload();
     this.tableDataResource.reload();
-
-    this.formGroup.get('blueControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.blueNodes.set(value);
-    });
-    this.formGroup.get('redControl')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.redNodes.set(value);
-    });
-    this.formGroup.get('includeModuleMembers')?.valueChanges.pipe(debounceTime(300)).subscribe((value) => {
-      this.includeModuleMembers.set(value);
-    });
   }
 
   private setupEffects(): void {
-    // effect(() => {
-    //   this.refreshSignal$();
-    //   this.refreshPlotSizes();
-    // });
-
-    // effect(() => {
-    //   this.exploreService.selectedDisease$();
-    //   this.exploreService.level$();
-    //   this.clearAll();
-    // });
-
-    effect(() => {
-      const redNodes = this.redNodes();
-      const greyModules = this.lolipopPlotData.value();
-      if (greyModules && greyModules.length > 0 && redNodes) {
-        this.renderLollipopPlot(greyModules, redNodes);
-      }
-    });
-
     effect(() => {
       const table = this.tableDataResource.value();
-      if (table && this.paginator && this.sort) {
-        table.paginator = this.paginator;
-        table.sort = this.sort;
+      const pag = this.paginator();
+      const s = this.sort();
+      if (table && pag && s) {
+        table.paginator = pag;
+        table.sort = s;
       }
     });
-
-    // effect(() => {
-    //   if ((this.selectedModules.value()?.length ?? 0) === 0 && this.lolipopPlotData && (this.lolipopPlotData.value()?.length ?? 0) > 0) {
-    //     this.selectedModules.reload();
-    //   }
-    // });
   }
 
   private async initializeSpongEffectRuns(): Promise<void> {
@@ -260,36 +254,40 @@ export class ModuleTableComponent {
     let data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        for (const ens_number of ens_list) {
-          let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, this.blueNodes()!, ens_number);
-          tmp.map((entry) => {
-            data.push({
-              ensemblID: entry.gene.ensg_number,
-              symbol: entry.gene.gene_symbol,
-              meanGiniDecrease: entry.mean_gini_decrease,
-              meanAccuracyDecrease: entry.mean_accuracy_decrease,
-              spongEffects_run_ID: entry.spongEffects_run_ID,
-              spongEffects_module_ID: entry.spongEffects_gene_module_ID
+        await Promise.all(
+          ens_list.map(async (ens_number) => {
+            let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, this.blueNodes()!, ens_number);
+            tmp.forEach((entry) => {
+              data.push({
+                ensemblID: entry.gene.ensg_number,
+                symbol: entry.gene.gene_symbol,
+                meanGiniDecrease: entry.mean_gini_decrease,
+                meanAccuracyDecrease: entry.mean_accuracy_decrease,
+                spongEffects_run_ID: entry.spongEffects_run_ID,
+                spongEffects_module_ID: entry.spongEffects_gene_module_ID
+              });
             });
-          });
-        }
+          })
+        );
       }
     }
     else {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
-        for (const ens_number of ens_list) {
-          let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, this.blueNodes()!, ens_number);
-          tmp.map((entry) => {
-            data.push({
-              ensemblID: entry.transcript.enst_number,
-              symbol: entry.transcript.gene.gene_symbol,
-              meanGiniDecrease: entry.mean_gini_decrease,
-              meanAccuracyDecrease: entry.mean_accuracy_decrease,
-              spongEffects_run_ID: entry.spongEffects_run_ID,
-              spongEffects_module_ID: entry.spongEffects_transcript_module_ID
+        await Promise.all(
+          ens_list.map(async (ens_number) => {
+            let tmp = await this.backend.getSpongEffectsTranscriptModules(version, cancer, paramSet, this.blueNodes()!, ens_number);
+            tmp.forEach((entry) => {
+              data.push({
+                ensemblID: entry.transcript.enst_number,
+                symbol: entry.transcript.gene.gene_symbol,
+                meanGiniDecrease: entry.mean_gini_decrease,
+                meanAccuracyDecrease: entry.mean_accuracy_decrease,
+                spongEffects_run_ID: entry.spongEffects_run_ID,
+                spongEffects_module_ID: entry.spongEffects_transcript_module_ID
+              });
             });
-          });
-        }
+          })
+        );
       }
     }
     return data;
@@ -332,8 +330,8 @@ export class ModuleTableComponent {
 
   private async fetchModuleMembers(module: SpongEffectsModule): Promise<void> {
     const version = this.versionService.versionReadOnly()();
-    const disease = this.exploreService.selectedDisease$();
-    const level = this.exploreService.level$();
+    const disease = this.predictService.selectedScope$() || this.exploreService.selectedDisease$();
+    const level = this.predictService.level() || this.exploreService.level$();
 
     if (!version || !disease || !level) return;
 
@@ -341,8 +339,9 @@ export class ModuleTableComponent {
     const key = this.getModuleKey(module);
 
     if (level === 'gene') {
-      const response = await this.backend.getSpongEffectsGeneModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const moduleId = (module as any).spongEffects_gene_module_ID || (module as any).spongEffects_module_ID;
+      const response = await this.spongEffectsService.getGeneModuleMembers(
+        version, disease, { ensemblID: module.ensemblID, limit: this.MAX_ELEMENTS, moduleId }
       );
 
       members = response.map(r => ({
@@ -355,8 +354,9 @@ export class ModuleTableComponent {
         spongEffects_run_ID: module.spongEffects_run_ID
       }));
     } else {
-      const response = await this.backend.getSpongEffectsTranscriptModuleMembers(
-        version, disease, module.ensemblID, undefined, this.MAX_ELEMENTS
+      const moduleId = (module as any).spongEffects_transcript_module_ID || (module as any).spongEffects_module_ID;
+      const response = await this.spongEffectsService.getTranscriptModuleMembers(
+        version, disease, { ensemblID: module.ensemblID, limit: this.MAX_ELEMENTS, moduleId }
       );
 
       members = response.map(r => ({
@@ -393,6 +393,7 @@ export class ModuleTableComponent {
       ...module,
       memberOrCenter: 'module center',
       moduleCenter: '-',
+      moduleCenterID: module.ensemblID,
       moduleParams: this.spongEffectsRunParamsString(module.spongEffects_run_ID)
     }));
 
@@ -413,6 +414,7 @@ export class ModuleTableComponent {
 
         allMembers.push(...members.map(m => ({
           ...m,
+          moduleCenterID: module.ensemblID,
           memberOrCenter: 'module member' as const,
           moduleParams: this.spongEffectsRunParamsString(m.spongEffects_run_ID)
         })));
@@ -422,89 +424,7 @@ export class ModuleTableComponent {
     return new MatTableDataSource(tableEntries);
   }
 
-  private renderLollipopPlot(greyModules: SpongEffectsModule[], redNodes: number): void {
-    const data = [{
-      x: greyModules.map(g => g.meanGiniDecrease),
-      y: greyModules.map(g => g.meanAccuracyDecrease),
-      mode: 'markers',
-      type: 'scatter',
-      name: 'Modules',
-      text: greyModules.map(g => g.symbol),
-      marker: {
-        // size: this.defaultMarkerSize,
-        // all default size except of red and blue nodes
-        // size: greyModules.map((entry, i) => i < redNodes ? 10 : this.enrichmentScores$().genes.includes(entry.ensemblID) ? 10 : 6),
-        size: this.defaultMarkerSize,
-        // additinally color nodes blue if they are in entry.ensemblID in this.enrichmentScores$().genes
-        // color: greyModules.map((entry, i) => i < redNodes ? 'red' : this.enrichmentScores$().genes.includes(entry.ensemblID) ? 'blue' : 'grey'),
-        color: 'grey',
-        opacity: 0.5
 
-      }
-    },
-    // plot the red and blue nodes seperately
-    {
-      x: greyModules.slice(0, redNodes).map(g => g.meanGiniDecrease),
-      y: greyModules.slice(0, redNodes).map(g => g.meanAccuracyDecrease),
-      mode: 'markers',
-      type: 'scatter',
-      name: 'TCGA modules',
-      text: greyModules.slice(0, redNodes).map(g => g.symbol),
-      marker: {
-        size: this.defaultMarkerSize,
-        color: 'red',
-        opacity: 1
-      }
-    },
-    {
-      x: greyModules.filter(g => (this.topEnrichScores.value() ?? []).map(e => e.gene).includes(g.ensemblID)).map(g => g.meanGiniDecrease),
-      y: greyModules.filter(g => (this.topEnrichScores.value() ?? []).map(e => e.gene).includes(g.ensemblID)).map(g => g.meanAccuracyDecrease),
-      mode: 'markers',
-      type: 'scatter',
-      name: 'Custom data',
-      text: greyModules.filter(g => (this.topEnrichScores.value() ?? []).map(e => e.gene).includes(g.ensemblID)).map(g => g.ensemblID),
-      marker: {
-        size: this.defaultMarkerSize,
-        color: 'blue',
-        symbol: 'circle-open',
-      },
-    }
-    ];
-
-    const layout = {
-      title: 'Module importance',
-      showlegend: false,
-      autosize: true,
-      hovermode: 'closest',
-      xaxis: {
-        title: 'Mean decrease in Gini-index'
-      },
-      yaxis: {
-        title: 'Mean decrease in accuracy'
-      },
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(0,0,0,0)'
-    };
-
-    const config = {
-      responsive: true
-    };
-    Plotly.newPlot(this.lollipopPlot().nativeElement, data, layout, config);
-  }
-
-  refreshPlotSizes(): void {
-    const lollipopElement = this.lollipopPlot().nativeElement;
-
-    if (lollipopElement.checkVisibility()) {
-      Plotly.Plots.resize(lollipopElement);
-    }
-  }
-
-  clearAll(): void {
-    Plotly.purge(this.lollipopPlot().nativeElement);
-    this.moduleMembersMap = new Map<string, ModuleMember[]>();
-    this.elementLimitWarning.set(false);
-  }
 
   spongEffectsRunParamsString(spongEffectsRunID: number): string {
     const run = this.spongEffectRuns.get(spongEffectsRunID);
@@ -528,7 +448,10 @@ modules cutoff: ${run.modules_cutoff}`;
   }
 
   onPlotRendered() {
-    console.log('Heatmap plot rendered successfully');
   }
 
+  downloadCSV() {
+    const data = this.tableDataResource.value()?.data || [];
+    exportToCSV(data, 'predict_module_table');
+  }
 }

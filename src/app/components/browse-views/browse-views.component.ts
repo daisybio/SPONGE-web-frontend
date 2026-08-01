@@ -67,5 +67,8 @@ export class BrowseViewsComponent {
   onTabChange = (event: MatTabChangeEvent) => {
     this.refresh();
     this.selectedTabChange.emit(event.tab.textLabel?.toString() ?? '');
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 150);
   };
 }

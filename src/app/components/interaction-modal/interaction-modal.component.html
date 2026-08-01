@@ -1,6 +1,18 @@
 @let fullNames = BrowseService.getInteractionFullNames(data.interaction);
-<h1 mat-dialog-title>{{ fullNames[0] }} - {{ fullNames[1] }}</h1>
+<h1 mat-dialog-title style="display: flex; align-items: center; gap: 8px;">
+  <span>{{ fullNames[0] }} - {{ fullNames[1] }}</span>
+  @if (isVirtual()) {
+    <app-info type="icon" title="Virtual Star Edge Info">
+      This edge is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+    </app-info>
+  }
+</h1>
 <mat-dialog-content>
+  @if (isVirtual()) {
+    <div style="background-color: #f8f9fa; border-left: 4px solid var(--app-accent, #025cbb); padding: 10px 14px; margin-bottom: 16px; border-radius: 4px; font-size: 0.9em; line-height: 1.4;">
+      <strong>Virtual Star Edge:</strong> This edge was synthesized from module member definitions and is not present in the significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+    </div>
+  }
   @if (miRNAs$.isLoading()) {
   <div class="card-container">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>

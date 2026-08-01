@@ -14,6 +14,8 @@ import {
   GeneInteraction,
   Transcript,
   TranscriptInteraction,
+  GeneNode,
+  TranscriptNode,
 } from '../../../interfaces';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,10 +23,12 @@ import { MatAnchor, MatButton } from '@angular/material/button';
 import { InteractionModalComponent } from '../../interaction-modal/interaction-modal.component';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ModalsService } from '../../modals-service/modals.service';
+import { AddToCartButtonComponent } from '../../add-to-cart-button/add-to-cart-button.component';
+import { InfoComponent } from '../../info/info.component';
 
 @Component({
   selector: 'app-active-entities',
-  imports: [MatTabsModule, MatCardModule, MatButton, MatAnchor, MatTooltip],
+  imports: [MatTabsModule, MatCardModule, MatButton, MatAnchor, MatTooltip, AddToCartButtonComponent, InfoComponent],
   templateUrl: './active-entities.component.html',
   styleUrl: './active-entities.component.scss',
 })
@@ -50,6 +54,17 @@ export class ActiveEntitiesComponent {
   edges$ = computed(() => this.browseService().activeInteractions$());
   level$ = computed(() => this.browseService().level$());
 
+  isVirtualEdge(interaction: GeneInteraction | TranscriptInteraction): boolean {
+    const int = interaction as any;
+    return !!(
+      int.isVirtual ||
+      int.mscor === '< 0.2' ||
+      int.mscor === '<0.1' ||
+      int.p_value === '> 0.2' ||
+      int.sponge_run?.sponge_run_ID === 0
+    );
+  }
+
   openInteractionModal(
     interaction: GeneInteraction | TranscriptInteraction
   ): void {
@@ -61,7 +76,7 @@ export class ActiveEntitiesComponent {
     });
   }
 
-  openModal(entity: Gene | Transcript): void {
+  openModal(entity: GeneNode | TranscriptNode | Gene | Transcript): void {
     this.modalsService.openNodeDialog(entity);
   }
 }

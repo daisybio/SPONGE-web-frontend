@@ -8,6 +8,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
 import {ExploreService} from "../../service/explore.service";
 import {InfoComponent} from "../../../../../components/info/info.component";
 
@@ -17,6 +20,9 @@ declare var Plotly: any;
   selector: 'app-overall-acc-plot',
   imports: [
     MatExpansionModule,
+    MatMenuModule,
+    MatButtonModule,
+    MatTooltipModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -45,19 +51,19 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
   defaultMarkerSize: number = 10;
 
   plotOverallAccResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         version: this.versionService.versionReadOnly()(),
         cancer: this.exploreService.selectedDisease$(),
         level: this.exploreService.level$(),
-        params: this.exploreService.selectedParamSets$()()
+        params: this.exploreService.selectedParamSets$()
       }
     }),
     loader: async (param) => {
-      const version = param.request.version;
-      const cancer = param.request.cancer;
-      const level = param.request.level;
-      const params = param.request.params;
+      const version = param.params.version;
+      const cancer = param.params.cancer;
+      const level = param.params.level;
+      const params = param.params.params;
       if (version === undefined || cancer === undefined || level === undefined || params === undefined ) return;
       const data = this.getOverallAccuracyData(version, cancer, level, params);
       return await this.plotOverallAccuracyPlot(data);
@@ -72,7 +78,10 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       if (this.plotOverallAccResource.isLoading()) {
-        Plotly.purge(this.overallAccPlot().nativeElement);
+        const el = this.overallAccPlot()?.nativeElement;
+        if (el) {
+          Plotly.purge(el);
+        }
       }
     });
 
@@ -99,29 +108,16 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
   
   async getOverallAccuracyData(version: number, cancer: string, level: string, params: {[key: string]: any}): Promise<Metric[]> {
     const modelPerformances: RunPerformance[] = [];
-    let highest_accuracy: number = 0;
-    let highest_key: string = "";
-    for (const [key, value] of Object.entries(params)) {
-      const paramSet = value;
+    for (const paramSet of Object.values(params)) {
       const tmp = await this.backend.getRunPerformance(version, cancer, level, paramSet);
-      tmp.map((entry: RunPerformance) => {
-        modelPerformances.push(entry);
-        if (entry.model_type == "modules" && entry.split_type == "test") {
-          if (entry.accuracy > highest_accuracy) {
-            highest_accuracy = entry.accuracy_upper;
-            highest_key = key;
-          }
-        }
-      });
+      if (Array.isArray(tmp)) {
+        tmp.forEach((entry: RunPerformance) => {
+          modelPerformances.push(entry);
+        });
+      }
     }
-    this.exploreService.highestKey.set(highest_key);
-    // rename key of the highest accuracy to "*old_key"
-    // params["*" + highest_key] = params[highest_key];
-    // delete params[highest_key];
-    // update this.exploreService.paramSets$
-    // this.exploreService.paramSets$()()[highest_key] = params["*" + highest_key];
 
-    // this is messy but still thinking about a cleaner way. 
+    // this is messy but still thinking about a cleaner way.
     // the first time this is executed, all available params are wanted to all models are fetched
     // we create model Names (Model 1, Model 2, ...) and add them to the y-axis labels only if all models are fetched
 
@@ -277,6 +273,18 @@ export class OverallAccPlotComponent implements AfterViewInit, OnDestroy {
     const plotDiv = this.overallAccPlot().nativeElement;
     if (plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
+    }
+  }
+
+  downloadPlot(format: 'png' | 'jpeg' | 'svg'): void {
+    const el = this.overallAccPlot()?.nativeElement;
+    if (el) {
+      Plotly.downloadImage(el, {
+        format: format,
+        filename: 'overall_accuracy_plot_' + Date.now(),
+        width: 800,
+        height: 600
+      });
     }
   }
 }

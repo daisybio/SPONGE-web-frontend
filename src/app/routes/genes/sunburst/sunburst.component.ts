@@ -79,26 +79,34 @@ export class SunburstComponent {
 
     // Get the full dataset objects by matching the dataset_IDs
     const datasetCounts = results.reduce((acc, curr) => {
+      const foundDataset = datasets.find(
+        (d) => d.dataset_ID === curr.sponge_run.dataset.dataset_ID
+      );
+      if (!foundDataset) {
+        return acc;
+      }
+      const count = onlySignificant ? curr.count_sign : curr.count_all;
+      if (count <= 0) {
+        return acc;
+      }
       if (!acc[curr.sponge_run.dataset.dataset_ID]) {
         acc[curr.sponge_run.dataset.dataset_ID] = {
           count: 0,
-          dataset: datasets.find(
-            (d) => d.dataset_ID === curr.sponge_run.dataset.dataset_ID
-          )!,
+          dataset: foundDataset,
         };
       }
-      acc[curr.sponge_run.dataset.dataset_ID].count += onlySignificant
-        ? curr.count_sign
-        : curr.count_all;
+      acc[curr.sponge_run.dataset.dataset_ID].count += count;
       return acc;
     }, {} as { [key: number]: { count: number; dataset: Dataset } });
 
     // Sum up the counts for each disease_name
     const diseaseCounts = Object.values(datasetCounts).reduce((acc, curr) => {
-      if (!acc[curr.dataset.disease_name]) {
-        acc[curr.dataset.disease_name] = 0;
+      if (curr.dataset && curr.dataset.disease_name) {
+        if (!acc[curr.dataset.disease_name]) {
+          acc[curr.dataset.disease_name] = 0;
+        }
+        acc[curr.dataset.disease_name] += curr.count;
       }
-      acc[curr.dataset.disease_name] += curr.count;
       return acc;
     }, {} as { [key: string]: number });
 
@@ -117,15 +125,16 @@ export class SunburstComponent {
     const parents = ['', ...diseaseOrder.map((d) => 'Diseases')];
 
     for (let datasetCount of Object.values(datasetCounts)) {
-      const subtype = datasetCount.dataset.disease_subtype || SUBTYPE_DEFAULT;
+      if (datasetCount.dataset) {
+        const subtype = datasetCount.dataset.disease_subtype || SUBTYPE_DEFAULT;
+        const count = datasetCount.count;
+        const dataset = datasetCount.dataset;
 
-      const count = datasetCount.count;
-      const dataset = datasetCount.dataset;
-
-      ids.push(`${dataset.disease_name}-${subtype}`);
-      labels.push(subtype);
-      values.push(count);
-      parents.push(dataset.disease_name);
+        ids.push(`${dataset.disease_name}-${subtype}`);
+        labels.push(subtype);
+        values.push(count);
+        parents.push(dataset.disease_name);
+      }
     }
 
     return {

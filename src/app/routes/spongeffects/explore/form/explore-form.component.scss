@@ -1,37 +1,79 @@
+// NOTE: every ::ng-deep below MUST stay prefixed with :host. A bare leading
+// ::ng-deep loses all scoping and leaks app-wide (app-explore is only [hidden],
+// never destroyed, so the rules stay live) — that previously collapsed the
+// filename chip in the predict form's dropzone.
+
 // Center chip content and prevent shifting
-::ng-deep .mat-mdc-chip-option {
+:host ::ng-deep .mat-mdc-chip-option {
   justify-content: center !important;
+  height: auto !important;
+  min-height: 100% !important;
+  padding: 4px 0 !important;
+  border-radius: 12px !important;
+  transition: all 0.15s ease-in-out !important;
+
+  // Unselected state styling
+  &:not(.mdc-evolution-chip--selected) {
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+
+    .mat-mdc-chip-action-label,
+    div {
+      color: #475569 !important;
+    }
+  }
+
+  // Selected state styling
+  &.mdc-evolution-chip--selected {
+    background-color: var(--app-accent-container, #e6ddf3) !important;
+    border: 1px solid var(--app-accent, #6a4c93) !important;
+    color: var(--app-accent-on-container, #4a326e) !important;
+
+    .mat-mdc-chip-action-label,
+    div {
+      color: var(--app-accent-on-container, #4a326e) !important;
+      font-weight: 600 !important;
+    }
+  }
 }
 
 // Remove the checkmark graphic
-::ng-deep .mdc-evolution-chip__action[aria-selected='true'] .mdc-evolution-chip__graphic.mat-mdc-chip-graphic {
+:host ::ng-deep .mdc-evolution-chip__action[aria-selected='true'] .mdc-evolution-chip__graphic.mat-mdc-chip-graphic {
   display: none !important;
 }
 
-// Ensure content stays centered by fixing width and alignment
-::ng-deep .mat-mdc-chip-action-label {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-// Ensure the chip content doesn't shift when selected
-::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__action-container {
-  justify-content: center;
+// Ensure content stays centered and unclipped by overriding MDC chip constraints
+:host ::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__cell--primary,
+:host ::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__action,
+:host ::ng-deep .mat-mdc-chip-option .mdc-evolution-chip__action-container {
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  justify-content: center !important;
   padding: 0 !important;
 }
 
-::ng-deep .mdc-evolution-chip__cell--primary {
-  /* align-items: center; */
-  flex-basis: 0% !important;
+:host ::ng-deep .mat-mdc-chip-action-label {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  color: inherit !important;
 }
 
-::ng-deep .mat-mdc-standard-chip.mdc-evolution-chip--with-primary-graphic .mdc-evolution-chip__action--primary {
+:host ::ng-deep .mat-mdc-standard-chip.mdc-evolution-chip--with-primary-graphic .mdc-evolution-chip__action--primary {
   padding-left: 0 !important;
   padding-right: 0px !important;
 }
 
-::ng-deep .mdc-evolution-chip--selectable:not(.mdc-evolution-chip--selected):not(.mdc-evolution-chip--with-primary-icon) .mdc-evolution-chip__graphic {
+:host ::ng-deep .mdc-evolution-chip--selectable:not(.mdc-evolution-chip--selected):not(.mdc-evolution-chip--with-primary-icon) .mdc-evolution-chip__graphic {
   width: 0;
   padding: 0;
 }
+

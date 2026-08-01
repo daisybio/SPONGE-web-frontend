@@ -7,6 +7,9 @@ import { CommonModule } from '@angular/common';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import {MatInputModule} from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { exportToCSV } from '../../../../../utils/export';
 
 @Component({
   selector: 'app-prediction-table',
@@ -16,7 +19,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     CommonModule,
     MatSortModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
   ],
   templateUrl: './prediction-table.component.html',
   styleUrl: './prediction-table.component.scss'
@@ -89,4 +94,7 @@ export class PredictionTableComponent implements AfterViewInit {
     }
   }
 
+  downloadCSV() {
+    exportToCSV(this.dataSource.data, 'predictions_table');
+  }
 }

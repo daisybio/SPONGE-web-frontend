@@ -39,6 +39,16 @@
 
 @if (runClassPerformance$.value() && !runClassPerformance$.isLoading()) {
   <div>
+    <div style="display: flex; justify-content: flex-end; padding-right: 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+      <button mat-icon-button [matMenuTriggerFor]="classPerfDownloadMenu" matTooltip="Download Plot">
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #classPerfDownloadMenu="matMenu">
+        <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+        <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+        <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+      </mat-menu>
+    </div>
     <div #classPerformancePlot class="plotly-chart"></div>
   </div>
 }

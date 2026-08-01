@@ -28,13 +28,13 @@ export class ExampleFileModalComponent implements OnInit {
 
   dataSource: MatTableDataSource<unknown, MatPaginator> = new MatTableDataSource<unknown, MatPaginator>([]);
   dataSourceResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         data: this.content
       }
     }),
     loader: async (param) => {
-      const data = await param.request.data;
+      const data = await param.params.data;
       return new MatTableDataSource(data.data);
     }
     
