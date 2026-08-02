@@ -76,13 +76,13 @@
               <div class="option-content-row">
                 <span>{{ getDiseaseDisplayName(ds.disease_name) }}{{ ds.disease_subtype ? ' – ' + getDiseaseDisplayName(ds.disease_subtype) : '' }}</span>
                 @if (ds.sample_count; as count) {
-                  <span class="sample-count" [class.pancancer-count]="ds.disease_name.toLowerCase() === 'pancancer'">
+                  <span class="sample-count" [class.pancancer-count]="(ds.disease_name || '').toLowerCase() === 'pancancer'">
                     ({{ count }})
                   </span>
                 }
               </div>
             </mat-option>
-            @if (ds.disease_name.toLowerCase() === 'pancancer' && index < dsList.length - 1) {
+            @if ((ds.disease_name || '').toLowerCase() === 'pancancer' && index < dsList.length - 1) {
               <mat-divider></mat-divider>
             }
           }

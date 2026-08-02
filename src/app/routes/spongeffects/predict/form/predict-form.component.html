@@ -83,13 +83,13 @@
             <div class="option-content-row">
               <span>{{ getDiseaseDisplayName(model.disease_name) }}</span>
               @if (model.sample_count; as count) {
-                <span class="sample-count" [class.pancancer-count]="model.disease_name.toLowerCase() === 'pancancer'">
+                <span class="sample-count" [class.pancancer-count]="(model.disease_name || '').toLowerCase() === 'pancancer'">
                   ({{ count }})
                 </span>
               }
             </div>
           </mat-option>
-          @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) {
+          @if ((model.disease_name || '').toLowerCase() === 'pancancer' && index < models.length - 1) {
             <mat-divider></mat-divider>
           }
           }

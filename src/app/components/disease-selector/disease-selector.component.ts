@@ -30,10 +30,10 @@ export class DiseaseSelectorComponent implements OnDestroy {
     () => {
       const names = this.diseaseNames$();
       const initial = this.initialDiseaseName$();
-      if (initial && names.some((n) => n.toLowerCase() === initial.toLowerCase())) {
-        return names.find((n) => n.toLowerCase() === initial.toLowerCase())!;
+      if (initial && names.some((n) => n?.toLowerCase() === initial.toLowerCase())) {
+        return names.find((n) => n?.toLowerCase() === initial.toLowerCase())!;
       }
-      return names.find((d) => d.toLowerCase() === 'pancancer') ?? names[0];
+      return names.find((d) => d?.toLowerCase() === 'pancancer') ?? names[0];
     }
   );
   readonly activeSubtype = linkedSignal(

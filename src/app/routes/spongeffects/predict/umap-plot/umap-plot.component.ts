@@ -32,7 +32,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
   if (!subtypeStr) return { typeName };
 
   let rawSubtype = subtypeStr;
-  if (typeStr && rawSubtype.toLowerCase().startsWith(typeStr.toLowerCase() + '_')) {
+  if (typeStr && rawSubtype?.toLowerCase().startsWith(typeStr.toLowerCase() + '_')) {
     rawSubtype = rawSubtype.slice(typeStr.length + 1);
   } else if (rawSubtype.includes('_')) {
     const parts = rawSubtype.split('_');

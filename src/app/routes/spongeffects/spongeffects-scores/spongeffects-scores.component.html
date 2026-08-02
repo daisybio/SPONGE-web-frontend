@@ -44,13 +44,13 @@
                   <div class="option-content-row">
                     <span>{{ scope === 'pancancer' ? 'Pancancer' : getDiseaseDisplayName(scope) }}</span>
                     @if (scopeCounts.get(scope); as count) {
-                      <span class="sample-count" [class.pancancer-count]="scope.toLowerCase() === 'pancancer'">
+                      <span class="sample-count" [class.pancancer-count]="(scope || '').toLowerCase() === 'pancancer'">
                         ({{ count }})
                       </span>
                     }
                   </div>
                 </mat-option>
-                @if (scope.toLowerCase() === 'pancancer' && index < scopes.length - 1) {
+                @if ((scope || '').toLowerCase() === 'pancancer' && index < scopes.length - 1) {
                   <mat-divider></mat-divider>
                 }
                 }
