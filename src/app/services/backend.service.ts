@@ -204,7 +204,13 @@ export class BackendService {
           offset,
         })
       )) ?? [];
-      results.push(...data);
+      if (Array.isArray(data) && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          results.push(data[i]);
+        }
+      } else {
+        break;
+      }
       offset += limit;
     } while (data.length === limit);
 
@@ -245,7 +251,13 @@ export class BackendService {
           offset,
         })
       )) ?? [];
-      results.push(...data);
+      if (Array.isArray(data) && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          results.push(data[i]);
+        }
+      } else {
+        break;
+      }
       offset += limit;
     } while (data.length === limit);
 
@@ -700,11 +712,13 @@ export class BackendService {
 
       // Flatten and add results
       for (const page of pageResults) {
-        if (page.length > 0) {
-          expressionData.push(...page);
+        if (Array.isArray(page) && page.length > 0) {
+          for (let i = 0; i < page.length; i++) {
+            expressionData.push(page[i]);
+          }
         }
         // If a page has fewer rows than CHUNK_SIZE or max cap reached, stop
-        if (page.length < CHUNK_SIZE || expressionData.length >= MAX_TOTAL_RECORDS) {
+        if (!Array.isArray(page) || page.length < CHUNK_SIZE || expressionData.length >= MAX_TOTAL_RECORDS) {
           hasMoreData = false;
           break; // Stop processing further pages in this batch
         }
