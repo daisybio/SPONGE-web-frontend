@@ -76,10 +76,21 @@ export class FormComponent implements OnInit {
       const globalName = this.versionsService.selectedDiseaseName$();
       const diseases = this.diseases$();
       if (globalName && diseases.length > 0) {
-        const match = diseases.find((d) => d.disease_name === globalName);
+        const match =
+          diseases.find(
+            (d) =>
+              d.disease_name === globalName &&
+              (d.disease_subtype == null || d.disease_subtype === '')
+          ) ?? diseases.find((d) => d.disease_name === globalName);
         if (match) return match;
       }
-      return diseases[0];
+      return (
+        diseases.find((d) => d.disease_name?.toLowerCase() === 'pancancer') ??
+        diseases.find(
+          (d) => d.disease_subtype == null || d.disease_subtype === ''
+        ) ??
+        diseases[0]
+      );
     },
     computation: (source) => source,
   });

@@ -26,22 +26,25 @@ export class DiseaseSelectorComponent implements OnDestroy {
   readonly diseases$ = input.required<Dataset[]>();
   readonly initialDiseaseName$ = input<string | undefined>(undefined);
   selected = output<Dataset>();
-  readonly activeDisease$ = linkedSignal(
-    () => {
-      const names = this.diseaseNames$();
-      const initial = this.initialDiseaseName$();
+  readonly activeDisease$ = linkedSignal({
+    source: () => ({
+      initial: this.initialDiseaseName$(),
+      names: this.diseaseNames$(),
+    }),
+    computation: ({ initial, names }) => {
       if (initial && names.some((n) => n?.toLowerCase() === initial.toLowerCase())) {
         return names.find((n) => n?.toLowerCase() === initial.toLowerCase())!;
       }
       return names.find((d) => d?.toLowerCase() === 'pancancer') ?? names[0];
-    }
-  );
-  readonly activeSubtype = linkedSignal(
-    () =>
+    },
+  });
+  readonly activeSubtype = linkedSignal({
+    source: () => this.activeDisease$(),
+    computation: () =>
       this.possibleSubtypes$().find(
-        (subtype) => subtype.disease_subtype == null
-      ) ?? this.possibleSubtypes$()[0]
-  );
+        (subtype) => subtype.disease_subtype == null || subtype.disease_subtype === ''
+      ) ?? this.possibleSubtypes$()[0],
+  });
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
   protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
