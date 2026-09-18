@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { Gene, GeneInteraction, GOTerm, SpongEffectsGeneModules } from '../../interfaces';
+import { Gene, GeneInteraction, GOTerm, InteractionSorting, SpongEffectsGeneModules, Transcript } from '../../interfaces';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { VersionsService } from '../../services/versions.service';
@@ -61,6 +61,7 @@ interface ASEntry {
     MatTooltip,
     Igv,
     InfoComponent,
+    AddToCartButtonComponent,
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss',
@@ -77,7 +78,9 @@ export class GeneModalComponent implements AfterViewInit {
   browseService = inject(BrowseService);
   private router = inject(Router);
   readonly isBrowseRoute$ = computed(() => this.router.url.includes('/browse'));
-  readonly disease$ = this.browseService.disease$;
+  readonly disease$ = computed(() => {
+    return this.browseService.disease$() || (this.gene as any)?.disease || null;
+  });
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
@@ -114,14 +117,17 @@ export class GeneModalComponent implements AfterViewInit {
       const { version, ensg } = params.params;
       if (!ensg) return [];
       // Do NOT filter by disease: SpongEffects runs are pancancer (disease is null on the runs),
-      // so any disease_name filter returns zero modules. get_best returns the gene's best module.
+      // so any disease_name filter returns zero modules. get_best=false so this gene's module is
+      // found regardless of which param-set run it belongs to — with get_best=true the production
+      // API (pre bf4045c1) truncates to a single arbitrary run before matching the gene, so genes
+      // whose module lives in any other run silently come back empty. See critical_project_info.md.
       return await this.backend.getSpongEffectsGeneModules(
         version,
         undefined,
         {},
         undefined,
         ensg,
-        true
+        false
       );
     }
   });
@@ -218,6 +224,51 @@ export class GeneModalComponent implements AfterViewInit {
     };
   });
 
+  readonly dbCentralities$ = resource({
+    params: computed(() => {
+      const g = this.gene as any;
+      if (g.betweenness !== undefined && g.betweenness !== null) return null;
+      const ensg = this.ensgNumber;
+      const disease = this.disease$();
+      const version = this.version$();
+      if (!ensg || !disease?.dataset_ID || !version) return null;
+      return { version, ensg, dataset: disease };
+    }),
+    loader: async ({ params }) => {
+      if (!params) return null;
+      try {
+        const net = await this.backend.getNetwork(params.version, {
+          dataset: params.dataset,
+          level: 'gene',
+          ensemblID: [params.ensg],
+          showOrphans: true,
+          sortingDegree: false,
+          sortingEigenvector: false,
+          sortingBetweenness: false,
+          maxNodes: 10,
+          minDegree: 0,
+          minBetweenness: 0,
+          minEigen: 0,
+          interactionSorting: InteractionSorting.mscor,
+          maxInteractions: 100,
+          maxPValue: 1.0,
+          minMscor: 0,
+        });
+        const match = (net.nodes || []).find((n) => BrowseService.getNodeID(n) === params.ensg);
+        if (match) {
+          return {
+            betweenness: match.betweenness ?? null,
+            eigenvector: match.eigenvector ?? null,
+            node_degree: match.node_degree ?? null,
+          };
+        }
+      } catch (e) {
+        console.warn('Could not fetch gene centralities from DB', e);
+      }
+      return null;
+    },
+  });
+
   readonly effectiveCentralities$ = computed(() => {
     const g = this.gene as any;
     if (g.betweenness !== undefined && g.betweenness !== null) {
@@ -237,6 +288,11 @@ export class GeneModalComponent implements AfterViewInit {
         eigenvector: match.eigenvector ?? null,
         node_degree: match.node_degree ?? null,
       };
+    }
+
+    const db = this.dbCentralities$.value();
+    if (db) {
+      return db;
     }
 
     return {
@@ -281,12 +337,14 @@ export class GeneModalComponent implements AfterViewInit {
   readonly transcripts$: ResourceRef<ASEntry[] | undefined> = resource({
     params: this.version$,
     loader: async (version) => {
+      const ensg = this.ensgNumber;
+      if (!ensg) return [];
       const transcripts = await this.backend.getGeneTranscripts(
         version.params,
-        this.gene.ensg_number,
-      );
+        ensg,
+      ).catch(() => []);
       const asEvents =
-        await this.backend.getAlternativeSplicingEvents(transcripts);
+        await this.backend.getAlternativeSplicingEvents(transcripts).catch(() => []);
       const transcriptEvents = asEvents.reduce((acc, event) => {
         const enst = event.transcript.enst_number;
         if (!acc.has(enst)) {
@@ -350,10 +408,23 @@ export class GeneModalComponent implements AfterViewInit {
   async openTranscript(enst: string) {
     if (this.isOpeningTranscript()) return;
     this.isOpeningTranscript.set(true);
-    const transcript = (
-      await this.backend.getTranscriptInfo(this.version$(), enst)
-    )[0];
-    this.modalsService.openNodeDialog(transcript);
-    this.isOpeningTranscript.set(false);
+    try {
+      const transcriptList = await this.backend.getTranscriptInfo(this.version$(), enst).catch(() => []);
+      const transcriptInfo = transcriptList?.[0];
+      const disease = this.disease$();
+      const transcriptEntity: Transcript = {
+        ...transcriptInfo,
+        enst_number: enst,
+        gene: {
+          ensg_number: this.ensgNumber || transcriptInfo?.ensg_number || '',
+          gene_symbol: this.geneSymbol || '',
+        },
+      };
+      this.modalsService.openNodeDialog(transcriptEntity, disease ?? undefined);
+    } catch (e) {
+      console.error('Error opening transcript dialog:', e);
+    } finally {
+      this.isOpeningTranscript.set(false);
+    }
   }
 }

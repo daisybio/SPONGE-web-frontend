@@ -1,3 +1,9 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .app-toolbar {
   display: flex;
   align-items: center;
@@ -5,8 +11,8 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   color: #1f2937;
-  box-shadow: 0 4px 20px rgba(31, 38, 135, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+  // box-shadow: 0 4px 20px rgba(31, 38, 135, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   height: 60px;
   min-height: 60px;
   padding: 0 16px;
@@ -55,7 +61,7 @@
   // The section labels carry descenders (e.g. the "y" in "Analysis"); against the pill's tinted
   // background the reserved descender space makes the text read a touch high. The extra top padding
   // nudges it down ~1.5px so it sits optically centered within the pill.
-  padding: 3px 14px 0;
+  padding: 0 14px;
   border-radius: 10px;
   text-decoration: none;
   font-size: 0.9rem;
@@ -84,6 +90,13 @@
   margin: 0 6px;
 }
 
+.secondary-nav-group {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ext-link {
   display: inline-flex;
   align-items: center;
@@ -108,7 +121,25 @@
 }
 
 .footer {
-  background-color: #f8f9fa;
-  padding: 20px 0;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.65) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 4px 16px;
   text-align: center;
+
+  p {
+    margin: 0 0 2px;
+    font-size: 0.85rem;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+  }
 }

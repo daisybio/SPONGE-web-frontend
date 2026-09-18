@@ -1,6 +1,6 @@
 <h1 mat-dialog-title style="display: flex; align-items: center; gap: 8px;">
   <span>{{ BrowseService.getFullName(transcript) }}</span>
-  <app-add-to-cart-button [id]="transcript.enst_number" [symbol]="BrowseService.getFullName(transcript)"></app-add-to-cart-button>
+  <app-add-to-cart-button [id]="enstNumber" [symbol]="BrowseService.getFullName(transcript)" [entity]="transcript"></app-add-to-cart-button>
   @if (isFallback()) {
     <app-info type="icon" title="Network Centrality Info">
       This transcript/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
@@ -19,14 +19,16 @@
       <table>
         <tr>
           <th>Ensembl ID</th>
-          <td>{{ transcript.enst_number }}</td>
+          <td>{{ enstNumber }}</td>
         </tr>
+        @if (hasParentGene()) {
         <tr>
           <th>Parent gene</th>
           <td>
-            <button (click)="showGene()" mat-button>Show {{ BrowseService.getFullName(transcript.gene) }}</button>
+            <button (click)="showGene()" mat-button>Show {{ getGeneDisplayName() }}</button>
           </td>
         </tr>
+        }
         <tr>
           <th>Position</th>
           <td>{{ transcriptInfo.chromosome_name }}:{{ transcriptInfo.start_pos }}-{{ transcriptInfo.end_pos }}</td>
@@ -132,7 +134,7 @@
     </mat-tab>
     }
 
-    @if (tcgaEffects$.isLoading() || module_IDs$.isLoading() || customEffects$() || ((tcgaEffects$.value() || []).length > 0)) {
+    @if (customEffects$() || ((tcgaEffects$.value() || []).length > 0)) {
     <mat-tab label="SpongEffects scores">
       <div style="padding: 16px;">
         @let custom = customEffects$();

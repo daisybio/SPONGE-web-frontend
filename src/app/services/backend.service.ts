@@ -49,11 +49,37 @@ interface Query {
   [key: string]: any;
 }
 
+/**
+ * Server-side ranking/filtering for the SpongEffects module-list endpoints — mirrors the two
+ * fields the backend can actually order/filter by (mean_accuracy_decrease, mean_gini_decrease).
+ * Applying this in the query (rather than re-sorting a `limit`-truncated response client-side)
+ * is required so a "top N" or "min score" request doesn't silently drop nodes that were cut by
+ * the backend's default ordering before the client ever saw them.
+ */
+export interface ModuleRanking {
+  sortBy?: 'meanAccuracyDecrease' | 'meanGiniDecrease';
+  minMeanAccuracyDecrease?: number | null;
+  minMeanGiniDecrease?: number | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class BackendService {
   constructor(private http: HttpService) { }
+
+  private applyModuleRanking(query: Query, ranking?: ModuleRanking): void {
+    if (!ranking) return;
+    if (ranking.sortBy) {
+      query['sort_by'] = ranking.sortBy;
+    }
+    if (ranking.minMeanAccuracyDecrease !== undefined && ranking.minMeanAccuracyDecrease !== null && !isNaN(ranking.minMeanAccuracyDecrease)) {
+      query['min_mean_accuracy_decrease'] = ranking.minMeanAccuracyDecrease;
+    }
+    if (ranking.minMeanGiniDecrease !== undefined && ranking.minMeanGiniDecrease !== null && !isNaN(ranking.minMeanGiniDecrease)) {
+      query['min_mean_gini_decrease'] = ranking.minMeanGiniDecrease;
+    }
+  }
 
   async getDatasets(version: number, diseaseName?: string): Promise<Dataset[]> {
     const route = 'datasets';
@@ -108,6 +134,15 @@ export class BackendService {
 
     const numOrUndefined = (val: any) => typeof val === 'number' && !isNaN(val) ? val : undefined;
 
+    const mapEdgeSorting = (val: any): string | undefined => {
+      if (!val) return undefined;
+      const s = String(val).toLowerCase();
+      if (s.includes('mscor')) return 'mscor';
+      if (s.includes('corr')) return 'correlation';
+      if (s.includes('p')) return 'pValue';
+      return val;
+    };
+
     const _query: Query = {
       sponge_db_version: version,
       dataset_ID: query.dataset.dataset_ID,
@@ -116,7 +151,7 @@ export class BackendService {
       minEigenvector: numOrUndefined(query.minEigen),
       maxPValue: numOrUndefined(query.maxPValue),
       minMscor: numOrUndefined(query.minMscor),
-      edgeSorting: query.interactionSorting,
+      edgeSorting: mapEdgeSorting(query.interactionSorting),
       maxNodes: numOrUndefined(query.maxNodes),
       maxEdges: numOrUndefined(query.maxInteractions),
     };
@@ -921,7 +956,8 @@ export class BackendService {
     params?: { [key: string]: any },
     limit?: number,
     ensg_number?: string,
-    get_best?: boolean
+    get_best?: boolean,
+    ranking?: ModuleRanking
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
@@ -940,6 +976,7 @@ export class BackendService {
     if (get_best !== undefined) {
       query['get_best'] = get_best;
     }
+    this.applyModuleRanking(query, ranking);
     if (params) {
       for (const [key, param] of Object.entries(params)) {
         if (param !== undefined && param !== null) {
@@ -988,7 +1025,9 @@ export class BackendService {
     diseaseName?: string,
     params?: { [key: string]: any },
     limit?: number,
-    enst_number?: string
+    enst_number?: string,
+    get_best?: boolean,
+    ranking?: ModuleRanking
   ): Promise<SpongEffectsTranscriptModules[]> {
     const route = 'spongEffects/getSpongEffectsTranscriptModules';
 
@@ -1004,6 +1043,10 @@ export class BackendService {
     if (enst_number) {
       query['enst_number'] = enst_number;
     }
+    if (get_best !== undefined) {
+      query['get_best'] = get_best;
+    }
+    this.applyModuleRanking(query, ranking);
     if (params) {
       for (const [key, param] of Object.entries(params)) {
         if (param !== undefined && param !== null) {

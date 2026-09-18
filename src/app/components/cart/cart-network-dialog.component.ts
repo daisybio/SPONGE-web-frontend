@@ -10,7 +10,15 @@ import { BrowseService } from '../../services/browse.service';
 import { BackendService } from '../../services/backend.service';
 import { VersionsService } from '../../services/versions.service';
 import { CartItem } from '../../services/cart.service';
-import { Dataset, Gene, GeneNode, NetworkData, Transcript } from '../../interfaces';
+import {
+  Dataset,
+  Gene,
+  GeneNode,
+  InteractionSorting,
+  NetworkData,
+  Transcript,
+  TranscriptNode,
+} from '../../interfaces';
 
 interface CartNetworkDialogData {
   items: CartItem[];
@@ -84,52 +92,68 @@ export class CartNetworkDialogComponent {
       const version = this.versionsService.versionReadOnly()();
       if (!version) throw new Error('No version selected');
 
-      const identifiers = this.data.items.map(item =>
-        item.type === 'gene'
-          ? (item.entity as Gene).ensg_number
-          : (item.entity as Transcript).enst_number
-      );
-
       const level = this.data.items.some(i => i.type === 'transcript') ? 'transcript' : 'gene';
 
-      const interactions = await this.backend.getInteractionsSpecific(
-        version,
-        this.data.disease,
-        1.0,
-        identifiers,
-        level,
-      );
+      const identifiers = this.data.items
+        .filter(item => item.type === level)
+        .map(item =>
+          level === 'gene'
+            ? (item.entity as Gene).ensg_number
+            : (item.entity as Transcript).enst_number
+        );
 
-      // Build node map
-      const nodeMap = new Map<string, GeneNode>();
-      for (const int of interactions) {
-        if ('gene1' in int) {
-          for (const g of [int.gene1, int.gene2]) {
-            if (!nodeMap.has(g.ensg_number)) {
-              nodeMap.set(g.ensg_number, {
-                gene: g,
-                betweenness: null,
-                eigenvector: null,
-                node_degree: null,
-                sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
-              } as GeneNode);
-            }
-          }
-        }
+      const network = await this.backend.getNetwork(version, {
+        level,
+        dataset: this.data.disease,
+        ensemblID: identifiers,
+        showOrphans: true,
+        sortingDegree: false,
+        sortingEigenvector: false,
+        sortingBetweenness: false,
+        maxNodes: Math.max(100, identifiers.length + 50),
+        minDegree: 0,
+        minBetweenness: 0,
+        minEigen: 0,
+        interactionSorting: 'mscor' as any,
+        maxInteractions: 50000,
+        maxPValue: 1.0,
+        minMscor: 0,
+      });
+
+      // Build node map from fetched network nodes (contains real DB node_degree, betweenness, etc.)
+      const nodeMap = new Map<string, GeneNode | TranscriptNode>();
+      for (const node of network.nodes || []) {
+        nodeMap.set(BrowseService.getNodeID(node), node);
       }
 
-      // Add orphan nodes
+      // Ensure every cart item of this level is present, even if it has no DB networkAnalysis row
       for (const item of this.data.items) {
-        if (item.type === 'gene') {
-          const g = item.entity as Gene;
-          if (!nodeMap.has(g.ensg_number)) {
-            nodeMap.set(g.ensg_number, {
-              gene: g,
+        if (item.type !== level) continue;
+        const id = item.type === 'gene'
+          ? (item.entity as Gene).ensg_number
+          : (item.entity as Transcript).enst_number;
+
+        if (!nodeMap.has(id)) {
+          const spongeRun = {
+            dataset: { ...this.data.disease, disease_subtype: '' },
+            sponge_run_ID: 0,
+          };
+          if (item.type === 'gene') {
+            nodeMap.set(id, {
+              gene: item.entity as Gene,
               betweenness: null,
               eigenvector: null,
               node_degree: null,
-              sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
+              sponge_run: spongeRun,
             } as GeneNode);
+          } else {
+            nodeMap.set(id, {
+              transcript: item.entity as Transcript,
+              betweenness: null,
+              eigenvector: null,
+              node_degree: null,
+              sponge_run: spongeRun,
+            } as TranscriptNode);
           }
         }
       }
@@ -137,7 +161,7 @@ export class CartNetworkDialogComponent {
       const networkData: NetworkData = {
         nodes: Array.from(nodeMap.values()),
         inverseNodes: [],
-        edges: interactions,
+        edges: network.edges || [],
         disease: this.data.disease,
       };
 

@@ -19,27 +19,46 @@ export class ModalsService {
 
   constructor() {}
 
-  openNodeDialog(entity: any) {
+  openNodeDialog(entity: any, disease?: Dataset) {
     let nodeData: any;
     if (entity && typeof entity === 'object') {
-      if ('gene' in entity && entity.gene) {
+      if ('transcript' in entity && entity.transcript) {
+        // TranscriptNode wrapper
         nodeData = {
-          ...entity.gene,
-          disease_name: entity.disease_name ?? entity.dataset?.disease_name ?? entity.gene?.disease_name ?? null,
+          ...entity.transcript,
+          disease: disease ?? entity.dataset ?? entity.sponge_run?.dataset ?? null,
+          disease_name: disease?.disease_name ?? entity.disease_name ?? entity.dataset?.disease_name ?? entity.transcript?.disease_name ?? null,
           betweenness: entity.betweenness ?? null,
           eigenvector: entity.eigenvector ?? null,
           node_degree: entity.node_degree ?? null,
         };
-      } else if ('transcript' in entity && entity.transcript) {
+      } else if ('enst_number' in entity) {
+        // Transcript object (may also have a parent .gene reference)
         nodeData = {
-          ...entity.transcript,
-          disease_name: entity.disease_name ?? entity.dataset?.disease_name ?? entity.transcript?.disease_name ?? null,
+          ...entity,
+          disease: disease ?? entity.dataset ?? entity.sponge_run?.dataset ?? null,
+          disease_name: disease?.disease_name ?? entity.disease_name ?? entity.dataset?.disease_name ?? null,
+          betweenness: entity.betweenness ?? null,
+          eigenvector: entity.eigenvector ?? null,
+          node_degree: entity.node_degree ?? null,
+        };
+      } else if ('gene' in entity && entity.gene) {
+        // GeneNode wrapper
+        nodeData = {
+          ...entity.gene,
+          disease: disease ?? entity.dataset ?? entity.sponge_run?.dataset ?? null,
+          disease_name: disease?.disease_name ?? entity.disease_name ?? entity.dataset?.disease_name ?? entity.gene?.disease_name ?? null,
           betweenness: entity.betweenness ?? null,
           eigenvector: entity.eigenvector ?? null,
           node_degree: entity.node_degree ?? null,
         };
       } else {
-        nodeData = entity;
+        // Direct Gene or other node object
+        nodeData = {
+          ...entity,
+          disease: disease ?? entity.dataset ?? entity.sponge_run?.dataset ?? null,
+          disease_name: disease?.disease_name ?? entity.disease_name ?? entity.dataset?.disease_name ?? null,
+        };
       }
     } else {
       nodeData = entity;
@@ -54,10 +73,10 @@ export class ModalsService {
       maxWidth: '90vw',
       panelClass: 'fixed-modal',
     };
-    if (nodeData && 'ensg_number' in nodeData) {
-      this.dialog.open(GeneModalComponent, dialogConfig);
-    } else {
+    if (nodeData && 'enst_number' in nodeData) {
       this.dialog.open(TranscriptModalComponent, dialogConfig);
+    } else {
+      this.dialog.open(GeneModalComponent, dialogConfig);
     }
   }
 

@@ -292,11 +292,13 @@ export class BrowseService {
   }
 
   public static getFullName(node: Gene | Transcript): string {
+    if (!node) return '';
     if ('ensg_number' in node) {
       return node.gene_symbol || node.ensg_number;
     } else {
-      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number
-        })`;
+      const g = (node as Transcript).gene;
+      const gName = g ? (g.gene_symbol || g.ensg_number || '') : '';
+      return gName ? `${gName} (${node.enst_number})` : (node.enst_number || '');
     }
   }
 
@@ -319,13 +321,15 @@ export class BrowseService {
   }
 
   private static getID(node: Gene | Transcript): string {
-    return 'ensg_number' in node ? node.ensg_number : node.enst_number;
+    if (!node) return '';
+    return 'ensg_number' in node ? node.ensg_number : ((node as any).enst_number || '');
   }
 
   private static getGeneName(node: Gene | Transcript): string {
+    if (!node) return '';
     return 'ensg_number' in node
       ? node.gene_symbol || node.ensg_number
-      : node.gene.gene_symbol || node.gene.ensg_number;
+      : (node as any).gene?.gene_symbol || (node as any).gene?.ensg_number || (node as any).gene_symbol || (node as any).ensg_number || (node as any).enst_number || '';
   }
 
   runQuery(query: BrowseQuery) {

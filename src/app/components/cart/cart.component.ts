@@ -114,7 +114,8 @@ export class CartComponent {
   }
 
   openEntity(item: CartItem) {
-    this.modalsService.openNodeDialog(item.entity as Gene | Transcript);
+    const disease = this.selectedDisease();
+    this.modalsService.openNodeDialog(item.entity as Gene | Transcript, disease ?? undefined);
   }
 
   removeItem(item: CartItem) {
