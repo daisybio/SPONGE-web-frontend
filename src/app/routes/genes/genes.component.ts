@@ -29,6 +29,7 @@ import { InteractionsTableComponent } from '../../components/interactions-table/
 import { VersionsService } from '../../services/versions.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { SunburstComponent } from './sunburst/sunburst.component';
+import { ActivatedRoute } from '@angular/router';
 import { DiseaseSelectorComponent } from '../../components/disease-selector/disease-selector.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
@@ -205,17 +206,62 @@ export class GenesComponent {
   protected readonly capitalize = capitalize;
 
   constructor() {
-    // Clear active items when switching between gene and transcript levels
+    const route = inject(ActivatedRoute);
+
+    route.queryParams.subscribe((params) => {
+      const q = params['search'] || params['gene'] || params['ensg'] || params['enst'];
+      if (q) {
+        this.initFromQuery(q);
+      }
+    });
+
+    // Clear active items when manually switching between gene and transcript levels
     effect(() => {
       const currentLevel = this.level();
       if (currentLevel === 'gene') {
-        this.activeTranscripts.set([]);
-        this.currentTranscriptInput.set('');
+        if (this.activeTranscripts().length > 0) {
+          this.activeTranscripts.set([]);
+          this.currentTranscriptInput.set('');
+        }
       } else {
-        this.activeGenes.set([]);
-        this.currentInput.set('');
+        if (this.activeGenes().length > 0) {
+          this.activeGenes.set([]);
+          this.currentInput.set('');
+        }
       }
     });
+  }
+
+  private async initFromQuery(query: string) {
+    if (!query) return;
+    const cleanQuery = query.trim();
+    if (cleanQuery.toUpperCase().startsWith('ENST')) {
+      this.level.set('transcript');
+      try {
+        const matches = await this.backend.stringSearchTranscript(cleanQuery);
+        if (matches && matches.length > 0) {
+          const exact = matches.find((t) => t.enst_number.toLowerCase() === cleanQuery.toLowerCase()) || matches[0];
+          this.activeTranscripts.set([exact]);
+        }
+      } catch (e) {
+        console.error('Failed to resolve transcript query:', e);
+      }
+    } else {
+      this.level.set('gene');
+      try {
+        const matches = await this.backend.getAutocomplete(this.version(), cleanQuery);
+        if (matches && matches.length > 0) {
+          const exact = matches.find(
+            (g) =>
+              g.gene_symbol?.toLowerCase() === cleanQuery.toLowerCase() ||
+              g.ensg_number?.toLowerCase() === cleanQuery.toLowerCase()
+          ) || matches[0];
+          this.activeGenes.set([exact]);
+        }
+      } catch (e) {
+        console.error('Failed to resolve gene query:', e);
+      }
+    }
   }
 
   remove(gene: Gene): void {
