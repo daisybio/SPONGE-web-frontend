@@ -5,9 +5,10 @@
     <div style="margin: 5px;">
       <mat-accordion multi="true">
         <app-explore-form></app-explore-form>
-        <app-module-form [source]="'explore'"></app-module-form>
+        <app-module-form [source]="'explore'" [disabled]="moduleFilteringDisabled()"></app-module-form>
         <app-network-filters [filters]="exploreService" [browseService]="browseService"
-          [disease]="exploreService.selectedDisease$()"></app-network-filters>
+          [disease]="exploreService.selectedDisease$()" [disabled]="networkFiltersDisabled()"
+          [nodesDisabled]="nodesFiltersDisabled()"></app-network-filters>
       </mat-accordion>
     </div>
   </mat-drawer>
@@ -18,7 +19,7 @@
         <div class="network-container" style="display: flex; flex-direction: row; position: relative;">
           @if (isNetworkLoading()) {
           <div
-            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; background: rgba(255,255,255,0.6);">
+            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; background: rgba(255,255,255,0.6);">
             <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
           </div>
           }

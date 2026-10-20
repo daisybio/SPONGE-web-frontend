@@ -61,6 +61,24 @@ export class ExploreComponent {
   exploreService = inject(ExploreService)
   selectedTabIndex = this.exploreService.selectedTabIndex$;
 
+  // Tabs: 0 = Reference Network, 1 = UMAP, 2 = Top ceRNA Modules, 3 = Score Distribution,
+  // 4 = Benchmarking. The drawer's filter panels only affect a subset of these.
+  /** Node/edge filters affect only the reference network view. */
+  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== 0);
+  /** The Nodes panel (Max. nodes, node filters) also drives the expression heatmap's member rows. */
+  nodesFiltersDisabled = computed(
+    () =>
+      !(
+        this.selectedTabIndex() === 0 ||
+        (this.selectedTabIndex() === 2 &&
+          this.exploreService.selectedVis() === 'heatmap' &&
+          this.exploreService.selectedHeatmapType() === 'expression' &&
+          !!this.exploreService.includeModuleMembers())
+      )
+  );
+  /** Module filtering affects the reference network view and the Top ceRNA Modules view. */
+  moduleFilteringDisabled = computed(() => this.selectedTabIndex() !== 0 && this.selectedTabIndex() !== 2);
+
   // True while the reference network is (re)building — covers both the module-resolution phase
   // (e.g. after changing Disease) and the network fetch itself, so the spinner shows throughout.
   isNetworkLoading = computed(() =>

@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, effect, computed } from '@angular/core';
+import { Component, inject, input, OnInit, effect, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,6 +39,13 @@ export class ModuleFormComponent implements OnInit {
   exploreService = inject(ExploreService);
   predictService = inject(PredictService);
   source = input<'explore' | 'predict'>('explore');
+  /**
+   * When true, the panel is greyed, collapsed and can't be opened. Used on tabs where module
+   * filtering has no effect (everything except the network and Top ceRNA Modules views). The
+   * user's open/closed state is remembered so the panel returns to it once re-enabled.
+   */
+  disabled = input<boolean>(false);
+  protected panelOpen = signal(false);
 
   /** Disable "Show module members" when Module Importance Plot or Enrichment Scores Heatmap is shown */
   membersDisabled = computed(() => {

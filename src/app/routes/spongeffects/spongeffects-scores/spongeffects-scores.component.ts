@@ -97,7 +97,29 @@ export class SpongeffectsScoresComponent {
   refreshSignal = signal<number>(0);
   selectedTabIndex = signal<number>(0);
   selectedSubVis = signal<string>('importance');
+
+  // Tabs: 0 = Patient-specific Network, 1 = UMAP, 2 = Top ceRNA Modules, 3 = Score Distribution,
+  // 4 = Cancer Type Classification. The drawer's filter panels only affect a subset of these.
+  /** Node/edge filters affect only the network view. */
+  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== 0);
+  /** The Nodes panel (Max. nodes, node filters) also drives the expression heatmap's member rows. */
+  nodesFiltersDisabled = computed(
+    () =>
+      !(
+        this.selectedTabIndex() === 0 ||
+        (this.selectedTabIndex() === 2 &&
+          this.selectedSubVis() === 'heatmap' &&
+          this.predictService.selectedHeatmapType$() === 'expression' &&
+          this.predictService.includeModuleMembers$())
+      )
+  );
+  /** Module filtering affects the network view and the Top ceRNA Modules view. */
+  moduleFilteringDisabled = computed(() => this.selectedTabIndex() !== 0 && this.selectedTabIndex() !== 2);
   selectedSubtype = signal<string>('');
+
+  isNetworkLoading = computed(() =>
+    this.browseService.isLoading$() || this.predictService._prediction$.isLoading()
+  );
 
   hasSubtypeScores$ = computed(() => {
     const prediction = this.predictService.prediction$();
@@ -206,13 +228,15 @@ export class SpongeffectsScoresComponent {
       const min2 = this.predictService.minScore2$();
       const sortBy = this.predictService.sortBy$();
       const topN = this.predictService.topNModules$();
-      const nodesLength = this.browseService ? this.browseService.nodes$().length : 0;
 
       if (prediction && tabIndex === 2 && subVis === 'scatterplot') {
         // Changing params reloads the scatterplot resource, which re-runs updateScatterplotData
         // via getData (with the current showRemaining). Don't call updateScatterplotData()
         // directly here — a second, showRemaining-unaware write would race with and clobber
         // the resource's write, which is what broke "Add remaining modules".
+        // NB: each .set() is a fresh object (new identity) so the resource reloads on any real
+        // change; the network's node count is deliberately NOT a dependency (it doesn't affect
+        // this TCGA-vs-patient scatter), and no Date.now() nonce is needed to force a reload.
         this.scatterplotParams.set({
           disease: selectedType,
           prediction,
@@ -221,8 +245,6 @@ export class SpongeffectsScoresComponent {
           min2,
           sortBy,
           topN,
-          nodesLength,
-          timestamp: Date.now(),
         });
       }
     });
@@ -232,13 +254,15 @@ export class SpongeffectsScoresComponent {
     this.isScatterplotLoading.set(true);
     try {
       const prediction = this.predictService.prediction$();
-      if (!prediction?.scores?.genes?.length) {
+      // Scope-aware: pancancer `scores` or type_scores[scope], matching the network/tables/heatmap.
+      const scores = this.predictService.activeScores$();
+      if (!prediction || !scores?.genes?.length) {
         this.transformedData.set([]);
         return;
       }
 
       const selectedSamples = this.predictService.selectedSamples$();
-      const samples = prediction.scores.samples || [];
+      const samples = scores.samples || [];
       const sampleIndices = selectedSamples.length > 0
         ? selectedSamples.map(s => samples.indexOf(s)).filter(idx => idx !== -1)
         : samples.map((_, idx) => idx);
@@ -246,8 +270,8 @@ export class SpongeffectsScoresComponent {
       const level = this.predictService.level();
 
       // Calculate statistics for all modules first
-      let modules = prediction.scores.genes.map((geneId: string, index: number) => {
-        const scoresForGene = prediction.scores.values[index] || [];
+      let modules = scores.genes.map((geneId: string, index: number) => {
+        const scoresForGene = scores.values[index] || [];
         const selectedScores = sampleIndices.map(idx => scoresForGene[idx] ?? 0);
         const count = selectedScores.length;
         const mean = count > 0 ? selectedScores.reduce((s: number, v: number) => s + v, 0) / count : 0;
@@ -322,7 +346,8 @@ export class SpongeffectsScoresComponent {
   async getTcgaSpongEffectsScores(genes: string[], loadAll: boolean = false): Promise<any[]> {
     const level = this.predictService.level();
     const version = this.versionsService.versionReadOnly()();
-    const disease = 'pancancer';
+    // Match the active Score Scope so the TCGA reference axis is scoped like the patient axis.
+    const disease = this.predictService.selectedScope$() || 'pancancer';
     if (!version || !genes.length) return [];
     const cacheKey = `${version}_${disease}_${level}_${loadAll ? 'all' : genes.join(',')}`;
     if (this.tcgaScoresCache.has(cacheKey)) {
