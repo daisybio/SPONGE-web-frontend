@@ -25,10 +25,10 @@
       <div class="search-chips">
         <span class="chip-label">Quick Search:</span>
         <mat-chip-set>
-          <mat-chip (click)="searchQuery.set('TP53'); onSearchSubmit()">TP53</mat-chip>
-          <mat-chip (click)="searchQuery.set('BRCA'); onSearchSubmit()">BRCA</mat-chip>
-          <mat-chip (click)="searchQuery.set('EGFR'); onSearchSubmit()">EGFR</mat-chip>
-          <mat-chip (click)="searchQuery.set('MYC'); onSearchSubmit()">MYC</mat-chip>
+          <mat-chip (click)="searchQuery.set('TP53'); onSearchSubmit()">TP53 (Gene)</mat-chip>
+          <mat-chip (click)="searchQuery.set('BRCA'); onSearchSubmit()">BRCA (Cancer)</mat-chip>
+          <mat-chip (click)="searchQuery.set('EGFR'); onSearchSubmit()">EGFR (Gene)</mat-chip>
+          <mat-chip (click)="searchQuery.set('ENST00000269305'); onSearchSubmit()">ENST00000269305 (Transcript)</mat-chip>
         </mat-chip-set>
       </div>
     </div>
