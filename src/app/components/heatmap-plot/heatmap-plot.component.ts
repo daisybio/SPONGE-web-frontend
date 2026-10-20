@@ -156,9 +156,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     // Grow the plot vertically with the number of gene rows so every y label fits (see the
     // forced per-category ticks in createLayout). Falls back to the configured height for small
     // heatmaps; taller plots simply make the page scroll.
-    const geneCount = new Set(
-      data.map(e => ('gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)))
-    ).size;
+    const geneCount = new Set(data.map(e => this.rowInfo(e).label)).size;
     const baseHeight = parseInt(this.height(), 10) || 600;
     const ROW_PX = 22;
     const plotHeight = Math.max(baseHeight, geneCount * ROW_PX + 200);
@@ -197,6 +195,21 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // Identify a cell's row. Check `transcript` before `gene`: the plain (unclustered, unaveraged)
+  // transcript enrichment payload has `transcript` as a bare ENST string AND a sibling `gene`, so
+  // testing `'gene' in e` first mistook those rows for gene rows. Rows may also carry an explicit
+  // `ensemblID` (patient-centric sources, whose `id` is only a display symbol).
+  private rowInfo(e: any): { label: string; ensemblID: string; symbol: string } {
+    const enst: string | undefined = typeof e.transcript === 'string' ? e.transcript : e.transcript?.enst_number;
+    const label: string = enst ?? e.gene?.gene_symbol ?? e.id;
+    const geneSymbol: string | undefined = e.gene?.gene_symbol ?? e.transcript?.gene?.gene_symbol;
+    return {
+      label,
+      ensemblID: e.ensemblID ?? enst ?? e.gene?.ensg_number ?? e.id,
+      symbol: geneSymbol ?? label,
+    };
+  }
+
   private extractSamples(data: any[]): { sample_ID: string, disease_subtype: string }[] {
     return [...new Set(data.map(e => ({ sample_ID: e.sample_ID, disease_subtype: e.disease_subtype || 'NA' })))];
   }
@@ -206,16 +219,13 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     return {
       z: value_key ? data.map(e => e[value_key]) : data.map(e => e.expr_value),
       x: data.map(e => e.sample_ID),
-      y: data.map(e => 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)),
+      y: data.map(e => this.rowInfo(e).label),
       type: 'heatmap',
-      customdata: data.map(e => ({
-        ensemblID: 'gene' in e ? e.gene.ensg_number : (e.transcript ? e.transcript.enst_number : e.id),
-        symbol: 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id)
-      })),
-      text: data.map(e => {
-        const symbol = 'gene' in e ? e.gene.gene_symbol : (e.transcript ? e.transcript.enst_number : e.id);
-        return `${symbol} (${e.sample_ID})<br>Click cell to add gene/transcript to cart`;
+      customdata: data.map(e => {
+        const { ensemblID, symbol } = this.rowInfo(e);
+        return { ensemblID, symbol };
       }),
+      text: data.map(e => `${this.rowInfo(e).label} (${e.sample_ID})<br>Click cell to add gene/transcript to cart`),
       hoverinfo: 'text+z',
       zmid: dataSource.getZMid ? dataSource.getZMid() : 0,
       showscale: true,
@@ -321,6 +331,9 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
       },
       title: dataSource.getTitle ? dataSource.getTitle(params) : 'Heatmap',
       xaxis: {
+        // Explicit: with the default autotype, all-numeric sample IDs become a linear axis and are
+        // sorted by value, overriding the clustered column order.
+        type: 'category',
         ticks: '',
         showticklabels: false,
         title: 'Sample',
