@@ -14,6 +14,7 @@ import {
   inject,
 } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +38,7 @@ export type ScatterplotDataScource = {
   selector: 'app-scatterplot',
   imports: [
     MatProgressBar,
+    MatProgressSpinnerModule,
     CommonModule,
     MatMenuModule,
     MatButtonModule,

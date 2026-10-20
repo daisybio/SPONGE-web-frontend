@@ -16,6 +16,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PredictService } from '../service/predict.service';
 import { ExploreService } from '../../explore/service/explore.service';
 import { BackendService } from '../../../../services/backend.service';
@@ -51,6 +52,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
   imports: [
     CommonModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatMenuModule,
     MatButtonModule,
     MatIconModule,
@@ -58,10 +60,14 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
     InfoComponent,
   ],
   template: `
-    <div style="padding: 16px;">
+    <div style="padding: 16px; position: relative; min-height: 650px;">
       @if (isLoading()) {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      } @else if (!hasData()) {
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px);">
+          <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
+          <p style="margin-top: 16px; font-weight: 500; color: #333;">Computing UMAP projection...</p>
+        </div>
+      }
+      @if (!hasData() && !isLoading()) {
         <div class="card-container" style="padding: 24px; text-align: center; color: #666;">
           <p>
             @if (mode() === 'explore') {
