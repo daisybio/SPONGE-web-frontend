@@ -732,6 +732,16 @@ export class BackendService {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
     const MAX_TOTAL_RECORDS = 15000;
+    // With 2+ identifiers the backend clusters, and it does so on EVERY request before slicing
+    // limit/offset (the pages are just consecutive slices of the same deterministic order). Paging
+    // would therefore redo the full clustering up to 15 times (5 in parallel) for identical rows,
+    // so fetch the capped slice in a single request. Single-identifier requests are not clustered
+    // and cheap, so they keep the paged path below.
+    if (identifiers.length > 1) {
+      const rows = await this.getExpression(version, identifiers, disease_name, datasetId, level, MAX_TOTAL_RECORDS, 0, true);
+      return Array.isArray(rows) ? rows : [];
+    }
+
     const expressionData: any[] = [];
     let hasMoreData = true;
     let offset = 0;
