@@ -260,9 +260,14 @@ export class PredictService {
 
   readonly _prediction$: ResourceRef<PredictCancerType | undefined> = resource({
     params: computed(() => {
+      const query = this._query$();
       return {
-        query: this._query$(),
-        example: this.examplePrediction(),
+        query,
+        // Only depend on the example promise while NO real query drives the prediction. Otherwise
+        // toggling "Predict subtypes" (which flips _subtypes$ -> examplePrediction()) would change
+        // this param and re-run the loader, re-firing the expensive real backend R prediction with
+        // the previous query. In example mode (no query) we DO want the toggle to swap the example.
+        example: query ? null : this.examplePrediction(),
       };
     }),
     loader: async (param) => {
