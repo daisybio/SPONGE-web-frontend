@@ -18,27 +18,33 @@
   }
 
   @if (selectedVis() === 'plot') {
-  @if (isPlotLoading()) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-  }
-  <div
-    style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: -40px; position: relative; z-index: 10;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 20px;">
-      <button mat-stroked-button color="primary" (click)="toggleRemaining()">
-        {{ showRemaining() ? 'Remove remaining modules' : 'Add remaining modules' }}
-      </button>
+  <div style="position: relative; min-height: 450px;">
+    @if (isPlotLoading()) {
+    <div
+      style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px);">
+      <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
+      <p style="margin-top: 16px; font-weight: 500; color: #333;">Loading modules...</p>
     </div>
-    <button mat-icon-button [matMenuTriggerFor]="lollipopDownloadMenu" matTooltip="Download Plot">
-      <mat-icon>download</mat-icon>
-    </button>
-    <mat-menu #lollipopDownloadMenu="matMenu">
-      <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
-      <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
-      <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
-    </mat-menu>
-  </div>
-  <div class="lollipop-plot-div">
-    <div #lollipopPlot class="lollipop-plot"></div>
+    }
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-bottom: -40px; position: relative; z-index: 10;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; margin-bottom: 20px;">
+        <button mat-stroked-button color="primary" (click)="toggleRemaining()">
+          {{ showRemaining() ? 'Remove remaining modules' : 'Add remaining modules' }}
+        </button>
+      </div>
+      <button mat-icon-button [matMenuTriggerFor]="lollipopDownloadMenu" matTooltip="Download Plot">
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #lollipopDownloadMenu="matMenu">
+        <button mat-menu-item (click)="downloadPlot('png')">Download PNG</button>
+        <button mat-menu-item (click)="downloadPlot('jpeg')">Download JPEG</button>
+        <button mat-menu-item (click)="downloadPlot('svg')">Download SVG</button>
+      </mat-menu>
+    </div>
+    <div class="lollipop-plot-div">
+      <div #lollipopPlot class="lollipop-plot"></div>
+    </div>
   </div>
 
   <app-info type="panel">
@@ -240,6 +246,8 @@
     <p>
       Rows are the selected module centers and columns are samples
       ({{ source() === 'predict' ? 'your uploaded patient samples' : 'reference TCGA samples' }}).
+      With two or more rows, rows and columns are ordered by hierarchical clustering (Ward linkage), so similar
+      modules and samples sit next to each other.
     </p>
     <p>
       <b>Module Enrichment Scores</b> colors each cell by the module's SpongEffects enrichment score in that sample

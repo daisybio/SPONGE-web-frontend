@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -7,6 +7,10 @@ import { FormComponent } from './form/form.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowseViewsComponent } from '../../components/browse-views/browse-views.component';
 import { BrowseService } from '../../services/browse.service';
+import { CartColumnComponent } from '../../components/cart/cart-column.component';
+
+/** Tabs that neither show nor change the cart */
+const CART_INACTIVE_TABS = ['Gene set enrichment', 'Disease similarities'];
 
 @Component({
   selector: 'app-browse',
@@ -18,12 +22,14 @@ import { BrowseService } from '../../services/browse.service';
     FormComponent,
     MatProgressSpinnerModule,
     BrowseViewsComponent,
+    CartColumnComponent,
   ],
   templateUrl: './browse.component.html',
   styleUrl: './browse.component.scss',
 })
 export class BrowseComponent {
   selectedTab = signal('Network');
+  cartDisabled = computed(() => CART_INACTIVE_TABS.includes(this.selectedTab()));
 
   constructor(public browseService: BrowseService) {}
 

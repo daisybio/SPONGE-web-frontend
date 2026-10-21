@@ -11,6 +11,8 @@ import {
 } from '@angular/core';
 import {
   AlternativeSplicingEvent,
+  Dataset,
+  Gene,
   Transcript,
   TranscriptInfoWithChromosome,
   TranscriptInteraction,
@@ -43,6 +45,7 @@ import { AsyncPipe } from '@angular/common';
 
 import { InfoComponent } from '../info/info.component';
 import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
+import { NetworkRow, NetworksTableComponent } from '../networks-table/networks-table.component';
 
 interface AsEventWithPsi extends AlternativeSplicingEvent {
   psi: Promise<number>;
@@ -67,13 +70,14 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
     Igv,
     InfoComponent,
     AddToCartButtonComponent,
+    NetworksTableComponent,
   ],
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss',
 })
 export class TranscriptModalComponent implements AfterViewInit {
   readonly dialog = inject(MatDialog);
-  paginator = viewChild.required(MatPaginator);
+  paginator = viewChild<MatPaginator>(MatPaginator);
   columns = ['event_type', 'event_name', 'psi'];
 
   modalsService = inject(ModalsService);
@@ -89,9 +93,18 @@ export class TranscriptModalComponent implements AfterViewInit {
   private predictService = inject(PredictService, { optional: true });
   readonly isBrowseRoute$ = computed(() => this.router.url.includes('/browse'));
 
+  readonly disease$ = computed(() => {
+    return this.browseService.disease$() || (this.transcript as any)?.disease || null;
+  });
+
   get enstNumber(): string | undefined {
     const t = this.transcript as any;
     return t?.enst_number || t?.enst || t?.transcript?.enst_number;
+  }
+
+  get geneSymbol(): string | undefined {
+    const t = this.transcript as any;
+    return t?.gene?.gene_symbol || t?.gene_symbol || undefined;
   }
 
   // SpongEffects module for this transcript (best model run). Not filtered by disease: runs are
@@ -101,7 +114,9 @@ export class TranscriptModalComponent implements AfterViewInit {
     loader: async (params) => {
       const { version, enst } = params.params;
       if (!enst) return [];
-      return await this.backend.getSpongEffectsTranscriptModules(version, undefined, {}, undefined, enst);
+      // get_best=false so this transcript's module is found regardless of which param-set run it
+      // belongs to — see the matching comment in gene-modal.component.ts / critical_project_info.md.
+      return await this.backend.getSpongEffectsTranscriptModules(version, undefined, {}, undefined, enst, false);
     },
   });
 
@@ -155,7 +170,7 @@ export class TranscriptModalComponent implements AfterViewInit {
   readonly ceRNAStats$ = computed(() => {
     const enst = this.enstNumber;
     if (!enst) return undefined;
-    const edges = this.browseService.interactions$() as TranscriptInteraction[];
+    const edges = (this.browseService.interactions$() || []) as TranscriptInteraction[];
     const real = edges.filter(
       (e) =>
         (e?.transcript_1?.enst_number === enst || e?.transcript_2?.enst_number === enst) &&
@@ -181,6 +196,36 @@ export class TranscriptModalComponent implements AfterViewInit {
     };
   });
 
+  // The transcript's metrics in every disease network it is part of ("Networks" tab)
+  readonly allNetworks$ = resource({
+    params: computed(() => ({ version: this.version$(), enst: this.enstNumber })),
+    loader: async ({ params }) => {
+      if (!params.enst) return [];
+      return await this.backend.getNodeMetricsAllNetworks(params.version, 'transcript', params.enst);
+    },
+  });
+
+  readonly networkRows = computed<NetworkRow[]>(() =>
+    (this.allNetworks$.value() ?? []).map((node) => ({
+      dataset: node.sponge_run.dataset,
+      values: [node.betweenness, node.eigenvector, node.node_degree],
+    }))
+  );
+
+  // The transcript's metrics in the modal's disease network, from the rows above
+  readonly dbCentralities$ = computed(() => {
+    const datasetID = this.disease$()?.dataset_ID;
+    const match = (this.allNetworks$.value() ?? []).find(
+      (node) => node.sponge_run?.dataset?.dataset_ID === datasetID
+    );
+    if (datasetID === undefined || !match) return null;
+    return {
+      betweenness: match.betweenness ?? null,
+      eigenvector: match.eigenvector ?? null,
+      node_degree: match.node_degree ?? null,
+    };
+  });
+
   readonly effectiveCentralities$ = computed(() => {
     const t = this.transcript as any;
     if (t.betweenness !== undefined && t.betweenness !== null) {
@@ -191,7 +236,7 @@ export class TranscriptModalComponent implements AfterViewInit {
       };
     }
 
-    const enst = this.transcript.enst_number;
+    const enst = this.enstNumber;
     const activeNodes = this.browseService.nodes$() || [];
     const match = activeNodes.find((n) => BrowseService.getNodeID(n) === enst);
     if (match) {
@@ -200,6 +245,11 @@ export class TranscriptModalComponent implements AfterViewInit {
         eigenvector: match.eigenvector ?? null,
         node_degree: match.node_degree ?? null,
       };
+    }
+
+    const db = this.dbCentralities$();
+    if (db) {
+      return db;
     }
 
     return {
@@ -216,28 +266,38 @@ export class TranscriptModalComponent implements AfterViewInit {
   asDatasource = new MatTableDataSource<AlternativeSplicingEvent>();
 
   miRNAtracks$ = this.browseService.getMiRNATracksForNode(this.transcript);
+
   readonly transcriptInfo$ = resource({
     params: this.version$,
     loader: async (version) => {
-      const transcriptInfoPromise = this.backend
-        .getTranscriptInfo(version.params, this.transcript.enst_number)
-        .then((info) => info[0]);
+      const enst = this.enstNumber;
+      if (!enst) return undefined;
+      const transcriptInfoList = await this.backend
+        .getTranscriptInfo(version.params, enst)
+        .catch(() => []);
+      const transcriptInfo = transcriptInfoList?.[0];
+      if (!transcriptInfo) return undefined;
 
-      const geneInfoPromise = this.backend
-        .getGeneInfo(version.params, this.transcript.gene.ensg_number)
-        .then((info) => info[0]);
-
-      const [transcriptInfo, geneInfo] = await Promise.all([
-        transcriptInfoPromise,
-        geneInfoPromise,
-      ]);
+      const ensg = this.transcript?.gene?.ensg_number || transcriptInfo.ensg_number;
+      let chromosome_name = 'N/A';
+      if (ensg) {
+        try {
+          const geneInfoList = await this.backend.getGeneInfo(version.params, ensg);
+          if (geneInfoList?.[0]?.chromosome_name) {
+            chromosome_name = geneInfoList[0].chromosome_name;
+          }
+        } catch (e) {
+          console.warn('Could not fetch gene info for chromosome', e);
+        }
+      }
 
       return {
         ...transcriptInfo,
-        chromosome_name: geneInfo.chromosome_name,
+        chromosome_name,
       } as TranscriptInfoWithChromosome;
     },
   });
+
   isCanonical$ = computed(() => {
     const info = this.transcriptInfo$.value();
     if (info === undefined) return 'Unknown';
@@ -251,18 +311,18 @@ export class TranscriptModalComponent implements AfterViewInit {
   });
 
   readonly diggerInfo$ = resource({
-    params: () => this.transcript.enst_number,
+    params: () => this.enstNumber,
     loader: async (param) =>
-      this.backend.checkDigger(param.params, 'transcript'),
+      param.params ? this.backend.checkDigger(param.params, 'transcript') : undefined,
   });
 
   alternativeSplicingEvents = resource({
     loader: async() => {
-      const asEvents = await this.backend.getAlternativeSplicingEvents([
-        this.transcript.enst_number,
-      ]);
+      const enst = this.enstNumber;
+      if (!enst) return [];
+      const asEvents = await this.backend.getAlternativeSplicingEvents([enst]).catch(() => []);
 
-      return asEvents.map((event) => ({
+      return (asEvents || []).map((event) => ({
         ...event,
         psi: this.getEventPsi(event.alternative_splicing_event_transcripts_ID),
       })) as AsEventWithPsi[];
@@ -270,24 +330,26 @@ export class TranscriptModalComponent implements AfterViewInit {
   });
 
   async getEventPsi(eventId: number) {
-    const disease = this.browseService.disease$();
-    if (!disease) {
+    const disease = this.disease$();
+    const enst = this.enstNumber;
+    if (!disease || !enst) {
       return 0;
     }
-    return this.backend.getASPsiValues(this.version$(), eventId, this.transcript.enst_number, disease).then((values) => {
-      if (values.length === 0) {
+    return this.backend.getASPsiValues(this.version$(), eventId, enst, disease).then((values) => {
+      if (!values || values.length === 0) {
         return 0;
       }
       return values.reduce((acc, value) => acc + value.psi_value, 0) / values.length;
-    });
+    }).catch(() => 0);
   }
 
   hasAsEvents$ = computed(() => {
     return (this.alternativeSplicingEvents.value() || []).length > 0;
   });
+
   readonly location$: Signal<Location> = computed(() => {
     const transcriptInfo = this.transcriptInfo$.value();
-    if (!transcriptInfo) {
+    if (!transcriptInfo || !transcriptInfo.chromosome_name || transcriptInfo.chromosome_name === 'N/A') {
       return {
         chr: 'all',
       };
@@ -308,13 +370,35 @@ export class TranscriptModalComponent implements AfterViewInit {
     effect(() => {
       this.asDatasource.data = this.alternativeSplicingEvents.value() || [];
     });
+    effect(() => {
+      const p = this.paginator();
+      if (p) this.asDatasource.paginator = p;
+    });
+  }
+
+  hasParentGene(): boolean {
+    return Boolean(this.transcript?.gene?.ensg_number || this.transcriptInfo$.value()?.ensg_number || this.transcript?.gene?.gene_symbol);
+  }
+
+  getGeneDisplayName(): string {
+    const symbol = this.transcript?.gene?.gene_symbol;
+    const ensg = this.transcript?.gene?.ensg_number || this.transcriptInfo$.value()?.ensg_number;
+    if (symbol && ensg) return `${symbol} (${ensg})`;
+    if (symbol) return symbol;
+    if (ensg) return ensg;
+    return 'Parent Gene';
   }
 
   showGene() {
-    this.modalsService.openNodeDialog(this.transcript.gene);
+    const info = this.transcriptInfo$.value();
+    const ensg = this.transcript?.gene?.ensg_number || info?.ensg_number;
+    if (!ensg) return;
+    const gene: Gene = {
+      ensg_number: ensg,
+      gene_symbol: this.transcript?.gene?.gene_symbol || this.geneSymbol || '',
+    };
+    this.modalsService.openNodeDialog(gene, this.disease$() ?? undefined);
   }
 
-  ngAfterViewInit(): void {
-    this.asDatasource.paginator = this.paginator();
-  }
+  ngAfterViewInit(): void {}
 }

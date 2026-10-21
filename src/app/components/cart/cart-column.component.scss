@@ -1,0 +1,291 @@
+/* Right-hand column of the analysis pages: fills its end-side mat-drawer (Material's default
+   drawer width), so it also narrows instead of overflowing when the drawer shows a scrollbar */
+:host {
+  display: block;
+  padding: 12px 12px 24px;
+  box-sizing: border-box;
+}
+
+.cart-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--app-accent);
+
+  h2 {
+    margin: 0;
+    font-size: 1.15em;
+    font-weight: 600;
+  }
+}
+
+.cart-icon {
+  color: var(--app-accent);
+}
+
+.cart-count {
+  background: var(--app-accent-container);
+  color: var(--app-accent-on-container);
+  border-radius: 12px;
+  padding: 1px 9px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.disabled-hint {
+  margin: 8px 0 0;
+  font-size: 0.85em;
+  color: #757575;
+}
+
+/* Tabs that don't interact with the cart grey the column out (cf. the left forms' disabled panels) */
+:host(.disabled) .cart-body {
+  opacity: 0.45;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.search-field {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.search-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.gene-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.9em;
+  }
+
+  small {
+    font-size: 0.75em;
+    color: #9e9e9e;
+  }
+}
+
+/* Two tabs have to fit into the column */
+.cart-tabs {
+  --mat-tab-header-label-text-size: 13px;
+  margin-top: 4px;
+}
+
+:host ::ng-deep .cart-tabs .mdc-tab {
+  padding: 0 10px;
+  min-width: 0;
+}
+
+.section-title {
+  margin: 12px 0 2px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.section-note {
+  margin: 0 0 8px;
+  font-size: 0.75em;
+  color: #757575;
+}
+
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  margin: 12px 0 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Cart items that are in the page's network */
+.item-card {
+  margin-bottom: 8px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.card-title-btn {
+  padding: 0 4px;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--app-accent);
+}
+
+.card-title-text {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.card-actions {
+  flex-wrap: wrap;
+}
+
+table.metrics {
+  font-size: 0.85em;
+
+  th {
+    text-align: left;
+    padding-right: 12px;
+    font-weight: 500;
+  }
+}
+
+/* Compact rows: cart items outside the page's network, or all items on pages without one */
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 4px 4px;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-type-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+
+  &.gene-icon {
+    color: #1565c0;
+  }
+
+  &.transcript-icon {
+    color: #2e7d32;
+  }
+
+  &.interaction-icon {
+    color: #607d8b;
+  }
+}
+
+.item-label-btn {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: var(--app-accent);
+  padding: 0 4px;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 130px;
+
+  &.interaction-label {
+    max-width: 230px;
+  }
+}
+
+.item-id {
+  font-size: 0.75em;
+  color: #9e9e9e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.action-btn,
+.remove-btn {
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.action-btn {
+  color: #607d8b;
+
+  &:hover {
+    color: var(--app-accent);
+  }
+}
+
+.remove-btn {
+  color: #ef9a9a;
+
+  &:hover {
+    color: #e53935;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 12px;
+  color: #9e9e9e;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #e0e0e0;
+    margin-bottom: 12px;
+  }
+
+  p {
+    margin: 4px 0;
+    font-size: 0.9em;
+  }
+
+  .empty-hint {
+    font-size: 0.8em;
+    color: #bdbdbd;
+    line-height: 1.5;
+  }
+
+  .inline-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+  }
+}

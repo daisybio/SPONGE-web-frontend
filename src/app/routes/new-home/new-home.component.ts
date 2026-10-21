@@ -145,53 +145,62 @@ export class NewHomeComponent implements OnDestroy {
     const plotData = this.plotData$();
     if (tabIdx !== 2 || !el || !plotData) return;
 
-    Plotly.newPlot(
-      el,
-      plotData,
-      {
-        title: {
-          text: 'Number of significant interactions by cancer type and subtype',
-          font: { color: '#1e293b', size: 16, family: 'Roboto, sans-serif' },
-        },
-        paper_bgcolor: 'transparent',
-        plot_bgcolor: 'transparent',
-        font: { color: '#334155', family: 'Roboto, sans-serif' },
-        xaxis1: {
-          type: 'log',
-          title: 'Number of interactions (log)',
-          domain: [0, 1],
-          gridcolor: 'rgba(0, 0, 0, 0.08)',
-          zerolinecolor: 'rgba(0, 0, 0, 0.15)',
-        },
-        yaxis1: {
-          automargin: true,
-          tickfont: {
-            size: 12,
-            color: '#1e293b',
-            fontWeight: '600',
+    setTimeout(() => {
+      Plotly.newPlot(
+        el,
+        plotData,
+        {
+          title: {
+            text: 'Number of significant interactions by cancer type and subtype',
+            font: { color: '#1e293b', size: 15, family: 'Roboto, sans-serif' },
+            x: 0,
+            xanchor: 'left',
+            y: 0.98,
           },
-          ticklabelposition: 'outside',
-          gridcolor: 'rgba(0, 0, 0, 0.05)',
+          autosize: true,
+          height: 1500,
+          paper_bgcolor: 'transparent',
+          plot_bgcolor: 'transparent',
+          font: { color: '#334155', family: 'Roboto, sans-serif' },
+          xaxis1: {
+            type: 'log',
+            title: 'Number of interactions (log)',
+            domain: [0, 1],
+            gridcolor: 'rgba(0, 0, 0, 0.08)',
+            zerolinecolor: 'rgba(0, 0, 0, 0.15)',
+          },
+          yaxis1: {
+            automargin: true,
+            tickfont: {
+              size: 12,
+              color: '#1e293b',
+              fontWeight: '600',
+            },
+            ticklabelposition: 'outside',
+            gridcolor: 'rgba(0, 0, 0, 0.05)',
+          },
+          margin: {
+            l: 310,
+            r: 40,
+            t: 90,
+            b: 50,
+          },
+          barmode: 'overlay',
+          showlegend: true,
+          legend: {
+            x: 1,
+            xanchor: 'right',
+            y: 1.05,
+            yanchor: 'bottom',
+            orientation: 'h',
+            font: { color: '#334155' },
+          },
         },
-        margin: {
-          l: 240,
-          r: 20,
-          t: 60,
-          b: 40,
-        },
-        barmode: 'overlay',
-        showlegend: true,
-        legend: {
-          x: 0.5,
-          y: 1.02,
-          xanchor: 'center',
-          yanchor: 'bottom',
-          orientation: 'h',
-          font: { color: '#334155' },
-        },
-      },
-      { responsive: true, displayModeBar: false }
-    );
+        { responsive: true, displayModeBar: false }
+      ).then(() => {
+        Plotly.Plots.resize(el);
+      });
+    }, 60);
   });
 
   constructor() {
@@ -219,10 +228,18 @@ export class NewHomeComponent implements OnDestroy {
   onSearchSubmit() {
     const query = this.searchQuery().trim();
     if (!query) return;
-    if (query.startsWith('ENSG') || query.startsWith('ENST') || query.length <= 6) {
+
+    const lowerQuery = query.toLowerCase();
+    const isKnownDisease =
+      this.featuredDiseases.some(
+        (d) => d.code.toLowerCase() === lowerQuery || d.name.toLowerCase() === lowerQuery
+      ) || query.includes(' ');
+
+    if (!isKnownDisease || query.toUpperCase().startsWith('ENSG') || query.toUpperCase().startsWith('ENST')) {
       this.navigateTo('/genes-transcripts', { search: query });
     } else {
-      this.navigateTo('/browse', { disease: query });
+      this.versionsService.selectedDiseaseName$.set(query);
+      this.navigateTo('/browse');
     }
   }
 

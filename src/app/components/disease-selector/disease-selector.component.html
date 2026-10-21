@@ -9,13 +9,13 @@
         <div class="option-content-row">
           <span>{{ getDiseaseDisplayName(disease) }}</span>
           @if (diseaseSampleCounts.get(disease); as count) {
-            <span class="sample-count" [class.pancancer-count]="disease.toLowerCase() === 'pancancer'">
+            <span class="sample-count" [class.pancancer-count]="(disease || '').toLowerCase() === 'pancancer'">
               ({{ count }})
             </span>
           }
         </div>
       </mat-option>
-      @if (disease.toLowerCase() === 'pancancer' && index < diseaseNames.length - 1) {
+      @if ((disease || '').toLowerCase() === 'pancancer' && index < diseaseNames.length - 1) {
       <mat-divider></mat-divider>
       }
       }

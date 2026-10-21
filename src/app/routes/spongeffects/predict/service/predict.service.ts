@@ -21,6 +21,20 @@ import { VersionsService } from '../../../../services/versions.service';
 import { SpongEffectsService } from '../../../../services/spong-effects.service';
 import { sortDiseaseNames } from '../../../../cancer-colors';
 
+/** One module (a row of the enrichment score matrix), summarized over the selected samples */
+export interface ModuleStats {
+  /** Ensembl ID of the module center */
+  gene: string;
+  moduleIndex: number;
+  mean: number;
+  absMean: number;
+  variance: number;
+}
+
+// The min-score fields show their defaults rounded down, so the top modules always pass them.
+const floorTo3 = (value: number) => Math.floor(value * 1000) / 1000;
+const isSet = (value: number | null): value is number => value !== null && value !== undefined && !isNaN(value);
+
 export interface Query {
   useExampleExpression: boolean;
   file: File;
@@ -190,7 +204,9 @@ export class PredictService {
 
   readonly allSamples$ = computed(() => this.activeScores$()?.samples || []);
 
-  readonly topModules$ = computed(() => {
+  // Every module of the active score matrix, summarized over the selected samples (all samples if
+  // none are selected), in matrix order.
+  readonly moduleStats$ = computed<ModuleStats[]>(() => {
     const scores = this.activeScores$();
     if (!scores) return [];
 
@@ -206,18 +222,31 @@ export class PredictService {
 
     if (sampleIndices.length === 0) return [];
 
-    const moduleScores = scores.genes.map((gene, moduleIndex) => {
-      const sum = sampleIndices.reduce(
-        (acc, sampleIndex) =>
-          acc + (scores.values[moduleIndex]?.[sampleIndex] ?? 0),
-        0,
-      );
-      const mean = sum / sampleIndices.length;
-      return { gene, mean, moduleIndex };
+    return scores.genes.map((gene, moduleIndex) => {
+      const values = sampleIndices.map((sampleIndex) => scores.values[moduleIndex]?.[sampleIndex] ?? 0);
+      const mean = values.reduce((acc, value) => acc + value, 0) / values.length;
+      const variance = values.reduce((acc, value) => acc + Math.pow(value - mean, 2), 0) / values.length;
+      return { gene, moduleIndex, mean, absMean: Math.abs(mean), variance };
     });
+  });
 
-    return moduleScores
-      .sort((a, b) => b.mean - a.mean)
+  // All modules ranked by the "Sort by" choice, descending. The default is the absolute mean.
+  readonly rankedModules$ = computed(() => {
+    const sortBy = this.sortBy$();
+    const key: 'mean' | 'absMean' | 'variance' =
+      sortBy === 'varianceEnrichmentScore' ? 'variance' : sortBy === 'meanEnrichmentScore' ? 'mean' : 'absMean';
+    return [...this.moduleStats$()].sort((a, b) => b[key] - a[key]);
+  });
+
+  /**
+   * The top modules under the active "Sort by" and min-score filters. They are the patient
+   * network's centers and the modules the Top ceRNA Modules plots, tables and heatmaps show as
+   * top, so every view shows the same modules.
+   */
+  readonly topModules$ = computed(() => {
+    const { minAbs, minVar } = this.effectiveMinScores$();
+    return this.rankedModules$()
+      .filter((m) => (!isSet(minAbs) || m.absMean >= minAbs) && (!isSet(minVar) || m.variance >= minVar))
       .slice(0, this.topNModules$());
   });
 
@@ -260,9 +289,14 @@ export class PredictService {
 
   readonly _prediction$: ResourceRef<PredictCancerType | undefined> = resource({
     params: computed(() => {
+      const query = this._query$();
       return {
-        query: this._query$(),
-        example: this.examplePrediction(),
+        query,
+        // Only depend on the example promise while NO real query drives the prediction. Otherwise
+        // toggling "Predict subtypes" (which flips _subtypes$ -> examplePrediction()) would change
+        // this param and re-run the loader, re-firing the expensive real backend R prediction with
+        // the previous query. In example mode (no query) we DO want the toggle to swap the example.
+        example: query ? null : this.examplePrediction(),
       };
     }),
     loader: async (param) => {
@@ -321,47 +355,31 @@ export class PredictService {
   private lastAutoMinScore1: number | null = null;
   private lastAutoMinScore2: number | null = null;
 
+  // The lowest |mean| and variance among the top N of the current ranking. The min-score fields
+  // default to these, so by default all of the top N pass them.
   readonly defaultMinScores$ = computed(() => {
-    const scores = this.activeScores$();
-    if (!scores) return { minAbs: 0, minVar: 0 };
-
-    const selectedSamples = this.selectedSamples$();
-    const sampleIndices = selectedSamples.length > 0
-      ? selectedSamples.map((s) => scores.samples.indexOf(s)).filter((i) => i !== -1)
-      : scores.samples.map((_, i) => i);
-
-    if (sampleIndices.length === 0) return { minAbs: 0, minVar: 0 };
-
-    const sortBy = this.sortBy$();
-    const limit = this.topNModules$();
-
-    const modules = scores.genes.map((gene, moduleIndex) => {
-      const sum = sampleIndices.reduce((acc, idx) => acc + (scores.values[moduleIndex]?.[idx] ?? 0), 0);
-      const mean = sum / sampleIndices.length;
-      const absMean = Math.abs(mean);
-
-      const scoresForGene = scores.values[moduleIndex] || [];
-      const selectedScores = sampleIndices.map(idx => scoresForGene[idx] ?? 0);
-      const variance = selectedScores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / selectedScores.length;
-
-      return { absMean, variance, mean };
-    });
-
-    if (sortBy === 'varianceEnrichmentScore') {
-      modules.sort((a, b) => b.variance - a.variance);
-    } else if (sortBy === 'meanEnrichmentScore') {
-      modules.sort((a, b) => b.mean - a.mean);
-    } else {
-      modules.sort((a, b) => b.absMean - a.absMean);
-    }
-
-    const topN = modules.slice(0, limit);
+    const topN = this.rankedModules$().slice(0, this.topNModules$());
     if (topN.length === 0) return { minAbs: 0, minVar: 0 };
 
     const minAbs = Math.min(...topN.map(m => m.absMean));
     const minVar = Math.min(...topN.map(m => m.variance));
 
     return { minAbs, minVar };
+  });
+
+  /**
+   * The min-score filters in force. A field still showing its auto-filled value counts as the
+   * current default: after a ranking change the effect that refills the fields may not have run
+   * yet, and the network must not filter the new ranking with the previous one's minimums.
+   */
+  private readonly effectiveMinScores$ = computed(() => {
+    const defaults = this.defaultMinScores$();
+    const min1 = this.minScore1$();
+    const min2 = this.minScore2$();
+    return {
+      minAbs: min1 === null || min1 === this.lastAutoMinScore1 ? floorTo3(defaults.minAbs) : min1,
+      minVar: min2 === null || min2 === this.lastAutoMinScore2 ? floorTo3(defaults.minVar) : min2,
+    };
   });
 
   constructor() {
@@ -395,16 +413,16 @@ export class PredictService {
       untracked(() => {
         const current1 = this.minScore1$();
         if (current1 === null || current1 === this.lastAutoMinScore1) {
-          const roundedAbs = Math.floor(defaults.minAbs * 1000) / 1000;
-          this.minScore1$.set(roundedAbs);
+          const roundedAbs = floorTo3(defaults.minAbs);
           this.lastAutoMinScore1 = roundedAbs;
+          this.minScore1$.set(roundedAbs);
         }
 
         const current2 = this.minScore2$();
         if (current2 === null || current2 === this.lastAutoMinScore2) {
-          const roundedVar = Math.floor(defaults.minVar * 1000) / 1000;
-          this.minScore2$.set(roundedVar);
+          const roundedVar = floorTo3(defaults.minVar);
           this.lastAutoMinScore2 = roundedVar;
+          this.minScore2$.set(roundedVar);
         }
       });
     });

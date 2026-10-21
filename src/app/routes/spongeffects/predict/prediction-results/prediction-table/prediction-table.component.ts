@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { exportToCSV } from '../../../../../utils/export';
+import { getDiseaseDisplayName } from '../../../../../cancer-colors';
 
 @Component({
   selector: 'app-prediction-table',
@@ -28,6 +29,7 @@ import { exportToCSV } from '../../../../../utils/export';
 })
 export class PredictionTableComponent implements AfterViewInit {
   predictService = inject(PredictService);
+  protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
   prediction$ = this.predictService.prediction$;
   predictionResource = this.predictService._prediction$;
   refreshSignal$ = input();

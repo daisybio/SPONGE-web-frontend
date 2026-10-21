@@ -1,4 +1,4 @@
-import { Component, ElementRef, WritableSignal, computed, effect, inject, input, viewChild } from '@angular/core';
+import { Component, ElementRef, WritableSignal, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { InfoComponent } from '../info/info.component';
 import { InfoService } from '../../services/info.service';
 import { VersionsService } from '../../services/versions.service';
@@ -50,6 +51,7 @@ export interface NetworkFilterSignals {
     MatCheckboxModule,
     MatSelectModule,
     MatCardModule,
+    MatTooltipModule,
     InfoComponent,
   ],
   templateUrl: './network-filters.component.html',
@@ -61,6 +63,21 @@ export class NetworkFiltersComponent {
   browseService = input.required<BrowseService>();
   /** Disease/scope name used to scope the available gene types. */
   disease = input<string | undefined>();
+  /**
+   * When true, both panels are greyed, collapsed and can't be opened. Used on tabs where the
+   * node/edge filters have no effect (everything except the network view). The user's open/closed
+   * state is remembered in the signals below so the panels return to it once re-enabled.
+   */
+  disabled = input<boolean>(false);
+  /**
+   * Overrides `disabled` for the Nodes panel only. Max. nodes and the node filters also decide
+   * which member rows the expression heatmap shows, while the Interactions panel stays
+   * network-only. Falls back to `disabled` when unset.
+   */
+  nodesDisabled = input<boolean | undefined>(undefined);
+  protected nodesPanelDisabled = computed(() => this.nodesDisabled() ?? this.disabled());
+  protected nodesOpen = signal(false);
+  protected interactionsOpen = signal(false);
 
   infoService = inject(InfoService);
   private versionsService = inject(VersionsService);

@@ -103,7 +103,7 @@ export class InteractionsTableComponent implements AfterViewInit {
     effect(() => {
       this.dataSource.data = this.filteredRows();
       this.dataSource.paginator?.firstPage();
-    }, { allowSignalWrites: true });
+    });
   }
 
   private getNumericPValue(int: any): number {

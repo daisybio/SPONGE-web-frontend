@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, effect, inject, resource, viewChild} from '@angular/core';
+import {Component, computed, effect, inject, resource, viewChild} from '@angular/core';
 import {GeneInteraction, MiRNA, TranscriptInteraction, Dataset} from "../../interfaces";
 import {MAT_DIALOG_DATA, MatDialogModule} from "@angular/material/dialog";
 import {BackendService} from "../../services/backend.service";
@@ -10,8 +10,10 @@ import {MatPaginator} from "@angular/material/paginator";
 import {MatSort, MatSortModule} from "@angular/material/sort";
 import {MatAnchor} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
+import {MatTabsModule} from "@angular/material/tabs";
 
 import { InfoComponent } from '../info/info.component';
+import { NetworkRow, NetworksTableComponent } from '../networks-table/networks-table.component';
 
 interface TableData {
   node1_coefficient: number;
@@ -22,14 +24,15 @@ interface TableData {
 
 @Component({
   selector: 'app-interaction-modal',
-  imports: [MatDialogModule, MatProgressSpinner, MatTableModule, MatPaginator, MatSortModule, MatAnchor, MatTooltip, InfoComponent],
+  imports: [MatDialogModule, MatProgressSpinner, MatTableModule, MatPaginator, MatSortModule, MatAnchor, MatTooltip, MatTabsModule, InfoComponent, NetworksTableComponent],
   templateUrl: './interaction-modal.component.html',
   styleUrl: './interaction-modal.component.scss'
 })
-export class InteractionModalComponent implements AfterViewInit {
-  paginator = viewChild.required(MatPaginator);
-  sort = viewChild.required(MatSort);
-  readonly data = inject<{interaction: GeneInteraction | TranscriptInteraction, disease: Dataset}>(MAT_DIALOG_DATA);
+export class InteractionModalComponent {
+  // Inside a tab, so attached once rendered (see constructor)
+  paginator = viewChild(MatPaginator);
+  sort = viewChild(MatSort);
+  readonly data = inject<{interaction: GeneInteraction | TranscriptInteraction, disease?: Dataset}>(MAT_DIALOG_DATA);
   tableData = new MatTableDataSource<TableData>();
   columns = ['hs_nr', 'mir_ID', 'node1_coefficient', 'node2_coefficient'];
   protected readonly BrowseService = BrowseService;
@@ -104,14 +107,35 @@ export class InteractionModalComponent implements AfterViewInit {
     }).filter((entry): entry is TableData => entry !== undefined);
   })
 
+  // The interaction in every disease network that contains it ("Networks" tab). pValue 1 returns
+  // every stored row; the table shows the adj. p-value.
+  readonly level: 'gene' | 'transcript' = 'gene1' in this.data.interaction ? 'gene' : 'transcript';
+
+  readonly allNetworks$ = resource({
+    params: computed(() => ({ version: this.version$(), level: this.level })),
+    loader: async ({ params }) => {
+      const identifiers = BrowseService.getInteractionIDs(this.data.interaction);
+      return await this.backend.getInteractionsSpecific(params.version, undefined, 1, identifiers, params.level, 1000);
+    },
+  });
+
+  readonly networkRows = computed<NetworkRow[]>(() =>
+    (this.allNetworks$.value() ?? []).map((interaction) => ({
+      dataset: interaction.sponge_run.dataset,
+      values: [interaction.correlation, interaction.mscor, interaction.p_value],
+    }))
+  );
+
   constructor() {
     effect(() => {
       this.tableData.data = this.tableData$();
     });
-  }
 
-  ngAfterViewInit() {
-    this.tableData.paginator = this.paginator();
-    this.tableData.sort = this.sort();
+    effect(() => {
+      const paginator = this.paginator();
+      const sort = this.sort();
+      if (paginator) this.tableData.paginator = paginator;
+      if (sort) this.tableData.sort = sort;
+    });
   }
 }

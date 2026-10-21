@@ -5,7 +5,8 @@ import { PredictFormComponent } from '../predict/form/predict-form.component';
 import { PredictService } from '../predict/service/predict.service';
 import { PredictBrowseService } from '../../../services/predict.browse.service';
 import { NetworkComponent } from '../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
+import { CartColumnComponent } from '../../../components/cart/cart-column.component';
+import { SPONGEFFECTS_TABS } from '../spongeffects-tabs';
 import { MatDrawer, MatDrawerContainer, MatDrawerContent } from '@angular/material/sidenav';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -46,7 +47,7 @@ import { SPONGE_EXAMPLE_URL } from '../../../constants';
     InfoComponent,
     PredictFormComponent,
     NetworkComponent,
-    ActiveEntitiesComponent,
+    CartColumnComponent,
     NetworkFiltersComponent,
     MatDrawer,
     MatDrawerContainer,
@@ -94,10 +95,37 @@ export class SpongeffectsScoresComponent {
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
 
+  protected readonly TABS = SPONGEFFECTS_TABS;
   refreshSignal = signal<number>(0);
   selectedTabIndex = signal<number>(0);
   selectedSubVis = signal<string>('importance');
+
+  // The drawer's filter panels only affect a subset of the tabs.
+  /** Node/edge filters affect only the network view. */
+  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== this.TABS.network);
+  /** The Nodes panel (Max. nodes, node filters) also drives the expression heatmap's member rows. */
+  nodesFiltersDisabled = computed(
+    () =>
+      !(
+        this.selectedTabIndex() === this.TABS.network ||
+        (this.selectedTabIndex() === this.TABS.modules &&
+          this.selectedSubVis() === 'heatmap' &&
+          this.predictService.selectedHeatmapType$() === 'expression' &&
+          this.predictService.includeModuleMembers$())
+      )
+  );
+  /** Module filtering affects the network view and the Top ceRNA Modules view. */
+  moduleFilteringDisabled = computed(
+    () => this.selectedTabIndex() !== this.TABS.network && this.selectedTabIndex() !== this.TABS.modules
+  );
+  /** The cart is shown by the network and filled from the Top ceRNA Modules tables and plots: the
+   *  tabs module filtering applies to. */
+  cartDisabled = this.moduleFilteringDisabled;
   selectedSubtype = signal<string>('');
+
+  isNetworkLoading = computed(() =>
+    this.browseService.isLoading$() || this.predictService._prediction$.isLoading()
+  );
 
   hasSubtypeScores$ = computed(() => {
     const prediction = this.predictService.prediction$();
@@ -206,13 +234,15 @@ export class SpongeffectsScoresComponent {
       const min2 = this.predictService.minScore2$();
       const sortBy = this.predictService.sortBy$();
       const topN = this.predictService.topNModules$();
-      const nodesLength = this.browseService ? this.browseService.nodes$().length : 0;
 
-      if (prediction && tabIndex === 2 && subVis === 'scatterplot') {
+      if (prediction && tabIndex === this.TABS.modules && subVis === 'scatterplot') {
         // Changing params reloads the scatterplot resource, which re-runs updateScatterplotData
         // via getData (with the current showRemaining). Don't call updateScatterplotData()
         // directly here — a second, showRemaining-unaware write would race with and clobber
         // the resource's write, which is what broke "Add remaining modules".
+        // NB: each .set() is a fresh object (new identity) so the resource reloads on any real
+        // change; the network's node count is deliberately NOT a dependency (it doesn't affect
+        // this TCGA-vs-patient scatter), and no Date.now() nonce is needed to force a reload.
         this.scatterplotParams.set({
           disease: selectedType,
           prediction,
@@ -221,8 +251,6 @@ export class SpongeffectsScoresComponent {
           min2,
           sortBy,
           topN,
-          nodesLength,
-          timestamp: Date.now(),
         });
       }
     });
@@ -232,13 +260,15 @@ export class SpongeffectsScoresComponent {
     this.isScatterplotLoading.set(true);
     try {
       const prediction = this.predictService.prediction$();
-      if (!prediction?.scores?.genes?.length) {
+      // Scope-aware: pancancer `scores` or type_scores[scope], matching the network/tables/heatmap.
+      const scores = this.predictService.activeScores$();
+      if (!prediction || !scores?.genes?.length) {
         this.transformedData.set([]);
         return;
       }
 
       const selectedSamples = this.predictService.selectedSamples$();
-      const samples = prediction.scores.samples || [];
+      const samples = scores.samples || [];
       const sampleIndices = selectedSamples.length > 0
         ? selectedSamples.map(s => samples.indexOf(s)).filter(idx => idx !== -1)
         : samples.map((_, idx) => idx);
@@ -246,8 +276,8 @@ export class SpongeffectsScoresComponent {
       const level = this.predictService.level();
 
       // Calculate statistics for all modules first
-      let modules = prediction.scores.genes.map((geneId: string, index: number) => {
-        const scoresForGene = prediction.scores.values[index] || [];
+      let modules = scores.genes.map((geneId: string, index: number) => {
+        const scoresForGene = scores.values[index] || [];
         const selectedScores = sampleIndices.map(idx => scoresForGene[idx] ?? 0);
         const count = selectedScores.length;
         const mean = count > 0 ? selectedScores.reduce((s: number, v: number) => s + v, 0) / count : 0;
@@ -268,12 +298,14 @@ export class SpongeffectsScoresComponent {
         };
       });
 
-      // Fetch TCGA background x-values. Only the top-N are drawn red and always need values;
+      // Fetch TCGA background x-values. Only the top modules are drawn red and always need values;
       // the remaining ("grey") modules are only drawn — and thus only need values — once the
-      // user clicks "Add remaining modules" (showRemaining). Fetching just the top-N by default
+      // user clicks "Add remaining modules" (showRemaining). Fetching just the top ones by default
       // keeps the initial load fast; fetching all on demand makes the grey points correct.
-      const topN = this.predictService.topNModules$() || 15;
-      const topModules = modules.slice(0, topN);
+      // The top modules are the patient network's centers (PredictService.topModules$, which
+      // applies the sort and min-score filters), not the first rows of the score matrix.
+      const topIDs = new Set(this.predictService.topModules$().map((m) => m.gene));
+      const topModules = modules.filter((m) => topIDs.has(m.ensemblID));
       const modulesToResolve = showRemaining ? modules : topModules;
       const geneIDsToFetch = modulesToResolve.map(m => m.ensemblID);
 
@@ -302,12 +334,12 @@ export class SpongeffectsScoresComponent {
       await ensureGeneSymbols(this.backend, this.versionsService.versionReadOnly()(), modulesToResolve.map(m => m.ensemblID));
 
       // Map to scatterplot data items with isTop flag
-      const scatterData = modules.map((m, idx) => ({
+      const scatterData = modules.map((m) => ({
         id: symbolCache.get(m.ensemblID) || m.symbol,
         ensemblID: m.ensemblID,
         x: m.x,
         y: m.y,
-        isTop: idx < topN,
+        isTop: topIDs.has(m.ensemblID),
       }));
 
       this.transformedData.set(scatterData);
@@ -322,7 +354,8 @@ export class SpongeffectsScoresComponent {
   async getTcgaSpongEffectsScores(genes: string[], loadAll: boolean = false): Promise<any[]> {
     const level = this.predictService.level();
     const version = this.versionsService.versionReadOnly()();
-    const disease = 'pancancer';
+    // Match the active Score Scope so the TCGA reference axis is scoped like the patient axis.
+    const disease = this.predictService.selectedScope$() || 'pancancer';
     if (!version || !genes.length) return [];
     const cacheKey = `${version}_${disease}_${level}_${loadAll ? 'all' : genes.join(',')}`;
     if (this.tcgaScoresCache.has(cacheKey)) {

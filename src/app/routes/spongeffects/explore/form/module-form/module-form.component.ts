@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, effect, computed } from '@angular/core';
+import { Component, inject, input, OnInit, effect, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { debounceTime } from 'rxjs';
 import { ExploreService } from '../../service/explore.service';
 import { PredictService } from '../../../predict/service/predict.service';
+import { SPONGEFFECTS_TABS } from '../../../spongeffects-tabs';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatAccordion } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
@@ -39,11 +40,18 @@ export class ModuleFormComponent implements OnInit {
   exploreService = inject(ExploreService);
   predictService = inject(PredictService);
   source = input<'explore' | 'predict'>('explore');
+  /**
+   * When true, the panel is greyed, collapsed and can't be opened. Used on tabs where module
+   * filtering has no effect (everything except the network and Top ceRNA Modules views). The
+   * user's open/closed state is remembered so the panel returns to it once re-enabled.
+   */
+  disabled = input<boolean>(false);
+  protected panelOpen = signal(false);
 
   /** Disable "Show module members" when Module Importance Plot or Enrichment Scores Heatmap is shown */
   membersDisabled = computed(() => {
     if (this.source() === 'explore') {
-      if (this.exploreService.selectedTabIndex$() === 2) {
+      if (this.exploreService.selectedTabIndex$() === SPONGEFFECTS_TABS.modules) {
         const vis = this.exploreService.selectedVis();
         if (vis === 'plot') return true;
         if (vis === 'heatmap') {
@@ -53,7 +61,7 @@ export class ModuleFormComponent implements OnInit {
       return false;
     }
     const vis = this.predictService.selectedVis$();
-    if (this.predictService.selectedTabIndex$() === 2) {
+    if (this.predictService.selectedTabIndex$() === SPONGEFFECTS_TABS.modules) {
       if (vis === 'importance' || vis === 'plot') return true;
       if (vis === 'heatmap') {
         return this.predictService.selectedHeatmapType$() === 'enrichment';

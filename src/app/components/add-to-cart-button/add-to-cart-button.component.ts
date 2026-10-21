@@ -1,8 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CartService } from '../../services/cart.service';
+import { CartEntity, CartService } from '../../services/cart.service';
 import { Gene, Transcript } from '../../interfaces';
 
 @Component({
@@ -10,10 +10,10 @@ import { Gene, Transcript } from '../../interfaces';
   standalone: true,
   imports: [CommonModule, MatIconModule, MatTooltipModule],
   template: `
-    <button (click)="addToCart($event)"
-            [matTooltip]="'Add to Cart'"
+    <button (click)="toggleCart($event)"
+            [matTooltip]="inCart() ? 'Remove from Cart' : 'Add to Cart'"
             class="add-to-cart-btn">
-      <mat-icon>add_shopping_cart</mat-icon>
+      <mat-icon>{{ inCart() ? 'remove_shopping_cart' : 'add_shopping_cart' }}</mat-icon>
     </button>
   `,
   styles: [`
@@ -46,10 +46,25 @@ export class AddToCartButtonComponent {
 
   id = input<string>();
   symbol = input<string>();
-  entity = input<Gene | Transcript>();
+  entity = input<CartEntity>();
 
-  addToCart(event: MouseEvent) {
+  private readonly cartId = computed(() => {
+    const entity = this.entity();
+    return entity ? CartService.idOf(entity) : this.id();
+  });
+  readonly inCart = computed(() => {
+    const id = this.cartId();
+    return id !== undefined && this.cartService.ids().has(id);
+  });
+
+  toggleCart(event: MouseEvent) {
     event.stopPropagation();
+
+    const id = this.cartId();
+    if (id !== undefined && this.inCart()) {
+      this.cartService.remove(id);
+      return;
+    }
 
     if (this.entity()) {
       this.cartService.add(this.entity()!);

@@ -109,6 +109,7 @@ function deriveSubtypeColor(baseHsl: [number, number, number], index: number, to
 
 /** Normalize a cancer type/subtype string to match the registry key. */
 function normalizeKey(name: string): string {
+  if (!name || typeof name !== 'string') return '';
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 

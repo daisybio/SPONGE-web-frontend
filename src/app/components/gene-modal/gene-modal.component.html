@@ -1,4 +1,7 @@
-<h1 mat-dialog-title>{{ gene.gene_symbol || gene.ensg_number }}</h1>
+<h1 mat-dialog-title style="display: flex; align-items: center; gap: 8px;">
+  <span>{{ geneSymbol || ensgNumber || 'Gene' }}</span>
+  <app-add-to-cart-button [id]="ensgNumber" [symbol]="geneSymbol" [entity]="gene"></app-add-to-cart-button>
+</h1>
 <mat-dialog-content>
   <mat-tab-group [(selectedIndex)]="activeTab$" preserveContent>
     <mat-tab label="General information">
@@ -144,8 +147,21 @@
     </mat-tab>
     }
 
-    @if (tcgaEffects$.isLoading() || module_IDs$.isLoading() || (customEffects$()) || ((tcgaEffects$.value() ||
-    []).length > 0)) {
+    <mat-tab [label]="'Networks (' + networkRows().length + ')'">
+      <div style="padding: 16px;">
+        <app-networks-table [rows]="networkRows()" [columns]="['Betweenness', 'Eigenvector', 'Degree']"
+          [currentDatasetID]="disease$()?.dataset_ID" [loading]="allNetworks$.isLoading()"
+          emptyText="This gene is not part of any disease network."></app-networks-table>
+        <app-info type="panel">
+          <p>
+            The disease-specific ceRNA networks this gene is part of, with its centrality in each. The
+            highlighted row is the network currently loaded.
+          </p>
+        </app-info>
+      </div>
+    </mat-tab>
+
+    @if ((customEffects$()) || ((tcgaEffects$.value() || []).length > 0)) {
     <mat-tab label="SpongEffects scores">
       <div style="padding: 16px;">
         @let custom = customEffects$();

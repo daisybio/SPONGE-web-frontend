@@ -83,13 +83,13 @@
             <div class="option-content-row">
               <span>{{ getDiseaseDisplayName(model.disease_name) }}</span>
               @if (model.sample_count; as count) {
-                <span class="sample-count" [class.pancancer-count]="model.disease_name.toLowerCase() === 'pancancer'">
+                <span class="sample-count" [class.pancancer-count]="(model.disease_name || '').toLowerCase() === 'pancancer'">
                   ({{ count }})
                 </span>
               }
             </div>
           </mat-option>
-          @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) {
+          @if ((model.disease_name || '').toLowerCase() === 'pancancer' && index < models.length - 1) {
             <mat-divider></mat-divider>
           }
           }
@@ -115,25 +115,29 @@
     </div>
 
     @if (subtypesForSelectedType$().length > 0) {
-    <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
-      <mat-label>Subtype (coming soon)</mat-label>
-      <mat-select disabled [value]="null" placeholder="Type-level model will be used for now">
-        @for (subtype of subtypesForSelectedType$(); track subtype.disease_subtype) {
-        <mat-option [value]="subtype.disease_subtype">
-          <div class="option-content-row">
-            <span>{{ getDiseaseDisplayName(subtype.disease_subtype || '') }}</span>
-            @if (subtype.sample_count; as count) {
-              <span class="sample-count">({{ count }})</span>
-            }
-          </div>
-        </mat-option>
-        }
-      </mat-select>
-      <mat-hint>
-        Subtype-specific spongEffects models are still being trained. Once available, selecting a subtype here will
-        run its dedicated model directly instead of predicting a subtype from the type-level model.
-      </mat-hint>
-    </mat-form-field>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Subtype (coming soon)</mat-label>
+        <mat-select disabled [value]="null" placeholder="Type-level model will be used for now">
+          @for (subtype of subtypesForSelectedType$(); track subtype.disease_subtype) {
+          <mat-option [value]="subtype.disease_subtype">
+            <div class="option-content-row">
+              <span>{{ getDiseaseDisplayName(subtype.disease_subtype || '') }}</span>
+              @if (subtype.sample_count; as count) {
+                <span class="sample-count">({{ count }})</span>
+              }
+            </div>
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" title="Subtype-specific models">
+        <p>
+          Subtype-specific spongEffects models are still being trained. Once available, selecting a subtype here will
+          run its dedicated model directly instead of predicting a subtype from the type-level model.
+        </p>
+      </app-info>
+    </div>
     }
   </mat-expansion-panel>
 

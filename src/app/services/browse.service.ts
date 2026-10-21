@@ -27,6 +27,11 @@ import { VersionsService } from './versions.service';
 import ForceSupervisor from 'graphology-layout-force/worker';
 import { isEqual } from 'lodash';
 import { Track } from '@visa-ge/ng-igv';
+import { CartService } from './cart.service';
+
+// A new graph starts from random positions, so cart nodes are only pinned once the layout has
+// had this long to arrange them (dragged nodes are pinned immediately).
+const PIN_SELECTED_AFTER_MS = 2000;
 
 export enum State {
   Default,
@@ -50,6 +55,12 @@ export class BrowseService {
   // Use a plain class field (not a signal) to avoid a circular reactive dependency:
   // reading + writing the same signal inside an effect() causes an infinite loop.
   private _supervisor: ForceSupervisor | null = null;
+  // Graph whose layout warm-up has finished, i.e. whose cart nodes are pinned (plain fields, see above).
+  private _pinnedGraph: Graph | null = null;
+  private _pinTimer: ReturnType<typeof setTimeout> | undefined;
+
+  // Selection is membership in the global cart; this service only keeps the hover state.
+  private readonly cart = inject(CartService);
 
   private readonly _query$ = signal<BrowseQuery | undefined>(undefined);
   private readonly _version$: Signal<number>;
@@ -85,25 +96,20 @@ export class BrowseService {
     () => this._effectiveData$()?.edges || []
   );
   private readonly _nodeStates$ = signal<Record<string, EntityState>>({});
+  /** Cart items that are nodes of this network */
   activeNodes$ = computed(() => {
-    const activeNodeIDs = Object.entries(this._nodeStates$())
-      .filter(([_, state]) => state[State.Active])
-      .map(([node, _]) => node);
+    const cartIDs = this.cart.ids();
     return this.nodes$().filter((node) =>
-      activeNodeIDs.includes(BrowseService.getNodeID(node))
+      cartIDs.has(BrowseService.getNodeID(node))
     );
   });
   private readonly _edgeStates$ = signal<Record<string, EntityState>>({});
+  /** Cart items that are interactions of this network */
   activeInteractions$ = computed(() => {
-    const activeEdgeIDs = Object.entries(this._edgeStates$())
-      .filter(([_, state]) => state[State.Active])
-      .map(([edge, _]) => edge);
-    return activeEdgeIDs
-      .map((edgeID) =>
-        this.getInteractionForEdge(edgeID, this.interactions$(), this.graph$())
-      )
-      .flat()
-      .filter((interaction) => interaction !== undefined);
+    const cartIDs = this.cart.ids();
+    return this.interactions$().filter((interaction) =>
+      cartIDs.has(CartService.interactionId(...BrowseService.getInteractionIDs(interaction)))
+    );
   });
   private readonly _networkResults$ = resource({
     params: computed(() => {
@@ -163,8 +169,16 @@ export class BrowseService {
         this._supervisor.kill();
       }
 
+      // Pin cart nodes once this graph has had its warm-up with physics on. A physics toggle
+      // after that keeps them pinned.
+      clearTimeout(this._pinTimer);
+      if (physicsEnabled && graph !== this._pinnedGraph) {
+        this._pinTimer = setTimeout(() => (this._pinnedGraph = graph), PIN_SELECTED_AFTER_MS);
+      }
+
       const newSupervisor = new ForceSupervisor(graph, {
-        isNodeFixed: (_: any, attr: any) => attr['highlighted'],
+        isNodeFixed: (_: any, attr: any) =>
+          attr['dragging'] || (this._pinnedGraph === graph && attr['highlighted']),
         settings: {
           repulsion: 0.001,
           attraction: 0.01,
@@ -181,6 +195,7 @@ export class BrowseService {
 
     // Kill supervisor when service is destroyed
     destroyRef.onDestroy(() => {
+      clearTimeout(this._pinTimer);
       if (this._supervisor) {
         this._supervisor.stop();
         this._supervisor.kill();
@@ -191,13 +206,33 @@ export class BrowseService {
   readonly level$ = computed(() => this._query$()?.level);
   readonly rawDataURL$ = computed(() => this._query$()?.dataset?.download_url);
 
-  get nodeStates$(): Signal<Record<string, EntityState>> {
-    return this._nodeStates$.asReadonly();
-  }
+  /** Hover comes from the network view, Active is membership in the cart. */
+  readonly nodeStates$: Signal<Record<string, EntityState>> = computed(() => {
+    const cartIDs = this.cart.ids();
+    return Object.fromEntries(
+      Object.entries(this._nodeStates$()).map(([node, state]) => [
+        node,
+        { ...state, [State.Active]: cartIDs.has(node) },
+      ])
+    );
+  });
 
-  get edgeStates$(): Signal<Record<string, EntityState>> {
-    return this._edgeStates$.asReadonly();
-  }
+  readonly edgeStates$: Signal<Record<string, EntityState>> = computed(() => {
+    const cartIDs = this.cart.ids();
+    const graph = this.graph$();
+    return Object.fromEntries(
+      Object.entries(this._edgeStates$()).map(([edge, state]) => [
+        edge,
+        {
+          ...state,
+          // The states can briefly still hold the previous graph's edges
+          [State.Active]:
+            graph.hasEdge(edge) &&
+            cartIDs.has(CartService.interactionId(graph.source(edge), graph.target(edge))),
+        },
+      ])
+    );
+  });
 
   get isLoading$(): Signal<boolean> {
     return this._currentData$.isLoading;
@@ -292,40 +327,44 @@ export class BrowseService {
   }
 
   public static getFullName(node: Gene | Transcript): string {
+    if (!node) return '';
     if ('ensg_number' in node) {
       return node.gene_symbol || node.ensg_number;
     } else {
-      return `${node.gene.gene_symbol || node.gene.ensg_number} (${node.enst_number
-        })`;
+      const g = (node as Transcript).gene;
+      const gName = g ? (g.gene_symbol || g.ensg_number || '') : '';
+      return gName ? `${gName} (${node.enst_number})` : (node.enst_number || '');
     }
   }
 
   public static getGProfilerUrlForNodes(
     nodes: (GeneNode | TranscriptNode)[]
   ): string {
-    const genes = nodes
-      .map((node) => {
-        if ('gene' in node) {
-          return node.gene;
-        } else {
-          return node.transcript.gene;
-        }
-      })
+    return BrowseService.getGProfilerUrlForGenes(
+      nodes.map((node) => ('gene' in node ? node.gene : node.transcript.gene))
+    );
+  }
+
+  public static getGProfilerUrlForGenes(genes: (Gene | undefined)[]): string {
+    const names = genes
+      .filter((gene) => gene !== undefined)
       .map((gene) => gene.gene_symbol || gene.ensg_number);
 
-    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${genes.join(
+    return `https://biit.cs.ut.ee/gprofiler/gost?organism=hsapiens&query=${names.join(
       ' '
     )}`;
   }
 
   private static getID(node: Gene | Transcript): string {
-    return 'ensg_number' in node ? node.ensg_number : node.enst_number;
+    if (!node) return '';
+    return 'ensg_number' in node ? node.ensg_number : ((node as any).enst_number || '');
   }
 
   private static getGeneName(node: Gene | Transcript): string {
+    if (!node) return '';
     return 'ensg_number' in node
       ? node.gene_symbol || node.ensg_number
-      : node.gene.gene_symbol || node.gene.ensg_number;
+      : (node as any).gene?.gene_symbol || (node as any).gene?.ensg_number || (node as any).gene_symbol || (node as any).ensg_number || (node as any).enst_number || '';
   }
 
   runQuery(query: BrowseQuery) {
@@ -425,9 +464,14 @@ export class BrowseService {
     entityType: 'node' | 'edge',
     state: State.Active | State.Hover
   ) {
+    this.lastClicked.set(entityType);
+    if (state === State.Active) {
+      const entity = this.getCartEntity(id, entityType);
+      if (entity) this.cart.toggle(entity);
+      return;
+    }
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
-    this.lastClicked.set(entityType);
     states.update((entityStates) => {
       return {
         ...entityStates,
@@ -445,6 +489,16 @@ export class BrowseService {
     state: State,
     value: boolean
   ) {
+    if (state === State.Active) {
+      const entity = this.getCartEntity(id, entityType);
+      if (!entity) return;
+      if (value) {
+        this.cart.add(entity);
+      } else {
+        this.cart.remove(CartService.idOf(entity)!);
+      }
+      return;
+    }
     const states =
       entityType === 'node' ? this._nodeStates$ : this._edgeStates$;
     states.update((entityStates) => {
@@ -456,6 +510,19 @@ export class BrowseService {
         },
       };
     });
+  }
+
+  /** The gene/transcript or interaction behind a graph node or edge key */
+  private getCartEntity(
+    id: string,
+    entityType: 'node' | 'edge'
+  ): Gene | Transcript | GeneInteraction | TranscriptInteraction | undefined {
+    if (entityType === 'node') {
+      const node = this.nodes$().find((n) => BrowseService.getNodeID(n) === id);
+      return node ? BrowseService.getNodeObject(node) : undefined;
+    }
+    if (!this.graph$().hasEdge(id)) return undefined;
+    return this.getInteractionForEdge(id, this.interactions$(), this.graph$())[0];
   }
 
   getInteractionForEdge(
@@ -630,43 +697,44 @@ export class BrowseService {
     return graph;
   }
 
+  /** Adds all visible nodes to the cart, or removes them */
   setAllNodesState(state: boolean) {
-    this._nodeStates$.update((entityStates) => {
-      return Object.fromEntries(
-        Object.keys(entityStates).map((key) => [
-          key,
-          {
-            ...entityStates[key],
-            [State.Active]: state,
-          },
-        ])
-      );
-    });
+    const nodes = this.nodes$();
+    if (state) {
+      this.cart.addMany(nodes.map(BrowseService.getNodeObject));
+    } else {
+      this.cart.removeMany(nodes.map(BrowseService.getNodeID));
+    }
   }
 
   allNodesSelected$ = computed(() => {
-    return Object.values(this._nodeStates$()).every(
-      (state) => state[State.Active]
-    );
+    const cartIDs = this.cart.ids();
+    const graph = this.graph$();
+    return graph.order > 0 && graph.everyNode((node) => cartIDs.has(node));
   });
 
+  /** Adds all visible interactions to the cart, or removes them */
   setAllEdgesState(state: boolean) {
-    this._edgeStates$.update((entityStates) => {
-      return Object.fromEntries(
-        Object.keys(entityStates).map((key) => [
-          key,
-          {
-            ...entityStates[key],
-            [State.Active]: state,
-          },
-        ])
+    const interactions = this.interactions$();
+    if (state) {
+      this.cart.addMany(interactions);
+    } else {
+      this.cart.removeMany(
+        interactions.map((interaction) =>
+          CartService.interactionId(...BrowseService.getInteractionIDs(interaction))
+        )
       );
-    });
+    }
   }
 
   allEdgesSelected$ = computed(() => {
-    return Object.values(this._edgeStates$()).every(
-      (state) => state[State.Active]
+    const cartIDs = this.cart.ids();
+    const graph = this.graph$();
+    return (
+      graph.size > 0 &&
+      graph.everyEdge((_edge, _attributes, source, target) =>
+        cartIDs.has(CartService.interactionId(source, target))
+      )
     );
   });
 }

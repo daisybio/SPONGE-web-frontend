@@ -5,47 +5,50 @@
     <div style="margin: 5px;">
       <mat-accordion multi="true">
         <app-explore-form></app-explore-form>
-        <app-module-form [source]="'explore'"></app-module-form>
+        <app-module-form [source]="'explore'" [disabled]="moduleFilteringDisabled()"></app-module-form>
         <app-network-filters [filters]="exploreService" [browseService]="browseService"
-          [disease]="exploreService.selectedDisease$()"></app-network-filters>
+          [disease]="exploreService.selectedDisease$()" [disabled]="networkFiltersDisabled()"
+          [nodesDisabled]="nodesFiltersDisabled()"></app-network-filters>
       </mat-accordion>
     </div>
+  </mat-drawer>
+  <mat-drawer position="end" [opened]="true" mode="side">
+    <app-cart-column [browseService]="browseService" [disabled]="cartDisabled()"></app-cart-column>
   </mat-drawer>
   <mat-drawer-content>
     <mat-tab-group preserveContent [selectedIndex]="selectedTabIndex()" (selectedTabChange)="onTabChange($event)">
       <mat-tab label="Reference Network ">
-        @if (tabReady(0)) {
+        @if (tabReady(TABS.network)) {
         <div class="network-container" style="display: flex; flex-direction: row; position: relative;">
           @if (isNetworkLoading()) {
           <div
-            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; background: rgba(255,255,255,0.6);">
+            style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; background: rgba(255,255,255,0.6);">
             <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
           </div>
           }
           <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
             style="min-width: 500px; flex-grow: 3;"></app-network>
-          <app-active-entities [browseService]="browseService"
-            style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
         </div>
         }
       </mat-tab>
-      <mat-tab label="Sample Similarity (UMAP)">
-        @if (tabReady(1)) {
-        <app-umap-plot mode="explore"></app-umap-plot>
-        }
-      </mat-tab>
+
       <mat-tab label="Top ceRNA Modules">
-        @if (tabReady(2)) {
+        @if (tabReady(TABS.modules)) {
         <app-importance-plot [refreshSignal$]="refreshSignal()"></app-importance-plot>
         }
       </mat-tab>
+      <mat-tab label="Sample Similarity (UMAP)">
+        @if (tabReady(TABS.umap)) {
+        <app-umap-plot mode="explore"></app-umap-plot>
+        }
+      </mat-tab>
       <mat-tab label="SpongEffects Score Distribution">
-        @if (tabReady(3)) {
+        @if (tabReady(TABS.scoreDistribution)) {
         <app-enrichment-class-plot [refreshSignal$]="refreshSignal()"></app-enrichment-class-plot>
         }
       </mat-tab>
       <mat-tab label="Benchmarking">
-        @if (tabReady(4)) {
+        @if (tabReady(TABS.benchmarking)) {
         <app-overall-acc-plot [refreshSignal$]="refreshSignal()"></app-overall-acc-plot>
         <hr>
         <app-class-performance-plot [refreshSignal$]="refreshSignal()"></app-class-performance-plot>

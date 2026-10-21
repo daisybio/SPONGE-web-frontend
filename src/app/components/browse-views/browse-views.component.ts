@@ -8,7 +8,6 @@ import { NetworkComponent } from '../../components/browse-views/network/network.
 import { GeneExpressionHeatmapComponent } from '../../components/browse-views/heatmap/heatmap.component';
 import { BrowseService } from '../../services/browse.service';
 import { SurvivalAnalysisComponent } from '../../components/browse-views/survival-analysis/survival-analysis.component';
-import { ActiveEntitiesComponent } from '../../components/browse-views/active-entities/active-entities.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIcon } from '@angular/material/icon';
 import { VersionsService } from '../../services/versions.service';
@@ -29,7 +28,6 @@ import { capitalize } from 'lodash';
     NetworkComponent,
     GeneExpressionHeatmapComponent,
     SurvivalAnalysisComponent,
-    ActiveEntitiesComponent,
     MatProgressSpinnerModule,
     MatIcon,
     NodesComponent,

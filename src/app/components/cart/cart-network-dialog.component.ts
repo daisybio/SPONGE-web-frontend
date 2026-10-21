@@ -5,12 +5,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { NetworkComponent } from '../browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../browse-views/active-entities/active-entities.component';
 import { BrowseService } from '../../services/browse.service';
 import { BackendService } from '../../services/backend.service';
 import { VersionsService } from '../../services/versions.service';
 import { CartItem } from '../../services/cart.service';
-import { Dataset, Gene, GeneNode, NetworkData, Transcript } from '../../interfaces';
+import {
+  Dataset,
+  Gene,
+  GeneInteraction,
+  GeneNode,
+  NetworkData,
+  Transcript,
+  TranscriptInteraction,
+  TranscriptNode,
+} from '../../interfaces';
 
 interface CartNetworkDialogData {
   items: CartItem[];
@@ -27,15 +35,18 @@ interface CartNetworkDialogData {
     MatProgressSpinnerModule,
     MatIconModule,
     NetworkComponent,
-    ActiveEntitiesComponent,
   ],
   providers: [BrowseService],
   template: `
     <h2 mat-dialog-title style="display: flex; align-items: center; gap: 10px;">
-      <mat-icon style="color: #1565c0;">hub</mat-icon>
+      <mat-icon style="color: var(--app-accent);">hub</mat-icon>
       Cart Network — {{ data.disease.disease_name }}
       <span style="font-size: 0.75em; color: #9e9e9e; margin-left: 8px;">
-        ({{ data.items.length }} genes/transcripts)
+        ({{ data.items.length - skippedCount() }} cart items)
+        @if (skippedCount() > 0) {
+          · {{ skippedCount() }} {{ level() === 'transcript' ? 'gene-level' : 'transcript-level' }} items not shown
+          ({{ level() }}-level network)
+        }
       </span>
     </h2>
     <mat-dialog-content style="padding: 0; min-height: 60vh;">
@@ -50,12 +61,7 @@ interface CartNetworkDialogData {
           {{ error() }}
         </div>
       } @else {
-        <div style="display: flex; flex-direction: row; height: 60vh;">
-          <app-network [browseService]="browseService" [refreshSignal]="refresh()"
-            style="flex: 3; min-width: 0;"></app-network>
-          <app-active-entities [browseService]="browseService"
-            style="flex: 1; min-width: 200px; overflow-y: auto;"></app-active-entities>
-        </div>
+        <app-network [browseService]="browseService" [refreshSignal]="refresh()"></app-network>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -72,9 +78,32 @@ export class CartNetworkDialogComponent {
   isLoading = signal(true);
   error = signal<string | null>(null);
   refresh = signal(0);
+  /** Transcript level as soon as the cart holds any transcript (or transcript interaction) */
+  level = signal<'gene' | 'transcript'>(
+    this.data.items.some(item => CartNetworkDialogComponent.levelOf(item) === 'transcript') ? 'transcript' : 'gene'
+  );
+  /** Cart items of the other level, which the network can't show */
+  skippedCount = signal(
+    this.data.items.filter(item => CartNetworkDialogComponent.levelOf(item) !== this.level()).length
+  );
 
   constructor() {
     this.loadNetwork();
+  }
+
+  private static levelOf(item: CartItem): 'gene' | 'transcript' {
+    if (item.type === 'interaction') {
+      return 'transcript_1' in item.entity ? 'transcript' : 'gene';
+    }
+    return item.type;
+  }
+
+  /** The genes/transcripts an item contributes: itself, or both endpoints of an interaction */
+  private static entitiesOf(item: CartItem): (Gene | Transcript)[] {
+    if (item.type === 'interaction') {
+      return BrowseService.getInteractionObjects(item.entity as GeneInteraction | TranscriptInteraction);
+    }
+    return [item.entity as Gene | Transcript];
   }
 
   async loadNetwork() {
@@ -84,52 +113,65 @@ export class CartNetworkDialogComponent {
       const version = this.versionsService.versionReadOnly()();
       if (!version) throw new Error('No version selected');
 
-      const identifiers = this.data.items.map(item =>
-        item.type === 'gene'
-          ? (item.entity as Gene).ensg_number
-          : (item.entity as Transcript).enst_number
-      );
+      const level = this.level();
 
-      const level = this.data.items.some(i => i.type === 'transcript') ? 'transcript' : 'gene';
-
-      const interactions = await this.backend.getInteractionsSpecific(
-        version,
-        this.data.disease,
-        1.0,
-        identifiers,
-        level,
-      );
-
-      // Build node map
-      const nodeMap = new Map<string, GeneNode>();
-      for (const int of interactions) {
-        if ('gene1' in int) {
-          for (const g of [int.gene1, int.gene2]) {
-            if (!nodeMap.has(g.ensg_number)) {
-              nodeMap.set(g.ensg_number, {
-                gene: g,
-                betweenness: null,
-                eigenvector: null,
-                node_degree: null,
-                sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
-              } as GeneNode);
-            }
-          }
+      const entitiesByID = new Map<string, Gene | Transcript>();
+      for (const item of this.data.items) {
+        if (CartNetworkDialogComponent.levelOf(item) !== level) continue;
+        for (const entity of CartNetworkDialogComponent.entitiesOf(item)) {
+          const id = level === 'gene' ? (entity as Gene).ensg_number : (entity as Transcript).enst_number;
+          if (!entitiesByID.has(id)) entitiesByID.set(id, entity);
         }
       }
+      const identifiers = [...entitiesByID.keys()];
 
-      // Add orphan nodes
-      for (const item of this.data.items) {
-        if (item.type === 'gene') {
-          const g = item.entity as Gene;
-          if (!nodeMap.has(g.ensg_number)) {
-            nodeMap.set(g.ensg_number, {
-              gene: g,
+      const network = await this.backend.getNetwork(version, {
+        level,
+        dataset: this.data.disease,
+        ensemblID: identifiers,
+        showOrphans: true,
+        sortingDegree: false,
+        sortingEigenvector: false,
+        sortingBetweenness: false,
+        maxNodes: Math.max(100, identifiers.length + 50),
+        minDegree: 0,
+        minBetweenness: 0,
+        minEigen: 0,
+        interactionSorting: 'mscor' as any,
+        maxInteractions: 50000,
+        maxPValue: 1.0,
+        minMscor: 0,
+      });
+
+      // Build node map from fetched network nodes (contains real DB node_degree, betweenness, etc.)
+      const nodeMap = new Map<string, GeneNode | TranscriptNode>();
+      for (const node of network.nodes || []) {
+        nodeMap.set(BrowseService.getNodeID(node), node);
+      }
+
+      // Ensure every cart gene/transcript of this level is present, even if it has no DB networkAnalysis row
+      for (const [id, entity] of entitiesByID) {
+        if (!nodeMap.has(id)) {
+          const spongeRun = {
+            dataset: { ...this.data.disease, disease_subtype: '' },
+            sponge_run_ID: 0,
+          };
+          if (level === 'gene') {
+            nodeMap.set(id, {
+              gene: entity as Gene,
               betweenness: null,
               eigenvector: null,
               node_degree: null,
-              sponge_run: { dataset: { ...this.data.disease, disease_subtype: '' }, sponge_run_ID: 0 },
+              sponge_run: spongeRun,
             } as GeneNode);
+          } else {
+            nodeMap.set(id, {
+              transcript: entity as Transcript,
+              betweenness: null,
+              eigenvector: null,
+              node_degree: null,
+              sponge_run: spongeRun,
+            } as TranscriptNode);
           }
         }
       }
@@ -137,7 +179,7 @@ export class CartNetworkDialogComponent {
       const networkData: NetworkData = {
         nodes: Array.from(nodeMap.values()),
         inverseNodes: [],
-        edges: interactions,
+        edges: network.edges || [],
         disease: this.data.disease,
       };
 

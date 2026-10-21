@@ -24,7 +24,7 @@ export class VersionsService {
       const diseases = this._diseases$.value();
       const current = this.selectedDiseaseName$();
       if (diseases && diseases.length > 0) {
-        if (!current || !diseases.some((d) => d.disease_name.toLowerCase() === current.toLowerCase())) {
+        if (!current || !diseases.some((d) => d?.disease_name?.toLowerCase() === current?.toLowerCase())) {
           this.selectedDiseaseName$.set(diseases[0].disease_name);
         }
       } else {

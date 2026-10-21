@@ -1,5 +1,7 @@
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
+<mat-expansion-panel [disabled]="nodesPanelDisabled()" [expanded]="nodesPanelDisabled() ? false : nodesOpen()"
+  (expandedChange)="!nodesPanelDisabled() && nodesOpen.set($event)">
+  <mat-expansion-panel-header
+    [matTooltip]="nodesPanelDisabled() ? 'These filters apply to the network view and to the member rows of the expression heatmap (with \'Show module members\' on).' : ''">
     <mat-panel-title>Nodes</mat-panel-title>
   </mat-expansion-panel-header>
 
@@ -129,8 +131,9 @@
   </app-info>
 </mat-expansion-panel>
 
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
+<mat-expansion-panel [disabled]="disabled()" [expanded]="disabled() ? false : interactionsOpen()"
+  (expandedChange)="!disabled() && interactionsOpen.set($event)">
+  <mat-expansion-panel-header [matTooltip]="disabled() ? 'These filters apply to the network view only.' : ''">
     <mat-panel-title>Interactions</mat-panel-title>
   </mat-expansion-panel-header>
 
