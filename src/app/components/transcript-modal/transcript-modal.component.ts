@@ -13,7 +13,6 @@ import {
   AlternativeSplicingEvent,
   Dataset,
   Gene,
-  InteractionSorting,
   Transcript,
   TranscriptInfoWithChromosome,
   TranscriptInteraction,
@@ -46,6 +45,7 @@ import { AsyncPipe } from '@angular/common';
 
 import { InfoComponent } from '../info/info.component';
 import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
+import { NetworkRow, NetworksTableComponent } from '../networks-table/networks-table.component';
 
 interface AsEventWithPsi extends AlternativeSplicingEvent {
   psi: Promise<number>;
@@ -70,6 +70,7 @@ interface AsEventWithPsi extends AlternativeSplicingEvent {
     Igv,
     InfoComponent,
     AddToCartButtonComponent,
+    NetworksTableComponent,
   ],
   templateUrl: './transcript-modal.component.html',
   styleUrl: './transcript-modal.component.scss',
@@ -195,49 +196,34 @@ export class TranscriptModalComponent implements AfterViewInit {
     };
   });
 
-  readonly dbCentralities$ = resource({
-    params: computed(() => {
-      const t = this.transcript as any;
-      if (t.betweenness !== undefined && t.betweenness !== null) return null;
-      const enst = this.enstNumber;
-      const disease = this.disease$();
-      const version = this.version$();
-      if (!enst || !disease?.dataset_ID || !version) return null;
-      return { version, enst, dataset: disease };
-    }),
+  // The transcript's metrics in every disease network it is part of ("Networks" tab)
+  readonly allNetworks$ = resource({
+    params: computed(() => ({ version: this.version$(), enst: this.enstNumber })),
     loader: async ({ params }) => {
-      if (!params) return null;
-      try {
-        const net = await this.backend.getNetwork(params.version, {
-          dataset: params.dataset,
-          level: 'transcript',
-          ensemblID: [params.enst],
-          showOrphans: true,
-          sortingDegree: false,
-          sortingEigenvector: false,
-          sortingBetweenness: false,
-          maxNodes: 10,
-          minDegree: 0,
-          minBetweenness: 0,
-          minEigen: 0,
-          interactionSorting: InteractionSorting.mscor,
-          maxInteractions: 100,
-          maxPValue: 1.0,
-          minMscor: 0,
-        });
-        const match = (net.nodes || []).find((n) => BrowseService.getNodeID(n) === params.enst);
-        if (match) {
-          return {
-            betweenness: match.betweenness ?? null,
-            eigenvector: match.eigenvector ?? null,
-            node_degree: match.node_degree ?? null,
-          };
-        }
-      } catch (e) {
-        console.warn('Could not fetch transcript centralities from DB', e);
-      }
-      return null;
+      if (!params.enst) return [];
+      return await this.backend.getNodeMetricsAllNetworks(params.version, 'transcript', params.enst);
     },
+  });
+
+  readonly networkRows = computed<NetworkRow[]>(() =>
+    (this.allNetworks$.value() ?? []).map((node) => ({
+      dataset: node.sponge_run.dataset,
+      values: [node.betweenness, node.eigenvector, node.node_degree],
+    }))
+  );
+
+  // The transcript's metrics in the modal's disease network, from the rows above
+  readonly dbCentralities$ = computed(() => {
+    const datasetID = this.disease$()?.dataset_ID;
+    const match = (this.allNetworks$.value() ?? []).find(
+      (node) => node.sponge_run?.dataset?.dataset_ID === datasetID
+    );
+    if (datasetID === undefined || !match) return null;
+    return {
+      betweenness: match.betweenness ?? null,
+      eigenvector: match.eigenvector ?? null,
+      node_degree: match.node_degree ?? null,
+    };
   });
 
   readonly effectiveCentralities$ = computed(() => {
@@ -261,7 +247,7 @@ export class TranscriptModalComponent implements AfterViewInit {
       };
     }
 
-    const db = this.dbCentralities$.value();
+    const db = this.dbCentralities$();
     if (db) {
       return db;
     }

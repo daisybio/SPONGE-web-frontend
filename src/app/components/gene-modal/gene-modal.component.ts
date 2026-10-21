@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { Gene, GeneInteraction, GOTerm, InteractionSorting, SpongEffectsGeneModules, Transcript } from '../../interfaces';
+import { Gene, GeneInteraction, GOTerm, SpongEffectsGeneModules, Transcript } from '../../interfaces';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { VersionsService } from '../../services/versions.service';
@@ -35,6 +35,7 @@ import { Router } from '@angular/router';
 import { PredictService } from '../../routes/spongeffects/predict/service/predict.service';
 import { InfoComponent } from '../info/info.component';
 import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
+import { NetworkRow, NetworksTableComponent } from '../networks-table/networks-table.component';
 
 interface ASEntry {
   enst: string;
@@ -62,6 +63,7 @@ interface ASEntry {
     Igv,
     InfoComponent,
     AddToCartButtonComponent,
+    NetworksTableComponent,
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss',
@@ -224,49 +226,34 @@ export class GeneModalComponent implements AfterViewInit {
     };
   });
 
-  readonly dbCentralities$ = resource({
-    params: computed(() => {
-      const g = this.gene as any;
-      if (g.betweenness !== undefined && g.betweenness !== null) return null;
-      const ensg = this.ensgNumber;
-      const disease = this.disease$();
-      const version = this.version$();
-      if (!ensg || !disease?.dataset_ID || !version) return null;
-      return { version, ensg, dataset: disease };
-    }),
+  // The gene's metrics in every disease network it is part of ("Networks" tab)
+  readonly allNetworks$ = resource({
+    params: computed(() => ({ version: this.version$(), ensg: this.ensgNumber })),
     loader: async ({ params }) => {
-      if (!params) return null;
-      try {
-        const net = await this.backend.getNetwork(params.version, {
-          dataset: params.dataset,
-          level: 'gene',
-          ensemblID: [params.ensg],
-          showOrphans: true,
-          sortingDegree: false,
-          sortingEigenvector: false,
-          sortingBetweenness: false,
-          maxNodes: 10,
-          minDegree: 0,
-          minBetweenness: 0,
-          minEigen: 0,
-          interactionSorting: InteractionSorting.mscor,
-          maxInteractions: 100,
-          maxPValue: 1.0,
-          minMscor: 0,
-        });
-        const match = (net.nodes || []).find((n) => BrowseService.getNodeID(n) === params.ensg);
-        if (match) {
-          return {
-            betweenness: match.betweenness ?? null,
-            eigenvector: match.eigenvector ?? null,
-            node_degree: match.node_degree ?? null,
-          };
-        }
-      } catch (e) {
-        console.warn('Could not fetch gene centralities from DB', e);
-      }
-      return null;
+      if (!params.ensg) return [];
+      return await this.backend.getNodeMetricsAllNetworks(params.version, 'gene', params.ensg);
     },
+  });
+
+  readonly networkRows = computed<NetworkRow[]>(() =>
+    (this.allNetworks$.value() ?? []).map((node) => ({
+      dataset: node.sponge_run.dataset,
+      values: [node.betweenness, node.eigenvector, node.node_degree],
+    }))
+  );
+
+  // The gene's metrics in the modal's disease network, from the rows above
+  readonly dbCentralities$ = computed(() => {
+    const datasetID = this.disease$()?.dataset_ID;
+    const match = (this.allNetworks$.value() ?? []).find(
+      (node) => node.sponge_run?.dataset?.dataset_ID === datasetID
+    );
+    if (datasetID === undefined || !match) return null;
+    return {
+      betweenness: match.betweenness ?? null,
+      eigenvector: match.eigenvector ?? null,
+      node_degree: match.node_degree ?? null,
+    };
   });
 
   readonly effectiveCentralities$ = computed(() => {
@@ -290,7 +277,7 @@ export class GeneModalComponent implements AfterViewInit {
       };
     }
 
-    const db = this.dbCentralities$.value();
+    const db = this.dbCentralities$();
     if (db) {
       return db;
     }

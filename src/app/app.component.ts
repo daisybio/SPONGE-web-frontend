@@ -11,7 +11,6 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormsModule } from '@angular/forms';
 import { VersionsService } from './services/versions.service';
 import { SpongEffectsService } from './services/spong-effects.service';
-import { CartComponent } from './components/cart/cart.component';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +21,6 @@ import { CartComponent } from './components/cart/cart.component';
     RouterOutlet,
     MatButtonToggleModule,
     FormsModule,
-    CartComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

@@ -32,10 +32,12 @@ import { SunburstComponent } from './sunburst/sunburst.component';
 import { ActivatedRoute } from '@angular/router';
 import { DiseaseSelectorComponent } from '../../components/disease-selector/disease-selector.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { CartColumnComponent } from '../../components/cart/cart-column.component';
 
 @Component({
   selector: 'app-genes',
   imports: [
+    CartColumnComponent,
     MatDrawer,
     MatDrawerContainer,
     MatDrawerContent,
@@ -61,6 +63,8 @@ export class GenesComponent {
 
   readonly version = this.versionsService.versionReadOnly();
   readonly tabChange = signal<number>(0);
+  /** Only the Table tab (interactions table with cart buttons) interacts with the cart */
+  readonly cartDisabled = computed(() => this.tabChange() !== 1);
 
   readonly level = signal<'gene' | 'transcript'>('transcript');
   readonly currentInput = model<string | Gene>('');

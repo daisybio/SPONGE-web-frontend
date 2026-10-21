@@ -9,6 +9,7 @@ import {
   OnDestroy,
   Signal,
   signal,
+  untracked,
   ViewChild,
   WritableSignal,
 } from '@angular/core';
@@ -363,6 +364,13 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
       });
 
       this.sigma = sigma;
+
+      // Cart items are selected from the start, so highlight them on the new graph right away.
+      // Untracked: this runs inside the graph effect, which must not depend on the states.
+      untracked(() => {
+        this.updateNodes(this.browseService().nodeStates$());
+        this.updateEdges(this.browseService().edgeStates$());
+      });
     });
 
     this.updateNodes(this.browseService().nodeStates$());
@@ -406,6 +414,9 @@ export class NetworkComponent implements AfterViewInit, OnDestroy {
 
     graph.setNodeAttribute(node, 'color', color);
     graph.setNodeAttribute(node, 'highlighted', states[state].highlight);
+    // A node's Hover state lasts from press to release, i.e. while it is dragged; the layout pins
+    // dragged nodes immediately and cart (Active) nodes only after its warm-up.
+    graph.setNodeAttribute(node, 'dragging', state === State.Hover);
   }
 
   refresh() {

@@ -131,6 +131,10 @@
     </div>
   </mat-drawer>
 
+  <mat-drawer position="end" [opened]="true" mode="side">
+    <app-cart-column [browseService]="browseService" [disabled]="cartDisabled()"></app-cart-column>
+  </mat-drawer>
+
   <mat-drawer-content>
     <mat-tab-group preserveContent (selectedTabChange)="onTabChange($event)">
       <!-- Tab 1: Patient-specific Network -->
@@ -144,7 +148,7 @@
             <span>Patient-specific Network</span>
           </span>
         </ng-template>
-        @if (tabReady(0)) {
+        @if (tabReady(TABS.network)) {
         <div *ngIf="error$()" style="padding: 20px 20px 0 20px;">
           <mat-card
             style="background-color: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -159,7 +163,7 @@
             <mat-card-content>
               <p style="color: #5c5c5c; margin: 0 0 10px 0; font-weight: 500; font-size: 0.95em;">Error Details:</p>
               <pre
-                style="white-space: pre-wrap; word-break: break-word; font-family: 'Roboto Mono', menlo, monaco, consolas, monospace; font-size: 0.85em; color: #434343; background: #fafafa; padding: 16px; border-radius: 6px; border: 1px solid #f0f0f0; margin: 0; line-height: 1.6; max-height: 400px; overflow-y: auto;">{{ error$() }}</pre>
+                style="white-space: pre-wrap; word-break: break-word; font-family: 'Roboto Mono', menlo, monaco, consolas, monospace; font-size: 0.85em; color: #434343; background: #fafafa; padding: 16px; border-radius: 6px; border: 1px solid #f0f0f0; margin: 0; line-height: 1.6; max-height: 400px; overflow-y: auto; scrollbar-gutter: stable;">{{ error$() }}</pre>
             </mat-card-content>
           </mat-card>
         </div>
@@ -176,22 +180,13 @@
           <app-network [browseService]="browseService" [refreshSignal]="refreshSignal()"
             [legendSubtitle]="'Showing top ' + predictService.topModules$().length + (predictService.topModules$().length === 1 ? ' module' : ' modules') + ' for ' + predictService.selectedSamples$().length + (predictService.selectedSamples$().length === 1 ? ' selected patient.' : ' selected patients.')"
             style="min-width: 500px; flex-grow: 3;"></app-network>
-          <app-active-entities [browseService]="browseService"
-            style="min-width: 250px; width: 25%; flex-grow: 1"></app-active-entities>
         </div>
-        }
-      </mat-tab>
-
-      <!-- Tab: Sample Similarity (UMAP) -->
-      <mat-tab label="Sample Similarity (UMAP)">
-        @if (tabReady(1)) {
-        <app-umap-plot></app-umap-plot>
         }
       </mat-tab>
 
       <!-- Top ceRNA Modules -->
       <mat-tab label="Top ceRNA Modules">
-        @if (tabReady(2)) {
+        @if (tabReady(TABS.modules)) {
         <div style="padding: 16px;">
           <div style="justify-content: center; display: flex; margin: 10px 0 24px 0;">
             <mat-button-toggle-group [value]="selectedSubVis()" (change)="selectedSubVis.set($event.value)">
@@ -235,16 +230,23 @@
         }
       </mat-tab>
 
+      <!-- Tab: Sample Similarity (UMAP) -->
+      <mat-tab label="Sample Similarity (UMAP)">
+        @if (tabReady(TABS.umap)) {
+        <app-umap-plot></app-umap-plot>
+        }
+      </mat-tab>
+
       <!-- Tab 4: SpongEffects Score Distribution -->
       <mat-tab label="SpongEffects Score Distribution">
-        @if (tabReady(3)) {
+        @if (tabReady(TABS.scoreDistribution)) {
         <app-classification-plot [refreshSignal$]="refreshSignal()"></app-classification-plot>
         }
       </mat-tab>
 
       <!-- Tab 5: Prediction Results -->
       <mat-tab label="Cancer Type Classification">
-        @if (tabReady(4)) {
+        @if (tabReady(TABS.classification)) {
         <app-prediction-results [refreshSignal$]="refreshSignal()"></app-prediction-results>
         <hr>
         <app-prediction-table [refreshSignal$]="refreshSignal()"></app-prediction-table>

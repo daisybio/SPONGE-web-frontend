@@ -95,13 +95,19 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     }
   });
   
+  // The data last drawn or cleared, so a change of the loading state alone doesn't redraw it
+  private lastRendered: any[] | undefined;
+
   // Effects for plot management
   private plotEffect = effect(() => {
     const data = this.heatmapResource.value();
-    if (data) {
-      this.renderHeatmap(data);
-      this.plotRendered.emit();
-    }
+    const loading = this.isLoading();
+    if (!data || data === this.lastRendered) return;
+    // An empty result while the inputs are still loading isn't final: keep the current plot
+    if (data.length === 0 && loading) return;
+    this.lastRendered = data;
+    this.renderHeatmap(data);
+    this.plotRendered.emit();
   });
 
   private refreshEffect = effect(() => {
@@ -129,9 +135,14 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   }
 
   private renderHeatmap(data: any[]) {
-    if (!data || data.length === 0) return;
-
     const heatmapEl = this.heatmap().nativeElement;
+    if (!data || data.length === 0) {
+      // Clear the previous plot; it would otherwise stay on screen under "No data available"
+      Plotly.purge(heatmapEl);
+      heatmapEl.style.height = '0px';
+      return;
+    }
+
     const dataSource = this.dataSource();
     const params = this.params();
 

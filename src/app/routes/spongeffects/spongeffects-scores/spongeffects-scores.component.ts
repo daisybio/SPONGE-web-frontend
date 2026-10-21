@@ -5,7 +5,8 @@ import { PredictFormComponent } from '../predict/form/predict-form.component';
 import { PredictService } from '../predict/service/predict.service';
 import { PredictBrowseService } from '../../../services/predict.browse.service';
 import { NetworkComponent } from '../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
+import { CartColumnComponent } from '../../../components/cart/cart-column.component';
+import { SPONGEFFECTS_TABS } from '../spongeffects-tabs';
 import { MatDrawer, MatDrawerContainer, MatDrawerContent } from '@angular/material/sidenav';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -46,7 +47,7 @@ import { SPONGE_EXAMPLE_URL } from '../../../constants';
     InfoComponent,
     PredictFormComponent,
     NetworkComponent,
-    ActiveEntitiesComponent,
+    CartColumnComponent,
     NetworkFiltersComponent,
     MatDrawer,
     MatDrawerContainer,
@@ -94,27 +95,32 @@ export class SpongeffectsScoresComponent {
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
 
+  protected readonly TABS = SPONGEFFECTS_TABS;
   refreshSignal = signal<number>(0);
   selectedTabIndex = signal<number>(0);
   selectedSubVis = signal<string>('importance');
 
-  // Tabs: 0 = Patient-specific Network, 1 = UMAP, 2 = Top ceRNA Modules, 3 = Score Distribution,
-  // 4 = Cancer Type Classification. The drawer's filter panels only affect a subset of these.
+  // The drawer's filter panels only affect a subset of the tabs.
   /** Node/edge filters affect only the network view. */
-  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== 0);
+  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== this.TABS.network);
   /** The Nodes panel (Max. nodes, node filters) also drives the expression heatmap's member rows. */
   nodesFiltersDisabled = computed(
     () =>
       !(
-        this.selectedTabIndex() === 0 ||
-        (this.selectedTabIndex() === 2 &&
+        this.selectedTabIndex() === this.TABS.network ||
+        (this.selectedTabIndex() === this.TABS.modules &&
           this.selectedSubVis() === 'heatmap' &&
           this.predictService.selectedHeatmapType$() === 'expression' &&
           this.predictService.includeModuleMembers$())
       )
   );
   /** Module filtering affects the network view and the Top ceRNA Modules view. */
-  moduleFilteringDisabled = computed(() => this.selectedTabIndex() !== 0 && this.selectedTabIndex() !== 2);
+  moduleFilteringDisabled = computed(
+    () => this.selectedTabIndex() !== this.TABS.network && this.selectedTabIndex() !== this.TABS.modules
+  );
+  /** The cart is shown by the network and filled from the Top ceRNA Modules tables and plots: the
+   *  tabs module filtering applies to. */
+  cartDisabled = this.moduleFilteringDisabled;
   selectedSubtype = signal<string>('');
 
   isNetworkLoading = computed(() =>
@@ -229,7 +235,7 @@ export class SpongeffectsScoresComponent {
       const sortBy = this.predictService.sortBy$();
       const topN = this.predictService.topNModules$();
 
-      if (prediction && tabIndex === 2 && subVis === 'scatterplot') {
+      if (prediction && tabIndex === this.TABS.modules && subVis === 'scatterplot') {
         // Changing params reloads the scatterplot resource, which re-runs updateScatterplotData
         // via getData (with the current showRemaining). Don't call updateScatterplotData()
         // directly here — a second, showRemaining-unaware write would race with and clobber
@@ -292,12 +298,14 @@ export class SpongeffectsScoresComponent {
         };
       });
 
-      // Fetch TCGA background x-values. Only the top-N are drawn red and always need values;
+      // Fetch TCGA background x-values. Only the top modules are drawn red and always need values;
       // the remaining ("grey") modules are only drawn — and thus only need values — once the
-      // user clicks "Add remaining modules" (showRemaining). Fetching just the top-N by default
+      // user clicks "Add remaining modules" (showRemaining). Fetching just the top ones by default
       // keeps the initial load fast; fetching all on demand makes the grey points correct.
-      const topN = this.predictService.topNModules$() || 15;
-      const topModules = modules.slice(0, topN);
+      // The top modules are the patient network's centers (PredictService.topModules$, which
+      // applies the sort and min-score filters), not the first rows of the score matrix.
+      const topIDs = new Set(this.predictService.topModules$().map((m) => m.gene));
+      const topModules = modules.filter((m) => topIDs.has(m.ensemblID));
       const modulesToResolve = showRemaining ? modules : topModules;
       const geneIDsToFetch = modulesToResolve.map(m => m.ensemblID);
 
@@ -326,12 +334,12 @@ export class SpongeffectsScoresComponent {
       await ensureGeneSymbols(this.backend, this.versionsService.versionReadOnly()(), modulesToResolve.map(m => m.ensemblID));
 
       // Map to scatterplot data items with isTop flag
-      const scatterData = modules.map((m, idx) => ({
+      const scatterData = modules.map((m) => ({
         id: symbolCache.get(m.ensemblID) || m.symbol,
         ensemblID: m.ensemblID,
         x: m.x,
         y: m.y,
-        isTop: idx < topN,
+        isTop: topIDs.has(m.ensemblID),
       }));
 
       this.transformedData.set(scatterData);

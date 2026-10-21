@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { debounceTime } from 'rxjs';
 import { ExploreService } from '../../service/explore.service';
 import { PredictService } from '../../../predict/service/predict.service';
+import { SPONGEFFECTS_TABS } from '../../../spongeffects-tabs';
 import { MatExpansionModule } from "@angular/material/expansion";
 import { MatAccordion } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
@@ -50,7 +51,7 @@ export class ModuleFormComponent implements OnInit {
   /** Disable "Show module members" when Module Importance Plot or Enrichment Scores Heatmap is shown */
   membersDisabled = computed(() => {
     if (this.source() === 'explore') {
-      if (this.exploreService.selectedTabIndex$() === 2) {
+      if (this.exploreService.selectedTabIndex$() === SPONGEFFECTS_TABS.modules) {
         const vis = this.exploreService.selectedVis();
         if (vis === 'plot') return true;
         if (vis === 'heatmap') {
@@ -60,7 +61,7 @@ export class ModuleFormComponent implements OnInit {
       return false;
     }
     const vis = this.predictService.selectedVis$();
-    if (this.predictService.selectedTabIndex$() === 2) {
+    if (this.predictService.selectedTabIndex$() === SPONGEFFECTS_TABS.modules) {
       if (vis === 'importance' || vis === 'plot') return true;
       if (vis === 'heatmap') {
         return this.predictService.selectedHeatmapType$() === 'enrichment';

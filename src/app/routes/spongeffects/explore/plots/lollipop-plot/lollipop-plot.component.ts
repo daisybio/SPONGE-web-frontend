@@ -53,7 +53,7 @@ import {
 import { BackendService, ModuleRanking } from '../../../../../services/backend.service';
 import { SpongEffectsService } from '../../../../../services/spong-effects.service';
 import { VersionsService } from '../../../../../services/versions.service';
-import { ExploreService } from '../../service/explore.service';
+import { ExploreService, mergeRunModules } from '../../service/explore.service';
 import { PredictService } from '../../../predict/service/predict.service';
 import { InfoComponent } from '../../../../../components/info/info.component';
 import { InfoService } from '../../../../../services/info.service';
@@ -74,20 +74,34 @@ declare var Plotly: any;
 export const symbolCache = new Map<string, string>();
 
 /**
- * Populate symbolCache for any of `ids` not already resolved, with a single batched
- * getGeneInfo call. Shared by every SpongEffects view that renders gene symbols so the same
- * ENSG ids aren't re-resolved per component. On failure, ids fall back to themselves.
+ * Populate symbolCache for any of `ids` not already resolved, with one batched request per ID
+ * kind. Shared by every SpongEffects view that renders gene symbols so the same ids aren't
+ * re-resolved per component. Transcripts (transcript-level modules) get their gene's symbol, as
+ * in the Explore plots. Unresolved ids fall back to themselves.
  */
 export async function ensureGeneSymbols(backend: BackendService, version: number, ids: string[]): Promise<void> {
   const missing = Array.from(new Set(ids.filter(id => id && !symbolCache.has(id))));
   if (missing.length === 0) return;
+  const genes = missing.filter(id => !id.startsWith('ENST'));
+  const transcripts = missing.filter(id => id.startsWith('ENST'));
+  const resolved = new Map<string, string>();
   try {
-    const response = await backend.getGeneInfo(version, missing.join(','));
-    const resolved = new Map(response.map(r => [r.ensg_number, r.gene_symbol]));
-    for (const id of missing) symbolCache.set(id, resolved.get(id) || id);
+    // Both endpoints answer "none found" with {detail, data: []} instead of an array, and
+    // getGeneInformation knows no transcripts.
+    if (genes.length > 0) {
+      const response = await backend.getGeneInfo(version, genes.join(','));
+      for (const r of Array.isArray(response) ? response : []) resolved.set(r.ensg_number, r.gene_symbol);
+    }
+    if (transcripts.length > 0) {
+      const response: any = await backend.getTranscriptInfo(version, transcripts.join(','));
+      for (const r of Array.isArray(response) ? response : []) {
+        if (r?.enst_number && r.gene?.gene_symbol) resolved.set(r.enst_number, r.gene.gene_symbol);
+      }
+    }
   } catch {
-    for (const id of missing) symbolCache.set(id, id);
+    // keep what resolved; the rest fall back to their ids
   }
+  for (const id of missing) symbolCache.set(id, resolved.get(id) || id);
 }
 
 @Component({
@@ -221,14 +235,6 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     this.showRemaining.set(!this.showRemaining());
   }
 
-  redNodes = computed(() => {
-    if (this.source() === 'predict') {
-      return this.predictService?.topNModules$() || 15;
-    } else {
-      return this.topN() || 15;
-    }
-  });
-
   get includeModuleMembersControl(): FormControl {
     return this.formGroup.get('includeModuleMembers') as FormControl;
   }
@@ -285,10 +291,10 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       source: this.source(),
       selectedSamples: this.predictService?.selectedSamples$() ?? [],
       sortBy: this.predictService?.sortBy$(),
-      topNModules: this.predictService?.topNModules$() || 15
+      topGenes: this.predictService?.topModules$().map((m) => m.gene) ?? [],
     }),
     loader: async ({ params }) => {
-      const { pred, scores, version, source, selectedSamples, sortBy, topNModules } = params;
+      const { pred, scores, version, source, selectedSamples, sortBy, topGenes } = params;
       if (source !== 'predict' || !pred || !scores || !scores.genes || !scores.values || !version) {
         return [];
       }
@@ -338,9 +344,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
 
-      // Resolve missing gene symbols ONLY for the topNModules subset (batched, cached)
-      const topModules = list.slice(0, topNModules);
-      await ensureGeneSymbols(this.backend, version, topModules.map(m => m.ensemblID));
+      // Resolve missing gene symbols ONLY for the top modules (batched, cached)
+      await ensureGeneSymbols(this.backend, version, topGenes);
 
       list.forEach(m => {
         m.symbol = symbolCache.get(m.ensemblID) ?? m.ensemblID;
@@ -392,17 +397,10 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
 
   filteredAndSortedModules$ = computed(() => {
     if (this.source() === 'predict') {
-      let list = [...(this.predictionModulesResource.value() || [])];
-      const min1 = this.predictService?.minScore1$();
-      const min2 = this.predictService?.minScore2$();
-      if (min1 !== null && min1 !== undefined && !isNaN(min1)) {
-        list = list.filter(m => (m.absMeanEnrichmentScore ?? 0) >= min1);
-      }
-      if (min2 !== null && min2 !== undefined && !isNaN(min2)) {
-        list = list.filter(m => (m.varianceEnrichmentScore ?? 0) >= min2);
-      }
-      const limit = this.predictService?.topNModules$() || 15;
-      return list.slice(0, limit);
+      // Exactly the patient network's centers (PredictService.topModules$, which applies the sort
+      // and min-score filters), in its order
+      const byID = new Map((this.predictionModulesResource.value() || []).map((m) => [m.ensemblID, m]));
+      return (this.predictService?.topModules$() ?? []).flatMap((top) => byID.get(top.gene) ?? []);
     }
 
     // allModules$() is already sorted+filtered server-side (sort_by / min_mean_*_decrease — see
@@ -917,16 +915,23 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     };
   });
 
-  // The patient-specific network's rendered nodes/edges, but retaining the last non-empty value
-  // so a transient empty during a network reload does not blank the tables (which is what the
-  // old direct coupling to nodes$() did). Predict mode only; null service in explore mode.
-  private readonly stableNetworkNodes$ = linkedSignal<any[], any[]>({
-    source: () => (this.predictBrowseService?.nodes$() ?? []) as any[],
-    computation: (nodes, prev) => (nodes.length > 0 ? nodes : (prev?.value ?? [])),
+  // The patient-specific network's rendered nodes/edges. They read as empty while the network
+  // reloads, so the last value is kept until the reload finishes and the tables and heatmap don't
+  // blank in between; a network that is empty once loaded (e.g. every node filtered out) shows as
+  // empty instead of keeping the previous network's rows. Predict mode only; null service in explore.
+  private readonly stableNetworkNodes$ = linkedSignal<{ nodes: any[]; loading: boolean }, any[]>({
+    source: () => ({
+      nodes: (this.predictBrowseService?.nodes$() ?? []) as any[],
+      loading: this.predictBrowseService?.isLoading$() ?? false,
+    }),
+    computation: ({ nodes, loading }, prev) => (nodes.length > 0 || !loading ? nodes : (prev?.value ?? [])),
   });
-  private readonly stableNetworkEdges$ = linkedSignal<any[], any[]>({
-    source: () => (this.predictBrowseService?.interactions$() ?? []) as any[],
-    computation: (edges, prev) => (edges.length > 0 ? edges : (prev?.value ?? [])),
+  private readonly stableNetworkEdges$ = linkedSignal<{ edges: any[]; loading: boolean }, any[]>({
+    source: () => ({
+      edges: (this.predictBrowseService?.interactions$() ?? []) as any[],
+      loading: this.predictBrowseService?.isLoading$() ?? false,
+    }),
+    computation: ({ edges, loading }, prev) => (edges.length > 0 || !loading ? edges : (prev?.value ?? [])),
   });
 
   private nodeSymbol(n: any): string {
@@ -1073,19 +1078,8 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
   });
 
   ngOnInit() {
-    if (this.source() === 'predict') {
-      this.formGroup.get('sortBy')?.setValue('absMeanEnrichmentScore', { emitEvent: false });
-      this.sortBy$.set('absMeanEnrichmentScore');
-    } else {
-      this.formGroup.get('sortBy')?.setValue('meanAccuracyDecrease', { emitEvent: false });
-      this.sortBy$.set('meanAccuracyDecrease');
-    }
-  }
-
-  // Guards the background expression-matrix preload to run once per prediction.
-  private _expressionPreloadedFor: unknown = null;
-
-  constructor() {
+    // Inputs are bound from here on. In the constructor source() is still its default ('explore'),
+    // which made the Scores page's instance share, and then overwrite, the Explore page's state.
     if (this.source() === 'explore' && this.exploreService) {
       this.topN = this.exploreService.topN;
       this.includeModuleMembers = this.exploreService.includeModuleMembers;
@@ -1097,6 +1091,21 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
       this.includeModuleMembers = this.predictService.includeModuleMembers$;
     }
 
+    if (this.source() === 'predict') {
+      this.formGroup.get('sortBy')?.setValue('absMeanEnrichmentScore', { emitEvent: false });
+      this.sortBy$.set('absMeanEnrichmentScore');
+    } else {
+      // Keep a sort the user already chose on the Explore page
+      const sortBy = this.sortBy$() || 'meanAccuracyDecrease';
+      this.formGroup.get('sortBy')?.setValue(sortBy, { emitEvent: false });
+      this.sortBy$.set(sortBy);
+    }
+  }
+
+  // Guards the background expression-matrix preload to run once per prediction.
+  private _expressionPreloadedFor: unknown = null;
+
+  constructor() {
     this.initializeSpongEffectRuns();
     this.setupEffects();
 
@@ -1203,12 +1212,12 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     effect(() => {
-      const redNodes = this.redNodes();
       const modules = this.plotModules$();
+      const topModules = this.selectedModules$();
       const vis = this.selectedVis();
-      if (vis === 'plot' && modules && modules.length > 0 && redNodes) {
+      if (vis === 'plot' && modules && modules.length > 0) {
         setTimeout(() => {
-          this.renderLollipopPlot(modules, redNodes);
+          this.renderLollipopPlot(modules, topModules);
         });
       }
     });
@@ -1271,7 +1280,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     // sort_by / min_mean_*_decrease are applied server-side (see ModuleRanking) so `topN` is the
     // true top-N under the active sort+filter, not a re-sort of a differently-ordered, already-
     // truncated response.
-    const data: SpongEffectsModule[] = [];
+    let data: SpongEffectsModule[] = [];
     if (level === 'gene') {
       for (const [key, paramSet] of Object.entries(selectedParamSets)) {
         let tmp = await this.backend.getSpongEffectsGeneModules(version, cancer, paramSet, topN, undefined, undefined, ranking)
@@ -1302,6 +1311,11 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
     }
+    // One ranking across the selected runs, as for the Reference Network's centers
+    // (ExploreService.selectedModules): otherwise the first N here are run 1's top modules and the
+    // plots mark different modules as top than the network shows
+    data = mergeRunModules(data, ranking.sortBy ?? 'meanAccuracyDecrease');
+
     // Attach enrichment metrics (mean / abs-mean / variance across the reference TCGA samples) so
     // the drawer can sort modules by them, mirroring the predict view. Uses average=true (mean +
     // variance computed in SQL, cached) — NOT average=false, which returns every per-sample score
@@ -1380,11 +1394,15 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
     return new MatTableDataSource(allMembers);
   }
 
-  private renderLollipopPlot(limitedData: SpongEffectsModule[], redNodes: number): void {
-    console.log('renderLollipopPlot called with:', limitedData.length, 'modules, redNodes:', redNodes);
+  private renderLollipopPlot(limitedData: SpongEffectsModule[], topModules: SpongEffectsModule[]): void {
+    console.log('renderLollipopPlot called with:', limitedData.length, 'modules,', topModules.length, 'top');
     const isPredict = this.source() === 'predict';
-    const greyData = limitedData.slice(redNodes);
-    const redData = limitedData.slice(0, redNodes);
+    // Red marks the top modules (the network's centers) by identity, not position: with "show
+    // remaining" the list holds every module in rank order and the min-score filters don't apply
+    // to it, so its first N are not necessarily the top modules.
+    const topIDs = new Set(topModules.map((m) => m.ensemblID));
+    const greyData = limitedData.filter((m) => !topIDs.has(m.ensemblID));
+    const redData = limitedData.filter((m) => topIDs.has(m.ensemblID));
 
     const data = [
       {

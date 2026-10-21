@@ -13,41 +13,59 @@
       <strong>Virtual Star Edge:</strong> This edge was synthesized from module member definitions and is not present in the significant network filtered with <code>mscor &gt; 0.2</code>, <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>, <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
     </div>
   }
-  @if (miRNAs$.isLoading()) {
-  <div class="card-container">
-    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-  </div>
-  }
-  <table [dataSource]="tableData" [hidden]="miRNAs$.isLoading()" class="mat-elevation-z8" mat-table matSort>
-    <ng-container matColumnDef="hs_nr">
-      <th *matHeaderCellDef mat-header-cell mat-sort-header>Name</th>
-      <td *matCellDef="let entry" mat-cell>
-        {{ entry.hs_nr }}
-      </td>
-    </ng-container>
+  <mat-tab-group preserveContent animationDuration="0ms">
+    <mat-tab label="Supporting miRNAs">
+      @if (miRNAs$.isLoading()) {
+      <div class="card-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+      </div>
+      }
+      <table [dataSource]="tableData" [hidden]="miRNAs$.isLoading()" class="mat-elevation-z8" mat-table matSort>
+        <ng-container matColumnDef="hs_nr">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>Name</th>
+          <td *matCellDef="let entry" mat-cell>
+            {{ entry.hs_nr }}
+          </td>
+        </ng-container>
 
-    <ng-container matColumnDef="mir_ID">
-      <th *matHeaderCellDef mat-header-cell mat-sort-header>ID</th>
-      <td *matCellDef="let entry" mat-cell>
-        <a [href]="'https://mirbase.org/mature/' + entry.mir_ID" mat-flat-button matTooltip="Open in miRBase"
-          matTooltipPosition="right" target="_blank">{{ entry.mir_ID }}</a>
-      </td>
-    </ng-container>
+        <ng-container matColumnDef="mir_ID">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>ID</th>
+          <td *matCellDef="let entry" mat-cell>
+            <a [href]="'https://mirbase.org/mature/' + entry.mir_ID" mat-flat-button matTooltip="Open in miRBase"
+              matTooltipPosition="right" target="_blank">{{ entry.mir_ID }}</a>
+          </td>
+        </ng-container>
 
-    <ng-container matColumnDef="node1_coefficient">
-      <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ fullNames[0] }} correlation</th>
-      <td *matCellDef="let entry" mat-cell>{{ entry.node1_coefficient }}</td>
-    </ng-container>
+        <ng-container matColumnDef="node1_coefficient">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ fullNames[0] }} correlation</th>
+          <td *matCellDef="let entry" mat-cell>{{ entry.node1_coefficient }}</td>
+        </ng-container>
 
-    <ng-container matColumnDef="node2_coefficient">
-      <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ fullNames[1] }} correlation</th>
-      <td *matCellDef="let entry" mat-cell>{{ entry.node2_coefficient }}</td>
-    </ng-container>
+        <ng-container matColumnDef="node2_coefficient">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ fullNames[1] }} correlation</th>
+          <td *matCellDef="let entry" mat-cell>{{ entry.node2_coefficient }}</td>
+        </ng-container>
 
-    <tr *matHeaderRowDef="columns" mat-header-row></tr>
-    <tr *matRowDef="let row; columns: columns;" mat-row></tr>
-  </table>
-  <mat-paginator [hidden]="miRNAs$.isLoading()" [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10"
-    aria-label="Select page of users"></mat-paginator>
+        <tr *matHeaderRowDef="columns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columns;" mat-row></tr>
+      </table>
+      <mat-paginator [hidden]="miRNAs$.isLoading()" [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10"
+        aria-label="Select page of users"></mat-paginator>
+    </mat-tab>
+
+    <mat-tab [label]="'Networks (' + networkRows().length + ')'">
+      <div style="padding: 16px 0;">
+        <app-networks-table [rows]="networkRows()" [columns]="['Correlation', 'mscor', 'Adj. p-value']"
+          [currentDatasetID]="data.disease?.dataset_ID" [loading]="allNetworks$.isLoading()"
+          emptyText="This interaction is not part of any disease network."></app-networks-table>
+        <app-info type="panel">
+          <p>
+            The disease-specific ceRNA networks in which these two {{ level }}s interact, with the
+            interaction's metrics in each. The highlighted row is the network currently loaded.
+          </p>
+        </app-info>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 
 </mat-dialog-content>

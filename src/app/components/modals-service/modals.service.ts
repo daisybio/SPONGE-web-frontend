@@ -82,7 +82,7 @@ export class ModalsService {
 
   openMiRNADialog(
     interaction: GeneInteraction | TranscriptInteraction,
-    disease: Dataset
+    disease?: Dataset
   ) {
     this.dialog.open(InteractionModalComponent, {
       data: { interaction, disease },

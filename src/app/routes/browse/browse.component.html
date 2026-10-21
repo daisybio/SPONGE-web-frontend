@@ -7,6 +7,9 @@
     </div>
     }-->
   </mat-drawer>
+  <mat-drawer position="end" [opened]="true" mode="side">
+    <app-cart-column [browseService]="browseService" [disabled]="cartDisabled()"></app-cart-column>
+  </mat-drawer>
   <mat-drawer-content>
     <app-browse-views [browseService]="browseService" (selectedTabChange)="onSelectedTabChange($event)"></app-browse-views>
   </mat-drawer-content>

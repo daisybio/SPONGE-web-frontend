@@ -2,10 +2,10 @@
   width: 100%;
   box-sizing: border-box;
   padding: 2.5%;
-  background: radial-gradient(circle at 12% 50%, rgba(142, 59, 156, 0.26) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(21, 101, 192, 0.24) 0%, transparent 50%),
-              radial-gradient(circle at 88% 50%, rgba(46, 125, 50, 0.26) 0%, transparent 50%),
-              linear-gradient(90deg, #f5e9f8 0%, #e6f0fa 50%, #e6f4e8 100%);
+  background: radial-gradient(circle at 12% 50%, rgba(223, 97, 246, 0.26) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(28, 130, 246, 0.24) 0%, transparent 50%),
+    radial-gradient(circle at 88% 50%, rgba(94, 246, 101, 0.26) 0%, transparent 50%),
+    linear-gradient(90deg, #f5e9f8 0%, #e6f0fa 50%, #e6f4e8 100%);
   min-height: calc(100vh - 64px);
   font-family: 'Roboto', 'Helvetica Neue', sans-serif;
   color: #1f2937;
@@ -15,7 +15,7 @@
    Ultra Glassmorphism Helper Defaults
    ========================================================================== */
 %glass-card {
-  background: rgba(255, 255, 255, 0.58) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
@@ -139,17 +139,26 @@
 
   &.purple-accent {
     border-left-color: #8e3b9c !important;
-    &:hover { box-shadow: 0 16px 32px rgba(142, 59, 156, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important; }
+
+    &:hover {
+      box-shadow: 0 16px 32px rgba(142, 59, 156, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+    }
   }
 
   &.blue-accent {
     border-left-color: #1565c0 !important;
-    &:hover { box-shadow: 0 16px 32px rgba(21, 101, 192, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important; }
+
+    &:hover {
+      box-shadow: 0 16px 32px rgba(21, 101, 192, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+    }
   }
 
   &.green-accent {
     border-left-color: #2e7d32 !important;
-    &:hover { box-shadow: 0 16px 32px rgba(46, 125, 50, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important; }
+
+    &:hover {
+      box-shadow: 0 16px 32px rgba(46, 125, 50, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+    }
   }
 }
 
@@ -161,9 +170,17 @@
   margin-bottom: 2px;
 }
 
-.purple-accent .stat-type { color: #8e3b9c; }
-.blue-accent .stat-type { color: #1565c0; }
-.green-accent .stat-type { color: #2e7d32; }
+.purple-accent .stat-type {
+  color: #8e3b9c;
+}
+
+.blue-accent .stat-type {
+  color: #1565c0;
+}
+
+.green-accent .stat-type {
+  color: #2e7d32;
+}
 
 .stat-num {
   font-size: 1.6rem;
@@ -172,9 +189,17 @@
   line-height: 1.2;
 }
 
-.purple-accent .stat-num { color: #8e3b9c; }
-.blue-accent .stat-num { color: #1565c0; }
-.green-accent .stat-num { color: #2e7d32; }
+.purple-accent .stat-num {
+  color: #8e3b9c;
+}
+
+.blue-accent .stat-num {
+  color: #1565c0;
+}
+
+.green-accent .stat-num {
+  color: #2e7d32;
+}
 
 .stat-name {
   font-size: 13px;
@@ -229,9 +254,17 @@
   height: 5px;
   width: 100%;
 
-  &.stripe-purple { background: linear-gradient(90deg, #8e3b9c, #ab47bc); }
-  &.stripe-blue { background: linear-gradient(90deg, #1565c0, #1e88e5); }
-  &.stripe-green { background: linear-gradient(90deg, #2e7d32, #43a047); }
+  &.stripe-purple {
+    background: linear-gradient(90deg, #8e3b9c, #ab47bc);
+  }
+
+  &.stripe-blue {
+    background: linear-gradient(90deg, #1565c0, #1e88e5);
+  }
+
+  &.stripe-green {
+    background: linear-gradient(90deg, #2e7d32, #43a047);
+  }
 }
 
 mat-card-header {
@@ -254,9 +287,20 @@ mat-card-header {
     height: 28px;
   }
 
-  &.bg-purple { background: rgba(142, 59, 156, 0.14); border: 1px solid rgba(142, 59, 156, 0.25); }
-  &.bg-blue { background: rgba(21, 101, 192, 0.14); border: 1px solid rgba(21, 101, 192, 0.25); }
-  &.bg-green { background: rgba(46, 125, 50, 0.14); border: 1px solid rgba(46, 125, 50, 0.25); }
+  &.bg-purple {
+    background: rgba(142, 59, 156, 0.14);
+    border: 1px solid rgba(142, 59, 156, 0.25);
+  }
+
+  &.bg-blue {
+    background: rgba(21, 101, 192, 0.14);
+    border: 1px solid rgba(21, 101, 192, 0.25);
+  }
+
+  &.bg-green {
+    background: rgba(46, 125, 50, 0.14);
+    border: 1px solid rgba(46, 125, 50, 0.25);
+  }
 }
 
 mat-card-title {
@@ -264,9 +308,17 @@ mat-card-title {
   font-weight: 700 !important;
   margin-bottom: 2px !important;
 
-  &.title-purple { color: #8e3b9c; }
-  &.title-blue { color: #1565c0; }
-  &.title-green { color: #2e7d32; }
+  &.title-purple {
+    color: #8e3b9c;
+  }
+
+  &.title-blue {
+    color: #1565c0;
+  }
+
+  &.title-green {
+    color: #2e7d32;
+  }
 }
 
 mat-card-subtitle {
@@ -304,9 +356,17 @@ mat-card-subtitle {
   width: 18px;
   height: 18px;
 
-  &.purple { color: #8e3b9c; }
-  &.blue { color: #1565c0; }
-  &.green { color: #2e7d32; }
+  &.purple {
+    color: #8e3b9c;
+  }
+
+  &.blue {
+    color: #1565c0;
+  }
+
+  &.green {
+    color: #2e7d32;
+  }
 }
 
 mat-card-actions {
@@ -323,19 +383,28 @@ mat-card-actions {
     &.btn-purple {
       background: linear-gradient(135deg, #8e3b9c, #ab47bc) !important;
       color: #ffffff !important;
-      &:hover { box-shadow: 0 6px 18px rgba(142, 59, 156, 0.4); }
+
+      &:hover {
+        box-shadow: 0 6px 18px rgba(142, 59, 156, 0.4);
+      }
     }
 
     &.btn-blue {
       background: linear-gradient(135deg, #1565c0, #1e88e5) !important;
       color: #ffffff !important;
-      &:hover { box-shadow: 0 6px 18px rgba(21, 101, 192, 0.4); }
+
+      &:hover {
+        box-shadow: 0 6px 18px rgba(21, 101, 192, 0.4);
+      }
     }
 
     &.btn-green {
       background: linear-gradient(135deg, #2e7d32, #43a047) !important;
       color: #ffffff !important;
-      &:hover { box-shadow: 0 6px 18px rgba(46, 125, 50, 0.4); }
+
+      &:hover {
+        box-shadow: 0 6px 18px rgba(46, 125, 50, 0.4);
+      }
     }
 
     mat-icon {
@@ -395,9 +464,18 @@ mat-card-actions {
     border-color: #1565c0 !important;
     transform: translateY(-2px);
 
-    .cohort-badge { background-color: #1565c0; color: #ffffff; }
-    .cohort-title { color: #1565c0; }
-    .cohort-arrow { color: #1565c0; }
+    .cohort-badge {
+      background-color: #1565c0;
+      color: #ffffff;
+    }
+
+    .cohort-title {
+      color: #1565c0;
+    }
+
+    .cohort-arrow {
+      color: #1565c0;
+    }
   }
 
   .cohort-badge {
@@ -494,6 +572,7 @@ mat-card-actions {
   max-height: 580px;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   position: relative;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.4);

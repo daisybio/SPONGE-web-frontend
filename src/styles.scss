@@ -157,6 +157,39 @@ td {
   overflow: auto;
 }
 
+/* ─── Scrollbars never move content ───────────────────────────────────────────────────────────
+   With classic (space-taking) scrollbars, an element whose vertical scrollbar appears or disappears
+   gets ~15px narrower or wider and its content jumps sideways: the whole page when a tab changes the
+   page height, a drawer when an accordion panel opens, a dialog when its content grows. Every
+   element that can scroll vertically reserves the scrollbar's space up front. Overlay scrollbars
+   (e.g. macOS with a trackpad) take no space and are unaffected. */
+.mat-drawer-inner-container,
+.mat-mdc-dialog-content,
+.mat-mdc-autocomplete-panel,
+.mat-mdc-select-panel {
+  scrollbar-gutter: stable;
+}
+
+/* The page itself: Chrome reserves no gutter for the root while the page doesn't scroll, so the page
+   always keeps its scrollbar track (disabled when there is nothing to scroll). */
+html {
+  overflow-y: scroll;
+}
+
+/* Hidden (preloaded or animating) tabs are clipped to the visible tab's height. With a scrollbar of
+   their own they were narrower than when shown, so their plots re-laid out and their content
+   jumped on every tab switch. They never need to scroll while hidden. */
+.mat-mdc-tab-body:not(.mat-mdc-tab-body-active) > .mat-mdc-tab-body-content {
+  overflow: hidden;
+}
+
+/* Tables wider than their tab scroll sideways on their own, so the controls above them stay put
+   and the tab never gets a horizontal scrollbar (whose height CSS can't reserve). The wrapper
+   carries the table's elevation, so the shadow isn't clipped. */
+.table-scroll {
+  overflow-x: auto;
+}
+
 /* Unified accordion look across the whole app. Angular Material only gives the "connected" rounded
    appearance to panels that are direct siblings under <mat-accordion>; when panels are split across
    child components (e.g. app-module-form, app-network-filters) their host element sits between the

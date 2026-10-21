@@ -299,9 +299,10 @@ export class BackendService {
     return results;
   }
 
+  /** Interactions among the identifiers; without a disease, in every network of the DB version. */
   async getInteractionsSpecific(
     version: number,
-    disease: Dataset,
+    disease: Dataset | undefined,
     maxPValue: number,
     identifiers: string[],
     level: 'gene' | 'transcript',
@@ -318,10 +319,12 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
       pValue: maxPValue,
     };
+    if (disease) {
+      query['disease_name'] = disease.disease_name;
+      query['dataset_ID'] = disease.dataset_ID;
+    }
     if (limit !== undefined) {
       query['limit'] = limit;
     }
@@ -339,6 +342,28 @@ export class BackendService {
       return res.data;
     }
     return (Array.isArray(res) ? res : []) as (GeneInteraction | TranscriptInteraction)[];
+  }
+
+  /**
+   * Network-analysis metrics (betweenness, eigenvector, degree) of one gene or transcript in every
+   * network it is part of: findceRNA without a disease searches all runs of the DB version. The rows'
+   * sponge_run.dataset has no disease_subtype.
+   */
+  async getNodeMetricsAllNetworks(
+    version: number,
+    level: 'gene' | 'transcript',
+    id: string
+  ): Promise<(GeneNode | TranscriptNode)[]> {
+    const route = level === 'gene' ? 'findceRNA' : 'findceRNATranscripts';
+    const query: Query = {
+      sponge_db_version: version,
+      limit: 1000,
+    };
+    query[level === 'gene' ? 'ensg_number' : 'enst_number'] = id;
+
+    const res = await this.http.getRequest<any>(this.getRequestURL(route, query));
+    // "No data" comes back as {detail, data: []} instead of an array
+    return Array.isArray(res) ? res : [];
   }
 
   async getExpression(
@@ -722,6 +747,25 @@ export class BackendService {
     return (await this.http.getRequest<TranscriptExpression[]>(this.getRequestURL(route, query))) ?? [];
   }
 
+  /**
+   * Production's clustered gene expression rows carry the gene symbol but `ensg_number: null`
+   * (expressionValues.get_gene_expr; fixed on the backend dev branch, not yet deployed), so the
+   * heatmap rows had no Ensembl ID and clicking a cell added nothing to the cart. Restores the IDs
+   * from the requested genes' symbols; a no-op once the backend fix is live.
+   */
+  private async restoreClusteredGeneIDs(version: number, identifiers: string[], rows: any[]): Promise<void> {
+    if (!rows.some((r) => r.gene && !r.gene.ensg_number)) return;
+    const info = await this.getGeneInfo(version, identifiers.join(','));
+    const bySymbol = new Map((Array.isArray(info) ? info : []).map((g) => [g.gene_symbol, g.ensg_number]));
+    for (const r of rows) {
+      if (r.gene && !r.gene.ensg_number) {
+        // Genes without a symbol were keyed by their Ensembl ID
+        const symbol: string | undefined = r.gene.gene_symbol;
+        r.gene.ensg_number = (symbol && bySymbol.get(symbol)) ?? (symbol?.startsWith('ENSG') ? symbol : null);
+      }
+    }
+  }
+
   async fetchExpressionData(
     version: number,
     identifiers: string[],
@@ -739,7 +783,9 @@ export class BackendService {
     // and cheap, so they keep the paged path below.
     if (identifiers.length > 1) {
       const rows = await this.getExpression(version, identifiers, disease_name, datasetId, level, MAX_TOTAL_RECORDS, 0, true);
-      return Array.isArray(rows) ? rows : [];
+      const data = Array.isArray(rows) ? rows : [];
+      if (level === 'gene') await this.restoreClusteredGeneIDs(version, identifiers, data);
+      return data;
     }
 
     const expressionData: any[] = [];

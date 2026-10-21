@@ -58,6 +58,9 @@
     </form>
 
   </mat-drawer>
+  <mat-drawer position="end" [opened]="true" mode="side">
+    <app-cart-column [disease]="activeDisease()" [disabled]="cartDisabled()"></app-cart-column>
+  </mat-drawer>
   <mat-drawer-content>
     @if (this.results.isLoading()) {
     <div class="spinner-container">

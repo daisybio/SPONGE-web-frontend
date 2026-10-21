@@ -90,7 +90,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
         </div>
       }
 
-      <div style="width: 100%; overflow-x: auto;">
+      <div style="width: 100%; overflow-x: hidden;">
         <div #umapPlot style="width: 100%; height: auto; min-height: 650px;"></div>
       </div>
 
@@ -322,8 +322,9 @@ export class UmapPlotComponent implements OnDestroy {
         hovermode: 'closest',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
+        // No fixed width: the plot fills its container (and the ResizeObserver below keeps it
+        // fitted); a fixed 1100px plot overflowed the tab and needed a horizontal scrollbar.
         height: 900,
-        width: 1100,
         legend: {
           orientation: 'h',
           y: 1,

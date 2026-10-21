@@ -21,7 +21,8 @@ import { MatDrawerContainer, MatDrawer, MatDrawerContent } from '@angular/materi
 import { ExploreBrowseService } from '../../../services/explore.browse.service';
 import { UmapPlotComponent } from '../predict/umap-plot/umap-plot.component';
 import { NetworkComponent } from '../../../components/browse-views/network/network.component';
-import { ActiveEntitiesComponent } from '../../../components/browse-views/active-entities/active-entities.component';
+import { CartColumnComponent } from '../../../components/cart/cart-column.component';
+import { SPONGEFFECTS_TABS } from '../spongeffects-tabs';
 
 @Component({
   selector: 'app-explore',
@@ -47,7 +48,7 @@ import { ActiveEntitiesComponent } from '../../../components/browse-views/active
     MatDrawerContent,
     UmapPlotComponent,
     NetworkComponent,
-    ActiveEntitiesComponent,
+    CartColumnComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrls: ['./explore.component.scss', '../spongeffects.component.scss'],
@@ -57,27 +58,32 @@ import { ActiveEntitiesComponent } from '../../../components/browse-views/active
   }]
 })
 export class ExploreComponent {
+  protected readonly TABS = SPONGEFFECTS_TABS;
   refreshSignal = signal<number>(0);
   exploreService = inject(ExploreService)
   selectedTabIndex = this.exploreService.selectedTabIndex$;
 
-  // Tabs: 0 = Reference Network, 1 = UMAP, 2 = Top ceRNA Modules, 3 = Score Distribution,
-  // 4 = Benchmarking. The drawer's filter panels only affect a subset of these.
+  // The drawer's filter panels only affect a subset of the tabs.
   /** Node/edge filters affect only the reference network view. */
-  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== 0);
+  networkFiltersDisabled = computed(() => this.selectedTabIndex() !== this.TABS.network);
   /** The Nodes panel (Max. nodes, node filters) also drives the expression heatmap's member rows. */
   nodesFiltersDisabled = computed(
     () =>
       !(
-        this.selectedTabIndex() === 0 ||
-        (this.selectedTabIndex() === 2 &&
+        this.selectedTabIndex() === this.TABS.network ||
+        (this.selectedTabIndex() === this.TABS.modules &&
           this.exploreService.selectedVis() === 'heatmap' &&
           this.exploreService.selectedHeatmapType() === 'expression' &&
           !!this.exploreService.includeModuleMembers())
       )
   );
   /** Module filtering affects the reference network view and the Top ceRNA Modules view. */
-  moduleFilteringDisabled = computed(() => this.selectedTabIndex() !== 0 && this.selectedTabIndex() !== 2);
+  moduleFilteringDisabled = computed(
+    () => this.selectedTabIndex() !== this.TABS.network && this.selectedTabIndex() !== this.TABS.modules
+  );
+  /** The cart is shown by the reference network and filled from the Top ceRNA Modules tables and
+   *  plots: the tabs module filtering applies to. */
+  cartDisabled = this.moduleFilteringDisabled;
 
   // True while the reference network is (re)building — covers both the module-resolution phase
   // (e.g. after changing Disease) and the network fetch itself, so the spinner shows throughout.

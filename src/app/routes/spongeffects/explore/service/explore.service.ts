@@ -38,6 +38,32 @@ function runMatchesParamSet(run: SpongEffectsRun, paramSet: SpongEffectsParamSet
   );
 }
 
+/**
+ * Ranks the modules of several spongEffects runs as one list: a gene/transcript that centers a
+ * module in more than one run appears once, with its best scores, and the list is sorted by
+ * `field`. The Reference Network's centers and the Top ceRNA Modules plots both rank this way,
+ * so their top N are the same modules.
+ */
+export function mergeRunModules(
+  modules: SpongEffectsModule[],
+  field: 'meanAccuracyDecrease' | 'meanGiniDecrease'
+): SpongEffectsModule[] {
+  const uniqueMap = new Map<string, SpongEffectsModule>();
+  for (const mod of modules) {
+    const existing = uniqueMap.get(mod.ensemblID);
+    if (!existing) {
+      uniqueMap.set(mod.ensemblID, mod);
+    } else {
+      uniqueMap.set(mod.ensemblID, {
+        ...existing,
+        meanGiniDecrease: Math.max(existing.meanGiniDecrease, mod.meanGiniDecrease),
+        meanAccuracyDecrease: Math.max(existing.meanAccuracyDecrease, mod.meanAccuracyDecrease),
+      });
+    }
+  }
+  return Array.from(uniqueMap.values()).sort((a, b) => b[field] - a[field]);
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -366,28 +392,10 @@ export class ExploreService {
         });
       }
 
-      // Deduplicate modules by ensemblID (a module can be a duplicate across selected runs)
-      const uniqueMap = new Map<string, SpongEffectsModule>();
-      for (const mod of rawModules) {
-        const existing = uniqueMap.get(mod.ensemblID);
-        if (!existing) {
-          uniqueMap.set(mod.ensemblID, mod);
-        } else {
-          uniqueMap.set(mod.ensemblID, {
-            ...existing,
-            meanGiniDecrease: Math.max(existing.meanGiniDecrease, mod.meanGiniDecrease),
-            meanAccuracyDecrease: Math.max(existing.meanAccuracyDecrease, mod.meanAccuracyDecrease),
-          });
-        }
-      }
-
-      // Each selected run was already sorted+filtered+capped server-side; re-sort the merged,
-      // deduped set by the same field before the final cap so multi-run selection still yields
-      // the true global top-N instead of "run 1's top-N, then whatever of run 2's fit after".
-      const field = ranking.sortBy!;
-      return Array.from(uniqueMap.values())
-        .sort((a, b) => b[field] - a[field])
-        .slice(0, topN);
+      // Each selected run was already sorted+filtered+capped server-side; re-rank the merged set
+      // before the final cap so multi-run selection still yields the true global top-N instead of
+      // "run 1's top-N, then whatever of run 2's fit after".
+      return mergeRunModules(rawModules, ranking.sortBy!).slice(0, topN);
     }
   });
 
