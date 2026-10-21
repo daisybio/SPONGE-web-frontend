@@ -1,0 +1,254 @@
+<div class="cart-header">
+  <mat-icon class="cart-icon">shopping_cart</mat-icon>
+  <h2>Cart</h2>
+  @if (count() > 0) {
+  <span class="cart-count">{{ count() }}</span>
+  }
+  <span class="spacer"></span>
+  <a mat-icon-button [href]="gProfilerUrl()" target="_blank" rel="noopener" [disabled]="entityItems().length === 0"
+    matTooltip="Functional enrichment analysis of the cart genes using g:Profiler">
+    <mat-icon>open_in_new</mat-icon>
+  </a>
+  <button mat-icon-button [disabled]="count() === 0 || !effectiveDisease()" (click)="visualizeNetwork()"
+    matTooltip="Visualize the interactions between the cart items as a network">
+    <mat-icon>hub</mat-icon>
+  </button>
+  <button mat-icon-button [disabled]="count() === 0" (click)="clearAll()" matTooltip="Clear all">
+    <mat-icon>delete_sweep</mat-icon>
+  </button>
+</div>
+
+@if (disabled()) {
+<p class="disabled-hint">The cart isn't used on this tab.</p>
+}
+
+<div class="cart-body">
+  <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+    <mat-label>Search & add gene</mat-label>
+    <input matInput [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); searchGene($event)"
+      placeholder="e.g. BRCA1 or ENSG..." [matAutocomplete]="auto">
+    <mat-icon matSuffix>search</mat-icon>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="addFromSearch($event.option.value)">
+      @for (gene of searchResults(); track gene.ensg_number) {
+      <mat-option [value]="gene">
+        <span class="gene-option">
+          <strong>{{ gene.gene_symbol }}</strong>
+          <small>{{ gene.ensg_number }}</small>
+        </span>
+      </mat-option>
+      }
+      @if (isSearching()) {
+      <mat-option disabled>
+        <mat-spinner diameter="16" class="search-spinner"></mat-spinner>
+        Searching...
+      </mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-tab-group [(selectedIndex)]="activeTabIndex" class="cart-tabs" animationDuration="0ms">
+    <mat-tab [label]="'Genes/Transcripts (' + entityItems().length + ')'">
+      @if (nodesInNetwork().length > 0) {
+      <h3 class="section-title">In this network ({{ nodesInNetwork().length }})</h3>
+      <p class="section-note">Metrics are calculated based on the entire network, not the shown subset.</p>
+      @for (node of nodesInNetwork(); track BrowseService.getNodeID(node)) {
+      @let gene = nodeGene(node);
+      <mat-card class="item-card">
+        <mat-card-header>
+          <mat-card-title class="card-title-row">
+            <button mat-button class="card-title-btn" (click)="openNode(node)"
+              [matTooltip]="'Show details for ' + BrowseService.getNodeGeneName(node)">
+              {{ BrowseService.getNodeGeneName(node) }}
+            </button>
+            @if (!hasMetrics(node)) {
+            <app-info type="icon" title="Network Centrality Info">
+              This gene/node is not present in a significant network filtered with <code>mscor &gt; 0.2</code>,
+              <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code>.
+            </app-info>
+            }
+            <span class="spacer"></span>
+            @if (gene) {
+            <ng-container [ngTemplateOutlet]="geneActions" [ngTemplateOutletContext]="{ $implicit: gene }"></ng-container>
+            }
+            <button mat-icon-button class="remove-btn" (click)="removeNode(node)" matTooltip="Remove from cart">
+              <mat-icon>remove_circle_outline</mat-icon>
+            </button>
+          </mat-card-title>
+          <mat-card-subtitle>{{ BrowseService.getNodeID(node) }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table class="metrics">
+            <tr>
+              <th>Betweenness</th>
+              <td>{{ (node.betweenness !== null && node.betweenness !== undefined) ? node.betweenness : 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Eigenvector</th>
+              <td>{{ (node.eigenvector !== null && node.eigenvector !== undefined) ? node.eigenvector : 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Degree</th>
+              <td>{{ (node.node_degree !== null && node.node_degree !== undefined) ? node.node_degree : 'N/A' }}</td>
+            </tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+      }
+      }
+
+      @if (entitiesNotInNetwork().length > 0) {
+      @if (browseService()) {
+      <button class="section-toggle" (click)="showNotInNetwork.set(!showNotInNetwork())">
+        <mat-icon>{{ showNotInNetwork() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        Not in this network ({{ entitiesNotInNetwork().length }})
+      </button>
+      }
+      @if (!browseService() || showNotInNetwork()) {
+      @for (item of entitiesNotInNetwork(); track item.id) {
+      @let gene = itemGene(item);
+      <div class="cart-item">
+        <div class="item-main">
+          <mat-icon class="item-type-icon" [class.gene-icon]="item.type === 'gene'"
+            [class.transcript-icon]="item.type === 'transcript'">
+            {{ item.type === 'gene' ? 'biotech' : 'account_tree' }}
+          </mat-icon>
+          <button mat-button class="item-label-btn" (click)="openEntity(item.entity)"
+            [matTooltip]="'Open info for ' + item.label">
+            {{ item.label }}
+          </button>
+          <span class="item-id">{{ item.id }}</span>
+        </div>
+        <div class="item-actions">
+          @if (gene) {
+          <ng-container [ngTemplateOutlet]="geneActions" [ngTemplateOutletContext]="{ $implicit: gene }"></ng-container>
+          }
+          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from cart">
+            <mat-icon>remove_circle_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+      }
+      }
+      }
+
+      @if (entityItems().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <p>No genes or transcripts in the cart.</p>
+        <p class="empty-hint">
+          Click a node in a network, or <mat-icon class="inline-icon">add_shopping_cart</mat-icon> next to any gene
+          or transcript.
+        </p>
+      </div>
+      }
+    </mat-tab>
+
+    <mat-tab [label]="'Interactions (' + interactionItems().length + ')'">
+      @if (interactionsInNetwork().length > 0) {
+      <h3 class="section-title">In this network ({{ interactionsInNetwork().length }})</h3>
+      <p class="section-note">Metrics are calculated based on the entire network, not the shown subset.</p>
+      @for (interaction of interactionsInNetwork(); track interaction) {
+      @let names = BrowseService.getInteractionGeneNames(interaction);
+      @let ids = BrowseService.getInteractionIDs(interaction);
+      @let fullNames = BrowseService.getInteractionFullNames(interaction);
+      @let objs = BrowseService.getInteractionObjects(interaction);
+      <mat-card class="item-card">
+        <mat-card-header>
+          <mat-card-title class="card-title-row">
+            <span class="card-title-text">{{ names[0] }} – {{ names[1] }}</span>
+            @if (isVirtualEdge(interaction)) {
+            <app-info type="icon" title="Virtual Star Edge Info">
+              This edge is not present in a significant network filtered with <code>mscor &gt; 0.2</code>,
+              <code>abs(correlation) &gt; 0.1</code>, <code>p_value &lt; 0.2</code> (i.e. <code>mscor &lt; 0.2</code>,
+              <code>abs(correlation) &lt; 0.1</code>, <code>p_value &gt; 0.2</code>).
+            </app-info>
+            }
+            <span class="spacer"></span>
+            <button mat-icon-button class="remove-btn" (click)="removeInteraction(interaction)"
+              matTooltip="Remove from cart">
+              <mat-icon>remove_circle_outline</mat-icon>
+            </button>
+          </mat-card-title>
+          <mat-card-subtitle>{{ ids[0] }} – {{ ids[1] }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <table class="metrics">
+            <tr>
+              <th>Correlation</th>
+              <td>{{ interaction.correlation }}</td>
+            </tr>
+            <tr>
+              <th>mscor</th>
+              <td>{{ interaction.mscor }}</td>
+            </tr>
+            <tr>
+              <th>Adj. p-Value</th>
+              <td>{{ interaction.p_value }}</td>
+            </tr>
+          </table>
+        </mat-card-content>
+        <mat-card-actions class="card-actions">
+          <button mat-button (click)="openInteraction(interaction)">Supporting miRNAs</button>
+          <button mat-button (click)="openEntity(objs[0])">View {{ fullNames[0] }}</button>
+          <button mat-button (click)="openEntity(objs[1])">View {{ fullNames[1] }}</button>
+        </mat-card-actions>
+      </mat-card>
+      }
+      }
+
+      @if (interactionsNotInNetwork().length > 0) {
+      @if (browseService()) {
+      <button class="section-toggle" (click)="showNotInNetwork.set(!showNotInNetwork())">
+        <mat-icon>{{ showNotInNetwork() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        Not in this network ({{ interactionsNotInNetwork().length }})
+      </button>
+      }
+      @if (!browseService() || showNotInNetwork()) {
+      @for (item of interactionsNotInNetwork(); track item.id) {
+      <div class="cart-item">
+        <div class="item-main">
+          <mat-icon class="item-type-icon interaction-icon">share</mat-icon>
+          <button mat-button class="item-label-btn interaction-label" (click)="openInteraction(item.entity)"
+            [matTooltip]="'Supporting miRNAs of ' + item.label">
+            {{ item.label }}
+          </button>
+        </div>
+        <div class="item-actions">
+          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from cart">
+            <mat-icon>remove_circle_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+      }
+      }
+      }
+
+      @if (interactionItems().length === 0) {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <p>No interactions in the cart.</p>
+        <p class="empty-hint">Click an edge in a network to add it.</p>
+      </div>
+      }
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<ng-template #geneActions let-gene>
+  <button mat-icon-button class="action-btn" matTooltip="Add module members to cart"
+    [disabled]="!effectiveDisease() || loadingModuleMembers() === gene.ensg_number" (click)="addModuleMembers(gene)">
+    @if (loadingModuleMembers() === gene.ensg_number) {
+    <mat-spinner diameter="16"></mat-spinner>
+    } @else {
+    <mat-icon>group_add</mat-icon>
+    }
+  </button>
+  <button mat-icon-button class="action-btn" matTooltip="Add transcripts to cart"
+    [disabled]="loadingTranscripts() === gene.ensg_number" (click)="addTranscripts(gene)">
+    @if (loadingTranscripts() === gene.ensg_number) {
+    <mat-spinner diameter="16"></mat-spinner>
+    } @else {
+    <mat-icon>account_tree</mat-icon>
+    }
+  </button>
+</ng-template>
