@@ -77,6 +77,17 @@ interface PatientEntry {
   genes: string[];
 }
 
+/** Everything the plot needs that is independent of the Combined/Stacked render mode. */
+interface Prep {
+  classDensities: Map<string, PlotData>;
+  patientModuleScores: Map<string, PatientEntry[]>;
+  allClasses: string[];
+  globalMin: number;
+  globalMax: number;
+  colorMap: Record<string, string>;
+  labelKind: string;
+}
+
 /**
  * Compute "SpongEffects Score Distribution": TCGA reference density per cancer class overlaid with
  * the uploaded samples' per-module enrichment scores (pooled in combined mode, one curve per
@@ -98,30 +109,45 @@ export class ClassificationPlotComponent {
   refreshSignal$ = input();
   isCombinedMode = signal(true);
 
-  plotResource = resource({
-    request: computed(() => ({
+  // Mode-INDEPENDENT preparation: fetch the TCGA reference distributions and build everything that
+  // does not depend on the Combined/Stacked toggle. Keyed WITHOUT isCombinedMode, so flipping the
+  // toggle only re-shapes already-fetched data (see `assembled` below) instead of re-issuing the
+  // uncached (and potentially large) getEnrichmentScoreDistributions request + a patient recompute.
+  prepResource = resource({
+    params: computed(() => ({
       prediction: this.predictService.prediction$(),
       version: this.versionsService.versionReadOnly()(),
       level: this.predictService.level(),
       isSubtype: this.predictService._subtypes$(),
-      isCombinedMode: this.isCombinedMode(),
       selectedScope: this.predictService.selectedScope$(),
     })),
     loader: async (param) => {
-      const { prediction, version, level, isSubtype, isCombinedMode } = param.request;
+      const { prediction, version, level, isSubtype, selectedScope } = param.params;
       if (!prediction || !version) return null;
-      return await this.buildRows(prediction, version, level, isSubtype, isCombinedMode);
+      return await this.prepare(prediction, version, level, isSubtype, selectedScope);
     },
   });
 
-  rows = computed<DensityRow[]>(() => this.plotResource.value()?.rows ?? []);
-  config = computed<DensityPlotConfig>(() => this.plotResource.value()?.config ?? { title: '' });
+  isLoading = computed(() => {
+    return this.prepResource.isLoading() || this.predictService._prediction$.isLoading();
+  });
 
-  private async buildRows(
-    prediction: any, version: number, level: string, isSubtype: boolean, isCombinedMode: boolean,
-  ): Promise<{ rows: DensityRow[]; config: DensityPlotConfig } | null> {
+  // Pure client-side reshape of the prepared data for the current Combined/Stacked mode. Recomputes
+  // on a toggle without any network access.
+  private assembled = computed(() => {
+    const prep = this.prepResource.value();
+    if (!prep) return null;
+    return this.assembleRows(prep, this.isCombinedMode());
+  });
+
+  rows = computed<DensityRow[]>(() => this.assembled()?.rows ?? []);
+  config = computed<DensityPlotConfig>(() => this.assembled()?.config ?? { title: '' });
+
+  // Fetch + shape everything that does NOT depend on the Combined/Stacked toggle (one network call).
+  private async prepare(
+    prediction: any, version: number, level: string, isSubtype: boolean, selectedScope: string,
+  ): Promise<Prep | null> {
     // 1. Meta logic
-    const selectedScope = this.predictService.selectedScope$();
     const predictedType: string = prediction.meta?.[0]?.type_predict ?? 'pancancer';
     const disease = isSubtype ? (selectedScope !== 'pancancer' ? selectedScope : predictedType) : 'pancancer';
     const labelKind = isSubtype ? 'Subtype' : 'Type';
@@ -169,6 +195,12 @@ export class ClassificationPlotComponent {
 
     const colorMap = buildColorMap(allClasses, isSubtype ? disease : undefined);
 
+    return { classDensities, patientModuleScores, allClasses, globalMin, globalMax, colorMap, labelKind };
+  }
+
+  // Pure, synchronous reshape of the prepared data into DensityRows for the given render mode.
+  private assembleRows(prep: Prep, isCombinedMode: boolean): { rows: DensityRow[]; config: DensityPlotConfig } {
+    const { classDensities, patientModuleScores, allClasses, globalMin, globalMax, colorMap, labelKind } = prep;
     const rows: DensityRow[] = [];
 
     allClasses.forEach((cls, index) => {

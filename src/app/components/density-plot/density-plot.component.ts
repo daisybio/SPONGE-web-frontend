@@ -3,7 +3,7 @@ import {
   AfterViewInit, OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -78,7 +78,7 @@ export interface DensityPlotConfig {
   selector: 'app-density-plot',
   imports: [
     CommonModule,
-    MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatMenuModule,
     MatButtonModule,

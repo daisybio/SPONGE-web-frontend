@@ -49,11 +49,37 @@ interface Query {
   [key: string]: any;
 }
 
+/**
+ * Server-side ranking/filtering for the SpongEffects module-list endpoints — mirrors the two
+ * fields the backend can actually order/filter by (mean_accuracy_decrease, mean_gini_decrease).
+ * Applying this in the query (rather than re-sorting a `limit`-truncated response client-side)
+ * is required so a "top N" or "min score" request doesn't silently drop nodes that were cut by
+ * the backend's default ordering before the client ever saw them.
+ */
+export interface ModuleRanking {
+  sortBy?: 'meanAccuracyDecrease' | 'meanGiniDecrease';
+  minMeanAccuracyDecrease?: number | null;
+  minMeanGiniDecrease?: number | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class BackendService {
   constructor(private http: HttpService) { }
+
+  private applyModuleRanking(query: Query, ranking?: ModuleRanking): void {
+    if (!ranking) return;
+    if (ranking.sortBy) {
+      query['sort_by'] = ranking.sortBy;
+    }
+    if (ranking.minMeanAccuracyDecrease !== undefined && ranking.minMeanAccuracyDecrease !== null && !isNaN(ranking.minMeanAccuracyDecrease)) {
+      query['min_mean_accuracy_decrease'] = ranking.minMeanAccuracyDecrease;
+    }
+    if (ranking.minMeanGiniDecrease !== undefined && ranking.minMeanGiniDecrease !== null && !isNaN(ranking.minMeanGiniDecrease)) {
+      query['min_mean_gini_decrease'] = ranking.minMeanGiniDecrease;
+    }
+  }
 
   async getDatasets(version: number, diseaseName?: string): Promise<Dataset[]> {
     const route = 'datasets';
@@ -108,6 +134,15 @@ export class BackendService {
 
     const numOrUndefined = (val: any) => typeof val === 'number' && !isNaN(val) ? val : undefined;
 
+    const mapEdgeSorting = (val: any): string | undefined => {
+      if (!val) return undefined;
+      const s = String(val).toLowerCase();
+      if (s.includes('mscor')) return 'mscor';
+      if (s.includes('corr')) return 'correlation';
+      if (s.includes('p')) return 'pValue';
+      return val;
+    };
+
     const _query: Query = {
       sponge_db_version: version,
       dataset_ID: query.dataset.dataset_ID,
@@ -116,7 +151,7 @@ export class BackendService {
       minEigenvector: numOrUndefined(query.minEigen),
       maxPValue: numOrUndefined(query.maxPValue),
       minMscor: numOrUndefined(query.minMscor),
-      edgeSorting: query.interactionSorting,
+      edgeSorting: mapEdgeSorting(query.interactionSorting),
       maxNodes: numOrUndefined(query.maxNodes),
       maxEdges: numOrUndefined(query.maxInteractions),
     };
@@ -204,7 +239,13 @@ export class BackendService {
           offset,
         })
       )) ?? [];
-      results.push(...data);
+      if (Array.isArray(data) && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          results.push(data[i]);
+        }
+      } else {
+        break;
+      }
       offset += limit;
     } while (data.length === limit);
 
@@ -245,16 +286,23 @@ export class BackendService {
           offset,
         })
       )) ?? [];
-      results.push(...data);
+      if (Array.isArray(data) && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+          results.push(data[i]);
+        }
+      } else {
+        break;
+      }
       offset += limit;
     } while (data.length === limit);
 
     return results;
   }
 
+  /** Interactions among the identifiers; without a disease, in every network of the DB version. */
   async getInteractionsSpecific(
     version: number,
-    disease: Dataset,
+    disease: Dataset | undefined,
     maxPValue: number,
     identifiers: string[],
     level: 'gene' | 'transcript',
@@ -271,10 +319,12 @@ export class BackendService {
 
     const query: Query = {
       sponge_db_version: version,
-      disease_name: disease.disease_name,
-      dataset_ID: disease.dataset_ID,
       pValue: maxPValue,
     };
+    if (disease) {
+      query['disease_name'] = disease.disease_name;
+      query['dataset_ID'] = disease.dataset_ID;
+    }
     if (limit !== undefined) {
       query['limit'] = limit;
     }
@@ -294,6 +344,28 @@ export class BackendService {
     return (Array.isArray(res) ? res : []) as (GeneInteraction | TranscriptInteraction)[];
   }
 
+  /**
+   * Network-analysis metrics (betweenness, eigenvector, degree) of one gene or transcript in every
+   * network it is part of: findceRNA without a disease searches all runs of the DB version. The rows'
+   * sponge_run.dataset has no disease_subtype.
+   */
+  async getNodeMetricsAllNetworks(
+    version: number,
+    level: 'gene' | 'transcript',
+    id: string
+  ): Promise<(GeneNode | TranscriptNode)[]> {
+    const route = level === 'gene' ? 'findceRNA' : 'findceRNATranscripts';
+    const query: Query = {
+      sponge_db_version: version,
+      limit: 1000,
+    };
+    query[level === 'gene' ? 'ensg_number' : 'enst_number'] = id;
+
+    const res = await this.http.getRequest<any>(this.getRequestURL(route, query));
+    // "No data" comes back as {detail, data: []} instead of an array
+    return Array.isArray(res) ? res : [];
+  }
+
   async getExpression(
     version: number,
     identifiers: string[],
@@ -311,13 +383,19 @@ export class BackendService {
       return Promise.resolve([]);
     }
 
+    // Clustering needs at least two identifiers to build a distance matrix; the backend returns a
+    // 400 ("empty distance matrix") for a single one. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-gene/-transcript expression heatmaps still return their
+    // values instead of erroring into a false "No data available".
+    const effectiveCluster = cluster && identifiers.length > 1;
+
     const query: Query = {
       sponge_db_version: version,
       dataset_ID: dataset_ID,
       disease_name: disease_name,
       limit: limit,
       offset: offset,
-      cluster: cluster,
+      cluster: effectiveCluster,
     };
 
     // drop query params that are undefined
@@ -669,6 +747,25 @@ export class BackendService {
     return (await this.http.getRequest<TranscriptExpression[]>(this.getRequestURL(route, query))) ?? [];
   }
 
+  /**
+   * Production's clustered gene expression rows carry the gene symbol but `ensg_number: null`
+   * (expressionValues.get_gene_expr; fixed on the backend dev branch, not yet deployed), so the
+   * heatmap rows had no Ensembl ID and clicking a cell added nothing to the cart. Restores the IDs
+   * from the requested genes' symbols; a no-op once the backend fix is live.
+   */
+  private async restoreClusteredGeneIDs(version: number, identifiers: string[], rows: any[]): Promise<void> {
+    if (!rows.some((r) => r.gene && !r.gene.ensg_number)) return;
+    const info = await this.getGeneInfo(version, identifiers.join(','));
+    const bySymbol = new Map((Array.isArray(info) ? info : []).map((g) => [g.gene_symbol, g.ensg_number]));
+    for (const r of rows) {
+      if (r.gene && !r.gene.ensg_number) {
+        // Genes without a symbol were keyed by their Ensembl ID
+        const symbol: string | undefined = r.gene.gene_symbol;
+        r.gene.ensg_number = (symbol && bySymbol.get(symbol)) ?? (symbol?.startsWith('ENSG') ? symbol : null);
+      }
+    }
+  }
+
   async fetchExpressionData(
     version: number,
     identifiers: string[],
@@ -678,11 +775,24 @@ export class BackendService {
   ): Promise<any[]> {
     const CHUNK_SIZE = 1000;
     const N_PARALLEL_REQUESTS = 5;
+    const MAX_TOTAL_RECORDS = 15000;
+    // With 2+ identifiers the backend clusters, and it does so on EVERY request before slicing
+    // limit/offset (the pages are just consecutive slices of the same deterministic order). Paging
+    // would therefore redo the full clustering up to 15 times (5 in parallel) for identical rows,
+    // so fetch the capped slice in a single request. Single-identifier requests are not clustered
+    // and cheap, so they keep the paged path below.
+    if (identifiers.length > 1) {
+      const rows = await this.getExpression(version, identifiers, disease_name, datasetId, level, MAX_TOTAL_RECORDS, 0, true);
+      const data = Array.isArray(rows) ? rows : [];
+      if (level === 'gene') await this.restoreClusteredGeneIDs(version, identifiers, data);
+      return data;
+    }
+
     const expressionData: any[] = [];
     let hasMoreData = true;
     let offset = 0;
 
-    while (hasMoreData) {
+    while (hasMoreData && expressionData.length < MAX_TOTAL_RECORDS) {
       // Fetch multiple pages in parallel
       const pagePromises = Array.from({ length: N_PARALLEL_REQUESTS }, (_, i) => {
         const currentOffset = offset + i * CHUNK_SIZE;
@@ -693,11 +803,13 @@ export class BackendService {
 
       // Flatten and add results
       for (const page of pageResults) {
-        if (page.length > 0) {
-          expressionData.push(...page);
+        if (Array.isArray(page) && page.length > 0) {
+          for (let i = 0; i < page.length; i++) {
+            expressionData.push(page[i]);
+          }
         }
-        // If a page has fewer rows than CHUNK_SIZE, we've reached the end
-        if (page.length < CHUNK_SIZE) {
+        // If a page has fewer rows than CHUNK_SIZE or max cap reached, stop
+        if (!Array.isArray(page) || page.length < CHUNK_SIZE || expressionData.length >= MAX_TOTAL_RECORDS) {
           hasMoreData = false;
           break; // Stop processing further pages in this batch
         }
@@ -718,9 +830,14 @@ export class BackendService {
     cluster: boolean = true,
     average: boolean = false
   ): Promise<any[]> {
+    // Clustering needs at least two modules to build a distance matrix; the backend returns a 400
+    // ("empty distance matrix") for a single module. Disable it in that case — ordering a single
+    // row is meaningless anyway — so single-module heatmaps still return their scores instead of
+    // erroring out and rendering a false "No data available".
+    const effectiveCluster = cluster && (!module_IDs || module_IDs.length > 1);
     const query: Record<string, any> = {
       sponge_db_version: version,
-      cluster,
+      cluster: effectiveCluster,
       average,
     };
     if (module_IDs && module_IDs.length > 0) {
@@ -823,7 +940,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -850,7 +967,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -877,7 +994,7 @@ export class BackendService {
     };
 
     for (const [key, param] of Object.entries(params)) {
-      if (param) {
+      if (param !== undefined && param !== null) {
         query[key] = param;
       }
     }
@@ -895,7 +1012,8 @@ export class BackendService {
     params?: { [key: string]: any },
     limit?: number,
     ensg_number?: string,
-    get_best?: boolean
+    get_best?: boolean,
+    ranking?: ModuleRanking
   ): Promise<SpongEffectsGeneModules[]> {
     const route = 'spongEffects/getSpongEffectsGeneModules';
 
@@ -914,9 +1032,10 @@ export class BackendService {
     if (get_best !== undefined) {
       query['get_best'] = get_best;
     }
+    this.applyModuleRanking(query, ranking);
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }
@@ -962,7 +1081,9 @@ export class BackendService {
     diseaseName?: string,
     params?: { [key: string]: any },
     limit?: number,
-    enst_number?: string
+    enst_number?: string,
+    get_best?: boolean,
+    ranking?: ModuleRanking
   ): Promise<SpongEffectsTranscriptModules[]> {
     const route = 'spongEffects/getSpongEffectsTranscriptModules';
 
@@ -978,9 +1099,13 @@ export class BackendService {
     if (enst_number) {
       query['enst_number'] = enst_number;
     }
+    if (get_best !== undefined) {
+      query['get_best'] = get_best;
+    }
+    this.applyModuleRanking(query, ranking);
     if (params) {
       for (const [key, param] of Object.entries(params)) {
-        if (param) {
+        if (param !== undefined && param !== null) {
           query[key] = param;
         }
       }

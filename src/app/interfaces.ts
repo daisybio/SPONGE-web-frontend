@@ -317,6 +317,13 @@ export interface SpongEffectsRun {
   disease_subtype: string;
 }
 
+// The tunable thresholds that identify one spongEffects model within a disease + level.
+export interface SpongEffectsParamSet {
+  m_scor_threshold: number;
+  p_adj_threshold: number;
+  modules_cutoff: number;
+}
+
 export interface RunPerformance {
   model_type: string;
   split_type: string;

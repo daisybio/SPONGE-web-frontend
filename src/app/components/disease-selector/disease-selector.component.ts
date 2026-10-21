@@ -12,12 +12,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
 import { capitalize } from 'lodash';
-import { getDiseaseDisplayName } from '../../cancer-colors';
+import { getDiseaseDisplayName, sortDiseaseNames } from '../../cancer-colors';
 import { SUBTYPE_DEFAULT } from '../../constants';
+import { InfoComponent } from '../info/info.component';
 
 @Component({
   selector: 'app-disease-selector',
-  imports: [MatFormFieldModule, MatSelectModule, MatDividerModule],
+  imports: [MatFormFieldModule, MatSelectModule, MatDividerModule, InfoComponent],
   templateUrl: './disease-selector.component.html',
   styleUrl: './disease-selector.component.scss',
 })
@@ -25,22 +26,25 @@ export class DiseaseSelectorComponent implements OnDestroy {
   readonly diseases$ = input.required<Dataset[]>();
   readonly initialDiseaseName$ = input<string | undefined>(undefined);
   selected = output<Dataset>();
-  readonly activeDisease$ = linkedSignal(
-    () => {
-      const names = this.diseaseNames$();
-      const initial = this.initialDiseaseName$();
-      if (initial && names.some((n) => n.toLowerCase() === initial.toLowerCase())) {
-        return names.find((n) => n.toLowerCase() === initial.toLowerCase())!;
+  readonly activeDisease$ = linkedSignal({
+    source: () => ({
+      initial: this.initialDiseaseName$(),
+      names: this.diseaseNames$(),
+    }),
+    computation: ({ initial, names }) => {
+      if (initial && names.some((n) => n?.toLowerCase() === initial.toLowerCase())) {
+        return names.find((n) => n?.toLowerCase() === initial.toLowerCase())!;
       }
-      return names.find((d) => d.toLowerCase() === 'pancancer') ?? names[0];
-    }
-  );
-  readonly activeSubtype = linkedSignal(
-    () =>
+      return names.find((d) => d?.toLowerCase() === 'pancancer') ?? names[0];
+    },
+  });
+  readonly activeSubtype = linkedSignal({
+    source: () => this.activeDisease$(),
+    computation: () =>
       this.possibleSubtypes$().find(
-        (subtype) => subtype.disease_subtype == null
-      ) ?? this.possibleSubtypes$()[0]
-  );
+        (subtype) => subtype.disease_subtype == null || subtype.disease_subtype === ''
+      ) ?? this.possibleSubtypes$()[0],
+  });
   protected readonly capitalize = capitalize;
   protected readonly getDiseaseDisplayName = getDiseaseDisplayName;
   protected readonly SUBTYPE_DEFAULT = SUBTYPE_DEFAULT;
@@ -56,10 +60,7 @@ export class DiseaseSelectorComponent implements OnDestroy {
     return diseaseSubtypes;
   });
   readonly diseaseNames$ = computed(() => {
-    const keys = Array.from(this._diseaseSubtypeMap$().keys());
-    const pan = keys.filter((k) => k.toLowerCase() === 'pancancer');
-    const others = keys.filter((k) => k.toLowerCase() !== 'pancancer').sort();
-    return [...pan, ...others];
+    return sortDiseaseNames(Array.from(this._diseaseSubtypeMap$().keys()));
   });
   readonly possibleSubtypes$ = computed(
     () => this._diseaseSubtypeMap$().get(this.activeDisease$()) ?? []

@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
+import { getCancerTypeColor, getCancerSubtypeColor, getDiseaseDisplayName } from '../../../../cancer-colors';
 
 declare var Plotly: any;
 
@@ -48,8 +49,11 @@ export class PredictionResultsComponent {
   predictService = inject(PredictService);
   prediction$ = this.predictService.prediction$;
   predictionResource = this.predictService._prediction$;
+  // Optional (not required): the element lives in the template @else branch and is absent before
+  // the first prediction and during the render/query gap when a plot value first appears, so a
+  // required query throws NG0951. All reads null-guard instead.
   typePredictPiePlot =
-    viewChild.required<ElementRef<HTMLDivElement>>('typePredictPiePlot');
+    viewChild<ElementRef<HTMLDivElement>>('typePredictPiePlot');
   refreshSignal$ = input();
 
   predictionMeta$ = computed(() => this.prediction$()?.meta[0]);
@@ -65,16 +69,21 @@ export class PredictionResultsComponent {
   });
 
   plotTypePredictPieResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       return {
         data: this.prediction$(),
       };
     }),
     loader: async (param) => {
-      const data = param.request.data;
-      if (data === undefined) return;
-      const plot_data = this.extractPredictions(data);
-      return await this.plotPredictions(plot_data);
+      const data = param.params.data;
+      if (!data || !data.data) return undefined;
+      try {
+        const plot_data = this.extractPredictions(data);
+        return await this.plotPredictions(plot_data);
+      } catch (e) {
+        console.error('Error plotting prediction results:', e);
+        return undefined;
+      }
     },
   });
 
@@ -85,7 +94,7 @@ export class PredictionResultsComponent {
 
   async plotPredictions(plotlyData: PlotlyData): Promise<PlotlyData> {
     return Plotly.newPlot(
-      this.typePredictPiePlot().nativeElement,
+      this.typePredictPiePlot()!.nativeElement,
       plotlyData.data,
       plotlyData.layout,
       plotlyData.config
@@ -97,22 +106,26 @@ export class PredictionResultsComponent {
       string,
       Map<string, number>
     >();
-    responseJson.data.forEach(
-      (entry: { typePrediction: string; subtypePrediction: string }) => {
-        if (!typeGroups.has(entry.typePrediction)) {
-          typeGroups.set(entry.typePrediction, new Map<string, number>());
+    if (responseJson && Array.isArray(responseJson.data)) {
+      responseJson.data.forEach(
+        (entry: { typePrediction?: string; subtypePrediction?: string }) => {
+          const typePred = entry?.typePrediction || 'Unknown';
+          const subPred = entry?.subtypePrediction || 'Unspecific';
+          if (!typeGroups.has(typePred)) {
+            typeGroups.set(typePred, new Map<string, number>());
+          }
+          const subtypeMap = typeGroups.get(typePred)!;
+          if (subtypeMap.has(subPred)) {
+            subtypeMap.set(
+              subPred,
+              subtypeMap.get(subPred)! + 1
+            );
+          } else {
+            subtypeMap.set(subPred, 1);
+          }
         }
-        const subtypeMap = typeGroups.get(entry.typePrediction)!;
-        if (subtypeMap.has(entry.subtypePrediction)) {
-          subtypeMap.set(
-            entry.subtypePrediction,
-            subtypeMap.get(entry.subtypePrediction)! + 1
-          );
-        } else {
-          subtypeMap.set(entry.subtypePrediction, 1);
-        }
-      }
-    );
+      );
+    }
 
     const sortedTypeCounts: Map<string, Map<string, number>> = new Map(
       [...typeGroups.entries()].sort((a, b) => {
@@ -129,88 +142,35 @@ export class PredictionResultsComponent {
     );
 
     const data: any[] = [];
-    let colorIndex = 0;
-
-    const subtypeColors = [
-      '#1f77b4',
-      '#ff7f0e',
-      '#2ca02c',
-      '#d62728',
-      '#9467bd',
-      '#8c564b',
-      '#e377c2',
-      '#7f7f7f',
-      '#bcbd22',
-      '#17becf',
-      '#aec7e8',
-      '#ffbb78',
-      '#98df8a',
-      '#ff9896',
-      '#c5b0d5',
-      '#c49c94',
-      '#f7b6d2',
-      '#c7c7c7',
-      '#dbdb8d',
-      '#9edae5',
-      '#393b79',
-      '#5254a3',
-      '#6b6ecf',
-      '#9c9ede',
-      '#637939',
-      '#8ca252',
-      '#b5cf6b',
-      '#cedb9c',
-      '#8c6d31',
-      '#bd9e39',
-      '#17becf',
-      '#bcbd22',
-      '#7f7f7f',
-      '#e377c2',
-      '#8c564b',
-      '#9467bd',
-      '#d62728',
-      '#2ca02c',
-      '#ff7f0e',
-      '#1f77b4',
-      '#9edae5',
-      '#dbdb8d',
-      '#c7c7c7',
-      '#f7b6d2',
-      '#c49c94',
-      '#c5b0d5',
-      '#ff9896',
-      '#98df8a',
-      '#ffbb78',
-      '#aec7e8',
-      '#bd9e39',
-      '#8c6d31',
-      '#cedb9c',
-      '#b5cf6b',
-      '#8ca252',
-      '#637939',
-      '#9c9ede',
-      '#6b6ecf',
-      '#5254a3',
-      '#393b79',
-    ];
 
     // Convert to array to reverse the order so most frequent appears at top
     const typeCountsArray = Array.from(sortedTypeCounts.entries()).reverse();
 
+    // Color from the global cancer-type palette: each type keeps its canonical hue, and its
+    // subtypes are lightness variants of that same hue family (getCancerSubtypeColor). A type with
+    // a single subtype segment just uses the plain type color.
+    const isSubtype = this.predictService._subtypes$();
     typeCountsArray.forEach(([type, subtypeMap]) => {
-      subtypeMap.forEach((count, subtype) => {
+      const subtypes = [...subtypeMap.keys()];
+      subtypes.forEach((subtype, subtypeIndex) => {
+        const count = subtypeMap.get(subtype)!;
+        const color = subtypes.length > 1
+          ? getCancerSubtypeColor(type, subtypeIndex, subtypes.length)
+          : getCancerTypeColor(type);
+        const isSubtypeVal = isSubtype && subtype !== 'Unspecific' && subtype !== 'None' && subtype !== 'NA';
+        const textLabel = isSubtypeVal ? getDiseaseDisplayName(subtype) : '';
         data.push({
           x: [count],
-          y: [capitalize(type)], // Capitalize using lodash
-          text: [subtype],
-          name: subtype,
+          y: [getDiseaseDisplayName(type)],
+          text: [textLabel],
+          textposition: isSubtypeVal ? 'auto' : 'none',
+          name: isSubtypeVal ? getDiseaseDisplayName(subtype) : getDiseaseDisplayName(type),
           orientation: 'h',
           type: 'bar',
           marker: {
-            color: subtypeColors[colorIndex % subtypeColors.length],
+            color,
           },
         });
-        colorIndex++;
       });
     });
 
@@ -276,14 +236,15 @@ export class PredictionResultsComponent {
   // }
 
   refreshPlot() {
-    const plotDiv = this.typePredictPiePlot().nativeElement;
-    if (plotDiv.checkVisibility()) {
+    const plotDiv = this.typePredictPiePlot()?.nativeElement;
+    if (plotDiv && plotDiv.checkVisibility()) {
       Plotly.Plots.resize(plotDiv);
     }
   }
 
   clearPlot() {
-    Plotly.purge(this.typePredictPiePlot().nativeElement);
+    const el = this.typePredictPiePlot()?.nativeElement;
+    if (el) Plotly.purge(el);
   }
 
   // validateFileContent(file: File): boolean {

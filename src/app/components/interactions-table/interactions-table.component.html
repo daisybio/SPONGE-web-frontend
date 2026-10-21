@@ -1,4 +1,4 @@
-<div class="filter-container" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+<div class="filter-container" style="display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 16px;">
   <mat-form-field appearance="outline" class="search-field" style="flex: 1 1 100%;">
     <mat-label>Search table...</mat-label>
     <input matInput [(ngModel)]="searchText" placeholder="e.g. BRCA1">
@@ -32,7 +32,8 @@
   </button>
 </div>
 
-<table [dataSource]="dataSource" class="mat-elevation-z8" mat-table matSort xmlns="http://www.w3.org/1999/html">
+<div class="table-scroll mat-elevation-z8">
+<table [dataSource]="dataSource" mat-table matSort xmlns="http://www.w3.org/1999/html">
   <ng-container matColumnDef="name_1">
     <th *matHeaderCellDef mat-header-cell mat-sort-header>{{ capitalize(level$()) || 'Node' }} 1</th>
     <td *matCellDef="let interaction" mat-cell>
@@ -105,4 +106,5 @@
   <tr *matHeaderRowDef="columns" mat-header-row></tr>
   <tr *matRowDef="let row; columns: columns;" mat-row></tr>
 </table>
+</div>
 <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" [pageSize]="10" aria-label="Select page of users"></mat-paginator>

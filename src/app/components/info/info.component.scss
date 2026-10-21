@@ -1,0 +1,32 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.info-icon-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+
+  .mat-icon,
+  mat-icon,
+  .info-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: var(--app-accent, #025cbb);
+  }
+}

@@ -14,6 +14,7 @@ import {
   inject,
 } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -37,6 +38,7 @@ export type ScatterplotDataScource = {
   selector: 'app-scatterplot',
   imports: [
     MatProgressBar,
+    MatProgressSpinnerModule,
     CommonModule,
     MatMenuModule,
     MatButtonModule,
@@ -80,7 +82,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
 
   // Resource-based data fetching
   scatterplotResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       // Include refreshSignal$ and showRemaining to trigger reloads
       this.refreshSignal$();
       this.showRemaining();
@@ -91,7 +93,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
       };
     }),
     loader: async (param) => {
-      const { dataSource, params } = param.request;
+      const { dataSource, params } = param.params;
 
       try {
         // Fetch data using the data source. Pass showRemaining so the source can decide

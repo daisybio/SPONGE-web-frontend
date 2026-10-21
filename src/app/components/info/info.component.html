@@ -24,8 +24,8 @@
   </mat-expansion-panel>
 }
 @if (type() == 'icon') {
-  <button mat-icon-button (click)="openDialog(); $event.stopPropagation()" style="margin-left: 10px;">
-    <mat-icon style="width: 18px; height: 18px; font-size: 18px; color: var(--app-accent, #025cbb);">info</mat-icon>
+  <button mat-icon-button class="info-icon-button" (click)="openDialog(); $event.stopPropagation()">
+    <mat-icon class="info-icon">info</mat-icon>
   </button>
 }
 

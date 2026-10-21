@@ -8,7 +8,7 @@
             <p>No data available</p>
         }
     }
-    <div class="table-container" style="overflow: auto; max-height: 320px;">
+    <div class="table-container" style="overflow: auto; max-height: 320px; scrollbar-gutter: stable;">
         <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container *ngFor="let key of columns; let i = index" [matColumnDef]="key" [sticky]="i === 0">
                 <th mat-header-cell *matHeaderCellDef> {{ key }} </th>

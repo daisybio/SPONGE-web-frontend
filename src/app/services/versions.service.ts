@@ -12,10 +12,10 @@ export class VersionsService {
 
   constructor(backendService: BackendService) {
     this._diseases$ = resource({
-      request: this.version$,
+      params: this.version$,
       loader: async (version) =>
-        (await backendService.getDatasets(version.request)).filter(
-          (dataset) => dataset.sponge_db_version === version.request,
+        (await backendService.getDatasets(version.params)).filter(
+          (dataset) => dataset.sponge_db_version === version.params,
         ),
     });
 
@@ -24,7 +24,7 @@ export class VersionsService {
       const diseases = this._diseases$.value();
       const current = this.selectedDiseaseName$();
       if (diseases && diseases.length > 0) {
-        if (!current || !diseases.some((d) => d.disease_name.toLowerCase() === current.toLowerCase())) {
+        if (!current || !diseases.some((d) => d?.disease_name?.toLowerCase() === current?.toLowerCase())) {
           this.selectedDiseaseName$.set(diseases[0].disease_name);
         }
       } else {

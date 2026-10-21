@@ -3,7 +3,7 @@ FROM node:latest AS builder
 WORKDIR /app
 COPY . .
 
-RUN npm i && npm run build:prod
+RUN npm ci --legacy-peer-deps && npm run build:prod
 
 FROM nginx:latest
 

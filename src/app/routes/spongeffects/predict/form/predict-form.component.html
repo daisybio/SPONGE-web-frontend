@@ -73,34 +73,72 @@
         </app-info>
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
-      <mat-label>Disease</mat-label>
-      <mat-select formControlName="model">
-        @let models = sortedModels$();
-        @for (model of models; track model.dataset_ID; let index = $index) {
-        <mat-option [value]="model.disease_name">{{ capitalize(model.disease_name) }}</mat-option>
-        @if (model.disease_name.toLowerCase() === 'pancancer' && index < models.length - 1) { <mat-divider>
-          </mat-divider>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Disease</mat-label>
+        <mat-select formControlName="model">
+          @let models = sortedModels$();
+          @for (model of models; track model.dataset_ID; let index = $index) {
+          <mat-option [value]="model.disease_name">
+            <div class="option-content-row">
+              <span>{{ getDiseaseDisplayName(model.disease_name) }}</span>
+              @if (model.sample_count; as count) {
+                <span class="sample-count" [class.pancancer-count]="(model.disease_name || '').toLowerCase() === 'pancancer'">
+                  ({{ count }})
+                </span>
+              }
+            </div>
+          </mat-option>
+          @if ((model.disease_name || '').toLowerCase() === 'pancancer' && index < models.length - 1) {
+            <mat-divider></mat-divider>
           }
           }
-      </mat-select>
-    </mat-form-field>
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" title="Disease & Subtype Datasets">
+        <p>
+          The disease datasets in SPONGE originate from
+          <a href="https://portal.gdc.cancer.gov/" target="_blank" rel="noopener noreferrer">The Cancer Genome Atlas (TCGA)</a>.
+        </p>
+        <ul>
+          <li>
+            <b>Numbers in parentheses:</b> Indicate the number of patient samples available for each disease or subtype.
+          </li>
+          <li>
+            <b>Subtypes:</b> Cancer types may be subdivided into distinct molecular subtypes (e.g., Luminal A, HER2-enriched).
+          </li>
+          <li>
+            <b>Unspecific:</b> Refers to the main disease dataset containing all samples for that cancer type without subtype filtering.
+          </li>
+        </ul>
+      </app-info>
+    </div>
 
     @if (subtypesForSelectedType$().length > 0) {
-    <mat-form-field appearance="outline" class="full-width" style="width: 100%;">
-      <mat-label>Subtype (coming soon)</mat-label>
-      <mat-select disabled [value]="null" placeholder="Type-level model will be used for now">
-        @for (subtype of subtypesForSelectedType$(); track subtype.disease_subtype) {
-        <mat-option [value]="subtype.disease_subtype">{{ subtype.disease_subtype }}</mat-option>
-        }
-      </mat-select>
-      <mat-hint>
-        Subtype-specific spongEffects models are still being trained. Once available, selecting a subtype here will
-        run its dedicated model directly instead of predicting a subtype from the type-level model.
-      </mat-hint>
-    </mat-form-field>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <mat-form-field appearance="outline" style="flex: 1;">
+        <mat-label>Subtype (coming soon)</mat-label>
+        <mat-select disabled [value]="null" placeholder="Type-level model will be used for now">
+          @for (subtype of subtypesForSelectedType$(); track subtype.disease_subtype) {
+          <mat-option [value]="subtype.disease_subtype">
+            <div class="option-content-row">
+              <span>{{ getDiseaseDisplayName(subtype.disease_subtype || '') }}</span>
+              @if (subtype.sample_count; as count) {
+                <span class="sample-count">({{ count }})</span>
+              }
+            </div>
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <app-info type="icon" title="Subtype-specific models">
+        <p>
+          Subtype-specific spongEffects models are still being trained. Once available, selecting a subtype here will
+          run its dedicated model directly instead of predicting a subtype from the type-level model.
+        </p>
+      </app-info>
+    </div>
     }
-
   </mat-expansion-panel>
 
   <mat-expansion-panel>

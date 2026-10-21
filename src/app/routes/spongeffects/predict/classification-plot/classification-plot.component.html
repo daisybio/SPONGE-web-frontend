@@ -1,4 +1,4 @@
-<app-density-plot [rows]="rows()" [config]="config()" [loading]="plotResource.isLoading()"
+<app-density-plot [rows]="rows()" [config]="config()" [loading]="isLoading()"
   [combined]="isCombinedMode()" (combinedChange)="isCombinedMode.set($event)" [refreshSignal$]="refreshSignal$()">
   <p>
     Each shaded area is the distribution of SpongEffects enrichment scores across the TCGA reference cohort for one

@@ -82,20 +82,22 @@ export class GeneExpressionHeatmapComponent {
     },
     
     getZMid: () => 0,
-    
-    getColorScale: () => 'RdBu'
+
+    getColorScale: () => 'RdBu',
+
+    // Subtype bar: for a single disease its values are that disease's subtypes (hue family); for
+    // pancancer they are cancer types (canonical per-type colors). Both handled by the global system.
+    subtypeParentType: () => this.browseService().disease$()?.disease_name,
   };
 
   private async handlePancancerSubtypes(expressionData: any[]): Promise<void> {
     // Fetch the mapping from TSS codes to disease names
     const mapping = await this.backend.getDiseaseFromSample();
     
-    // Add the disease name to the expression data
-    for (const e of expressionData) {
-      const sampleId = e.sample_ID;
-      // mapSampleToDisease from ReusableHeatmapComponent
-      const diseaseName = await ReusableHeatmapComponent.mapSampleToDisease(sampleId, mapping);
-      e.disease_subtype = diseaseName;
+    // Add the disease name to the expression data synchronously
+    for (let i = 0; i < expressionData.length; i++) {
+      const e = expressionData[i];
+      e.disease_subtype = ReusableHeatmapComponent.mapSampleToDisease(e.sample_ID, mapping);
     }
   }
 }

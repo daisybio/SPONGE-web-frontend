@@ -267,32 +267,33 @@ export class ClassPerformancePlotComponent implements AfterViewInit, OnDestroy {
         title: `Predictive Class (${type_or_subtype})`
       },
       // Add subplot titles
-      annotations: [{
-        text: `Classification Performance per Cancer ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
-        x: 0.5,
-        y: 1,
-        xref: 'paper',
-        yref: 'paper',
-        xanchor: 'center',
-        yanchor: 'bottom',
-        showarrow: false,
-        font: {
-          size: 16,
-        },
-      },
-      {
-        text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[1]}`,  // Test
-        x: 0.5,
-        y: this.selectedDisease() === 'pancancer' ? 0.15 : 0.35,
-        xref: 'paper',
-        yref: 'paper',
-        xanchor: 'center',
-        yanchor: 'bottom',
-        showarrow: false,
-        font: {
-          size: 16,
-        },
-      },
+      annotations: [
+        ...(subplotTitles[0] ? [{
+          text: `Classification Performance per Cancer ${type_or_subtype} - ${subplotTitles[0]}`,  // Train
+          x: 0.5,
+          y: 1,
+          xref: 'paper',
+          yref: 'paper',
+          xanchor: 'center',
+          yanchor: 'bottom',
+          showarrow: false,
+          font: {
+            size: 16,
+          },
+        }] : []),
+        ...(subplotTitles[1] ? [{
+          text: `Classification Performance per ${type_or_subtype} - ${subplotTitles[1]}`,  // Test
+          x: 0.5,
+          y: this.selectedDisease() === 'pancancer' ? 0.15 : 0.35,
+          xref: 'paper',
+          yref: 'paper',
+          xanchor: 'center',
+          yanchor: 'bottom',
+          showarrow: false,
+          font: {
+            size: 16,
+          },
+        }] : []),
       // yaxis label
       {
         text: Object.keys(this.selectedModels()).length > 1

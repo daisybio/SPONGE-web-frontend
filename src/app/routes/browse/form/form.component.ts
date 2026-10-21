@@ -76,10 +76,21 @@ export class FormComponent implements OnInit {
       const globalName = this.versionsService.selectedDiseaseName$();
       const diseases = this.diseases$();
       if (globalName && diseases.length > 0) {
-        const match = diseases.find((d) => d.disease_name === globalName);
+        const match =
+          diseases.find(
+            (d) =>
+              d.disease_name === globalName &&
+              (d.disease_subtype == null || d.disease_subtype === '')
+          ) ?? diseases.find((d) => d.disease_name === globalName);
         if (match) return match;
       }
-      return diseases[0];
+      return (
+        diseases.find((d) => d.disease_name?.toLowerCase() === 'pancancer') ??
+        diseases.find(
+          (d) => d.disease_subtype == null || d.disease_subtype === ''
+        ) ??
+        diseases[0]
+      );
     },
     computation: (source) => source,
   });
@@ -96,7 +107,7 @@ export class FormComponent implements OnInit {
   mscorEquation$ = viewChild<ElementRef<HTMLSpanElement>>('mscorEquation');
   infoService = inject(InfoService);
   formGroup = new FormGroup({
-    level: new FormControl<'gene' | 'transcript'>('gene'),
+    level: new FormControl<'gene' | 'transcript'>('transcript'),
     showOrphans: new FormControl<boolean>(false),
     sortingBetweenness: new FormControl<boolean>(true),
     sortingDegree: new FormControl<boolean>(false),

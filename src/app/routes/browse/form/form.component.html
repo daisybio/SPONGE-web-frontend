@@ -1,6 +1,7 @@
 <form [formGroup]="formGroup" style="margin: 10px">
   @if (!fixedDataset()) {
-  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()" [initialDiseaseName$]="versionsService.selectedDiseaseName$()"></app-disease-selector>
+  <app-disease-selector (selected)="activeDataset.set($event)" [diseases$]="diseases$()"
+    [initialDiseaseName$]="versionsService.selectedDiseaseName$()"></app-disease-selector>
   } @else {
   <mat-form-field appearance="outline" style="width: 100%;">
     <mat-label>Disease</mat-label>
@@ -11,16 +12,16 @@
   @if (!fixedLevel()) {
   <div class="card-container">
     <mat-button-toggle-group formControlName="level">
-      <mat-button-toggle value="gene">Genes</mat-button-toggle>
       <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
+      <mat-button-toggle value="gene">Genes</mat-button-toggle>
     </mat-button-toggle-group>
   </div>
   } @else {
   <div class="card-container">
     <!-- show a button toggle form group just like when no level is fixed but without functionality just to show which level is fixed -->
     <mat-button-toggle-group formControlName="level" [disabled]="!!fixedLevel">
-      <mat-button-toggle value="gene" disabled>Genes</mat-button-toggle>
       <mat-button-toggle value="transcript" disabled>Transcripts</mat-button-toggle>
+      <mat-button-toggle value="gene" disabled>Genes</mat-button-toggle>
     </mat-button-toggle-group>
   </div>
   }
@@ -136,7 +137,7 @@
         <mat-select formControlName="geneType">
           <mat-option value="all">All</mat-option>
           @for (type of availableGeneTypes$(); track type) {
-            <mat-option [value]="type">{{ formatGeneType(type) }}</mat-option>
+          <mat-option [value]="type">{{ formatGeneType(type) }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -153,7 +154,8 @@
         </mat-select>
       </mat-form-field>
       <app-info type="icon">
-        <p>Filter nodes based on cross-level interaction support (whether matching interactions exist at the opposite level).</p>
+        <p>Filter nodes based on cross-level interaction support (whether matching interactions exist at the opposite
+          level).</p>
       </app-info>
     </mat-expansion-panel>
     <mat-expansion-panel>

@@ -1,0 +1,15 @@
+// Sigma sizes its absolutely positioned canvases to the container's offsetWidth/offsetHeight on
+// every render, i.e. every frame while the force layout runs. So the container has no border of
+// its own (offsetWidth then equals the box the canvases sit in) and clips them: canvases 1px wider
+// than a full-width container overflowed the tab body, which toggled its scrollbars and the
+// container width on alternate frames, and the network jittered.
+.network-frame {
+  border: 1px solid #ccc;
+}
+
+.network-canvas {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 500px;
+}

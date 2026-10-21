@@ -1,14 +1,14 @@
 <mat-drawer-container style="min-height: 800px">
-  <mat-drawer [opened]="true" mode="side" style="padding: 10px">
-    <form>
-      <div style="display: flex; justify-content: center;">
-        <mat-button-toggle-group [(value)]="level" name="modeToggle" style="margin-bottom: 15px;">
+  <mat-drawer [opened]="true" mode="side" style="padding: 24px 16px;">
+    <form style="padding-top: 8px;">
+      <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <mat-button-toggle-group [value]="level()" (change)="level.set($event.value)" name="modeToggle">
           <mat-button-toggle value="gene">Genes</mat-button-toggle>
           <mat-button-toggle value="transcript">Transcripts</mat-button-toggle>
         </mat-button-toggle-group>
       </div>
       @if (level() === 'gene') {
-      <mat-form-field class="example-chip-list">
+      <mat-form-field class="example-chip-list" style="margin-top: 12px;">
 
         <mat-label>Select genes</mat-label>
         <mat-chip-grid #chipGrid aria-label="Gene selection">
@@ -31,7 +31,7 @@
         </mat-autocomplete>
       </mat-form-field>
       } @else {
-      <mat-form-field class="example-chip-list">
+      <mat-form-field class="example-chip-list" style="margin-top: 12px;">
 
         <mat-label>Select transcripts</mat-label>
         <mat-chip-grid #transcriptChipGrid aria-label="Transcript selection">
@@ -57,6 +57,9 @@
       <mat-checkbox [(ngModel)]="onlySignificant" name="onlySignificant">Show only significant results</mat-checkbox>
     </form>
 
+  </mat-drawer>
+  <mat-drawer position="end" [opened]="true" mode="side">
+    <app-cart-column [disease]="activeDisease()" [disabled]="cartDisabled()"></app-cart-column>
   </mat-drawer>
   <mat-drawer-content>
     @if (this.results.isLoading()) {

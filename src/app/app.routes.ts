@@ -118,13 +118,6 @@ export const routes: Routes = [
             (m) => m.ExploreComponent
           ),
       },
-      {
-        path: 'predict',
-        loadComponent: () =>
-          import('./routes/spongeffects/predict/predict.component').then(
-            (m) => m.PredictComponent
-          ),
-      },
     ],
   },
   {

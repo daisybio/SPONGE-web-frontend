@@ -1,5 +1,7 @@
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
+<mat-expansion-panel [disabled]="disabled()" [expanded]="disabled() ? false : panelOpen()"
+  (expandedChange)="!disabled() && panelOpen.set($event)">
+  <mat-expansion-panel-header
+    [matTooltip]="disabled() ? 'Module filtering applies to the network and Top ceRNA Modules views only.' : ''">
     <mat-panel-title>Module Filtering</mat-panel-title>
   </mat-expansion-panel-header>
   <form [formGroup]="formGroup">
@@ -68,9 +70,6 @@
           @if (source() === 'explore') {
           <mat-option value="meanAccuracyDecrease">Mean Accuracy Decrease</mat-option>
           <mat-option value="meanGiniDecrease">Mean Gini Decrease</mat-option>
-          <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
-          <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
-          <mat-option value="varianceEnrichmentScore">Enrichment Score Variance</mat-option>
           } @else {
           <mat-option value="absMeanEnrichmentScore">Abs. Mean Enrichment Score</mat-option>
           <mat-option value="meanEnrichmentScore">Mean Enrichment Score</mat-option>
@@ -80,18 +79,13 @@
       </mat-form-field>
       <app-info type="icon" title="Module Sorting Options">
         @if (source() === 'explore') {
-        <p>Options for ranking reference TCGA modules:</p>
+        <p>Options for ranking reference TCGA modules (applied server-side, so it also determines
+          which module centers are shown in the Reference Network):</p>
         <ul style="padding-left: 20px; margin: 4px 0;">
           <li><b>Mean Accuracy Decrease:</b> Ranks modules by the average loss in prediction accuracy when the module
             features are permuted in the Random Forest model.</li>
           <li><b>Mean Gini Decrease:</b> Ranks modules by how much node purity (Gini impurity reduction) is gained by
             splits using the module across trees.</li>
-          <li><b>Abs. Mean Enrichment Score:</b> Ranks modules by highest magnitude of mean enrichment score across
-            the reference TCGA samples (prioritizing strong positive or negative regulation).</li>
-          <li><b>Mean Enrichment Score:</b> Ranks modules by signed mean enrichment score across the reference TCGA
-            samples (highest positive score first).</li>
-          <li><b>Enrichment Score Variance:</b> Ranks modules by score variance across the reference TCGA samples
-            (prioritizing modules with high sample-to-sample variability).</li>
         </ul>
         } @else {
         <p>Options for ranking patient enrichment scores:</p>

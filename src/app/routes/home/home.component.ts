@@ -19,6 +19,7 @@ import { fromEvent } from 'rxjs';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { capitalize } from 'lodash';
 import { Router } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
 
 declare const Plotly: any;
 
@@ -91,13 +92,13 @@ export class HomeComponent implements OnDestroy {
     this.diseases = versionsService.diseases$();
 
     this.overallCountsGenes = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'gene'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'gene'),
     });
 
     this.overallCountsTranscripts = resource({
-      request: version,
-      loader: (param) => this.backend.getOverallCounts(param.request, 'transcript'),
+      params: version,
+      loader: (param) => this.backend.getOverallCounts(param.params, 'transcript'),
     });
 
     fromEvent(window, 'resize')
@@ -173,20 +174,6 @@ export class HomeComponent implements OnDestroy {
     ];
 
     return data
-  }
-
-  private getSubtypeColor(subtype: string, type: 'gene' | 'transcript'): string {
-    // Generate color based on subtype name hash
-    let hash = 0;
-    for (let i = 0; i < subtype.length; i++) {
-      hash = subtype.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const hue = Math.abs(hash) % 360;
-    const saturation = type === 'gene' ? 70 : 50;
-    const lightness = type === 'gene' ? 50 : 65;
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
   navigateTo(route: string) {

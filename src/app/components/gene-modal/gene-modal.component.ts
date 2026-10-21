@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { Gene, GOTerm, SpongEffectsGeneModules } from '../../interfaces';
+import { Gene, GeneInteraction, GOTerm, SpongEffectsGeneModules, Transcript } from '../../interfaces';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { VersionsService } from '../../services/versions.service';
@@ -35,6 +35,7 @@ import { Router } from '@angular/router';
 import { PredictService } from '../../routes/spongeffects/predict/service/predict.service';
 import { InfoComponent } from '../info/info.component';
 import { AddToCartButtonComponent } from '../add-to-cart-button/add-to-cart-button.component';
+import { NetworkRow, NetworksTableComponent } from '../networks-table/networks-table.component';
 
 interface ASEntry {
   enst: string;
@@ -58,8 +59,11 @@ interface ASEntry {
     MatChip,
     MatProgressSpinner,
     MatProgressBar,
-    MatTooltipModule,
+    MatTooltip,
     Igv,
+    InfoComponent,
+    AddToCartButtonComponent,
+    NetworksTableComponent,
   ],
   templateUrl: './gene-modal.component.html',
   styleUrl: './gene-modal.component.scss',
@@ -76,7 +80,9 @@ export class GeneModalComponent implements AfterViewInit {
   browseService = inject(BrowseService);
   private router = inject(Router);
   readonly isBrowseRoute$ = computed(() => this.router.url.includes('/browse'));
-  readonly disease$ = this.browseService.disease$;
+  readonly disease$ = computed(() => {
+    return this.browseService.disease$() || (this.gene as any)?.disease || null;
+  });
   readonly gene = inject<Gene>(MAT_DIALOG_DATA);
   readonly versionsService = inject(VersionsService);
   readonly backend = inject(BackendService);
@@ -104,36 +110,39 @@ export class GeneModalComponent implements AfterViewInit {
   private predictService = inject(PredictService, { optional: true });
 
   readonly module_IDs$: ResourceRef<SpongEffectsGeneModules[] | undefined> = resource({
-    request: computed(() => {
+    params: computed(() => {
       const version = this.version$();
       const ensg = this.ensgNumber;
       return { version, ensg };
     }),
     loader: async (params) => {
-      const { version, ensg } = params.request;
+      const { version, ensg } = params.params;
       if (!ensg) return [];
       // Do NOT filter by disease: SpongEffects runs are pancancer (disease is null on the runs),
-      // so any disease_name filter returns zero modules. get_best returns the gene's best module.
+      // so any disease_name filter returns zero modules. get_best=false so this gene's module is
+      // found regardless of which param-set run it belongs to — with get_best=true the production
+      // API (pre bf4045c1) truncates to a single arbitrary run before matching the gene, so genes
+      // whose module lives in any other run silently come back empty. See critical_project_info.md.
       return await this.backend.getSpongEffectsGeneModules(
         version,
         undefined,
         {},
         undefined,
         ensg,
-        true
+        false
       );
     }
   });
 
   readonly tcgaEffects$ = resource({
-    request: computed(() => {
+    params: computed(() => {
       const version = this.version$();
       const module_ids = this.module_IDs$.value()?.map((module) => module.spongEffects_gene_module_ID);
       return { version, module_ids };
     }),
     loader: async (params) => {
-      if (!params.request.module_ids || params.request.module_ids.length === 0) return [];
-      return await this.backend.fetchSpongEffectsEnrichScores(params.request.version, "gene", params.request.module_ids, false, true);
+      if (!params.params.module_ids || params.params.module_ids.length === 0) return [];
+      return await this.backend.fetchSpongEffectsEnrichScores(params.params.version, "gene", params.params.module_ids, false, true);
     }
   });
 
@@ -183,32 +192,129 @@ export class GeneModalComponent implements AfterViewInit {
     return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
   }
 
+  // Aggregate stats over the ceRNA interactions this gene takes part in, read from the network
+  // already loaded in BrowseService — the browse view filters edges by mscor / adj. p-value, so
+  // the data is present without any extra request. Virtual/fallback edges (string mscor like
+  // "< 0.2") are excluded so the summary reflects only real, measured interactions. Undefined when
+  // no interactions for this gene are loaded (i.e. the modal was opened outside the browse network).
+  readonly ceRNAStats$ = computed(() => {
+    const ensg = this.ensgNumber;
+    if (!ensg) return undefined;
+    const edges = this.browseService.interactions$() as GeneInteraction[];
+    const real = edges.filter(
+      (e) =>
+        (e?.gene1?.ensg_number === ensg || e?.gene2?.ensg_number === ensg) &&
+        typeof e.mscor === 'number' &&
+        typeof e.p_value === 'number'
+    );
+    if (real.length === 0) return undefined;
+    const mscors = real.map((e) => e.mscor).sort((a, b) => a - b);
+    const pValues = real.map((e) => e.p_value);
+    const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+    const median = (sorted: number[]) => {
+      const n = sorted.length;
+      const mid = Math.floor(n / 2);
+      return n % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+    return {
+      count: real.length,
+      meanMscor: sum(mscors) / mscors.length,
+      medianMscor: median(mscors),
+      minMscor: mscors[0],
+      maxMscor: mscors[mscors.length - 1],
+      bestPValue: Math.min(...pValues),
+    };
+  });
+
+  // The gene's metrics in every disease network it is part of ("Networks" tab)
+  readonly allNetworks$ = resource({
+    params: computed(() => ({ version: this.version$(), ensg: this.ensgNumber })),
+    loader: async ({ params }) => {
+      if (!params.ensg) return [];
+      return await this.backend.getNodeMetricsAllNetworks(params.version, 'gene', params.ensg);
+    },
+  });
+
+  readonly networkRows = computed<NetworkRow[]>(() =>
+    (this.allNetworks$.value() ?? []).map((node) => ({
+      dataset: node.sponge_run.dataset,
+      values: [node.betweenness, node.eigenvector, node.node_degree],
+    }))
+  );
+
+  // The gene's metrics in the modal's disease network, from the rows above
+  readonly dbCentralities$ = computed(() => {
+    const datasetID = this.disease$()?.dataset_ID;
+    const match = (this.allNetworks$.value() ?? []).find(
+      (node) => node.sponge_run?.dataset?.dataset_ID === datasetID
+    );
+    if (datasetID === undefined || !match) return null;
+    return {
+      betweenness: match.betweenness ?? null,
+      eigenvector: match.eigenvector ?? null,
+      node_degree: match.node_degree ?? null,
+    };
+  });
+
+  readonly effectiveCentralities$ = computed(() => {
+    const g = this.gene as any;
+    if (g.betweenness !== undefined && g.betweenness !== null) {
+      return {
+        betweenness: g.betweenness,
+        eigenvector: g.eigenvector ?? null,
+        node_degree: g.node_degree ?? null,
+      };
+    }
+
+    const ensg = this.ensgNumber;
+    const activeNodes = this.browseService.nodes$() || [];
+    const match = activeNodes.find((n) => BrowseService.getNodeID(n) === ensg);
+    if (match) {
+      return {
+        betweenness: match.betweenness ?? null,
+        eigenvector: match.eigenvector ?? null,
+        node_degree: match.node_degree ?? null,
+      };
+    }
+
+    const db = this.dbCentralities$();
+    if (db) {
+      return db;
+    }
+
+    return {
+      betweenness: g.betweenness ?? null,
+      eigenvector: g.eigenvector ?? null,
+      node_degree: g.node_degree ?? null,
+    };
+  });
+
   readonly geneInfo$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
       this.geneEnsgNumber
         ? this.backend
-            .getGeneInfo(version.request, this.geneEnsgNumber)
+            .getGeneInfo(version.params, this.geneEnsgNumber)
             .then((info) => info[0])
         : undefined,
   });
 
   readonly goTerms$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getGOterms(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getGOterms(version.params, this.geneSymbol) : [],
   });
 
   readonly hallmarks$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getHallmark(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getHallmark(version.params, this.geneSymbol) : [],
   });
 
   readonly wikipathways$ = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) =>
-      this.geneSymbol ? this.backend.getWikiPathways(version.request, this.geneSymbol) : [],
+      this.geneSymbol ? this.backend.getWikiPathways(version.params, this.geneSymbol) : [],
   });
 
   get geneEnsgNumber(): string | undefined {
@@ -216,14 +322,16 @@ export class GeneModalComponent implements AfterViewInit {
   }
 
   readonly transcripts$: ResourceRef<ASEntry[] | undefined> = resource({
-    request: this.version$,
+    params: this.version$,
     loader: async (version) => {
+      const ensg = this.ensgNumber;
+      if (!ensg) return [];
       const transcripts = await this.backend.getGeneTranscripts(
-        version.request,
-        this.gene.ensg_number,
-      );
+        version.params,
+        ensg,
+      ).catch(() => []);
       const asEvents =
-        await this.backend.getAlternativeSplicingEvents(transcripts);
+        await this.backend.getAlternativeSplicingEvents(transcripts).catch(() => []);
       const transcriptEvents = asEvents.reduce((acc, event) => {
         const enst = event.transcript.enst_number;
         if (!acc.has(enst)) {
@@ -287,10 +395,23 @@ export class GeneModalComponent implements AfterViewInit {
   async openTranscript(enst: string) {
     if (this.isOpeningTranscript()) return;
     this.isOpeningTranscript.set(true);
-    const transcript = (
-      await this.backend.getTranscriptInfo(this.version$(), enst)
-    )[0];
-    this.modalsService.openNodeDialog(transcript);
-    this.isOpeningTranscript.set(false);
+    try {
+      const transcriptList = await this.backend.getTranscriptInfo(this.version$(), enst).catch(() => []);
+      const transcriptInfo = transcriptList?.[0];
+      const disease = this.disease$();
+      const transcriptEntity: Transcript = {
+        ...transcriptInfo,
+        enst_number: enst,
+        gene: {
+          ensg_number: this.ensgNumber || transcriptInfo?.ensg_number || '',
+          gene_symbol: this.geneSymbol || '',
+        },
+      };
+      this.modalsService.openNodeDialog(transcriptEntity, disease ?? undefined);
+    } catch (e) {
+      console.error('Error opening transcript dialog:', e);
+    } finally {
+      this.isOpeningTranscript.set(false);
+    }
   }
 }

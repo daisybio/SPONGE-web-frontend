@@ -16,12 +16,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PredictService } from '../service/predict.service';
 import { ExploreService } from '../../explore/service/explore.service';
 import { BackendService } from '../../../../services/backend.service';
 import { InfoComponent } from '../../../../components/info/info.component';
 import { capitalize } from 'lodash';
-import { buildColorMap, getDiseaseDisplayName } from '../../../../cancer-colors';
+import { buildColorMap, getDiseaseDisplayName, PATIENT_HIGHLIGHT_COLOR } from '../../../../cancer-colors';
 
 declare var Plotly: any;
 
@@ -32,7 +33,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
   if (!subtypeStr) return { typeName };
 
   let rawSubtype = subtypeStr;
-  if (typeStr && rawSubtype.toLowerCase().startsWith(typeStr.toLowerCase() + '_')) {
+  if (typeStr && rawSubtype?.toLowerCase().startsWith(typeStr.toLowerCase() + '_')) {
     rawSubtype = rawSubtype.slice(typeStr.length + 1);
   } else if (rawSubtype.includes('_')) {
     const parts = rawSubtype.split('_');
@@ -51,6 +52,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
   imports: [
     CommonModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatMenuModule,
     MatButtonModule,
     MatIconModule,
@@ -58,10 +60,14 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
     InfoComponent,
   ],
   template: `
-    <div style="padding: 16px;">
+    <div style="padding: 16px; position: relative; min-height: 650px;">
       @if (isLoading()) {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      } @else if (!hasData()) {
+        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; background: rgba(255,255,255,0.7); backdrop-filter: blur(2px);">
+          <mat-spinner mode="indeterminate" diameter="48"></mat-spinner>
+          <p style="margin-top: 16px; font-weight: 500; color: #333;">Computing UMAP projection...</p>
+        </div>
+      }
+      @if (!hasData() && !isLoading()) {
         <div class="card-container" style="padding: 24px; text-align: center; color: #666;">
           <p>
             @if (mode() === 'explore') {
@@ -84,7 +90,7 @@ function formatSubtypeName(typeStr?: string, subtypeStr?: string): { typeName?: 
         </div>
       }
 
-      <div style="width: 100%; overflow-x: auto;">
+      <div style="width: 100%; overflow-x: hidden;">
         <div #umapPlot style="width: 100%; height: auto; min-height: 650px;"></div>
       </div>
 
@@ -118,12 +124,12 @@ export class UmapPlotComponent implements OnDestroy {
   mode = input<'predict' | 'explore'>('predict');
 
   exploreUmapResource = resource({
-    request: computed(() => {
+    params: computed(() => {
       if (this.mode() !== 'explore') return undefined;
       const level = this.exploreService?.level$();
       return level;
     }),
-    loader: async ({ request: level }) => {
+    loader: async ({ params: level }) => {
       if (!level) return undefined;
       try {
         const data = await this.backend.getUmapProjection(level, { values: [], samples: [], genes: [] });
@@ -297,7 +303,8 @@ export class UmapPlotComponent implements OnDestroy {
           name: 'Your Samples',
           marker: {
             size: 8,
-            color: '#e74c3c',
+            // Uploaded-samples highlight — shared with the classification plot / rug overlays.
+            color: PATIENT_HIGHLIGHT_COLOR,
             symbol: 'diamond',
             line: {
               color: '#2c3e50',
@@ -315,8 +322,9 @@ export class UmapPlotComponent implements OnDestroy {
         hovermode: 'closest',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
+        // No fixed width: the plot fills its container (and the ResizeObserver below keeps it
+        // fitted); a fixed 1100px plot overflowed the tab and needed a horizontal scrollbar.
         height: 900,
-        width: 1100,
         legend: {
           orientation: 'h',
           y: 1,

@@ -46,9 +46,9 @@ export class SpongEffectsComponent implements AfterViewInit {
   }
 
   spongeEffectsRuns = resource({
-    request: this.version$,
+    params: this.version$,
     loader: (version) => (
-      this.backend.getSpongEffectsRuns(version.request)
+      this.backend.getSpongEffectsRuns(version.params)
     )
   })
 }
