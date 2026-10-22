@@ -1,0 +1,41 @@
+.privacy {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  line-height: 1.6;
+
+  h1 {
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    margin-top: 32px;
+    font-size: 1.3rem;
+  }
+
+  h3 {
+    margin-top: 20px;
+    font-size: 1.05rem;
+  }
+
+  address {
+    margin: 8px 0 12px;
+    padding-left: 12px;
+    border-left: 3px solid var(--app-accent, #1565c0);
+    font-style: normal;
+  }
+
+  a {
+    color: var(--app-accent, #1565c0);
+    overflow-wrap: anywhere;
+  }
+
+  .lang-toggle {
+    margin: 12px 0 8px;
+  }
+
+  .stand {
+    margin-top: 32px;
+    color: #555;
+  }
+}
