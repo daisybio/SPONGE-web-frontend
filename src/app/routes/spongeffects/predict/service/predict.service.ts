@@ -323,6 +323,8 @@ export class PredictService {
           query.minExpr,
           query.method,
           query.model,
+          // a new query aborts this loader; stop polling the superseded job
+          param.abortSignal,
         );
       }
 
