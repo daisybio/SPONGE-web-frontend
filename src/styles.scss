@@ -107,6 +107,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   margin-top: 10px;
+  min-height: calc(var(--app-page-min-height) - 40px);
 }
 
 .card-container {
@@ -118,12 +119,52 @@ body {
   align-items: center;
 }
 
+:root {
+  --app-toolbar-height: 60px;
+  --app-footer-height: 48px;
+  --app-page-min-height: calc(100vh - 108px);
+  --app-page-min-height: calc(100dvh - 108px);
+}
+
+/* Routed pages fill the main content area */
+.app-main > * {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+}
+
+.page-drawer-container,
+.app-main mat-drawer-container {
+  flex: 1 1 auto;
+  min-height: var(--app-page-min-height);
+  box-sizing: border-box;
+}
+
+.subpage-drawer {
+  min-height: calc(var(--app-page-min-height) - 80px) !important;
+}
+
 .spinner-container {
   width: 100%;
-  height: 300px;
+  min-height: 450px;
+  flex: 1 1 auto;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.plot-loading-container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  color: #555;
+  font-weight: 500;
 }
 
 td {
