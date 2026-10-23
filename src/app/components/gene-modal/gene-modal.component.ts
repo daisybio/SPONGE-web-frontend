@@ -74,6 +74,7 @@ export class GeneModalComponent implements AfterViewInit {
   goColumns = ['symbol', 'description'];
   asColumns = ['enst', 'events'];
   goFilter = model<string>('');
+  asFilter = model<string>('');
   readonly asDescriptions = AS_DESCRIPTIONS;
   modalsService = inject(ModalsService);
 
@@ -367,6 +368,18 @@ export class GeneModalComponent implements AfterViewInit {
   protected readonly IGV_REFGENOME = IGV_REFGENOME;
 
   constructor() {
+    this.asDatasource.filterPredicate = (data: ASEntry, filter: string) => {
+      const term = filter.trim().toLowerCase();
+      if (!term) return true;
+      if (data.enst.toLowerCase().includes(term)) return true;
+      for (const event of data.events) {
+        if (event.toLowerCase().includes(term)) return true;
+        const desc = this.asDescriptions[event];
+        if (desc && desc.toLowerCase().includes(term)) return true;
+      }
+      return false;
+    };
+
     effect(() => {
       this.goDatasource.data = this.goTerms$.value() ?? [];
     });
@@ -377,6 +390,10 @@ export class GeneModalComponent implements AfterViewInit {
 
     effect(() => {
       this.asDatasource.data = this.transcripts$.value() ?? [];
+    });
+
+    effect(() => {
+      this.asDatasource.filter = this.asFilter().trim().toLowerCase();
     });
 
     effect(() => {

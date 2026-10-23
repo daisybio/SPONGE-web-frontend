@@ -23,6 +23,14 @@ import { buildColorMap } from '../../cancer-colors';
 
 declare const Plotly: any;
 
+// Below this container width the subtype legend moves under the heatmap: beside the colorbar it
+// would squeeze the heatmap and (with its paper-relative offset) slide on top of the colorbar.
+const LEGEND_BELOW_BREAKPOINT_PX = 900;
+// Pixel gap between the colorbar's right edge and the side legend.
+const LEGEND_GAP_PX = 20;
+// Fallback colorbar footprint (bar + ticks + title) when it can't be measured.
+const COLORBAR_FALLBACK_PX = 140;
+
 // DataSource interface
 export type HeatmapDataSource = {
   getData: (params: any) => Promise<any[]>;
@@ -98,6 +106,9 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
   // The data last drawn or cleared, so a change of the loading state alone doesn't redraw it
   private lastRendered: any[] | undefined;
 
+  // Where the subtype legend was last placed; a resize across the breakpoint re-renders the plot
+  private legendMode: 'side' | 'below' | null = null;
+
   // Effects for plot management
   private plotEffect = effect(() => {
     const data = this.heatmapResource.value();
@@ -154,12 +165,18 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     
     // Determine if we need to show subtypes
     let plotData: any = [heatmapTrace];
-    
+    const showSubtypes = this.showSubtypes() && this.hasSubtypeData(samples);
+    let legendEntries = 0;
+
     // Process subtypes if enabled and we have subtype data
-    if (this.showSubtypes() && this.hasSubtypeData(samples)) {
+    if (showSubtypes) {
       const { subtypeBar, subtypeLegend } = this.createSubtypeElements(samples);
       plotData = [subtypeBar, heatmapTrace, ...subtypeLegend];
+      legendEntries = subtypeLegend.length;
     }
+
+    const containerWidth = heatmapEl.clientWidth;
+    this.legendMode = this.legendModeFor(containerWidth);
 
     // Create layout
     const layout = this.createLayout(samples, dataSource, params);
@@ -170,7 +187,25 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     const geneCount = new Set(data.map(e => this.rowInfo(e).label)).size;
     const baseHeight = parseInt(this.height(), 10) || 600;
     const ROW_PX = 22;
-    const plotHeight = Math.max(baseHeight, geneCount * ROW_PX + 200);
+    let plotHeight = Math.max(baseHeight, geneCount * ROW_PX + 200);
+    if (showSubtypes && this.legendMode === 'below') {
+      // The wrapped legend takes its room from the bottom margin; grow the plot by the same
+      // amount so the heatmap itself keeps its height.
+      const LEGEND_ITEM_PX = 260;
+      const LEGEND_ROW_PX = 22;
+      const perRow = Math.max(1, Math.floor(containerWidth / LEGEND_ITEM_PX));
+      const legendHeight = Math.ceil(legendEntries / perRow) * LEGEND_ROW_PX + 30;
+      plotHeight += legendHeight;
+      layout.legend = {
+        orientation: 'h',
+        x: 0,
+        xanchor: 'left',
+        // Clear the "Sample" axis title; paper units are fractions of the plot-area height.
+        y: -70 / Math.max(plotHeight - legendHeight - 160, 200),
+        yanchor: 'top',
+        title: { text: layout.legend.title.text, side: 'top' },
+      };
+    }
     layout.height = plotHeight;
     heatmapEl.style.height = `${plotHeight}px`;
 
@@ -180,7 +215,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
     };
 
     // Render plot
-    Plotly.newPlot(heatmapEl, plotData, layout, config);
+    Plotly.newPlot(heatmapEl, plotData, layout, config).then(() => this.placeSideLegend());
 
     if (heatmapEl) {
       (heatmapEl as any).removeAllListeners?.('plotly_click');
@@ -236,7 +271,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         const { ensemblID, symbol } = this.rowInfo(e);
         return { ensemblID, symbol };
       }),
-      text: data.map(e => `${this.rowInfo(e).label} (${e.sample_ID})<br>Click cell to add gene/transcript to cart`),
+      text: data.map(e => `${this.rowInfo(e).label} (${e.sample_ID})<br>Click cell to add gene/transcript to selection`),
       hoverinfo: 'text+z',
       zmid: dataSource.getZMid ? dataSource.getZMid() : 0,
       showscale: true,
@@ -247,6 +282,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         // plots, and top-aligned to sit alongside the legend rather than stretching the height.
         len: 300,
         lenmode: 'pixels',
+        thickness: 20,
         title: dataSource.getZAxisTitle ? dataSource.getZAxisTitle() : 'Normalized<br>expression',
         xanchor: 'left',
         yanchor: 'top',
@@ -382,7 +418,7 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
         xanchor: 'left',
         yanchor: 'top',
         title: {
-          text: 'Subtype'
+          text: dataSource.getClusterLegendTitle?.() ?? 'Subtype'
         },
       },
     };
@@ -392,8 +428,35 @@ export class ReusableHeatmapComponent implements AfterViewInit, OnDestroy {
 
   refresh() {
     const heatmapEl = this.heatmap().nativeElement;
-    if (heatmapEl.checkVisibility()) {
-      Plotly.Plots.resize(heatmapEl);
+    if (!heatmapEl.checkVisibility()) return;
+    if (this.lastRendered?.length && this.legendMode !== this.legendModeFor(heatmapEl.clientWidth)) {
+      this.renderHeatmap(this.lastRendered);
+      return;
+    }
+    Promise.resolve(Plotly.Plots.resize(heatmapEl)).then(() => this.placeSideLegend());
+  }
+
+  private legendModeFor(width: number): 'side' | 'below' {
+    return width < LEGEND_BELOW_BREAKPOINT_PX ? 'below' : 'side';
+  }
+
+  // Put the side legend a fixed pixel gap right of the colorbar. Paper x is a fraction of the
+  // plot-area width, so a constant x (the old 1.15) let the legend slide over the colorbar on
+  // narrow plots.
+  // The relayout can shift the automargin and hence the plot width, so repeat until it settles.
+  private placeSideLegend(attempt = 0) {
+    if (this.legendMode !== 'side' || attempt > 2) return;
+    const heatmapEl = this.heatmap().nativeElement as any;
+    const size = heatmapEl._fullLayout?._size;
+    if (!size?.w || !heatmapEl._fullLayout.showlegend) return;
+    const colorbar = heatmapEl.querySelector('.colorbar') as SVGGraphicsElement | null;
+    const plotLeft = heatmapEl.getBoundingClientRect().left + size.l;
+    const colorbarRight = colorbar
+      ? colorbar.getBoundingClientRect().right - plotLeft
+      : size.w + COLORBAR_FALLBACK_PX;
+    const x = (colorbarRight + LEGEND_GAP_PX) / size.w;
+    if (Math.abs(x - heatmapEl._fullLayout.legend.x) > 0.001) {
+      Plotly.relayout(heatmapEl, { 'legend.x': x }).then(() => this.placeSideLegend(attempt + 1));
     }
   }
 

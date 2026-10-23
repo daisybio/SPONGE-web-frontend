@@ -11,9 +11,9 @@ import { Gene, Transcript } from '../../interfaces';
   imports: [CommonModule, MatIconModule, MatTooltipModule],
   template: `
     <button (click)="toggleCart($event)"
-            [matTooltip]="inCart() ? 'Remove from Cart' : 'Add to Cart'"
+            [matTooltip]="inCart() ? 'Remove from selection' : 'Add to selection'"
             class="add-to-cart-btn">
-      <mat-icon>{{ inCart() ? 'remove_shopping_cart' : 'add_shopping_cart' }}</mat-icon>
+      <mat-icon>{{ inCart() ? 'bookmark_remove' : 'bookmark_add' }}</mat-icon>
     </button>
   `,
   styles: [`

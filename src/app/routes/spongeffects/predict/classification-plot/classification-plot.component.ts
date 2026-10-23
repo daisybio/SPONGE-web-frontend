@@ -156,9 +156,9 @@ export class ClassificationPlotComponent {
     // 2. TCGA background density curves
     const classDensities: Map<string, PlotData> = new Map();
     try {
-      const densities: EnrichmentScoreDistributions[] =
-        await this.backend.getEnrichmentScoreDistributions(version, disease, level, {});
-      for (const entry of densities) {
+      const densities = await this.backend.getEnrichmentScoreDistributions(version, disease, level, {});
+      // the backend answers a disease without distributions with a {detail, data: []} object
+      for (const entry of Array.isArray(densities) ? densities : []) {
         if (!classDensities.has(entry.prediction_class)) {
           classDensities.set(entry.prediction_class, { x: [], y: [] });
         }

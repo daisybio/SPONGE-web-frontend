@@ -39,6 +39,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import {
   Dataset,
@@ -127,6 +128,7 @@ export async function ensureGeneSymbols(backend: BackendService, version: number
     ReusableHeatmapComponent,
     ScatterplotComponent,
     MatButtonToggleModule,
+    MatTabsModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
     AddToCartButtonComponent
@@ -1411,7 +1413,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         mode: 'markers',
         type: 'scatter',
         name: 'Other Modules',
-        text: greyData.map(g => `${g.symbol}<br>Click to add to cart`),
+        text: greyData.map(g => `${g.symbol}<br>Click to add to selection`),
         customdata: greyData.map(g => ({ ensemblID: g.ensemblID, symbol: g.symbol })),
         marker: {
           size: this.defaultMarkerSize,
@@ -1425,7 +1427,7 @@ export class ImportancePlotComponent implements OnInit, AfterViewInit, OnDestroy
         mode: 'markers',
         type: 'scatter',
         name: 'Top Modules',
-        text: redData.map(g => `${g.symbol}<br>Click to add to cart`),
+        text: redData.map(g => `${g.symbol}<br>Click to add to selection`),
         customdata: redData.map(g => ({ ensemblID: g.ensemblID, symbol: g.symbol })),
         marker: {
           size: this.defaultMarkerSize,

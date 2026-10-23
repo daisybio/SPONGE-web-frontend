@@ -36,6 +36,37 @@ import { Dataset } from '../../../../interfaces';
 import { MatCardModule } from '@angular/material/card';
 import { getDiseaseDisplayName, sortDiseaseObjects } from '../../../../cancer-colors';
 
+// Network thresholds (m_scor_threshold / p_adj_threshold) of the spongEffects run each packaged
+// model in models.RDS was built from. classify.R does not filter by them: they are fixed by the
+// model, so the form only shows them. Identified 2026-10-22 by matching models.RDS train + test
+// accuracy against SPONGEdb_v2/model_performances.tsv (module members agree with the DB run).
+// Gene cervical/sarcoma/stomach come from a train:0.9 run that is not in the DB.
+// See critical_project_info.md; update when models.RDS is replaced.
+const MODEL_THRESHOLDS: Record<'gene' | 'transcript', Record<string, { mscor: number; fdr: number }>> = {
+  gene: {
+    'pancancer': { mscor: 0, fdr: 0.05 },                              // run 1
+    'breast invasive carcinoma': { mscor: 0, fdr: 0.05 },              // run 3
+    'brain lower grade glioma': { mscor: 0, fdr: 0.05 },               // run 15
+    'cervical & endocervical cancer': { mscor: 0.1, fdr: 0.01 },       // not in DB (train 0.9)
+    'esophageal carcinoma': { mscor: 0.1, fdr: 0.01 },                 // run 8
+    'head & neck squamous cell carcinoma': { mscor: 0, fdr: 0.01 },    // run 13
+    'sarcoma': { mscor: 0.1, fdr: 0.01 },                              // not in DB (train 0.9)
+    'stomach adenocarcinoma': { mscor: 0.1, fdr: 0.01 },               // not in DB (train 0.9)
+    'testicular germ cell tumor': { mscor: 0, fdr: 0.05 },             // run 24
+  },
+  transcript: {
+    'pancancer': { mscor: 0, fdr: 0.05 },                              // run 74
+    'breast invasive carcinoma': { mscor: 0, fdr: 0.05 },              // run 52
+    'brain lower grade glioma': { mscor: 0, fdr: 0.05 },               // run 63
+    'cervical & endocervical cancer': { mscor: 0, fdr: 0.01 },         // run 55
+    'esophageal carcinoma': { mscor: 0, fdr: 0.05 },                   // run 57
+    'head & neck squamous cell carcinoma': { mscor: 0, fdr: 0.05 },    // run 60
+    'sarcoma': { mscor: 0, fdr: 0.05 },                                // run 66
+    'stomach adenocarcinoma': { mscor: 0.1, fdr: 0.01 },               // run 68
+    'testicular germ cell tumor': { mscor: 0, fdr: 0.05 },             // run 72
+  },
+};
+
 @Component({
   selector: 'app-predict-form',
   imports: [
@@ -139,6 +170,25 @@ export class PredictFormComponent {
     } else {
       return this.fileCtrlValue$() || undefined;
     }
+  });
+
+  // Feature level of the selected file (ENSG/ENST of the first data rows), for the model thresholds
+  readonly expressionLevel$ = signal<'gene' | 'transcript' | undefined>(undefined);
+  private readonly levelEffect = effect(() => {
+    const filePromise = this.selectedExpressionFile$();
+    this.expressionLevel$.set(undefined);
+    filePromise.then(async (file) => {
+      if (!file || filePromise !== this.selectedExpressionFile$()) return;
+      const match = (await file.slice(0, 65536).text()).match(/ENS(G|T)\d/);
+      if (filePromise !== this.selectedExpressionFile$()) return;
+      this.expressionLevel$.set(match ? (match[1] === 'G' ? 'gene' : 'transcript') : undefined);
+    });
+  });
+
+  readonly modelThresholds$ = computed(() => {
+    const level = this.expressionLevel$();
+    const model = this.selectedTypeName$();
+    return level && model ? MODEL_THRESHOLDS[level][model] : undefined;
   });
 
   async predict() {

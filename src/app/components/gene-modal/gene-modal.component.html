@@ -256,6 +256,11 @@
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
       </div>
       }
+      <mat-form-field style="padding: 10px; width: 100%; box-sizing: border-box;">
+        <mat-label>Search</mat-label>
+        <input [(ngModel)]="asFilter" matInput placeholder="Search for transcripts">
+        <mat-hint>Case insensitive</mat-hint>
+      </mat-form-field>
       <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
         <ng-container matColumnDef="enst">
           <th *matHeaderCellDef mat-header-cell>Transcript</th>
@@ -281,9 +286,18 @@
 
         <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
         <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="2" style="padding: 16px; text-align: center; color: rgba(0, 0, 0, 0.54);">
+            @if (asFilter()) {
+            No transcripts matching the filter "{{ asFilter() }}"
+            } @else {
+            No transcripts found
+            }
+          </td>
+        </tr>
       </table>
       <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
-        aria-label="Select page of users"></mat-paginator>
+        aria-label="Select page of transcripts"></mat-paginator>
 
     </mat-tab>
     }

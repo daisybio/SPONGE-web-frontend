@@ -1,16 +1,16 @@
 <div class="cart-header">
-  <mat-icon class="cart-icon">shopping_cart</mat-icon>
-  <h2>Cart</h2>
+  <mat-icon class="cart-icon">bookmarks</mat-icon>
+  <h2>Selection</h2>
   @if (count() > 0) {
   <span class="cart-count">{{ count() }}</span>
   }
   <span class="spacer"></span>
   <a mat-icon-button [href]="gProfilerUrl()" target="_blank" rel="noopener" [disabled]="entityItems().length === 0"
-    matTooltip="Functional enrichment analysis of the cart genes using g:Profiler">
+    matTooltip="Functional enrichment analysis of the selected genes using g:Profiler">
     <mat-icon>open_in_new</mat-icon>
   </a>
   <button mat-icon-button [disabled]="count() === 0 || !effectiveDisease()" (click)="visualizeNetwork()"
-    matTooltip="Visualize the interactions between the cart items as a network">
+    matTooltip="Visualize the interactions between the selected items as a network">
     <mat-icon>hub</mat-icon>
   </button>
   <button mat-icon-button [disabled]="count() === 0" (click)="clearAll()" matTooltip="Clear all">
@@ -19,7 +19,7 @@
 </div>
 
 @if (disabled()) {
-<p class="disabled-hint">The cart isn't used on this tab.</p>
+<p class="disabled-hint">The selection isn't used on this tab.</p>
 }
 
 <div class="cart-body">
@@ -70,7 +70,7 @@
             @if (gene) {
             <ng-container [ngTemplateOutlet]="geneActions" [ngTemplateOutletContext]="{ $implicit: gene }"></ng-container>
             }
-            <button mat-icon-button class="remove-btn" (click)="removeNode(node)" matTooltip="Remove from cart">
+            <button mat-icon-button class="remove-btn" (click)="removeNode(node)" matTooltip="Remove from selection">
               <mat-icon>remove_circle_outline</mat-icon>
             </button>
           </mat-card-title>
@@ -122,7 +122,7 @@
           @if (gene) {
           <ng-container [ngTemplateOutlet]="geneActions" [ngTemplateOutletContext]="{ $implicit: gene }"></ng-container>
           }
-          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from cart">
+          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from selection">
             <mat-icon>remove_circle_outline</mat-icon>
           </button>
         </div>
@@ -134,9 +134,9 @@
       @if (entityItems().length === 0) {
       <div class="empty-state">
         <mat-icon class="empty-icon">inbox</mat-icon>
-        <p>No genes or transcripts in the cart.</p>
+        <p>No genes or transcripts in the selection.</p>
         <p class="empty-hint">
-          Click a node in a network, or <mat-icon class="inline-icon">add_shopping_cart</mat-icon> next to any gene
+          Click a node in a network, or <mat-icon class="inline-icon">bookmark_add</mat-icon> next to any gene
           or transcript.
         </p>
       </div>
@@ -165,7 +165,7 @@
             }
             <span class="spacer"></span>
             <button mat-icon-button class="remove-btn" (click)="removeInteraction(interaction)"
-              matTooltip="Remove from cart">
+              matTooltip="Remove from selection">
               <mat-icon>remove_circle_outline</mat-icon>
             </button>
           </mat-card-title>
@@ -214,7 +214,7 @@
           </button>
         </div>
         <div class="item-actions">
-          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from cart">
+          <button mat-icon-button class="remove-btn" (click)="remove(item.id)" matTooltip="Remove from selection">
             <mat-icon>remove_circle_outline</mat-icon>
           </button>
         </div>
@@ -226,7 +226,7 @@
       @if (interactionItems().length === 0) {
       <div class="empty-state">
         <mat-icon class="empty-icon">inbox</mat-icon>
-        <p>No interactions in the cart.</p>
+        <p>No interactions in the selection.</p>
         <p class="empty-hint">Click an edge in a network to add it.</p>
       </div>
       }
@@ -235,7 +235,7 @@
 </div>
 
 <ng-template #geneActions let-gene>
-  <button mat-icon-button class="action-btn" matTooltip="Add module members to cart"
+  <button mat-icon-button class="action-btn" matTooltip="Add module members to selection"
     [disabled]="!effectiveDisease() || loadingModuleMembers() === gene.ensg_number" (click)="addModuleMembers(gene)">
     @if (loadingModuleMembers() === gene.ensg_number) {
     <mat-spinner diameter="16"></mat-spinner>
@@ -243,7 +243,7 @@
     <mat-icon>group_add</mat-icon>
     }
   </button>
-  <button mat-icon-button class="action-btn" matTooltip="Add transcripts to cart"
+  <button mat-icon-button class="action-btn" matTooltip="Add transcripts to selection"
     [disabled]="loadingTranscripts() === gene.ensg_number" (click)="addTranscripts(gene)">
     @if (loadingTranscripts() === gene.ensg_number) {
     <mat-spinner diameter="16"></mat-spinner>

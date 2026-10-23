@@ -53,21 +53,31 @@
           Choose the reference network that will be used to compute the spongEffect scores for each sample in your
           data.
           <ul>
-            <li> If you don't know the model, select the pancancer model. A type and subtype will be predicted for
-              each sample.
-              You will get enrichment scores based on the pancancer model, each predicted type model, and each
-              predicted subtype model.
+            <li> If you don't know the cancer type, select the pancancer model. A cancer type is predicted for
+              each sample, and you get enrichment scores based on the pancancer model and on the model of each
+              predicted type (for types with a trained model).
             </li>
-            <li> If you provide a cancer type, a subtype will be predicted for each sample.
-              You will get enrichment scores based on the pancancer model, the provided type model, and each
-              predicted
-              subtype
-              model.
+            <li> If you select a cancer type, no type prediction is needed: all samples are assigned the
+              selected type. You get enrichment scores based on the pancancer model and the selected type model.
             </li>
-            <li> If you provide a subtype, predictions are not necessary.
-              You will get enrichment scores based on the pancancer model, the provided type model, and the
-              provided
-              subtype model.
+            <li> If you select a subtype, predictions are not necessary. You will get enrichment scores based on
+              the pancancer model, the provided type model, and the provided subtype model (subtype-specific
+              models are still being trained).
+            </li>
+          </ul>
+          <b>Predict on subtype level</b> (checkbox under "Further settings"): additionally predicts a subtype
+          for each sample.
+          <ul>
+            <li> With the pancancer model, the subtype is predicted with the model of each sample's predicted
+              type.
+            </li>
+            <li> With a selected cancer type, the subtype is predicted with that type's model.
+            </li>
+            <li> Subtypes are only predicted for cancer types that have subtypes, and only if at least 2 samples
+              were assigned to that type. Otherwise the subtype stays unspecific.
+            </li>
+            <li> Without the checkbox, no subtypes are predicted; the enrichment scores are the same. With a
+              selected cancer type that means no prediction at all, only enrichment scores.
             </li>
           </ul>
         </app-info>
@@ -145,31 +155,30 @@
     <mat-expansion-panel-header>
       <mat-panel-title>Filtering thresholds</mat-panel-title>
     </mat-expansion-panel-header>
+    @let thresholds = modelThresholds$();
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Min. MScor</mat-label>
-      <input formControlName="mscor" matInput type="number" min="0" max="1" step="0.10"
-        aria-label="Set mscor threshold">
-      <mat-error *ngIf="formGroup.get('mscor')?.hasError('min')">Please provide a number > {{
-        formGroup.get('mscor')?.errors?.['min']?.min }}</mat-error>
-      <mat-error *ngIf="formGroup.get('mscor')?.hasError('max')">Please provide a number < {{
-          formGroup.get('mscor')?.errors?.['max']?.max }}</mat-error>
+      <mat-label>Min. MScor (set by the model)</mat-label>
+      <input matInput readonly [value]="thresholds ? thresholds.mscor : 'unknown'"
+        aria-label="MScor threshold of the selected model">
     </mat-form-field>
     <app-info type="icon">
       <p [innerHTML]="infoService.mscorText "></p>
-      <p>Use only modules with a mscor value above this threshold for the prediction.</p>
+      <p>
+        The ceRNA network a spongEffects model was trained on was filtered with this mscor threshold before its
+        modules were built. It is fixed by the selected model and cannot be changed for a prediction.
+        It is shown once a reference network and an expression file are selected (the level depends on the file).
+      </p>
     </app-info>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Min. false discovery rate (FDR)</mat-label>
-      <input formControlName="fdr" matInput type="number" min="0" max="1" step="0.10" aria-label="Set FDR threshold">
-      <mat-error *ngIf="formGroup.get('fdr')?.hasError('min')">Please provide a number > {{
-        formGroup.get('fdr')?.errors?.['min']?.min }}</mat-error>
-      <mat-error *ngIf="formGroup.get('fdr')?.hasError('max')">Please provide a number < {{
-          formGroup.get('fdr')?.errors?.['max']?.max }}</mat-error>
+      <mat-label>Max. FDR (set by the model)</mat-label>
+      <input matInput readonly [value]="thresholds ? thresholds.fdr : 'unknown'"
+        aria-label="FDR threshold of the selected model">
     </mat-form-field>
     <app-info type="icon">
       <p>
-        Use only modues with a false discovery rate (FDR) below this threshold for the prediction.
+        The ceRNA interactions the model's modules were built from had an adjusted p-value (FDR) below this
+        threshold. Like the mscor threshold, it is fixed by the selected model.
       </p>
     </app-info>
 
