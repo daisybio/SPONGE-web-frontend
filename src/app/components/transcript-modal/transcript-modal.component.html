@@ -76,7 +76,7 @@
 
     @if (ceRNAStats$(); as stats) {
     <mat-tab label="ceRNA interactions">
-      <div style="padding: 16px;">
+      <div>
         @let c = effectiveCentralities$();
         <table>
           <tr>
@@ -135,7 +135,7 @@
     }
 
     <mat-tab [label]="'Networks (' + networkRows().length + ')'">
-      <div style="padding: 16px;">
+      <div>
         <app-networks-table [rows]="networkRows()" [columns]="['Betweenness', 'Eigenvector', 'Degree']"
           [currentDatasetID]="disease$()?.dataset_ID" [loading]="allNetworks$.isLoading()"
           emptyText="This transcript is not part of any disease network."></app-networks-table>
@@ -150,7 +150,7 @@
 
     @if (customEffects$() || ((tcgaEffects$.value() || []).length > 0)) {
     <mat-tab label="SpongEffects scores">
-      <div style="padding: 16px;">
+      <div>
         @let custom = customEffects$();
         @if (custom) {
         <mat-accordion style="margin-bottom: 16px;">
