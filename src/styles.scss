@@ -107,6 +107,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   margin-top: 10px;
+  min-height: calc(var(--app-page-min-height) - 40px);
 }
 
 .card-container {
@@ -118,12 +119,52 @@ body {
   align-items: center;
 }
 
+:root {
+  --app-toolbar-height: 60px;
+  --app-footer-height: 48px;
+  --app-page-min-height: calc(100vh - 108px);
+  --app-page-min-height: calc(100dvh - 108px);
+}
+
+/* Routed pages fill the main content area */
+.app-main > * {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+}
+
+.page-drawer-container,
+.app-main mat-drawer-container {
+  flex: 1 1 auto;
+  min-height: var(--app-page-min-height);
+  box-sizing: border-box;
+}
+
+.subpage-drawer {
+  min-height: calc(var(--app-page-min-height) - 80px) !important;
+}
+
 .spinner-container {
   width: 100%;
-  height: 300px;
+  min-height: 450px;
+  flex: 1 1 auto;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.plot-loading-container {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  color: #555;
+  font-weight: 500;
 }
 
 td {
@@ -151,11 +192,65 @@ td {
   overflow: hidden;
 }
 
+.fixed-modal .mat-mdc-dialog-surface > * {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .fixed-modal .mat-mdc-dialog-content {
   flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
   max-height: none;
-  overflow: auto;
 }
+
+.fixed-modal mat-tab-group {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.fixed-modal .mat-mdc-tab-header {
+  flex-shrink: 0;
+  padding: 0 16px;
+}
+
+.fixed-modal .mat-mdc-tab-body-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100% !important;
+}
+
+.fixed-modal .mat-mdc-tab-body.mat-mdc-tab-body-active {
+  height: 100%;
+}
+
+.fixed-modal .mat-mdc-tab-body-active .mat-mdc-tab-body-content {
+  height: 100%;
+  overflow-y: auto !important;
+  scrollbar-gutter: stable;
+  padding: 16px 24px;
+}
+
+.fixed-modal igv {
+  display: block;
+  width: 100%;
+  min-height: 500px;
+}
+
+.fixed-modal app-networks-table {
+  display: block;
+  width: 100%;
+}
+
 
 /* ─── Scrollbars never move content ───────────────────────────────────────────────────────────
    With classic (space-taking) scrollbars, an element whose vertical scrollbar appears or disappears

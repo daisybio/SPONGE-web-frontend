@@ -24,6 +24,7 @@ import {
   OverallCounts,
   PatientInformation,
   PredictCancerType,
+  PredictionJob,
   RunClassPerformance,
   RunInfo,
   RunPerformance,
@@ -48,6 +49,10 @@ import { API_BASE } from '../constants';
 interface Query {
   [key: string]: any;
 }
+
+const PREDICTION_POLL_MS = 3000;
+// getRequest() returns undefined on any error; give up after this many failed polls in a row
+const PREDICTION_MAX_FAILED_POLLS = 5;
 
 /**
  * Server-side ranking/filtering for the SpongEffects module-list endpoints — mirrors the two
@@ -1146,7 +1151,12 @@ export class BackendService {
     return (await this.http.getRequest<SpongEffectsTranscriptModuleMembers[]>(this.getRequestURL(route, query))) ?? [];
   }
 
-  predictCancerType(
+  /**
+   * A prediction runs R on the server for ~20 s (gsva) to 10+ min (OE), so it is submitted as a
+   * background job and polled until done. Resolves with the same shape the old synchronous endpoint
+   * returned; rejects if the job fails, can't be polled, or `abortSignal` fires.
+   */
+  async predictCancerType(
     version: number,
     file: Blob,
     subtypes: boolean,
@@ -1158,6 +1168,7 @@ export class BackendService {
     minExpr: number,
     method: string,
     model: string | null,
+    abortSignal?: AbortSignal,
   ): Promise<PredictCancerType> {
     const formData = new FormData();
     formData.append('file', file);
@@ -1172,8 +1183,29 @@ export class BackendService {
     if (model) {
       formData.append('model', model);
     }
-    const request = `${API_BASE}/spongEffects/predictCancerType?sponge_db_version=${version}`;
-    return this.http.postRequest(request, formData);
+    const request = `${API_BASE}/spongEffects/predictCancerType/jobs?sponge_db_version=${version}`;
+    const submitted: PredictionJob = await this.http.postRequest(request, formData);
+    const jobRequest = `${API_BASE}/spongEffects/predictCancerType/jobs/${submitted.job_id}`;
+
+    let failedPolls = 0;
+    while (true) {
+      await new Promise((resolve) => setTimeout(resolve, PREDICTION_POLL_MS));
+      abortSignal?.throwIfAborted();
+      const job = await this.http.getRequest<PredictionJob>(jobRequest);
+      if (!job) {
+        if (++failedPolls >= PREDICTION_MAX_FAILED_POLLS) {
+          throw new Error(`Lost track of prediction job ${submitted.job_id}`);
+        }
+        continue;
+      }
+      failedPolls = 0;
+      if (job.status === 'done' && job.result) {
+        return job.result;
+      }
+      if (job.status === 'failed') {
+        throw new Error(job.detail ?? 'Prediction failed');
+      }
+    }
   }
 
   getUmapProjection(

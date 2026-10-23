@@ -33,6 +33,10 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
+              "@fontsource/roboto/300.css",
+              "@fontsource/roboto/400.css",
+              "@fontsource/roboto/500.css",
+              "material-icons/iconfont/filled.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -94,6 +98,10 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
+              "@fontsource/roboto/300.css",
+              "@fontsource/roboto/400.css",
+              "@fontsource/roboto/500.css",
+              "material-icons/iconfont/filled.css",
               "src/styles.scss"
             ],
             "scripts": []

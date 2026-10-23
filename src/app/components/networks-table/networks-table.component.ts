@@ -50,6 +50,10 @@ export interface NetworkRow {
     }
   `,
   styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
     .networks-table {
       width: 100%;
       border-collapse: collapse;

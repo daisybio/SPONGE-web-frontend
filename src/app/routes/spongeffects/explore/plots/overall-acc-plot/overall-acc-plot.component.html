@@ -1,5 +1,8 @@
 @if (plotOverallAccResource.isLoading()) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  <div class="plot-loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Loading benchmark data...</p>
+  </div>
 }
 
 @if (!plotOverallAccResource.value() && !plotOverallAccResource.isLoading() && !plotOverallAccResource.error()) {

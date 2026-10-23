@@ -1,0 +1,490 @@
+<div class="privacy">
+  <mat-button-toggle-group class="lang-toggle" [value]="lang()" (change)="setLang($event.value)"
+    aria-label="Language / Sprache">
+    <mat-button-toggle value="de">Deutsch</mat-button-toggle>
+    <mat-button-toggle value="en">English</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  @if (lang() === 'de') {
+  <article lang="de">
+    <h1>Datenschutzerklärung</h1>
+    <p><em>gemäß Art. 13, 14 DSGVO</em></p>
+
+    <p>Für uns ist Datenschutz ein wichtiges Anliegen. Wir möchten, dass Sie wissen, wann wir welche Daten speichern
+      und wie wir sie verwenden.</p>
+    <p>Personenbezogene Daten werden auf dem Server der Professur für Data Science in Systems Biology nur im technisch
+      notwendigen Umfang erhoben. Die Datenverarbeitung unterliegt den geltenden datenschutzrechtlichen Bestimmungen,
+      insbesondere der Datenschutz-Grundverordnung (DSGVO), dem Bayerischen Datenschutzgesetz (BayDSG), dem
+      Telekommunikation-Digitale-Dienste-Datenschutz-Gesetz (TDDDG) und dem Digitale-Dienste-Gesetz (DDG).</p>
+    <p>Nachfolgend informieren wir Sie über Art, Umfang und Zweck der Erhebung und Verwendung personenbezogener Daten.
+      Diese Informationen können jederzeit von unserer Webseite abgerufen werden.</p>
+
+    <h2>Verantwortlicher und technische Umsetzung</h2>
+    <p>Verantwortlicher im Sinne der DSGVO ist die</p>
+    <address>
+      Technische Universität München<br>
+      vertreten durch den Präsidenten<br>
+      Arcisstraße 21<br>
+      80333 München<br>
+      Telefon: +49 89 289-01
+    </address>
+    <p>Das Webtool SPONGEdb wird von der Professur für Data Science in Systems Biology betrieben und auf deren Servern
+      gehostet. Ansprechpartner für dieses Webtool:</p>
+    <address>
+      Data Science in Systems Biology<br>
+      TUM School of Life Sciences<br>
+      Maximus-von-Imhof-Forum 1+3/I<br>
+      85354 Freising<br>
+      E-Mail: markus.list(at)tum.de
+    </address>
+
+    <h3>Datenschutzbeauftragter</h3>
+    <p>Der Datenschutzbeauftragte der Technischen Universität München kann kontaktiert werden unter:</p>
+    <address>
+      Behördlicher Datenschutzbeauftragter der TUM<br>
+      Arcisstraße 21<br>
+      80333 München<br>
+      Telefon: +49 89 289-17052<br>
+      E-Mail: beauftragter(at)datenschutz.tum.de<br>
+      <a href="https://www.datenschutz.tum.de" target="_blank" rel="noopener">www.datenschutz.tum.de</a>
+    </address>
+
+    <h2>Technische Zugriffsdaten</h2>
+    <p>Wenn Sie diese oder andere Internetseiten aufrufen, übermitteln Sie über Ihren Internetbrowser Daten an unseren
+      Webserver. Die folgenden Daten werden während einer laufenden Verbindung zur Kommunikation zwischen Ihrem
+      Internetbrowser und unserem Webserver übermittelt:</p>
+    <ul>
+      <li>IP-Adresse des anfragenden Geräts</li>
+      <li>Datum und Uhrzeit des Zugriffs</li>
+      <li>Name, URL und übertragene Datenmenge der aufgerufenen Seiten bzw. Datenbankabfragen</li>
+      <li>Zugriffsstatus (angeforderte Datei übertragen, nicht gefunden etc.)</li>
+      <li>technische Informationen (Browser und Betriebssystem, sog. User-Agent)</li>
+      <li>Referrer-URL (falls vorhanden)</li>
+    </ul>
+
+    <h3>Log-Files</h3>
+    <p>Die oben genannten Daten werden von unserem Reverse-Proxy und dem Anwendungsserver automatisch in Log-Files
+      geschrieben. Die Log-Files sind nur den Administratoren der Professur zugänglich.</p>
+    <ul>
+      <li>Die Log-Files des Reverse-Proxys werden maximal 14 Tage gespeichert.</li>
+      <li>Die Log-Files des Anwendungsservers werden größenbasiert rotiert: Es werden höchstens drei Dateien mit je
+        maximal 10 MB vorgehalten; ist dieses Volumen erreicht, wird die jeweils älteste Datei automatisch gelöscht. Wie
+        lange ein einzelner Eintrag gespeichert bleibt, hängt daher vom Zugriffsaufkommen ab.</li>
+    </ul>
+    <p>Die Logeinträge werden kontinuierlich automatisch ausgewertet, um Angriffe auf die Webserver erkennen und
+      entsprechend reagieren zu können. In Einzelfällen, d. h. bei gemeldeten Störungen, Fehlern und
+      Sicherheitsvorfällen, erfolgt eine manuelle Analyse.</p>
+
+    <h2>Webanalyse mit Matomo</h2>
+    <p>Dieses Webtool nutzt den Webanalysedienst Matomo, um die Reichweite zu messen und die Nutzerfreundlichkeit für
+      die akademische Forschung zu verbessern.</p>
+    <p>Matomo wird selbst gehostet und auf Servern der Professur für Data Science in Systems Biology betrieben. Eine
+      Weitergabe der Daten an Dritte erfolgt nicht.</p>
+    <p>Matomo wird in einer datenschutzfreundlichen Konfiguration betrieben:</p>
+    <ul>
+      <li>Matomo setzt <strong>keine Cookies</strong> und speichert keine sonstigen Informationen auf Ihrem Endgerät.
+        Dies ist auch serverseitig erzwungen: Tracking-Cookies werden von Matomo ignoriert.</li>
+      <li>Die IP-Adresse wird vor der Speicherung anonymisiert (die letzten 3 Bytes werden entfernt, z. B.
+        192.xxx.xxx.xxx).</li>
+      <li>Eine Wiedererkennung von Nutzern über mehrere Besuche oder Tage hinweg findet nicht statt. Es wird keine
+        Nutzer-ID vergeben und kein Fingerprinting durchgeführt.</li>
+      <li>Es werden nur die Hauptversionen von Browser und Betriebssystem gespeichert; Gerätemodell und
+        Bildschirmauflösung werden nicht erfasst.</li>
+      <li>Von der Referrer-URL wird nur der Host bzw. die Art der Herkunft (z. B. Suchmaschine) gespeichert.</li>
+      <li>Ein Besucher-Log mit einzelnen Besuchen und Besucherprofile sind deaktiviert; ausgewertet werden nur
+        aggregierte Berichte.</li>
+      <li>Die Browser-Einstellung „Do Not Track“ wird berücksichtigt (sofern aktiviert). In diesem Fall werden keine
+        Daten durch Matomo erfasst.</li>
+    </ul>
+    <p>Verarbeitet werden insbesondere:</p>
+    <ul>
+      <li>anonymisierte IP-Adresse des anfragenden Rechners (nur das erste Byte)</li>
+      <li>Datum und Uhrzeit des Zugriffs</li>
+      <li>Name und URL der aufgerufenen Seiten sowie angeklickte Links und Downloads</li>
+      <li>technische Informationen (Hauptversion von Browser und Betriebssystem, Spracheinstellung)</li>
+      <li>Host der Referrer-URL (falls vorhanden)</li>
+      <li>Sitzungsinformationen (z. B. Dauer des Besuchs und aufgerufene Seiten innerhalb eines Besuchs). Um
+        Seitenaufrufe einem Besuch zuzuordnen, bildet Matomo serverseitig einen Hashwert aus den oben genannten
+        technischen Merkmalen, der täglich wechselt und nicht dauerhaft gespeichert wird.</li>
+    </ul>
+    <p>Die Auswertung erfolgt ausschließlich in aggregierter Form. Die Rohdaten werden nach 180 Tagen automatisch
+      gelöscht. Die daraus erstellten aggregierten Berichte (z. B. Anzahl der Besuche pro Seite) enthalten keine
+      personenbezogenen Daten.</p>
+
+
+    <h2>Cookies und lokale Speicherung</h2>
+    <p>Diese Website setzt <strong>keine Cookies</strong> und verwendet auch keine ähnlichen Technologien wie Local
+      Storage oder Session Storage. Es werden keine Informationen auf Ihrem Endgerät gespeichert oder aus diesem
+      ausgelesen, die nicht für die Darstellung der Website unbedingt erforderlich sind.</p>
+
+    <h2>Hochladbare Daten</h2>
+    <p>Unsere Webseite erlaubt im Bereich „SpongEffects – Compute Scores“ den Upload von Bulk-RNA-seq-Expressionsdaten
+      (Gen- bzw. Transkript-Expressionsmatrizen, z. B. im CSV-Format). Diese Daten werden mit dem Tool SpongEffects
+      ausgewertet und die Ergebnisse auf der Webseite visualisiert.</p>
+    <p>Die hochgeladene Datei wird ausschließlich für die Dauer der Berechnung als temporäre Datei auf dem Server der
+      Professur gespeichert und nach Abschluss der Berechnung automatisch gelöscht. Die Ergebnisse werden an Ihren
+      Browser übermittelt und nicht dauerhaft auf dem Server gespeichert; nach dem Schließen oder Neuladen der Seite
+      sind sie nicht mehr abrufbar.</p>
+    <p>Auf dem Server verbleibt lediglich ein technisches Protokoll des Berechnungslaufs (Zeitstempel,
+      Softwaremeldungen, gewählte Parameter sowie Anzahl der Zeilen und Spalten der hochgeladenen Matrix). Es enthält
+      weder die hochgeladenen Expressionswerte noch Proben- oder Gennamen. Diese Protokolle werden nicht automatisch
+      gelöscht; sie dienen der Fehleranalyse und Weiterentwicklung des Webtools.</p>
+    <p>Der Nutzer ist dafür verantwortlich, dass die hochgeladenen Daten anonymisiert sind. Bitte laden Sie keine Daten
+      hoch, die direkt oder indirekt eine Identifizierung von Personen ermöglichen (z. B. Namen, Patienten-IDs aus
+      Krankenhaussystemen oder Geburtsdaten).</p>
+
+    <h2>Externe Inhalte</h2>
+    <p>Zur Darstellung der Website werden einige Programmbibliotheken und Referenzdaten von externen Servern geladen.
+      Dabei wird technisch bedingt Ihre IP-Adresse sowie die unter „Technische Zugriffsdaten“ genannten Informationen an
+      den jeweiligen Anbieter übermittelt:</p>
+    <ul>
+      <li><strong>jsDelivr</strong> (<a href="https://www.jsdelivr.com" target="_blank"
+          rel="noopener">www.jsdelivr.com</a>): Auslieferung von Bootstrap (Stylesheet) und des Genom-Browsers igv.js
+        bei jedem Seitenaufruf.</li>
+      <li><strong>Plotly</strong> (cdn.plot.ly, Plotly Technologies Inc., Kanada): Auslieferung der
+        Diagramm-Bibliothek plotly.js bei jedem Seitenaufruf.</li>
+      <li><strong>Amazon Web Services</strong> (s3.amazonaws.com, Amazon Web Services, Inc., USA): Nur wenn Sie den
+        Genom-Browser öffnen, werden die Referenzsequenz und Genannotation des menschlichen Genoms (hg38) aus den
+        öffentlichen Speichern des IGV-Projekts (Broad Institute) geladen.</li>
+    </ul>
+    <p>Die Anbieter betreiben weltweit verteilte Server (Content Delivery Networks); eine Verarbeitung außerhalb der EU,
+      insbesondere in den USA, kann daher nicht ausgeschlossen werden. Amazon Web Services, Inc. ist nach dem
+      EU-US Data Privacy Framework zertifiziert (Angemessenheitsbeschluss der EU-Kommission gemäß Art. 45 DSGVO).
+      Kanada verfügt über einen Angemessenheitsbeschluss der EU-Kommission. Es werden keine Cookies dieser Anbieter
+      gesetzt.</p>
+    <p>Die Website enthält außerdem Links zu externen Angeboten (z. B. g:Profiler, PubMed). Daten werden an
+      diese Anbieter erst übermittelt, wenn Sie einen solchen Link anklicken.</p>
+
+    <h2>Betroffenenrechte</h2>
+    <p>Nach der Datenschutz-Grundverordnung (DSGVO) stehen Ihnen folgende Rechte zu:</p>
+    <ul>
+      <li>Sie können Auskunft verlangen, ob und ggf. welche personenbezogenen Daten wir von Ihnen verarbeiten, und
+        erhalten weitere mit der Verarbeitung zusammenhängende Informationen (Art. 15 DSGVO). Bitte beachten Sie, dass
+        dieses Auskunftsrecht in bestimmten Fällen eingeschränkt oder ausgeschlossen sein kann.</li>
+      <li>Sollten unrichtige personenbezogene Daten verarbeitet werden, steht Ihnen ein Recht auf Berichtigung zu
+        (Art. 16 DSGVO).</li>
+      <li>Liegen die gesetzlichen Voraussetzungen vor, so können Sie die Löschung Ihrer personenbezogenen Daten oder die
+        Einschränkung ihrer Verarbeitung verlangen (Art. 17 und 18 DSGVO). Das Recht auf Löschung nach Art. 17 Abs. 1
+        und 2 DSGVO besteht jedoch unter anderem dann nicht, wenn die Verarbeitung personenbezogener Daten erforderlich
+        ist zur Wahrnehmung einer Aufgabe, die im öffentlichen Interesse liegt oder in Ausübung öffentlicher Gewalt
+        erfolgt (Art. 17 Abs. 3 Buchst. b DSGVO).</li>
+      <li>Erfolgt die Verarbeitung zur Wahrnehmung einer öffentlichen Aufgabe (Art. 6 Abs. 1 Unterabs. 1 Buchst. e
+        DSGVO), haben Sie das Recht, jederzeit gegen die Verarbeitung Ihrer Daten Widerspruch einzulegen, wenn Sie
+        hierfür Gründe haben, die sich aus Ihrer besonderen Situation ergeben (Art. 21 Abs. 1 Satz 1 DSGVO). Ihren
+        Widerspruch können Sie formlos an die oben genannte Kontaktadresse richten. Wenn Sie in Ihrem Browser die
+        Einstellung „Do Not Track“ aktivieren, werden Ihre Besuche von Matomo zudem nicht erfasst.</li>
+    </ul>
+    <p>Sollten Sie von Ihren Rechten Gebrauch machen, prüfen wir, ob die gesetzlichen Voraussetzungen hierfür erfüllt
+      sind.</p>
+    <p>Weitere Einschränkungen, Modifikationen und gegebenenfalls Ausschlüsse der vorgenannten Rechte können sich aus der
+      Datenschutz-Grundverordnung oder nationalen Rechtsvorschriften ergeben.</p>
+
+    <h2>Beschwerderecht bei der Aufsichtsbehörde</h2>
+    <p>Ihnen steht weiterhin ein Beschwerderecht beim Bayerischen Landesbeauftragten für den Datenschutz zu. Diesen
+      können Sie unter folgenden Kontaktdaten erreichen:</p>
+    <address>
+      Postanschrift: Postfach 22 12 19, 80502 München<br>
+      Hausanschrift: Wagmüllerstraße 18, 80538 München<br>
+      Telefon: +49 89 212672-0<br>
+      Telefax: +49 89 212672-50<br>
+      E-Mail: poststelle(at)datenschutz-bayern.de<br>
+      Online-Beschwerde: <a href="https://www.datenschutz-bayern.de/service/complaint.html" target="_blank"
+        rel="noopener">https://www.datenschutz-bayern.de/service/complaint.html</a>
+    </address>
+
+    <h2>Zwecke der Datenverarbeitung</h2>
+    <p>Die Verarbeitung erfolgt zur:</p>
+    <ul>
+      <li>Bereitstellung, Sicherheit und Stabilität des Webtools</li>
+      <li>statistischen Analyse der Nutzung (Matomo)</li>
+      <li>Optimierung und Weiterentwicklung des Webtools</li>
+      <li>Auswertung der von Ihnen hochgeladenen Expressionsdaten (SpongEffects)</li>
+    </ul>
+
+    <h2>Rechtsgrundlagen der Datenverarbeitung</h2>
+    <p>Die Verarbeitung personenbezogener Daten, die für den Betrieb und die Sicherheit dieses Webtools erforderlich ist,
+      einschließlich der cookielosen, anonymisierten Reichweitenmessung mit Matomo und des Einbindens externer Inhalte,
+      erfolgt auf Grundlage von Art. 6 Abs. 1 Unterabs. 1 Buchst. e DSGVO in Verbindung mit Art. 4 BayDSG zur
+      Wahrnehmung einer Aufgabe im öffentlichen Interesse (wissenschaftliche Forschung und Bereitstellung von
+      Forschungsinfrastruktur durch die Technische Universität München).</p>
+    <p>Da keine Cookies gesetzt und keine Informationen auf Ihrem Endgerät gespeichert werden, ist eine Einwilligung
+      nach § 25 Abs. 1 TDDDG nicht erforderlich. Soweit für die Auslieferung der Website technisch Informationen aus
+      Ihrem Endgerät abgerufen werden, ist dies nach § 25 Abs. 2 Nr. 2 TDDDG unbedingt erforderlich, um den von Ihnen
+      ausdrücklich gewünschten Dienst bereitzustellen.</p>
+
+    <h2>Kategorien der personenbezogenen Daten, soweit der betroffenen Person noch nicht bekannt</h2>
+    <p>Bei der rein informatorischen Nutzung der Website werden automatisch technische Zugriffsdaten verarbeitet (siehe
+      „Technische Zugriffsdaten“).</p>
+
+    <h2>Quellen personenbezogener Daten, die nicht bei der betroffenen Person erhoben werden bzw. wurden</h2>
+    <p>Wir erheben nur Daten, die vom Endgerät der betroffenen Person übermittelt werden (siehe „Technische
+      Zugriffsdaten“ und „Webanalyse mit Matomo“).</p>
+
+    <h2>Empfänger der Daten</h2>
+    <p>Eine Weitergabe personenbezogener Daten an Dritte erfolgt nicht, sofern nicht ausdrücklich anders angegeben (siehe
+      „Externe Inhalte“).</p>
+
+    <h2>Datenübermittlung in Drittländer</h2>
+    <p>Durch die Professur findet keine Übermittlung personenbezogener Daten in Länder außerhalb der Europäischen Union
+      (Drittstaaten) statt. Beim Laden externer Inhalte kann Ihre IP-Adresse jedoch von den dort genannten Anbietern
+      auch außerhalb der EU verarbeitet werden (siehe „Externe Inhalte“).</p>
+
+    <h2>Dauer der Speicherung der personenbezogenen Daten</h2>
+    <ul>
+      <li>Log-Files des Reverse-Proxys: maximal 14 Tage.</li>
+      <li>Log-Files des Anwendungsservers: größenbasierte Rotation (höchstens drei Dateien mit je maximal 10 MB, die
+        älteste wird automatisch gelöscht; siehe „Log-Files“).</li>
+      <li>Matomo-Rohdaten: 180 Tage.</li>
+      <li>Hochgeladene Expressionsdaten: Löschung unmittelbar nach Abschluss der Berechnung.</li>
+      <li>Technische Protokolle der Berechnungsläufe (ohne Expressionswerte, Proben- oder Gennamen): keine automatische
+        Löschung.</li>
+    </ul>
+
+    <h2>Keine Pflicht zur Bereitstellung der Daten</h2>
+    <p>Die Angabe Ihrer personenbezogenen Daten erfolgt freiwillig. Bei der Nutzung der Website werden jedoch technisch
+      notwendige Zugriffsdaten (siehe „Technische Zugriffsdaten“) automatisch verarbeitet. Ohne diese Daten ist ein
+      Aufruf der Website technisch nicht möglich.</p>
+
+    <h2>Änderungen dieser Datenschutzerklärung</h2>
+    <p>Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie an geänderte Rechtslagen oder bei Änderungen
+      des Webtools anzupassen.</p>
+
+    <p class="stand">Stand: 10.2026</p>
+  </article>
+  } @else {
+  <article lang="en">
+    <h1>Privacy Policy</h1>
+    <p><em>pursuant to Art. 13 and 14 GDPR</em></p>
+
+    <p>Data protection is important to us. We want you to know when we store which data and how we use it.</p>
+    <p>Personal data is collected on the server of the Professorship for Data Science in Systems Biology only to the
+      extent technically necessary. Data processing is subject to the applicable data protection provisions, in
+      particular the General Data Protection Regulation (GDPR), the Bavarian Data Protection Act (BayDSG), the
+      German Telecommunications Digital Services Data Protection Act (TDDDG) and the German Digital Services Act
+      (DDG).</p>
+    <p>Below we inform you about the type, scope and purpose of the collection and use of personal data. This
+      information can be accessed on our website at any time.</p>
+    <p><em>This English version is provided for convenience. In case of doubt, the German version applies.</em></p>
+
+    <h2>Controller and technical implementation</h2>
+    <p>The controller within the meaning of the GDPR is</p>
+    <address>
+      Technical University of Munich (Technische Universität München)<br>
+      represented by the President<br>
+      Arcisstraße 21<br>
+      80333 Munich, Germany<br>
+      Phone: +49 89 289-01
+    </address>
+    <p>The web tool SPONGEdb is operated by the Professorship for Data Science in Systems Biology and hosted on its
+      servers. Contact for this web tool:</p>
+    <address>
+      Data Science in Systems Biology<br>
+      TUM School of Life Sciences<br>
+      Maximus-von-Imhof-Forum 1+3/I<br>
+      85354 Freising, Germany<br>
+      Email: markus.list(at)tum.de
+    </address>
+
+    <h3>Data protection officer</h3>
+    <p>The data protection officer of the Technical University of Munich can be contacted at:</p>
+    <address>
+      Data Protection Officer of TUM<br>
+      Arcisstraße 21<br>
+      80333 Munich, Germany<br>
+      Phone: +49 89 289-17052<br>
+      Email: beauftragter(at)datenschutz.tum.de<br>
+      <a href="https://www.datenschutz.tum.de" target="_blank" rel="noopener">www.datenschutz.tum.de</a>
+    </address>
+
+    <h2>Technical access data</h2>
+    <p>When you access these or other web pages, your web browser transmits data to our web server. The following data
+      is transmitted during an active connection for communication between your web browser and our web server:</p>
+    <ul>
+      <li>IP address of the requesting device</li>
+      <li>date and time of access</li>
+      <li>name, URL and amount of data transferred of the accessed pages or database queries</li>
+      <li>access status (requested file transferred, not found, etc.)</li>
+      <li>technical information (browser and operating system, i.e. the user agent)</li>
+      <li>referrer URL (if any)</li>
+    </ul>
+
+    <h3>Log files</h3>
+    <p>The data listed above is automatically written to log files by our reverse proxy and the application server.
+      The log files are accessible only to the administrators of the professorship.</p>
+    <ul>
+      <li>Reverse proxy log files are stored for a maximum of 14 days.</li>
+      <li>Application server log files are rotated by size: at most three files of up to 10 MB each are kept; once this
+        volume is reached, the oldest file is deleted automatically. How long an individual entry is kept therefore
+        depends on the amount of traffic.</li>
+    </ul>
+    <p>Log entries are continuously evaluated automatically in order to detect attacks on the web servers and respond
+      accordingly. In individual cases, i.e. for reported malfunctions, errors and security incidents, a manual analysis
+      is carried out.</p>
+
+    <h2>Web analytics with Matomo</h2>
+    <p>This web tool uses the web analytics service Matomo to measure reach and to improve usability for academic
+      research.</p>
+    <p>Matomo is self-hosted and operated on servers of the Professorship for Data Science in Systems Biology. Data is not
+      passed on to third parties.</p>
+    <p>Matomo is operated in a privacy-friendly configuration:</p>
+    <ul>
+      <li>Matomo sets <strong>no cookies</strong> and does not store any other information on your device. This is also
+        enforced on the server: Matomo ignores any tracking cookies.</li>
+      <li>The IP address is anonymized before storage (the last 3 bytes are removed, e.g. 192.xxx.xxx.xxx).</li>
+      <li>Users are not recognized across multiple visits or days. No user ID is assigned and no fingerprinting is
+        performed.</li>
+      <li>Only the major versions of browser and operating system are stored; device model and screen resolution are
+        not collected.</li>
+      <li>Of the referrer URL, only the host or the type of origin (e.g. search engine) is stored.</li>
+      <li>The visits log of individual visits and visitor profiles are disabled; only aggregated reports are evaluated.
+      </li>
+      <li>The browser setting “Do Not Track” is respected (if enabled). In that case, Matomo does not collect any data.
+      </li>
+    </ul>
+    <p>In particular, the following is processed:</p>
+    <ul>
+      <li>anonymized IP address of the requesting computer (first byte only)</li>
+      <li>date and time of access</li>
+      <li>name and URL of the accessed pages, as well as clicked links and downloads</li>
+      <li>technical information (major version of browser and operating system, language setting)</li>
+      <li>host of the referrer URL (if any)</li>
+      <li>session information (e.g. duration of the visit and pages viewed within a visit). To assign page views to a
+        visit, Matomo computes a hash of the technical characteristics listed above on the server; this hash changes
+        daily and is not stored permanently.</li>
+    </ul>
+    <p>Data is evaluated in aggregated form only. Raw data is deleted automatically after 180 days. The aggregated reports
+      generated from it (e.g. number of visits per page) do not contain personal data.</p>
+
+
+    <h2>Cookies and local storage</h2>
+    <p>This website sets <strong>no cookies</strong> and does not use similar technologies such as local storage or
+      session storage. No information is stored on or read from your device beyond what is strictly necessary to
+      display the website.</p>
+
+    <h2>Uploaded data</h2>
+    <p>In the section “SpongEffects – Compute Scores”, our website allows you to upload bulk RNA-seq expression data
+      (gene or transcript expression matrices, e.g. in CSV format). This data is analyzed with the tool SpongEffects
+      and the results are visualized on the website.</p>
+    <p>The uploaded file is stored as a temporary file on the server of the professorship only for the duration of the
+      computation and is deleted automatically once the computation has finished. The results are sent to your browser
+      and are not stored permanently on the server; they can no longer be accessed after closing or reloading the page.</p>
+    <p>Only a technical log of the computation run remains on the server (timestamps, software messages, selected
+      parameters and the number of rows and columns of the uploaded matrix). It contains neither the uploaded expression
+      values nor sample or gene names. These logs are not deleted automatically; they are used for troubleshooting and
+      further development of the web tool.</p>
+    <p>The user is responsible for ensuring that the uploaded data is anonymized. Please do not upload data that allows
+      persons to be identified directly or indirectly (e.g. names, patient IDs from hospital systems or dates of
+      birth).</p>
+
+    <h2>External content</h2>
+    <p>To display the website, some software libraries and reference data are loaded from external servers. For
+      technical reasons, your IP address and the information listed under “Technical access data” are transmitted to
+      the respective provider:</p>
+    <ul>
+      <li><strong>jsDelivr</strong> (<a href="https://www.jsdelivr.com" target="_blank"
+          rel="noopener">www.jsdelivr.com</a>): delivery of Bootstrap (stylesheet) and the genome browser igv.js on
+        every page load.</li>
+      <li><strong>Plotly</strong> (cdn.plot.ly, Plotly Technologies Inc., Canada): delivery of the charting library
+        plotly.js on every page load.</li>
+      <li><strong>Amazon Web Services</strong> (s3.amazonaws.com, Amazon Web Services, Inc., USA): only when you open the
+        genome browser, the human reference genome sequence and gene annotation (hg38) are loaded from the public
+        storage of the IGV project (Broad Institute).</li>
+    </ul>
+    <p>These providers operate globally distributed servers (content delivery networks); processing outside the EU, in
+      particular in the USA, can therefore not be ruled out. Amazon Web Services, Inc. is certified under the EU-US Data
+      Privacy Framework (adequacy decision of the European Commission pursuant to Art. 45 GDPR). Canada is covered by
+      an adequacy decision of the European Commission. These providers do not set any cookies.</p>
+    <p>The website also contains links to external services (e.g. g:Profiler, PubMed). Data is transmitted to
+      these providers only when you click such a link.</p>
+
+    <h2>Your rights</h2>
+    <p>Under the General Data Protection Regulation (GDPR), you have the following rights:</p>
+    <ul>
+      <li>You can request information as to whether and, if so, which personal data we process about you, and receive
+        further information related to the processing (Art. 15 GDPR). Please note that this right of access may be
+        restricted or excluded in certain cases.</li>
+      <li>If incorrect personal data is processed, you have the right to rectification (Art. 16 GDPR).</li>
+      <li>If the legal requirements are met, you can request the erasure of your personal data or the restriction of its
+        processing (Art. 17 and 18 GDPR). However, the right to erasure under Art. 17(1) and (2) GDPR does not apply,
+        among other things, if the processing of personal data is necessary for the performance of a task carried out
+        in the public interest or in the exercise of official authority (Art. 17(3)(b) GDPR).</li>
+      <li>If the processing is carried out for the performance of a public task (Art. 6(1)(e) GDPR), you have the right
+        to object to the processing of your data at any time on grounds relating to your particular situation
+        (Art. 21(1) sentence 1 GDPR). You can send your objection informally to the contact address given above. If you
+        enable the “Do Not Track” setting in your browser, Matomo will also not record your visits.</li>
+    </ul>
+    <p>If you exercise your rights, we will check whether the legal requirements for doing so are met.</p>
+    <p>Further restrictions, modifications and, where applicable, exclusions of the above rights may arise from the GDPR
+      or national legislation.</p>
+
+    <h2>Right to lodge a complaint with the supervisory authority</h2>
+    <p>You also have the right to lodge a complaint with the Bavarian State Commissioner for Data Protection
+      (Bayerischer Landesbeauftragter für den Datenschutz). You can reach the authority at:</p>
+    <address>
+      Postal address: Postfach 22 12 19, 80502 München, Germany<br>
+      Street address: Wagmüllerstraße 18, 80538 München, Germany<br>
+      Phone: +49 89 212672-0<br>
+      Fax: +49 89 212672-50<br>
+      Email: poststelle(at)datenschutz-bayern.de<br>
+      Online complaint: <a href="https://www.datenschutz-bayern.de/service/complaint.html" target="_blank"
+        rel="noopener">https://www.datenschutz-bayern.de/service/complaint.html</a>
+    </address>
+
+    <h2>Purposes of data processing</h2>
+    <p>Data is processed for:</p>
+    <ul>
+      <li>provision, security and stability of the web tool</li>
+      <li>statistical analysis of usage (Matomo)</li>
+      <li>optimization and further development of the web tool</li>
+      <li>analysis of the expression data you upload (SpongEffects)</li>
+    </ul>
+
+    <h2>Legal basis for data processing</h2>
+    <p>The processing of personal data required for the operation and security of this web tool, including cookieless,
+      anonymized reach measurement with Matomo and the embedding of external content, is based on Art. 6(1)(e) GDPR in
+      conjunction with Art. 4 BayDSG for the performance of a task carried out in the public interest (scientific
+      research and provision of research infrastructure by the Technical University of Munich).</p>
+    <p>Since no cookies are set and no information is stored on your device, consent under Section 25(1) TDDDG is not
+      required. Insofar as information is technically accessed on your device to deliver the website, this is strictly
+      necessary under Section 25(2) no. 2 TDDDG to provide the service you have explicitly requested.</p>
+
+    <h2>Categories of personal data, insofar as not already known to the data subject</h2>
+    <p>When the website is used purely for information purposes, technical access data is processed automatically (see
+      “Technical access data”).</p>
+
+    <h2>Sources of personal data not collected from the data subject</h2>
+    <p>We only collect data transmitted by the data subject's device (see “Technical access data” and “Web analytics
+      with Matomo”).</p>
+
+    <h2>Recipients of the data</h2>
+    <p>Personal data is not passed on to third parties unless expressly stated otherwise (see “External content”).</p>
+
+    <h2>Transfer of data to third countries</h2>
+    <p>The professorship does not transfer personal data to countries outside the European Union (third countries).
+      However, when external content is loaded, your IP address may be processed by the providers listed there,
+      including outside the EU (see “External content”).</p>
+
+    <h2>Storage period of personal data</h2>
+    <ul>
+      <li>Reverse proxy log files: a maximum of 14 days.</li>
+      <li>Application server log files: rotated by size (at most three files of up to 10 MB each, the oldest is deleted
+        automatically; see “Log files”).</li>
+      <li>Matomo raw data: 180 days.</li>
+      <li>Uploaded expression data: deleted immediately after the computation has finished.</li>
+      <li>Technical logs of computation runs (without expression values, sample or gene names): not deleted
+        automatically.</li>
+    </ul>
+
+    <h2>No obligation to provide data</h2>
+    <p>Providing your personal data is voluntary. However, when using the website, technically necessary access data
+      (see “Technical access data”) is processed automatically. Without this data, it is technically not possible to
+      access the website.</p>
+
+    <h2>Changes to this privacy policy</h2>
+    <p>We reserve the right to amend this privacy policy in order to adapt it to changes in the legal situation or to
+      changes of the web tool.</p>
+
+    <p class="stand">Last updated: October 2026</p>
+  </article>
+  }
+</div>

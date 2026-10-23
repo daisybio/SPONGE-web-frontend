@@ -205,7 +205,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
           color: 'grey',
           opacity: 0.5,
         },
-        text: greyData.map((e) => `${e.id}<br>Click to add to cart`),
+        text: greyData.map((e) => `${e.id}<br>Click to add to selection`),
         customdata: greyData.map((e) => ({ ensemblID: e.ensemblID || e.id, symbol: e.id })),
         hoverinfo: 'text',
       });
@@ -223,7 +223,7 @@ export class ScatterplotComponent implements AfterViewInit, OnDestroy {
           color: 'red',
           opacity: 1,
         },
-        text: redData.map((e) => `${e.id}<br>Click to add to cart`),
+        text: redData.map((e) => `${e.id}<br>Click to add to selection`),
         customdata: redData.map((e) => ({ ensemblID: e.ensemblID || e.id, symbol: e.id })),
         hoverinfo: 'text',
       });

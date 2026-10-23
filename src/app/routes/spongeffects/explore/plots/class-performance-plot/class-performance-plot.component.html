@@ -26,8 +26,10 @@
 <div>
 
 @if (runClassPerformance$.isLoading()) {
+  <div class="plot-loading-container">
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     <p class="loading-text">Loading performance data...</p>
+  </div>
 }
 
 @if (runClassPerformance$.error()) {

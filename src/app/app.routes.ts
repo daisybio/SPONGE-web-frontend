@@ -121,6 +121,11 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'privacy',
+    loadComponent: () =>
+      import('./routes/privacy/privacy.component').then((m) => m.PrivacyComponent),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

@@ -89,7 +89,7 @@
 
     @if (ceRNAStats$(); as stats) {
     <mat-tab label="ceRNA interactions">
-      <div style="padding: 16px;">
+      <div>
         @let c = effectiveCentralities$();
         <table>
           <tr>
@@ -148,7 +148,7 @@
     }
 
     <mat-tab [label]="'Networks (' + networkRows().length + ')'">
-      <div style="padding: 16px;">
+      <div>
         <app-networks-table [rows]="networkRows()" [columns]="['Betweenness', 'Eigenvector', 'Degree']"
           [currentDatasetID]="disease$()?.dataset_ID" [loading]="allNetworks$.isLoading()"
           emptyText="This gene is not part of any disease network."></app-networks-table>
@@ -163,7 +163,7 @@
 
     @if ((customEffects$()) || ((tcgaEffects$.value() || []).length > 0)) {
     <mat-tab label="SpongEffects scores">
-      <div style="padding: 16px;">
+      <div>
         @let custom = customEffects$();
         @if (custom) {
         <mat-accordion style="margin-bottom: 16px;">
@@ -256,6 +256,11 @@
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
       </div>
       }
+      <mat-form-field style="padding: 10px; width: 100%; box-sizing: border-box;">
+        <mat-label>Search</mat-label>
+        <input [(ngModel)]="asFilter" matInput placeholder="Search for transcripts">
+        <mat-hint>Case insensitive</mat-hint>
+      </mat-form-field>
       <table [dataSource]="asDatasource" class="mat-elevation-z8" mat-table>
         <ng-container matColumnDef="enst">
           <th *matHeaderCellDef mat-header-cell>Transcript</th>
@@ -281,9 +286,18 @@
 
         <tr *matHeaderRowDef="asColumns" mat-header-row></tr>
         <tr *matRowDef="let row; columns: asColumns;" mat-row></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="2" style="padding: 16px; text-align: center; color: rgba(0, 0, 0, 0.54);">
+            @if (asFilter()) {
+            No transcripts matching the filter "{{ asFilter() }}"
+            } @else {
+            No transcripts found
+            }
+          </td>
+        </tr>
       </table>
       <mat-paginator #asPaginator [pageSizeOptions]="[5, 10]" [pageSize]="5"
-        aria-label="Select page of users"></mat-paginator>
+        aria-label="Select page of transcripts"></mat-paginator>
 
     </mat-tab>
     }

@@ -1,4 +1,4 @@
-<mat-drawer-container style="min-height: calc(100vh - 64px);">
+<mat-drawer-container class="page-drawer-container subpage-drawer">
   <mat-drawer [opened]="true" mode="side">
 
     <div style="margin: 5px;">
@@ -22,9 +22,9 @@
                     detected in the uploaded expression file.
                   </p>
                   @if (predictService.availableScopes$().length <= 1) { <p>
-                    Only the pancancer score set is available. Re-run the prediction with "Predict on subtype level"
-                    enabled
-                    to also get per-type scores.
+                    Only the pancancer score set is available: none of the predicted cancer types has a trained
+                    type model with scores for your samples. Select a cancer type as reference network to get its
+                    type-level scores.
                     </p>
                     }
                 </app-info>
@@ -188,17 +188,16 @@
       <mat-tab label="Top ceRNA Modules">
         @if (tabReady(TABS.modules)) {
         <div style="padding: 16px;">
-          <div style="justify-content: center; display: flex; margin: 10px 0 24px 0;">
-            <mat-button-toggle-group [value]="selectedSubVis()" (change)="selectedSubVis.set($event.value)">
-              <mat-button-toggle value="importance">Enrichment: Mean vs Variance</mat-button-toggle>
-              <mat-button-toggle value="scatterplot">Enrichment: TCGA vs Patient</mat-button-toggle>
-              <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
-              <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
-              <mat-button-toggle value="heatmap">Heatmaps</mat-button-toggle>
-              <!-- This is now already in the network view -->
-              <!-- <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle> -->
-            </mat-button-toggle-group>
-          </div>
+          <nav mat-tab-nav-bar [tabPanel]="modulesSubVisPanel" style="margin-bottom: 24px;">
+            <a mat-tab-link (click)="selectedSubVis.set('importance')" [active]="selectedSubVis() === 'importance'">Enrichment: Mean vs Variance</a>
+            <a mat-tab-link (click)="selectedSubVis.set('scatterplot')" [active]="selectedSubVis() === 'scatterplot'">Enrichment: TCGA vs Patient</a>
+            <a mat-tab-link (click)="selectedSubVis.set('centers')" [active]="selectedSubVis() === 'centers'">Module Centers Table</a>
+            <a mat-tab-link (click)="selectedSubVis.set('members')" [active]="selectedSubVis() === 'members'">Module Members Table</a>
+            <a mat-tab-link (click)="selectedSubVis.set('heatmap')" [active]="selectedSubVis() === 'heatmap'">Heatmaps</a>
+            <!-- Functional Enrichment is now already in the network view -->
+          </nav>
+
+          <mat-tab-nav-panel #modulesSubVisPanel>
 
           @if (selectedSubVis() === 'scatterplot') {
           <div>
@@ -213,7 +212,7 @@
               <p>
                 Modules far from the diagonal are enriched differently in your samples than in the TCGA reference,
                 which can flag patient- or subtype-specific ceRNA activity. Click a point to add its module center to
-                the cart.
+                the selection.
               </p>
             </app-info>
           </div>
@@ -226,6 +225,7 @@
             </app-importance-plot>
           </div>
           }
+          </mat-tab-nav-panel>
         </div>
         }
       </mat-tab>

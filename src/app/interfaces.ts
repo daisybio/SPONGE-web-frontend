@@ -448,6 +448,19 @@ export interface PredictCancerType {
     subtype_predict: string;
     /** The disease name passed as --model, or "None" if the pancancer/auto model was used. */
     specified_type?: string;
+    /** Features of the headline model (specified type's subtype model, else pancancer) present in the upload. */
+    modules_matched?: number | null;
+    modules_expected?: number | null;
+    /** True if modules_matched / modules_expected < 0.5; the affected predictions are then NA. */
+    low_coverage?: boolean | null;
+    /** Coverage of every model used in this prediction. */
+    module_coverage?: {
+      model: string;
+      modules_matched: number;
+      modules_expected: number;
+      coverage: number;
+      low_coverage: boolean;
+    }[];
   }];
   data: {
     sampleID: string;
@@ -471,6 +484,16 @@ export interface PredictCancerType {
   tcga_umap?: Record<string, { x: number; y: number; class: string }>;
   umap_projection?: Map<string, { x: number; y: number }>;
   module_members?: Record<string, Record<string, string[]>>;
+}
+
+/** Background prediction job (POST/GET /spongEffects/predictCancerType/jobs). */
+export interface PredictionJob {
+  job_id: string;
+  status: 'queued' | 'running' | 'done' | 'failed';
+  /** Present when status is 'done'. */
+  result?: PredictCancerType;
+  /** Present when status is 'failed'. */
+  detail?: string;
 }
 
 export interface ExploreQuery {

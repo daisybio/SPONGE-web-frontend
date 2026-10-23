@@ -11,9 +11,10 @@ import { Gene, Transcript } from '../../interfaces';
   imports: [CommonModule, MatIconModule, MatTooltipModule],
   template: `
     <button (click)="toggleCart($event)"
-            [matTooltip]="inCart() ? 'Remove from Cart' : 'Add to Cart'"
-            class="add-to-cart-btn">
-      <mat-icon>{{ inCart() ? 'remove_shopping_cart' : 'add_shopping_cart' }}</mat-icon>
+            [matTooltip]="inCart() ? 'Remove from selection' : 'Add to selection'"
+            class="add-to-cart-btn"
+            [class.in-cart]="inCart()">
+      <mat-icon>{{ inCart() ? 'remove_circle_outline' : 'bookmark_add' }}</mat-icon>
     </button>
   `,
   styles: [`
@@ -35,9 +36,15 @@ import { Gene, Transcript } from '../../interfaces';
       transform: scale(1.15);
     }
     .add-to-cart-btn mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+    .add-to-cart-btn.in-cart {
+      color: #ef9a9a;
+    }
+    .add-to-cart-btn.in-cart:hover {
+      color: #e53935;
     }
   `]
 })

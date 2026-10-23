@@ -166,7 +166,11 @@ export class PredictService {
   readonly availableScopes$ = computed(() => {
     const prediction = this._prediction$.value();
     const scopes = new Set<string>(['pancancer']);
-    Object.keys(prediction?.type_scores ?? {}).forEach((k) => scopes.add(k));
+    // Older classify.R versions also returned empty blocks for predicted types without scores
+    // (no model for the type, a single sample, failed enrichment); those are not selectable.
+    Object.entries(prediction?.type_scores ?? {})
+      .filter(([, block]) => block?.samples?.length && block?.genes?.length)
+      .forEach(([k]) => scopes.add(k));
     return sortDiseaseNames(Array.from(scopes));
   });
 
@@ -323,6 +327,8 @@ export class PredictService {
           query.minExpr,
           query.method,
           query.model,
+          // a new query aborts this loader; stop polling the superseded job
+          param.abortSignal,
         );
       }
 

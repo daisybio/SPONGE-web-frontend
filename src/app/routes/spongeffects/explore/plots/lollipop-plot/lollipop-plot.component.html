@@ -5,16 +5,16 @@
   </p> -->
 
   @if (source() !== 'predict') {
-  <div style="justify-content: center; display: flex; margin: 20px 0 50px 0;">
-    <mat-button-toggle-group name="vis" [value]="selectedVis()" (change)="changeVis($event.value)">
-      <mat-button-toggle value="plot">Module Importance: Gini vs Accuracy</mat-button-toggle>
-      <mat-button-toggle value="enrichmentScatter">Enrichment: Mean vs Variance</mat-button-toggle>
-      <mat-button-toggle value="centers">Module Centers Table</mat-button-toggle>
-      <mat-button-toggle value="members">Module Members Table</mat-button-toggle>
-      <mat-button-toggle value="heatmap">Heatmaps</mat-button-toggle>
-      <!-- <mat-button-toggle value="gprofiler">Functional Enrichment</mat-button-toggle> -->
-    </mat-button-toggle-group>
-  </div>
+  <nav mat-tab-nav-bar [tabPanel]="visPanel" style="margin: 20px 0 30px 0;">
+    <a mat-tab-link (click)="changeVis('plot')" [active]="selectedVis() === 'plot'">Module Importance: Gini vs Accuracy</a>
+    <a mat-tab-link (click)="changeVis('enrichmentScatter')" [active]="selectedVis() === 'enrichmentScatter'">Enrichment: Mean vs Variance</a>
+    <a mat-tab-link (click)="changeVis('centers')" [active]="selectedVis() === 'centers'">Module Centers Table</a>
+    <a mat-tab-link (click)="changeVis('members')" [active]="selectedVis() === 'members'">Module Members Table</a>
+    <a mat-tab-link (click)="changeVis('heatmap')" [active]="selectedVis() === 'heatmap'">Heatmaps</a>
+    <!-- Functional Enrichment is now already in the network view -->
+  </nav>
+  <!-- The views below are switched by selectedVis(); the panel only links the nav bar for a11y. -->
+  <mat-tab-nav-panel #visPanel></mat-tab-nav-panel>
   }
 
   @if (selectedVis() === 'plot') {
@@ -55,7 +55,7 @@
     </p>
     <p>
       Modules on the right are consistently strongly enriched across the selected patients, while modules higher up
-      vary more from patient to patient. Click a point to add its module center to the cart.
+      vary more from patient to patient. Click a point to add its module center to the selection.
     </p>
     } @else {
     <p>
@@ -85,7 +85,7 @@
     </p>
     <p>
       Modules further to the right are consistently strongly enriched across the cohort, while modules higher up vary
-      more from sample to sample (potentially subtype-specific). Click a point to add its module center to the cart.
+      more from sample to sample (potentially subtype-specific). Click a point to add its module center to the selection.
     </p>
   </app-info>
   }
