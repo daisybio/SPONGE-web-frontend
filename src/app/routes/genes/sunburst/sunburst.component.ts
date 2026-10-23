@@ -8,11 +8,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { Dataset, GeneCount, TranscriptCount } from '../../../interfaces';
-import { capitalize } from 'lodash';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { VersionsService } from '../../../services/versions.service';
 import { SUBTYPE_DEFAULT } from '../../../constants';
+import {
+  getCancerTypeColor,
+  getCancerSubtypeColor,
+  getDiseaseDisplayName,
+} from '../../../cancer-colors';
 
 declare const Plotly: any;
 
@@ -58,6 +62,7 @@ export class SunburstComponent {
     Plotly.newPlot(div, [plotData], {
       margin: { t: 0, l: 0, r: 0, b: 0 },
       height: 900,
+      paper_bgcolor: 'rgba(0,0,0,0)',
     });
     this.resizePlot(div);
   });
@@ -119,22 +124,58 @@ export class SunburstComponent {
     const diseaseOrder = Object.keys(diseaseCounts).sort(
       (a, b) => diseaseCounts[b] - diseaseCounts[a]
     );
-    const ids = ['Diseases'].concat(diseaseOrder);
-    const labels = ['Diseases'].concat(diseaseOrder.map((d) => capitalize(d)));
-    const values = [total].concat(diseaseOrder.map((d) => diseaseCounts[d]));
-    const parents = ['', ...diseaseOrder.map((d) => 'Diseases')];
 
-    for (let datasetCount of Object.values(datasetCounts)) {
-      if (datasetCount.dataset) {
-        const subtype = datasetCount.dataset.disease_subtype || SUBTYPE_DEFAULT;
-        const count = datasetCount.count;
-        const dataset = datasetCount.dataset;
+    const ids: string[] = ['Diseases'];
+    const labels: string[] = ['Diseases'];
+    const values: number[] = [total];
+    const parents: string[] = [''];
+    const colors: string[] = ['#ffffff'];
 
-        ids.push(`${dataset.disease_name}-${subtype}`);
-        labels.push(subtype);
-        values.push(count);
-        parents.push(dataset.disease_name);
+    for (const disease of diseaseOrder) {
+      ids.push(disease);
+      labels.push(getDiseaseDisplayName(disease));
+      values.push(diseaseCounts[disease]);
+      parents.push('Diseases');
+      colors.push(getCancerTypeColor(disease));
+    }
+
+    // Group subtype counts by disease and subtype
+    const diseaseSubtypeCounts = new Map<string, Map<string, number>>();
+    for (const dc of Object.values(datasetCounts)) {
+      if (dc.dataset && dc.dataset.disease_name) {
+        const disease = dc.dataset.disease_name;
+        const subtype = dc.dataset.disease_subtype || SUBTYPE_DEFAULT;
+        if (!diseaseSubtypeCounts.has(disease)) {
+          diseaseSubtypeCounts.set(disease, new Map<string, number>());
+        }
+        const subMap = diseaseSubtypeCounts.get(disease)!;
+        subMap.set(subtype, (subMap.get(subtype) ?? 0) + dc.count);
       }
+    }
+
+    for (const disease of diseaseOrder) {
+      const subMap = diseaseSubtypeCounts.get(disease);
+      if (!subMap) continue;
+
+      const subtypes = Array.from(subMap.keys()).sort((a, b) => {
+        if (a === SUBTYPE_DEFAULT) return 1;
+        if (b === SUBTYPE_DEFAULT) return -1;
+        return a.localeCompare(b);
+      });
+
+      subtypes.forEach((subtype, index) => {
+        const count = subMap.get(subtype)!;
+        const color =
+          subtypes.length > 1
+            ? getCancerSubtypeColor(disease, index, subtypes.length)
+            : getCancerTypeColor(disease);
+
+        ids.push(`${disease}-${subtype}`);
+        labels.push(getDiseaseDisplayName(subtype));
+        values.push(count);
+        parents.push(disease);
+        colors.push(color);
+      });
     }
 
     return {
@@ -144,6 +185,10 @@ export class SunburstComponent {
       parents,
       branchvalues: 'total',
       type: 'sunburst',
+      marker: {
+        colors,
+        line: { width: 1, color: '#ffffff' },
+      },
     };
   }
 
